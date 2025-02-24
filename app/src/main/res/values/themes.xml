@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Base application theme -->
+    <style name="Theme.MECCA" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- Splash Screen attributes -->
+        <item name="android:windowSplashScreenBackground">@color/white</item> <!-- Background color -->
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/sinewavedrawable</item> <!-- App logo -->
+        <item name="android:windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
+
+
+    </style>
+
+
+</resources>

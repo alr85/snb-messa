@@ -1,0 +1,120 @@
+package com.example.mecca.ui.theme
+
+import AddNewMetalDetectorScreen
+import ServiceSelectSystemScreen
+import SettingsScreen
+import android.util.Log
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import com.example.mecca.AppDatabase
+import com.example.mecca.CustomerRepository
+import com.example.mecca.HomeScreen
+import com.example.mecca.MetalDetectorConveyorSystemScreen
+import com.example.mecca.MyCalibrationsScreen
+import com.example.mecca.PreferencesHelper
+import com.example.mecca.Repositories.MetalDetectorModelsRepository
+import com.example.mecca.Repositories.MetalDetectorSystemsRepository
+import com.example.mecca.Repositories.SystemTypeRepository
+import com.example.mecca.RetrofitClient
+import com.example.mecca.screens.AboutAppScreen
+import com.example.mecca.screens.DatabaseSyncScreen
+import com.example.mecca.screens.MessagesHomeScreen
+import com.example.mecca.ServiceSelectCustomerScreen
+import com.example.mecca.UserViewModel
+import com.example.mecca.screens.LoginScreen
+import kotlinx.coroutines.launch
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AppNavGraph(navController: NavHostController, db: AppDatabase, userViewModel: UserViewModel) {
+    val apiService = RetrofitClient.instance
+    val repositoryCustomer = CustomerRepository(apiService, db)
+    val repositoryMdModels = MetalDetectorModelsRepository(apiService, db)
+    val repositoryMdSystems = MetalDetectorSystemsRepository(apiService, db)
+    val repositorySystemTypes = SystemTypeRepository(apiService, db)
+
+    NavHost(navController = navController, startDestination = "serviceHome") {
+
+
+        composable("serviceHome") { HomeScreen(navController) }
+        composable("menu") { SettingsScreen(navController, userViewModel) }
+        composable("databaseSync") {
+            DatabaseSyncScreen(
+                navController,
+                repositoryCustomer,
+                repositoryMdModels,
+                repositoryMdSystems,
+                repositorySystemTypes
+            )
+        }
+        composable("aboutApp") { AboutAppScreen(navController) }
+        composable("messagesHomeScreen") { MessagesHomeScreen(navController) }
+        composable("serviceSelectCustomer") {
+            ServiceSelectCustomerScreen(
+                navController,
+                db,
+                repositoryCustomer
+            )
+        }
+        composable("calibrationSearchSystem/{customerID}/{customerName}/{customerPostcode}") { backStackEntry ->
+            val customerID =
+                backStackEntry.arguments?.getString("customerID")?.toIntOrNull() ?: 0
+            val customerName = backStackEntry.arguments?.getString("customerName") ?: ""
+            val customerPostcode = backStackEntry.arguments?.getString("customerPostcode") ?: ""
+            ServiceSelectSystemScreen(
+                navController = navController,
+                db = db,
+                repository = repositoryMdSystems,
+                customerID = customerID,
+                customerName = customerName,
+                customerPostcode = customerPostcode
+            )
+        }
+        composable("AddNewMetalDetectorScreen/{customerId}/{customerName}") { backStackEntry ->
+            val customerId =
+                backStackEntry.arguments?.getString("customerId")?.toIntOrNull() ?: 0
+            val customerName = backStackEntry.arguments?.getString("customerName") ?: ""
+            AddNewMetalDetectorScreen(
+                navController = navController,
+                systemTypeRepository = repositorySystemTypes,
+                mdModelsRepository = repositoryMdModels,
+                customerID = customerId,
+                customerName = customerName,
+                mdSystemsRepository = repositoryMdSystems
+            )
+        }
+        composable("MetalDetectorConveyorSystemScreen/{systemId}") { backStackEntry ->
+            val systemId = backStackEntry.arguments?.getString("systemId")?.toIntOrNull() ?: 0
+            val dao = db.metalDetectorConveyorCalibrationDAO()
+            MetalDetectorConveyorSystemScreen(
+                navController = navController,
+                repositoryMD = repositoryMdSystems,
+                systemId = systemId,
+                dao = dao,
+                repositoryModels = repositoryMdModels,
+            )
+        }
+
+        composable("myCalibrations") {
+            val dao = db.metalDetectorConveyorCalibrationDAO()
+
+            MyCalibrationsScreen(
+                navController = navController,
+                db = db,
+                repositoryMD = repositoryMdSystems,
+                dao = dao,
+                apiService = apiService,
+                customerRepository = repositoryCustomer
+            )
+        }
+
+    }
+
+}
