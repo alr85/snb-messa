@@ -51,7 +51,9 @@ class MetalDetectorModelsRepository(private val apiService: ApiService, private 
                         detectionSetting3 = apiMdModels.detectionSetting3 ?: "N/A",
                         detectionSetting4 = apiMdModels.detectionSetting4 ?: "N/A",
                         detectionSetting5 = apiMdModels.detectionSetting5 ?: "N/A",
-                        detectionSetting6 = apiMdModels.detectionSetting6 ?: "N/A"
+                        detectionSetting6 = apiMdModels.detectionSetting6 ?: "N/A",
+                        detectionSetting7 = apiMdModels.detectionSetting7 ?: "N/A",
+                        detectionSetting8 = apiMdModels.detectionSetting8 ?: "N/A"
                         )
                     }
 

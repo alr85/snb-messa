@@ -49,7 +49,9 @@ class CalibrationMetalDetectorConveyorViewModel(
     detectionSetting3label: String,
     detectionSetting4label: String,
     detectionSetting5label: String,
-    detectionSetting6label: String
+    detectionSetting6label: String,
+    detectionSetting7label: String,
+    detectionSetting8label: String
 ) : ViewModel() {
 
 
@@ -126,11 +128,16 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _detectionSettingAsFound4.value = existingCalibration.detectionSettingAsFound4
                 _detectionSettingAsFound5.value = existingCalibration.detectionSettingAsFound5
                 _detectionSettingAsFound6.value = existingCalibration.detectionSettingAsFound6
+                _detectionSettingAsFound7.value = existingCalibration.detectionSettingAsFound7
+                _detectionSettingAsFound8.value = existingCalibration.detectionSettingAsFound8
                 _detectionSettingAsFoundEngineerNotes.value = existingCalibration.detectionSettingAsFoundEngineerNotes
 
                 _sensitivityAsFoundFerrous.value = existingCalibration.sensitivityAsFoundFerrous
+                _sensitivityAsFoundFerrousPeakSignal.value = existingCalibration.sensitivityAsFoundFerrousPeakSignal
                 _sensitivityAsFoundNonFerrous.value = existingCalibration.sensitivityAsFoundNonFerrous
+                _sensitivityAsFoundNonFerrousPeakSignal.value = existingCalibration.sensitivityAsFoundNonFerrousPeakSignal
                 _sensitivityAsFoundStainless.value = existingCalibration.sensitivityAsFoundStainless
+                _sensitivityAsFoundStainlessPeakSignal.value = existingCalibration.sensitivityAsFoundStainlessPeakSignal
                 _productPeakSignalAsFound.value = existingCalibration.productPeakSignalAsFound
                 _sensitivityAsFoundEngineerNotes.value = existingCalibration.sensitivityAsFoundEngineerNotes
 
@@ -174,18 +181,24 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _detectionSettingAsLeft4.value = existingCalibration.detectionSettingAsLeft4
                 _detectionSettingAsLeft5.value = existingCalibration.detectionSettingAsLeft5
                 _detectionSettingAsLeft6.value = existingCalibration.detectionSettingAsLeft6
+                _detectionSettingAsLeft7.value = existingCalibration.detectionSettingAsLeft7
+                _detectionSettingAsLeft8.value = existingCalibration.detectionSettingAsLeft8
                 _detectionSettingAsLeftEngineerNotes.value = existingCalibration.detectionSettingAsLeftEngineerNotes
 
                 _rejectSynchronisationSetting.value = existingCalibration.rejectSynchronisationSetting.toYesNoState()
                 _rejectSynchronisationDetail.value = existingCalibration.rejectSynchronisationDetail
                 _rejectDelaySetting.value = existingCalibration.rejectDelaySetting
+                _rejectDelayUnits.value = existingCalibration.rejectDelayUnits
                 _rejectDurationSetting.value = existingCalibration.rejectDurationSetting
+                _rejectDurationUnits.value = existingCalibration.rejectDurationUnits
                 _rejectConfirmWindowSetting.value = existingCalibration.rejectConfirmWindowSetting
+                _rejectConfirmWindowUnits.value = existingCalibration.rejectConfirmWindowUnits
                 _rejectSettingsEngineerNotes.value = existingCalibration.rejectSettingsEngineerNotes
 
                 _infeedBeltHeight.value = existingCalibration.infeedBeltHeight
                 _outfeedBeltHeight.value = existingCalibration.outfeedBeltHeight
                 _conveyorLength.value = existingCalibration.conveyorLength
+                _conveyorHanding.value = existingCalibration.conveyorHanding
                 _beltSpeed.value = existingCalibration.beltSpeed
                 _rejectDevice.value = existingCalibration.rejectDevice
                 _rejectDeviceOther.value = existingCalibration.rejectDeviceOther
@@ -304,6 +317,10 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _speedSensorEngineerNotes.value = existingCalibration.speedSensorEngineerNotes
 
                 _detectNotificationResult.value = existingCalibration.detectNotificationResult
+                    .removeSurrounding("[", "]")
+                    .split(",")
+                    .map { it.trim()}
+                    .filter { it.isNotBlank()}
                 _detectNotificationEngineerNotes.value = existingCalibration.detectNotificationEngineerNotes
 
                 _binDoorMonitorFitted.value = existingCalibration.binDoorMonitorFitted.toYesNoState()
@@ -492,6 +509,22 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
 
+    private val _detectionSetting7label = mutableStateOf(detectionSetting7label)
+    val detectionSetting7label: State<String> = _detectionSetting7label
+
+
+    fun setDetectionSetting7Label(newDetectionSetting7label: String) {
+        _detectionSetting7label.value = newDetectionSetting7label
+    }
+
+    private val _detectionSetting8label = mutableStateOf(detectionSetting8label)
+    val detectionSetting8label: State<String> = _detectionSetting8label
+
+
+    fun setDetectionSetting8Label(newDetectionSetting8label: String) {
+        _detectionSetting8label.value = newDetectionSetting8label
+    }
+
     private fun saveNewCalibration() {
         viewModelScope.launch {
             val newCalibration = MetalDetectorConveyorCalibrationLocal(
@@ -511,10 +544,13 @@ class CalibrationMetalDetectorConveyorViewModel(
                 detectionSetting4label = detectionSetting4label.value,
                 detectionSetting5label = detectionSetting5label.value,
                 detectionSetting6label = detectionSetting6label.value,
+                detectionSetting7label = detectionSetting7label.value,
+                detectionSetting8label = detectionSetting8label.value,
 
 
 
-            )
+
+                )
             calibrationDao.insertOrUpdateCalibration(newCalibration)
         }
     }
@@ -573,6 +609,8 @@ class CalibrationMetalDetectorConveyorViewModel(
                 detectionSettingAsFound4 = detectionSettingAsFound4.value,
                 detectionSettingAsFound5 = detectionSettingAsFound5.value,
                 detectionSettingAsFound6 = detectionSettingAsFound6.value,
+                detectionSettingAsFound7 = detectionSettingAsFound7.value,
+                detectionSettingAsFound8 = detectionSettingAsFound8.value,
                 detectionSettingAsFoundEngineerNotes = detectionSettingAsFoundEngineerNotes.value,
                 calibrationId = calibrationId.value
 
@@ -585,8 +623,11 @@ class CalibrationMetalDetectorConveyorViewModel(
             calibrationDao.updateSensitivitiesAsFound(
                 sensitivityAccessRestriction = sensitivityAccessRestriction.value,
                 sensitivityAsFoundFerrous = sensitivityAsFoundFerrous.value,
+                sensitivityAsFoundFerrousPeakSignal = sensitivityAsFoundFerrousPeakSignal.value,
                 sensitivityAsFoundNonFerrous = sensitivityAsFoundNonFerrous.value,
+                sensitivityAsFoundNonFerrousPeakSignal = sensitivityAsFoundNonFerrousPeakSignal.value,
                 sensitivityAsFoundStainless = sensitivityAsFoundStainless.value,
+                sensitivityAsFoundStainlessPeakSignal = sensitivityAsFoundStainlessPeakSignal.value,
                 productPeakSignalAsFound = productPeakSignalAsFound.value,
                 sensitivityAsFoundEngineerNotes = sensitivityAsFoundEngineerNotes.value,
                 calibrationId = calibrationId.value
@@ -671,6 +712,8 @@ class CalibrationMetalDetectorConveyorViewModel(
                 detectionSettingAsLeft4 = detectionSettingAsLeft4.value,
                 detectionSettingAsLeft5 = detectionSettingAsLeft5.value,
                 detectionSettingAsLeft6 = detectionSettingAsLeft6.value,
+                detectionSettingAsLeft7 = detectionSettingAsLeft7.value,
+                detectionSettingAsLeft8 = detectionSettingAsLeft8.value,
                 detectionSettingAsLeftEngineerNotes = detectionSettingAsLeftEngineerNotes.value,
                 calibrationId = calibrationId.value
 
@@ -685,8 +728,11 @@ class CalibrationMetalDetectorConveyorViewModel(
                 rejectSynchronisationSetting = rejectSynchronisationSetting.value.toString(),
                 rejectSynchronisationDetail = rejectSynchronisationDetail.value,
                 rejectDelaySetting = rejectDelaySetting.value,
+                rejectDelayUnits = rejectDelayUnits.value,
                 rejectDurationSetting = rejectDurationSetting.value,
+                rejectDurationUnits = rejectDurationUnits.value,
                 rejectConfirmWindowSetting = rejectConfirmWindowSetting.value,
+                rejectConfirmWindowUnits = rejectConfirmWindowUnits.value,
                 rejectSettingsEngineerNotes = rejectSettingsEngineerNotes.value,
                 calibrationId = calibrationId.value
 
@@ -700,6 +746,7 @@ class CalibrationMetalDetectorConveyorViewModel(
                 infeedBeltHeight = infeedBeltHeight.value,
                 outfeedBeltHeight = outfeedBeltHeight.value,
                 conveyorLength = conveyorLength.value,
+                conveyorHanding = conveyorHanding.value,
                 beltSpeed = beltSpeed.value,
                 rejectDevice = rejectDevice.value,
                 rejectDeviceOther = rejectDeviceOther.value,
@@ -878,7 +925,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun updateDetectNotification() {
         viewModelScope.launch {
             calibrationDao.updateDetectNotification(
-                detectNotificationResult = detectNotificationResult.value,
+                detectNotificationResult = detectNotificationResult.value.toString(),
                 detectNotificationEngineerNotes = detectNotificationEngineerNotes.value,
                 calibrationId = calibrationId.value
 
@@ -951,6 +998,8 @@ class CalibrationMetalDetectorConveyorViewModel(
                 detectionSetting4label = detectionSetting4label.value,
                 detectionSetting5label = detectionSetting5label.value,
                 detectionSetting6label = detectionSetting6label.value,
+                detectionSetting7label = detectionSetting7label.value,
+                detectionSetting8label = detectionSetting8label.value,
                 calibrationId = calibrationId.value
             )
         }
@@ -1147,6 +1196,23 @@ class CalibrationMetalDetectorConveyorViewModel(
         _detectionSettingAsFound6.value = newDetectionSettingAsFound6
     }
 
+    private val _detectionSettingAsFound7 = mutableStateOf("")
+    val detectionSettingAsFound7: State<String> = _detectionSettingAsFound7
+
+
+    fun setDetectionSettingAsFound7(newDetectionSettingAsFound7: String) {
+        _detectionSettingAsFound7.value = newDetectionSettingAsFound7
+    }
+
+    private val _detectionSettingAsFound8 = mutableStateOf("")
+    val detectionSettingAsFound8: State<String> = _detectionSettingAsFound8
+
+
+    fun setDetectionSettingAsFound8(newDetectionSettingAsFound8: String) {
+        _detectionSettingAsFound8.value = newDetectionSettingAsFound8
+    }
+
+
 
     private val _detectionSettingAsFoundEngineerNotes = mutableStateOf("")
     val detectionSettingAsFoundEngineerNotes: State<String> = _detectionSettingAsFoundEngineerNotes
@@ -1209,6 +1275,14 @@ class CalibrationMetalDetectorConveyorViewModel(
         _sensitivityAsFoundFerrous.value = newSensitivityAsFoundFerrous
     }
 
+    private val _sensitivityAsFoundFerrousPeakSignal = mutableStateOf("")
+    val sensitivityAsFoundFerrousPeakSignal: State<String> = _sensitivityAsFoundFerrousPeakSignal
+
+
+    fun setSensitivityAsFoundFerrousPeakSignal(newSensitivityAsFoundFerrousPeakSignal: String) {
+        _sensitivityAsFoundFerrousPeakSignal.value = newSensitivityAsFoundFerrousPeakSignal
+    }
+
     private val _sensitivityAsFoundNonFerrous = mutableStateOf("")
     val sensitivityAsFoundNonFerrous: State<String> = _sensitivityAsFoundNonFerrous
 
@@ -1217,12 +1291,28 @@ class CalibrationMetalDetectorConveyorViewModel(
         _sensitivityAsFoundNonFerrous.value = newSensitivityAsFoundNonFerrous
     }
 
+    private val _sensitivityAsFoundNonFerrousPeakSignal = mutableStateOf("")
+    val sensitivityAsFoundNonFerrousPeakSignal: State<String> = _sensitivityAsFoundNonFerrousPeakSignal
+
+
+    fun setSensitivityAsFoundNonFerrousPeakSignal(newSensitivityAsFoundNonFerrousPeakSignal: String) {
+        _sensitivityAsFoundNonFerrousPeakSignal.value = newSensitivityAsFoundNonFerrousPeakSignal
+    }
+
     private val _sensitivityAsFoundStainless = mutableStateOf("")
     val sensitivityAsFoundStainless: State<String> = _sensitivityAsFoundStainless
 
 
     fun setSensitivityAsFoundStainless(newSensitivityAsFoundStainless: String) {
         _sensitivityAsFoundStainless.value = newSensitivityAsFoundStainless
+    }
+
+    private val _sensitivityAsFoundStainlessPeakSignal = mutableStateOf("")
+    val sensitivityAsFoundStainlessPeakSignal: State<String> = _sensitivityAsFoundStainlessPeakSignal
+
+
+    fun setSensitivityAsFoundStainlessPeakSignal(newSensitivityAsFoundStainlessPeakSignal: String) {
+        _sensitivityAsFoundStainlessPeakSignal.value = newSensitivityAsFoundStainlessPeakSignal
     }
 
     private val _productPeakSignalAsFound = mutableStateOf("")
@@ -1564,6 +1654,22 @@ class CalibrationMetalDetectorConveyorViewModel(
         _detectionSettingAsLeft6.value = newDetectionSettingAsLeft6
     }
 
+    private val _detectionSettingAsLeft7 = mutableStateOf("")
+    val detectionSettingAsLeft7: State<String> = _detectionSettingAsLeft7
+
+
+    fun setDetectionSettingAsLeft7(newDetectionSettingAsLeft7: String) {
+        _detectionSettingAsLeft7.value = newDetectionSettingAsLeft7
+    }
+
+    private val _detectionSettingAsLeft8 = mutableStateOf("")
+    val detectionSettingAsLeft8: State<String> = _detectionSettingAsLeft8
+
+
+    fun setDetectionSettingAsLeft8(newDetectionSettingAsLeft8: String) {
+        _detectionSettingAsLeft8.value = newDetectionSettingAsLeft8
+    }
+
     private val _detectionSettingAsLeftEngineerNotes = mutableStateOf("")
     val detectionSettingAsLeftEngineerNotes: State<String> = _detectionSettingAsLeftEngineerNotes
 
@@ -1599,6 +1705,15 @@ class CalibrationMetalDetectorConveyorViewModel(
         _rejectDelaySetting.value = newRejectDelaySetting
     }
 
+    private val _rejectDelayUnits = mutableStateOf("")
+    val rejectDelayUnits: State<String> = _rejectDelayUnits
+
+
+    fun setRejectDelayUnits(newRejectDelayUnits: String) {
+        _rejectDelayUnits.value = newRejectDelayUnits
+    }
+
+
     private val _rejectDurationSetting = mutableStateOf("")
     val rejectDurationSetting: State<String> = _rejectDurationSetting
 
@@ -1607,12 +1722,28 @@ class CalibrationMetalDetectorConveyorViewModel(
         _rejectDurationSetting.value = newRejectDurationSetting
     }
 
+    private val _rejectDurationUnits = mutableStateOf("")
+    val rejectDurationUnits: State<String> = _rejectDurationUnits
+
+
+    fun setRejectDurationUnits(newRejectDurationUnits: String) {
+        _rejectDurationUnits.value = newRejectDurationUnits
+    }
+
     private val _rejectConfirmWindowSetting = mutableStateOf("")
     val rejectConfirmWindowSetting: State<String> = _rejectConfirmWindowSetting
 
 
     fun setRejectConfirmWindowSetting(newRejectConfirmWindowSetting: String) {
         _rejectConfirmWindowSetting.value = newRejectConfirmWindowSetting
+    }
+
+    private val _rejectConfirmWindowUnits = mutableStateOf("")
+    val rejectConfirmWindowUnits: State<String> = _rejectConfirmWindowUnits
+
+
+    fun setRejectConfirmWindowUnits(newRejectConfirmWindowUnits: String) {
+        _rejectConfirmWindowUnits.value = newRejectConfirmWindowUnits
     }
 
     private val _rejectSettingsEngineerNotes = mutableStateOf("")
@@ -1648,6 +1779,14 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setConveyorLength(newConveyorLength: String) {
         _conveyorLength.value = newConveyorLength
+    }
+
+    private val _conveyorHanding = mutableStateOf("")
+    val conveyorHanding: State<String> = _conveyorHanding
+
+
+    fun setConveyorHanding(newConveyorHanding: String) {
+        _conveyorHanding.value = newConveyorHanding
     }
 
     private val _beltSpeed = mutableStateOf("")
@@ -2343,10 +2482,10 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     //-----------------------------------------------------------------------------Detect Notify Test
 
-    private val _detectNotificationResult = mutableStateOf("")
-    val detectNotificationResult: State<(String)> = _detectNotificationResult
+    private val _detectNotificationResult = MutableStateFlow(listOf<String>())
+    val detectNotificationResult: StateFlow<List<(String)>> = _detectNotificationResult
 
-    fun setDetectNotificationResult(newValue: String) {
+    fun setDetectNotificationResult(newValue: List<String>) {
         _detectNotificationResult.value = newValue
     }
 
@@ -2651,6 +2790,8 @@ class CalibrationMetalDetectorConveyorViewModel(
                     row.detectionSettingAsFound4,
                     row.detectionSettingAsFound5,
                     row.detectionSettingAsFound6,
+                    row.detectionSettingAsFound7,
+                    row.detectionSettingAsFound8,
                     row.detectionSettingAsFoundEngineerNotes,
                     row.sensitivityRequirementFerrous,
                     row.sensitivityRequirementNonFerrous,
@@ -2658,8 +2799,11 @@ class CalibrationMetalDetectorConveyorViewModel(
                     row.sensitivityRequirementEngineerNotes,
                     row.sensitivityAccessRestriction,
                     row.sensitivityAsFoundFerrous,
+                    row.sensitivityAsFoundFerrousPeakSignal,
                     row.sensitivityAsFoundNonFerrous,
+                    row.sensitivityAsFoundNonFerrousPeakSignal,
                     row.sensitivityAsFoundStainless,
+                    row.sensitivityAsFoundStainlessPeakSignal,
                     row.productPeakSignalAsFound,
                     row.sensitivityAsFoundEngineerNotes,
                     row.sensitivityAsLeftFerrous,
@@ -2698,16 +2842,22 @@ class CalibrationMetalDetectorConveyorViewModel(
                     row.detectionSettingAsLeft4,
                     row.detectionSettingAsLeft5,
                     row.detectionSettingAsLeft6,
+                    row.detectionSettingAsLeft7,
+                    row.detectionSettingAsLeft8,
                     row.detectionSettingAsLeftEngineerNotes,
                     row.rejectSynchronisationSetting,
                     row.rejectSynchronisationDetail,
                     row.rejectDelaySetting,
+                    row.rejectDelayUnits,
                     row.rejectDurationSetting,
+                    row.rejectDurationUnits,
                     row.rejectConfirmWindowSetting,
+                    row.rejectConfirmWindowUnits,
                     row.rejectSettingsEngineerNotes,
                     row.infeedBeltHeight,
                     row.outfeedBeltHeight,
                     row.conveyorLength,
+                    row.conveyorHanding,
                     row.beltSpeed,
                     row.rejectDevice,
                     row.rejectDeviceOther,
@@ -2831,6 +2981,8 @@ class CalibrationMetalDetectorConveyorViewModel(
                     row.detectionSetting4label,
                     row.detectionSetting5label,
                     row.detectionSetting6label,
+                    row.detectionSetting7label,
+                    row.detectionSetting8label,
                 )
 
 

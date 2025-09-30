@@ -19,6 +19,7 @@ import androidx.navigation.NavHostController
 import com.example.mecca.CalibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.CalibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
+import com.example.mecca.formModules.LabeledDropdownWithTextInput
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.YesNoState
@@ -43,15 +44,28 @@ fun CalMetalDetectorConveyorRejectSettings(
     val rejectSynchronisationSetting by viewModel.rejectSynchronisationSetting
     val rejectSynchronisationDetail by viewModel.rejectSynchronisationDetail
     val rejectDelaySetting by viewModel.rejectDelaySetting
+    val rejectDelayUnits by viewModel.rejectDelayUnits
     val rejectDurationSetting by viewModel.rejectDurationSetting
+    val rejectDurationUnits by viewModel.rejectDurationUnits
     val rejectConfirmWindowSetting by viewModel.rejectConfirmWindowSetting
+    val rejectConfirmWindowUnits by viewModel.rejectConfirmWindowUnits
     val rejectSettingsEngineerNotes by viewModel.rejectSettingsEngineerNotes
+
+    // Test options
+    val rejectTimerUnitOptions = listOf(
+        "Secs",
+        "mSecs",
+        "pulses"
+    )
 
     //Determine if "Next Step" button should be enabled
     val isNextStepEnabled =
         rejectDelaySetting.isNotBlank() &&
                 rejectDurationSetting.isNotBlank() &&
                 rejectConfirmWindowSetting.isNotBlank() &&
+                rejectDelayUnits.isNotBlank() &&
+                rejectDurationUnits.isNotBlank() &&
+                rejectConfirmWindowUnits.isNotBlank() &&
                 (
                         rejectSynchronisationSetting != YesNoState.YES || rejectSynchronisationDetail.isNotBlank()
                         )
@@ -103,27 +117,68 @@ fun CalMetalDetectorConveyorRejectSettings(
         )
 
 
-        LabeledTextFieldWithHelp(
-            label = "Reject Delay",
-            value = rejectDelaySetting,
-            onValueChange = { newValue -> viewModel.setRejectDelaySetting(newValue) },
-            helpText = "Enter the reject delay setting",
-            keyboardType = KeyboardType.Number
-        )
 
-        LabeledTextFieldWithHelp(
+        LabeledDropdownWithTextInput(
             label = "Reject Duration",
-            value = rejectDurationSetting,
-            onValueChange = { newValue -> viewModel.setRejectDurationSetting(newValue) },
-            helpText = "Enter the metal test sample certificate number, usually located on the test piece",
+            dropdownLabel = "Units",
+            options = rejectTimerUnitOptions,
+            selectedOption = rejectDurationUnits,
+            onOptionChange = { newValue -> viewModel.setRejectDurationUnits(newValue) },
+            helpText = "Select the units for the reject duration",
+            inputLabel = "Reject Duration",
+            inputValue = rejectDurationSetting,
+            onInputValueChange = { newValue -> viewModel.setRejectDurationSetting(newValue) },
+            inputKeyboardType = KeyboardType.Number
         )
 
-        LabeledTextFieldWithHelp(
-            label = "Reject Confirm Window",
-            value = rejectConfirmWindowSetting,
-            onValueChange = { newValue -> viewModel.setRejectConfirmWindowSetting(newValue) },
-            helpText = "Enter the metal test sample certificate number, usually located on the test piece",
+        LabeledDropdownWithTextInput(
+            label = "Reject Delay",
+            dropdownLabel = "Units",
+            options = rejectTimerUnitOptions,
+            selectedOption = rejectDelayUnits,
+            onOptionChange = { newValue -> viewModel.setRejectDelayUnits(newValue) },
+            helpText = "Select the units for the reject delay",
+            inputLabel = "Reject Delay",
+            inputValue = rejectDelaySetting,
+            onInputValueChange = { newValue -> viewModel.setRejectDelaySetting(newValue) },
+            inputKeyboardType = KeyboardType.Number
         )
+
+        LabeledDropdownWithTextInput(
+            label = "Rej. Conf. Window",
+            dropdownLabel = "Units",
+            options = rejectTimerUnitOptions,
+            selectedOption = rejectConfirmWindowUnits,
+            onOptionChange = { newValue -> viewModel.setRejectConfirmWindowUnits(newValue) },
+            helpText = "Select the units for the reject confirm",
+            inputLabel = "Conf. Window",
+            inputValue = rejectConfirmWindowSetting,
+            onInputValueChange = { newValue -> viewModel.setRejectConfirmWindowSetting(newValue) },
+            inputKeyboardType = KeyboardType.Number
+        )
+
+
+//        LabeledTextFieldWithHelp(
+//            label = "Reject Delay",
+//            value = rejectDelaySetting,
+//            onValueChange = { newValue -> viewModel.setRejectDelaySetting(newValue) },
+//            helpText = "Enter the reject delay setting",
+//            keyboardType = KeyboardType.Number
+//        )
+//
+//        LabeledTextFieldWithHelp(
+//            label = "Reject Duration",
+//            value = rejectDurationSetting,
+//            onValueChange = { newValue -> viewModel.setRejectDurationSetting(newValue) },
+//            helpText = "Enter the metal test sample certificate number, usually located on the test piece",
+//        )
+//
+//        LabeledTextFieldWithHelp(
+//            label = "Reject Confirm Window",
+//            value = rejectConfirmWindowSetting,
+//            onValueChange = { newValue -> viewModel.setRejectConfirmWindowSetting(newValue) },
+//            helpText = "Enter the metal test sample certificate number, usually located on the test piece",
+//        )
 
         Spacer(modifier = Modifier.height(16.dp))
 

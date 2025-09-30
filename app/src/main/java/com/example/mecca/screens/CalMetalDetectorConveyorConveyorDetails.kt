@@ -45,6 +45,7 @@ fun CalMetalDetectorConveyorConveyorDetails(
     val infeedBeltHeight by viewModel.infeedBeltHeight
     val outfeedBeltHeight by viewModel.outfeedBeltHeight
     val conveyorLength by viewModel.conveyorLength
+    val conveyorHanding by viewModel.conveyorHanding
     val beltSpeed by viewModel.beltSpeed
     val rejectDevice by viewModel.rejectDevice
     val rejectDeviceOther by viewModel.rejectDeviceOther
@@ -132,6 +133,20 @@ fun CalMetalDetectorConveyorConveyorDetails(
             "Electric Divert Arm",
             "Other")
 
+        val handingOptions = listOf(
+            "Left to Right",
+            "Right to Left",
+            "Universal")
+
+        LabeledDropdownWithHelp(
+            label = "Conveyor Handing",
+            options = handingOptions,
+            selectedOption = conveyorHanding,
+            onSelectionChange = { newSelection ->
+                viewModel.setConveyorHanding(newSelection) // Update the ViewModel with the selected option
+            },
+            helpText = "Select one option from the dropdown."
+        )
 
         LabeledDropdownWithHelp(
             label = "Reject System",

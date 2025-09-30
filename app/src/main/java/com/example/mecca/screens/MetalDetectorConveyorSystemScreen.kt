@@ -177,6 +177,8 @@ fun MetalDetectorConveyorSystemScreen(
                                         putExtra("DETECTION_SETTING_4_LABEL", modelDetails?.detectionSetting4)
                                         putExtra("DETECTION_SETTING_5_LABEL", modelDetails?.detectionSetting5)
                                         putExtra("DETECTION_SETTING_6_LABEL", modelDetails?.detectionSetting6)
+                                        putExtra("DETECTION_SETTING_7_LABEL", modelDetails?.detectionSetting7)
+                                        putExtra("DETECTION_SETTING_8_LABEL", modelDetails?.detectionSetting8)
                                     }
                                     context.startActivity(intent)
                                 }

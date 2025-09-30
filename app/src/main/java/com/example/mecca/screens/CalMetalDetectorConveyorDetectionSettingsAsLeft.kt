@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.sharp.CopyAll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,6 +43,7 @@ fun CalMetalDetectorConveyorDetectionSettingsAsLeft(
     }
 
     val progress = viewModel.progress
+    val scrollState = rememberScrollState()
 
 // Get and update data in the ViewModel
     val detectionSettingAsLeft1 by viewModel.detectionSettingAsLeft1
@@ -49,6 +52,8 @@ fun CalMetalDetectorConveyorDetectionSettingsAsLeft(
     val detectionSettingAsLeft4 by viewModel.detectionSettingAsLeft4
     val detectionSettingAsLeft5 by viewModel.detectionSettingAsLeft5
     val detectionSettingAsLeft6 by viewModel.detectionSettingAsLeft6
+    val detectionSettingAsLeft7 by viewModel.detectionSettingAsLeft7
+    val detectionSettingAsLeft8 by viewModel.detectionSettingAsLeft8
     val detectionSettingAsLeftEngineerNotes by viewModel.detectionSettingAsLeftEngineerNotes
     val detectionSetting1label by viewModel.detectionSetting1label
     val detectionSetting2label by viewModel.detectionSetting2label
@@ -56,6 +61,8 @@ fun CalMetalDetectorConveyorDetectionSettingsAsLeft(
     val detectionSetting4label by viewModel.detectionSetting4label
     val detectionSetting5label by viewModel.detectionSetting5label
     val detectionSetting6label by viewModel.detectionSetting6label
+    val detectionSetting7label by viewModel.detectionSetting7label
+    val detectionSetting8label by viewModel.detectionSetting8label
 
 
     val isNextStepEnabled =
@@ -64,13 +71,16 @@ fun CalMetalDetectorConveyorDetectionSettingsAsLeft(
                 detectionSettingAsLeft3.isNotBlank() &&
                 detectionSettingAsLeft4.isNotBlank() &&
                 detectionSettingAsLeft5.isNotBlank() &&
-                detectionSettingAsLeft6.isNotBlank()
+                detectionSettingAsLeft6.isNotBlank() &&
+                detectionSettingAsLeft7.isNotBlank() &&
+                detectionSettingAsLeft8.isNotBlank()
 
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .verticalScroll(scrollState)
     ) {
         // Display the consistent banner at the top
         CalibrationBanner(
@@ -173,6 +183,20 @@ fun CalMetalDetectorConveyorDetectionSettingsAsLeft(
             helpText = ""
         )
 
+        LabeledTextFieldWithHelp(
+            label = detectionSetting7label,
+            value = detectionSettingAsLeft7,
+            onValueChange = { newValue -> viewModel.setDetectionSettingAsLeft7(newValue) },
+            helpText = ""
+        )
+
+        LabeledTextFieldWithHelp(
+            label = detectionSetting8label,
+            value = detectionSettingAsLeft8,
+            onValueChange = { newValue -> viewModel.setDetectionSettingAsLeft8(newValue) },
+            helpText = ""
+        )
+
         Spacer(modifier = Modifier.height(16.dp))
 
         LabeledTextFieldWithHelp(
@@ -195,4 +219,6 @@ fun copyAsFoundToAsLeft(viewModel: CalibrationMetalDetectorConveyorViewModel) {
     viewModel.setDetectionSettingAsLeft4(viewModel.detectionSettingAsFound4.value)
     viewModel.setDetectionSettingAsLeft5(viewModel.detectionSettingAsFound5.value)
     viewModel.setDetectionSettingAsLeft6(viewModel.detectionSettingAsFound6.value)
+    viewModel.setDetectionSettingAsLeft7(viewModel.detectionSettingAsFound7.value)
+    viewModel.setDetectionSettingAsLeft8(viewModel.detectionSettingAsFound8.value)
 }

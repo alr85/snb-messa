@@ -2,6 +2,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -84,6 +85,7 @@ fun CalMetalDetectorConveyorSummaryDetails(
         val binDoorOpenIndication by viewModel.binDoorOpenIndication.collectAsState()
         val binDoorUnlockedIndication by viewModel.binDoorUnlockedIndication.collectAsState()
         val binDoorTimeoutResult by viewModel.binDoorTimeoutResult.collectAsState()
+        val detectNotificationResult by viewModel.detectNotificationResult.collectAsState()
 
 
         Section(title = "System Details") {
@@ -92,7 +94,6 @@ fun CalMetalDetectorConveyorSummaryDetails(
             SummaryItem(label = "Serial Number", value = viewModel.serialNumber.value)
             SummaryItem(label = "System Location", value = viewModel.systemLocation.value)
         }
-
         Section(title = "Sensitivity Requirements") {
             SummaryItem(label = "Desired COP", value = desiredCop.joinToString(" | "))
             SummaryItem(label = "Ferrous Requirement", value = viewModel.sensitivityRequirementFerrous.value)
@@ -119,6 +120,8 @@ fun CalMetalDetectorConveyorSummaryDetails(
             SummaryItem(label = viewModel.detectionSetting4label.value, value = viewModel.detectionSettingAsFound4.value)
             SummaryItem(label = viewModel.detectionSetting5label.value, value = viewModel.detectionSettingAsFound5.value)
             SummaryItem(label = viewModel.detectionSetting6label.value, value = viewModel.detectionSettingAsFound6.value)
+            SummaryItem(label = viewModel.detectionSetting7label.value, value = viewModel.detectionSettingAsFound7.value)
+            SummaryItem(label = viewModel.detectionSetting8label.value, value = viewModel.detectionSettingAsFound8.value)
             SummaryItem(label = "Engineer Notes", value = viewModel.detectionSettingAsFoundEngineerNotes.value)
         }
 
@@ -170,6 +173,8 @@ fun CalMetalDetectorConveyorSummaryDetails(
             SummaryItem(label = viewModel.detectionSetting4label.value, value = viewModel.detectionSettingAsLeft4.value)
             SummaryItem(label = viewModel.detectionSetting5label.value, value = viewModel.detectionSettingAsLeft5.value)
             SummaryItem(label = viewModel.detectionSetting6label.value, value = viewModel.detectionSettingAsLeft6.value)
+            SummaryItem(label = viewModel.detectionSetting7label.value, value = viewModel.detectionSettingAsLeft7.value)
+            SummaryItem(label = viewModel.detectionSetting8label.value, value = viewModel.detectionSettingAsLeft8.value)
             SummaryItem(label = "Engineer Notes", value = viewModel.detectionSettingAsLeftEngineerNotes.value)
         }
 
@@ -186,6 +191,7 @@ fun CalMetalDetectorConveyorSummaryDetails(
             SummaryItem(label = "In-feed Belt Height", value = viewModel.infeedBeltHeight.value)
             SummaryItem(label = "Out-feed Belt Height", value = viewModel.outfeedBeltHeight.value)
             SummaryItem(label = "Conveyor Length", value = viewModel.conveyorLength.value)
+            SummaryItem(label = "Conveyor Handing", value = viewModel.conveyorHanding.value)
             SummaryItem(label = "Belt Speed", value = viewModel.beltSpeed.value)
             SummaryItem(label = "Reject System", value = viewModel.rejectDevice.value)
             SummaryItem(label = "Engineer Notes", value = viewModel.conveyorDetailsEngineerNotes.value)
@@ -283,7 +289,7 @@ fun CalMetalDetectorConveyorSummaryDetails(
         }
 
         Section(title = "Detect Notification") {
-            SummaryItem(label = "Detect Notification", value = viewModel.detectNotificationResult.value)
+            SummaryItem(label = "Detect Notification", value = detectNotificationResult.joinToString(" | "))
             SummaryItem(label = "Engineer Notes", value = viewModel.detectNotificationEngineerNotes.value)
         }
 
@@ -324,6 +330,19 @@ fun CalMetalDetectorConveyorSummaryDetails(
             SummaryItem(label = "Performance Validation", value = viewModel.performanceValidationIssued.value.toString())
 
         }
+
+        Spacer(modifier = Modifier.weight(12f))
+
+        Text(
+            text = "INFORM CUSTOMER OF ANY DEFECTS OR ADJUSTMENTS MADE",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+
+
 
     }
 }

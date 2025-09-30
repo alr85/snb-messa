@@ -33,6 +33,10 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
     private var detectionSetting5label: String = ""
     private var detectionSetting6label: String = ""
 
+    private var detectionSetting7label: String = ""
+    private var detectionSetting8label: String = ""
+
+
 
     // Initialize the database and DAO using the AppDatabase instance
     private val calibrationDao by lazy {
@@ -77,7 +81,9 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
             detectionSetting3label,
             detectionSetting4label,
             detectionSetting5label,
-            detectionSetting6label
+            detectionSetting6label,
+            detectionSetting7label,
+            detectionSetting8label
             )
     }
 
@@ -101,6 +107,8 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
         detectionSetting4label = intent.getStringExtra("DETECTION_SETTING_4_LABEL") ?: ""
         detectionSetting5label = intent.getStringExtra("DETECTION_SETTING_5_LABEL") ?: ""
         detectionSetting6label = intent.getStringExtra("DETECTION_SETTING_6_LABEL") ?: ""
+        detectionSetting7label = intent.getStringExtra("DETECTION_SETTING_7_LABEL") ?: ""
+        detectionSetting8label = intent.getStringExtra("DETECTION_SETTING_8_LABEL") ?: ""
 
 
 

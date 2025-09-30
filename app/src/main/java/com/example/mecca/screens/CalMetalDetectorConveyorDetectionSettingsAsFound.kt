@@ -43,6 +43,8 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
     val detectionSettingAsFound4 by viewModel.detectionSettingAsFound4
     val detectionSettingAsFound5 by viewModel.detectionSettingAsFound5
     val detectionSettingAsFound6 by viewModel.detectionSettingAsFound6
+    val detectionSettingAsFound7 by viewModel.detectionSettingAsFound7
+    val detectionSettingAsFound8 by viewModel.detectionSettingAsFound8
     val sensitivityAccessRestriction by viewModel.sensitivityAccessRestriction
     val detectionSetting1label by viewModel.detectionSetting1label
     val detectionSetting2label by viewModel.detectionSetting2label
@@ -50,6 +52,8 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
     val detectionSetting4label by viewModel.detectionSetting4label
     val detectionSetting5label by viewModel.detectionSetting5label
     val detectionSetting6label by viewModel.detectionSetting6label
+    val detectionSetting7label by viewModel.detectionSetting7label
+    val detectionSetting8label by viewModel.detectionSetting8label
 
 
     //Determine if "Next Step" button should be enabled
@@ -60,6 +64,8 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
                 detectionSettingAsFound4.isNotBlank() &&
                 detectionSettingAsFound5.isNotBlank() &&
                 detectionSettingAsFound6.isNotBlank() &&
+                detectionSettingAsFound7.isNotBlank() &&
+                detectionSettingAsFound8.isNotBlank() &&
                 sensitivityAccessRestriction.isNotBlank()
 
 
@@ -152,6 +158,22 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
             onLabelChange = { newLabel -> viewModel.setDetectionSetting6Label(newLabel) },
             value = detectionSettingAsFound6,
             onValueChange = { newValue -> viewModel.setDetectionSettingAsFound6(newValue) },
+            helpText = "Enter the value of this detection setting. To change the label, click on the label text."
+        )
+
+        LabeledTextFieldWithHelpEdit(
+            label = detectionSetting7label,
+            onLabelChange = { newLabel -> viewModel.setDetectionSetting7Label(newLabel) },
+            value = detectionSettingAsFound7,
+            onValueChange = { newValue -> viewModel.setDetectionSettingAsFound7(newValue) },
+            helpText = "Enter the value of this detection setting. To change the label, click on the label text."
+        )
+
+        LabeledTextFieldWithHelpEdit(
+            label = detectionSetting8label,
+            onLabelChange = { newLabel -> viewModel.setDetectionSetting8Label(newLabel) },
+            value = detectionSettingAsFound8,
+            onValueChange = { newValue -> viewModel.setDetectionSettingAsFound8(newValue) },
             helpText = "Enter the value of this detection setting. To change the label, click on the label text."
         )
 

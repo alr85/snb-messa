@@ -119,6 +119,8 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "detectionSettingAsFound4 = :detectionSettingAsFound4," +
                 "detectionSettingAsFound5 = :detectionSettingAsFound5," +
                 "detectionSettingAsFound6 = :detectionSettingAsFound6," +
+                "detectionSettingAsFound7 = :detectionSettingAsFound7," +
+                "detectionSettingAsFound8 = :detectionSettingAsFound8," +
                 "detectionSettingAsFoundEngineerNotes = :detectionSettingAsFoundEngineerNotes " +
                 "WHERE calibrationId = :calibrationId"
     )
@@ -129,6 +131,8 @@ interface MetalDetectorConveyorCalibrationDAO {
         detectionSettingAsFound4: String,
         detectionSettingAsFound5: String,
         detectionSettingAsFound6: String,
+        detectionSettingAsFound7: String,
+        detectionSettingAsFound8: String,
         detectionSettingAsFoundEngineerNotes: String,
         calibrationId: String
     )
@@ -139,8 +143,11 @@ interface MetalDetectorConveyorCalibrationDAO {
         "UPDATE MetalDetectorConveyorCalibrations " +
                 "SET sensitivityAccessRestriction = :sensitivityAccessRestriction, " +
                 "sensitivityAsFoundFerrous = :sensitivityAsFoundFerrous, " +
+                "sensitivityAsFoundFerrousPeakSignal = :sensitivityAsFoundFerrousPeakSignal, " +
                 "sensitivityAsFoundNonFerrous = :sensitivityAsFoundNonFerrous, " +
+                "sensitivityAsFoundNonFerrousPeakSignal = :sensitivityAsFoundNonFerrousPeakSignal, " +
                 "sensitivityAsFoundStainless = :sensitivityAsFoundStainless," +
+                "sensitivityAsFoundStainlessPeakSignal = :sensitivityAsFoundStainlessPeakSignal," +
                 "productPeakSignalAsFound = :productPeakSignalAsFound," +
                 "sensitivityAsFoundEngineerNotes = :sensitivityAsFoundEngineerNotes " +
                 "WHERE calibrationId = :calibrationId"
@@ -148,8 +155,11 @@ interface MetalDetectorConveyorCalibrationDAO {
     suspend fun updateSensitivitiesAsFound(
         sensitivityAccessRestriction: String,
         sensitivityAsFoundFerrous: String,
+        sensitivityAsFoundFerrousPeakSignal: String,
         sensitivityAsFoundNonFerrous: String,
+        sensitivityAsFoundNonFerrousPeakSignal: String,
         sensitivityAsFoundStainless: String,
+        sensitivityAsFoundStainlessPeakSignal: String,
         productPeakSignalAsFound: String,
         sensitivityAsFoundEngineerNotes: String,
         calibrationId: String
@@ -245,6 +255,8 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "detectionSettingAsLeft4 = :detectionSettingAsLeft4," +
                 "detectionSettingAsLeft5 = :detectionSettingAsLeft5," +
                 "detectionSettingAsLeft6 = :detectionSettingAsLeft6," +
+                "detectionSettingAsLeft7 = :detectionSettingAsLeft7," +
+                "detectionSettingAsLeft8 = :detectionSettingAsLeft8," +
                 "detectionSettingAsLeftEngineerNotes = :detectionSettingAsLeftEngineerNotes " +
                 "WHERE calibrationId = :calibrationId"
     )
@@ -255,6 +267,8 @@ interface MetalDetectorConveyorCalibrationDAO {
         detectionSettingAsLeft4: String,
         detectionSettingAsLeft5: String,
         detectionSettingAsLeft6: String,
+        detectionSettingAsLeft7: String,
+        detectionSettingAsLeft8: String,
         detectionSettingAsLeftEngineerNotes: String,
         calibrationId: String
     )
@@ -282,8 +296,11 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "SET rejectSynchronisationSetting = :rejectSynchronisationSetting, " +
                 "rejectSynchronisationDetail = :rejectSynchronisationDetail, " +
                 "rejectDelaySetting = :rejectDelaySetting, " +
+                "rejectDelayUnits = :rejectDelayUnits," +
                 "rejectDurationSetting = :rejectDurationSetting," +
+                "rejectDurationUnits = :rejectDurationUnits, " +
                 "rejectConfirmWindowSetting = :rejectConfirmWindowSetting," +
+                "rejectConfirmWindowUnits = :rejectConfirmWindowUnits, " +
                 "rejectSettingsEngineerNotes = :rejectSettingsEngineerNotes " +
                 "WHERE calibrationId = :calibrationId"
     )
@@ -291,8 +308,11 @@ interface MetalDetectorConveyorCalibrationDAO {
         rejectSynchronisationSetting: String,
         rejectSynchronisationDetail: String,
         rejectDelaySetting: String,
+        rejectDelayUnits: String,
         rejectDurationSetting: String,
+        rejectDurationUnits: String,
         rejectConfirmWindowSetting: String,
+        rejectConfirmWindowUnits: String,
         rejectSettingsEngineerNotes: String,
         calibrationId: String
     )
@@ -303,6 +323,7 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "SET infeedBeltHeight = :infeedBeltHeight, " +
                 "outfeedBeltHeight = :outfeedBeltHeight, " +
                 "conveyorLength = :conveyorLength, " +
+                "conveyorHanding = :conveyorHanding, " +
                 "beltSpeed = :beltSpeed," +
                 "rejectDevice = :rejectDevice," +
                 "rejectDeviceOther = :rejectDeviceOther, " +
@@ -313,6 +334,7 @@ interface MetalDetectorConveyorCalibrationDAO {
         infeedBeltHeight: String,
         outfeedBeltHeight: String,
         conveyorLength: String,
+        conveyorHanding: String,
         beltSpeed: String,
         rejectDevice: String,
         rejectDeviceOther: String,
@@ -670,7 +692,9 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "detectionSetting3label = :detectionSetting3label, " +
                 "detectionSetting4label = :detectionSetting4label," +
                 "detectionSetting5label = :detectionSetting5label," +
-                "detectionSetting6label = :detectionSetting6label " +
+                "detectionSetting6label = :detectionSetting6label, " +
+                "detectionSetting7label = :detectionSetting7label," +
+                "detectionSetting8label = :detectionSetting8label " +
 
                 "WHERE calibrationId = :calibrationId"
     )
@@ -681,6 +705,8 @@ interface MetalDetectorConveyorCalibrationDAO {
         detectionSetting4label: String,
         detectionSetting5label: String,
         detectionSetting6label: String,
+        detectionSetting7label: String,
+        detectionSetting8label: String,
         calibrationId: String
     )
 

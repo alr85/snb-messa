@@ -10,6 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,6 +23,7 @@ import com.example.mecca.CalibrationViewModels.CalibrationMetalDetectorConveyorV
 import com.example.mecca.CalibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledDropdownWithHelp
+import com.example.mecca.formModules.LabeledMultiSelectDropdownWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 
 //@OptIn(ExperimentalMaterial3Api::class)
@@ -40,14 +42,19 @@ fun CalMetalDetectorConveyorDetectNotification(
     val scrollState = rememberScrollState() // Scroll state to control the scroll behavior
 
     // Get and update data in the ViewModel
-    val detectNotificationResult by viewModel.detectNotificationResult
+    val detectNotificationResult by viewModel.detectNotificationResult.collectAsState()
     val detectNotificationEngineerNotes by viewModel.detectNotificationEngineerNotes
+
 
     val detectNotificationTestResults = listOf(
         "No Result",
         "Audible Notification",
         "Visual Notification",
         "On-Screen Notification",
+        "Belt Stops",
+        "In-feed Belt Stops",
+        "Out-feed Belt Stops",
+        "Other"
     )
 
     var selectedOptions by remember { mutableStateOf(listOf<String>()) }
@@ -89,16 +96,28 @@ fun CalMetalDetectorConveyorDetectNotification(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        LabeledDropdownWithHelp(
+
+
+        LabeledMultiSelectDropdownWithHelp(
             label = "Detect Notification Result",
+            value = selectedOptions.joinToString ( ", " ),
             options = detectNotificationTestResults,
-            selectedOption = detectNotificationResult,
-            onSelectionChange = { newSelection ->
-                viewModel.setDetectNotificationResult(newSelection)
-            },
-            helpText = "Select one option from the dropdown.",
+            selectedOptions = detectNotificationResult,
+            onSelectionChange = { newSelectedOptions -> viewModel.setDetectNotificationResult(newSelectedOptions) },
+            helpText = "Select one or more items from the dropdown.",
             isNAToggleEnabled = false
         )
+
+//        LabeledDropdownWithHelp(
+//            label = "Detect Notification Result",
+//            options = detectNotificationTestResults,
+//            selectedOption = detectNotificationResult,
+//            onSelectionChange = { newSelection ->
+//                viewModel.setDetectNotificationResult(newSelection)
+//            },
+//            helpText = "Select one option from the dropdown.",
+//            isNAToggleEnabled = false
+//        )
 
         Spacer(modifier = Modifier.height(16.dp))
 

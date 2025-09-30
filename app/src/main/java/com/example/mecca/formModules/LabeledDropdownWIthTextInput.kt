@@ -50,6 +50,28 @@ fun LabeledDropdownWithTextInput(
                 .padding(end = 8.dp)
         )
 
+        // Text field for user input
+        OutlinedTextField(
+            value = inputValue,
+            onValueChange = {
+                if (!isDisabled) {
+                    onInputValueChange(it)
+                }
+            },
+            label = { Text(text = inputLabel) },
+            modifier = Modifier
+                .weight(3f)
+                .padding(end = 8.dp),
+            singleLine = true,
+            enabled = !isDisabled,
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = inputKeyboardType),
+            colors = OutlinedTextFieldDefaults.colors(
+                disabledBorderColor = Color.Gray,
+                disabledTextColor = Color.Gray,
+                disabledLabelColor = Color.Gray
+            )
+        )
+
         // Dropdown Menu
         Box(
             modifier = Modifier
@@ -97,27 +119,7 @@ fun LabeledDropdownWithTextInput(
             }
         }
 
-        // Text field for user input
-        OutlinedTextField(
-            value = inputValue,
-            onValueChange = {
-                if (!isDisabled) {
-                    onInputValueChange(it)
-                }
-            },
-            label = { Text(text = inputLabel) },
-            modifier = Modifier
-                .weight(3f)
-                .padding(end = 8.dp),
-            singleLine = true,
-            enabled = !isDisabled,
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = inputKeyboardType),
-            colors = OutlinedTextFieldDefaults.colors(
-                disabledBorderColor = Color.Gray,
-                disabledTextColor = Color.Gray,
-                disabledLabelColor = Color.Gray
-            )
-        )
+
 
         // Button to toggle between "N/A" and re-enable the fields
         if (isNAToggleEnabled) {

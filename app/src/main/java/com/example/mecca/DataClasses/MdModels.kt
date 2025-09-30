@@ -13,6 +13,8 @@ data class MdModel(
     val detectionSetting4: String,
     val detectionSetting5: String,
     val detectionSetting6: String,
+    val detectionSetting7: String,
+    val detectionSetting8: String,
 )
 
 // This is the entity class that corresponds to the local Room database table
@@ -27,6 +29,8 @@ data class MdModelsLocal(
     val detectionSetting4: String,
     val detectionSetting5: String,
     val detectionSetting6: String,
+    val detectionSetting7: String,
+    val detectionSetting8: String,
 )
 
 

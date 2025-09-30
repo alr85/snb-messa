@@ -55,12 +55,6 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
     val rejectConfirmSensorCR by viewModel.rejectConfirmSensorCR
     val rejectConfirmSensorStopPosition by viewModel.rejectConfirmSensorStopPosition
 
-    // Test options
-    val rejectConfirmSensorTestOptions = listOf(
-        "Reject Override Switch",
-        "Product Removal",
-        "Other"
-    )
 
     val rejectConfirmSensorTestResults = listOf(
         "No Result",
@@ -70,6 +64,12 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
         "Belt Stops",
         "In-feed Belt Stops",
         "Out-feed Belt Stops",
+        "Other"
+    )
+
+    val rejectConfirmSensorTestOptions = listOf(
+        "Reject Override Switch",
+        "Product Removal",
         "Other"
     )
 

@@ -23,6 +23,7 @@ import com.example.mecca.CalibrationViewModels.CalibrationMetalDetectorConveyorV
 import com.example.mecca.CalibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
+import com.example.mecca.formModules.LabeledTwoTextInputsWithHelp
 
 //@OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,8 +41,11 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
 
 // Get and update data in the ViewModel
     val sensitivityAsFoundFerrous by viewModel.sensitivityAsFoundFerrous
+    val sensitivityAsFoundFerrousPeakSignal by viewModel.sensitivityAsFoundFerrousPeakSignal
     val sensitivityAsFoundNonFerrous by viewModel.sensitivityAsFoundNonFerrous
+    val sensitivityAsFoundNonFerrousPeakSignal by viewModel.sensitivityAsFoundNonFerrousPeakSignal
     val sensitivityAsFoundStainless by viewModel.sensitivityAsFoundStainless
+    val sensitivityAsFoundStainlessPeakSignal by viewModel.sensitivityAsFoundStainlessPeakSignal
     val productPeakSignalAsFound by viewModel.productPeakSignalAsFound
 
 
@@ -49,8 +53,11 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
     //Determine if "Next Step" button should be enabled
     val isNextStepEnabled =
         sensitivityAsFoundFerrous.isNotBlank() &&
+                sensitivityAsFoundFerrousPeakSignal.isNotBlank() &&
                 sensitivityAsFoundNonFerrous.isNotBlank() &&
+                sensitivityAsFoundFerrousPeakSignal.isNotBlank() &&
                 sensitivityAsFoundStainless.isNotBlank() &&
+                sensitivityAsFoundStainlessPeakSignal.isNotBlank() &&
                 productPeakSignalAsFound.isNotBlank()
 
 
@@ -92,36 +99,84 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
         Spacer(modifier = Modifier.height(20.dp))
 
 
-        LabeledTextFieldWithHelp(
-            label = "Ferrous (mm)",
-            value = sensitivityAsFoundFerrous,
-            onValueChange = { newValue -> viewModel.setSensitivityAsFoundFerrous(newValue) },
-            helpText = "Enter the 'As Found' Ferrous sensitivity",
-            keyboardType = KeyboardType.Number
-        )
+//        LabeledTextFieldWithHelp(
+//            label = "Ferrous (mm)",
+//            value = sensitivityAsFoundFerrous,
+//            onValueChange = { newValue -> viewModel.setSensitivityAsFoundFerrous(newValue) },
+//            helpText = "Enter the 'As Found' Ferrous sensitivity",
+//            keyboardType = KeyboardType.Number
+//        )
 
-        LabeledTextFieldWithHelp(
-            label = "Non Ferrous (mm)",
-            value = sensitivityAsFoundNonFerrous,
-            onValueChange = { newValue -> viewModel.setSensitivityAsFoundNonFerrous(newValue) },
-            helpText = "Enter the 'As Found' Non Ferrous sensitivity",
-            keyboardType = KeyboardType.Number
-        )
-
-        LabeledTextFieldWithHelp(
-            label = "Stainless Steel (mm)",
-            value = sensitivityAsFoundStainless,
-            onValueChange = { newValue -> viewModel.setSensitivityAsFoundStainless(newValue) },
-            helpText = "Enter the 'As Found' Stainless Steel sensitivity",
-            keyboardType = KeyboardType.Number
-        )
-
+//        LabeledTextFieldWithHelp(
+//            label = "Non Ferrous (mm)",
+//            value = sensitivityAsFoundNonFerrous,
+//            onValueChange = { newValue -> viewModel.setSensitivityAsFoundNonFerrous(newValue) },
+//            helpText = "Enter the 'As Found' Non Ferrous sensitivity",
+//            keyboardType = KeyboardType.Number
+//        )
+//
+//        LabeledTextFieldWithHelp(
+//            label = "Stainless Steel (mm)",
+//            value = sensitivityAsFoundStainless,
+//            onValueChange = { newValue -> viewModel.setSensitivityAsFoundStainless(newValue) },
+//            helpText = "Enter the 'As Found' Stainless Steel sensitivity",
+//            keyboardType = KeyboardType.Number
+//        )
+//
         LabeledTextFieldWithHelp(
             label = "Product Peak Signal",
             value = productPeakSignalAsFound,
             onValueChange = { newValue -> viewModel.setProductPeakSignalAsFound(newValue) },
             helpText = "Enter the 'As Found' peak signal from the product alone",
         )
+
+        LabeledTwoTextInputsWithHelp(
+            label = "Ferrous (mm)",
+            firstInputLabel = "Fe",
+            firstInputValue = sensitivityAsFoundFerrous,
+            onFirstInputValueChange = { newValue -> viewModel.setSensitivityAsFoundFerrous(newValue) },
+            secondInputLabel = "Peak Signal",
+            secondInputValue = sensitivityAsFoundFerrousPeakSignal,
+            onSecondInputValueChange = { newValue -> viewModel.setSensitivityAsFoundFerrousPeakSignal(newValue) },
+            helpText = "Enter the 'As Found' Ferrous sensitivity and peak signal",
+            firstInputKeyboardType = KeyboardType.Text,
+            secondInputKeyboardType = KeyboardType.Text,
+            isNAToggleEnabled = true
+
+
+        )
+
+        LabeledTwoTextInputsWithHelp(
+            label = "Non-Ferrous (mm)",
+            firstInputLabel = "Non-Fe",
+            firstInputValue = sensitivityAsFoundNonFerrous,
+            onFirstInputValueChange = { newValue -> viewModel.setSensitivityAsFoundNonFerrous(newValue) },
+            secondInputLabel = "Peak Signal",
+            secondInputValue = sensitivityAsFoundNonFerrousPeakSignal,
+            onSecondInputValueChange = { newValue -> viewModel.setSensitivityAsFoundNonFerrousPeakSignal(newValue) },
+            helpText = "Enter the 'As Found' Non-Ferrous sensitivity and peak signal",
+            firstInputKeyboardType = KeyboardType.Text,
+            secondInputKeyboardType = KeyboardType.Text,
+            isNAToggleEnabled = true
+
+        )
+
+        LabeledTwoTextInputsWithHelp(
+            label = "Stainless Steel (mm)",
+            firstInputLabel = "S/Steel",
+            firstInputValue = sensitivityAsFoundStainless,
+            onFirstInputValueChange = { newValue -> viewModel.setSensitivityAsFoundStainless(newValue) },
+            secondInputLabel = "Peak Signal",
+            secondInputValue = sensitivityAsFoundStainlessPeakSignal,
+            onSecondInputValueChange = { newValue -> viewModel.setSensitivityAsFoundStainlessPeakSignal(newValue) },
+            helpText = "Enter the 'As Found' Stainless Steel sensitivity and peak signal",
+            firstInputKeyboardType = KeyboardType.Text,
+            secondInputKeyboardType = KeyboardType.Text,
+            isNAToggleEnabled = true
+
+        )
+
+
 
         Spacer(modifier = Modifier.height(16.dp))
 

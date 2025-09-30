@@ -102,10 +102,10 @@ fun CalMetalDetectorConveyorIndicators(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        val colourOptions = listOf("Red", "Yellow", "Green", "White", "Green", "Blue", "Amber")
+        val colourOptions = listOf("Red", "Yellow", "Green", "White", "Green", "Blue", "Amber", "Sounder", "Other")
 
         LabeledDropdownWithTextInput(
-            label = "Beacon 6",
+            label = "Indicator 6",
             dropdownLabel = "Colour",
             options = colourOptions,
             selectedOption = indicator6colour,
@@ -119,7 +119,7 @@ fun CalMetalDetectorConveyorIndicators(
 
 
         LabeledDropdownWithTextInput(
-            label = "Beacon 5",
+            label = "Indicator 5",
             dropdownLabel = "Colour",
             options = colourOptions,
             selectedOption = indicator5colour,
@@ -132,7 +132,7 @@ fun CalMetalDetectorConveyorIndicators(
         )
 
         LabeledDropdownWithTextInput(
-            label = "Beacon 4",
+            label = "Indicator 4",
             dropdownLabel = "Colour",
             options = colourOptions,
             selectedOption = indicator4colour,
@@ -146,7 +146,7 @@ fun CalMetalDetectorConveyorIndicators(
 
 
         LabeledDropdownWithTextInput(
-            label = "Beacon 3",
+            label = "Indicator 3",
             dropdownLabel = "Colour",
             options = colourOptions,
             selectedOption = indicator3colour,
@@ -159,7 +159,7 @@ fun CalMetalDetectorConveyorIndicators(
         )
 
         LabeledDropdownWithTextInput(
-            label = "Beacon 2",
+            label = "Indicator 2",
             dropdownLabel = "Colour",
             options = colourOptions,
             selectedOption = indicator2colour,
@@ -172,7 +172,7 @@ fun CalMetalDetectorConveyorIndicators(
         )
 
         LabeledDropdownWithTextInput(
-            label = "Beacon 1",
+            label = "Indicator 1",
             dropdownLabel = "Colour",
             options = colourOptions,
             selectedOption = indicator1colour,

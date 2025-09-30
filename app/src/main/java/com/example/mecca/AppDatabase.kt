@@ -23,7 +23,7 @@ import com.example.mecca.DataClasses.UserEntity
     MdSystemLocal::class,
     MetalDetectorConveyorCalibrationLocal::class,
     SystemTypeLocal::class],
-    version = 31, // Increment the version if needed
+    version = 34, // Increment the version if needed
     exportSchema = false)
 
 @TypeConverters(Converters::class) // Add your Converters here

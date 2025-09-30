@@ -49,6 +49,8 @@ data class MetalDetectorConveyorCalibrationLocal(
     var detectionSettingAsFound4: String = "",
     var detectionSettingAsFound5: String = "",
     var detectionSettingAsFound6: String = "",
+    var detectionSettingAsFound7: String = "",
+    var detectionSettingAsFound8: String = "",
     var detectionSettingAsFoundEngineerNotes: String = "",
 
     //----------------------------------------------------------------------Sensitivity Requirements
@@ -62,8 +64,11 @@ data class MetalDetectorConveyorCalibrationLocal(
 
     var sensitivityAccessRestriction: String = "",
     var sensitivityAsFoundFerrous: String = "",
+    var sensitivityAsFoundFerrousPeakSignal: String = "",
     var sensitivityAsFoundNonFerrous: String = "",
+    var sensitivityAsFoundNonFerrousPeakSignal: String = "",
     var sensitivityAsFoundStainless: String = "",
+    var sensitivityAsFoundStainlessPeakSignal: String = "",
     var productPeakSignalAsFound: String = "",
     var sensitivityAsFoundEngineerNotes: String = "",
 
@@ -119,6 +124,8 @@ data class MetalDetectorConveyorCalibrationLocal(
     var detectionSettingAsLeft4: String = "",
     var detectionSettingAsLeft5: String = "",
     var detectionSettingAsLeft6: String = "",
+    var detectionSettingAsLeft7: String = "",
+    var detectionSettingAsLeft8: String = "",
     var detectionSettingAsLeftEngineerNotes: String = "",
 
     //-------------------------------------------------------------------------------Reject Settings
@@ -126,8 +133,11 @@ data class MetalDetectorConveyorCalibrationLocal(
     var rejectSynchronisationSetting: String = "",
     var rejectSynchronisationDetail: String = "",
     var rejectDelaySetting: String = "",
+    var rejectDelayUnits: String = "",
     var rejectDurationSetting: String = "",
+    var rejectDurationUnits: String = "",
     var rejectConfirmWindowSetting: String = "",
+    var rejectConfirmWindowUnits: String = "",
     var rejectSettingsEngineerNotes: String = "",
 
     //------------------------------------------------------------------------------Conveyor Details
@@ -135,6 +145,7 @@ data class MetalDetectorConveyorCalibrationLocal(
     var infeedBeltHeight: String = "",
     var outfeedBeltHeight: String = "",
     var conveyorLength: String = "",
+    var conveyorHanding: String = "",
     var beltSpeed: String = "",
     var rejectDevice: String = "",
     var rejectDeviceOther: String = "",
@@ -302,6 +313,8 @@ data class MetalDetectorConveyorCalibrationLocal(
     var detectionSetting4label: String = "",
     var detectionSetting5label: String = "",
     var detectionSetting6label: String = "",
+    var detectionSetting7label: String = "",
+    var detectionSetting8label: String = "",
 
 
     )

@@ -258,11 +258,13 @@ fun AddNewMetalDetectorScreen(
                     OutlinedTextField(
                         value = serialNumber,
                         onValueChange = {
-                            serialNumber = it.replace(Regex("[^A-Za-z0-9]"), "").uppercase()
+                            // Allow A-Z, a-z, 0-9, space, hyphen, underscore
+                            // The ^ inside [] means "not these characters"
+                            // So, replace anything that is NOT in the allowed set.
+                            serialNumber = it.replace(Regex("[^A-Za-z0-9 _.-]"), "").uppercase()
                         },
-                        modifier = Modifier
-                            .weight(2f), // Adjust weight to control spacing
-                        visualTransformation = UppercaseTransformation, // Capitalizes the input
+                        modifier = Modifier.weight(2f),
+                        visualTransformation = UppercaseTransformation,
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.Red,
@@ -271,6 +273,7 @@ fun AddNewMetalDetectorScreen(
                             unfocusedLabelColor = Color.Gray,
                         )
                     )
+
                 }
 
                 // Aperture Size Row

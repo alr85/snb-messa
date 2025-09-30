@@ -25,7 +25,9 @@ class CalibrationMetalDetectorConveyorViewModelFactory(
     private val detectionSetting3label: String,
     private val detectionSetting4label: String,
     private val detectionSetting5label: String,
-    private val detectionSetting6label: String
+    private val detectionSetting6label: String,
+    private val detectionSetting7label: String,
+    private val detectionSetting8label: String
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
@@ -50,7 +52,9 @@ class CalibrationMetalDetectorConveyorViewModelFactory(
                 detectionSetting3label = detectionSetting3label,
                 detectionSetting4label = detectionSetting4label,
                 detectionSetting5label = detectionSetting5label,
-                detectionSetting6label = detectionSetting6label
+                detectionSetting6label = detectionSetting6label,
+                detectionSetting7label = detectionSetting7label,
+                detectionSetting8label = detectionSetting8label
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
