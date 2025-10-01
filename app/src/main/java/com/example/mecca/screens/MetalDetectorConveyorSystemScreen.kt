@@ -253,6 +253,7 @@ fun MetalDetectorConveyorSystemScreen(
                                                                     apertureHeight = system.apertureHeight,
                                                                     systemTypeId = systemTypeId,
                                                                     modelId = system.modelId,
+                                                                    lastLocation = system.lastLocation,
                                                                     calibrationInterval = 0
                                                                 )
 

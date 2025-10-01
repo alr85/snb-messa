@@ -14,7 +14,8 @@ data class MdSystem(
     val lastCalibration: String,
     val addedDate: String,
     val calibrationInterval: Int,
-    val systemTypeId: Int
+    val systemTypeId: Int,
+    val lastLocation: String
 )
 
 // This is for posting new systems to the cloud
@@ -27,7 +28,8 @@ data class MdSystemCloud(
     val lastCalibration: String,
     val addedDate: String,
     val calibrationInterval: Int,
-    val systemTypeId: Int
+    val systemTypeId: Int,
+    val lastLocation: String
 )
 
 // This is for retrieving systems from the cloud
@@ -41,7 +43,9 @@ data class MdSystemCloudResponse(
     val lastCalibration: String,
     val addedDate: String,
     val calibrationInterval: Int,
-    val systemTypeId: Int
+    val systemTypeId: Int,
+    val lastLocation: String
+
 )
 
 
@@ -63,7 +67,9 @@ data class MdSystemLocal(
     val addedDate:String,
     val calibrationInterval: Int,
     val systemTypeId: Int,
-    var isSynced: Boolean
+    var isSynced: Boolean,
+    var lastLocation: String
+
 )
 
 data class MetalDetectorWithFullDetails(
@@ -83,7 +89,8 @@ data class MetalDetectorWithFullDetails(
     val tempId: Int,
     val isSynced: Boolean,
     val customerName: String,
-    val fusionID: Int
+    val fusionID: Int,
+    val lastLocation: String
 )
 
 

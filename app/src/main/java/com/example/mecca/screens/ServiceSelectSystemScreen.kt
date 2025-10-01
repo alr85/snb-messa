@@ -347,6 +347,7 @@ private suspend fun syncMetalDetectors(
                 apertureHeight = mdSystem.apertureHeight,
                 systemTypeId = mdSystem.systemTypeId,
                 modelId = mdSystem.modelId,
+                lastLocation = mdSystem.lastLocation,
                 calibrationInterval = mdSystem.calibrationInterval
             )
 

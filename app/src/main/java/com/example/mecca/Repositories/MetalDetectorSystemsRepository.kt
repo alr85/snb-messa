@@ -77,7 +77,8 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
                             calibrationInterval = apiMdSystems.calibrationInterval,
                             systemTypeId = apiMdSystems.systemTypeId,
                             tempId = 0,
-                            isSynced = true
+                            isSynced = true,
+                            lastLocation = apiMdSystems.lastLocation ?: "Unknown"
                         )
                     }
                     Log.d("DEBUG", "Systems to be inserted inserted into the local database: $mdSystemsLocal.")
@@ -152,6 +153,7 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
         serialNumber: String,
         apertureWidth: Int,
         apertureHeight: Int,
+        lastLocation: String,
         systemTypeId: Int,
         modelId: Int,
         calibrationInterval: Int
@@ -173,7 +175,8 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
             lastCalibration = "-",
             cloudId = 0,
             tempId = tempId,
-            isSynced = false
+            isSynced = false,
+            lastLocation = lastLocation
         )
         db.mdSystemDAO().insertNewMdSystem(newMetalDetector)
 
@@ -188,7 +191,9 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
         apertureHeight: Int,
         systemTypeId: Int,
         modelId: Int,
-        calibrationInterval: Int
+        calibrationInterval: Int,
+        lastLocation: String
+
     ): Int? {
         val today = LocalDateTime.now()
         val todayString = today.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
@@ -203,7 +208,8 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
             addedDate = todayString,
             calibrationInterval = calibrationInterval,
             lastCalibration = todayString,
-            isSynced = true
+            isSynced = true,
+            lastLocation = lastLocation
         )
 
         try {
