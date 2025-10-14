@@ -1,17 +1,24 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("kotlin-kapt") // Apply the Kotlin KAPT plugin
+
+    // ✅ Compose compiler plugin (for Kotlin 2.x)
+    id("org.jetbrains.kotlin.plugin.compose") version "2.2.20"
+
+    // ✅ KSP plugin — must match your Kotlin version!
+    id("com.google.devtools.ksp") version "2.2.20-2.0.4"
 }
+
+
 
 android {
     namespace = "com.example.mecca"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.mecca"
         minSdk = 31
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -44,9 +51,6 @@ android {
         compose = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
-    }
 
     packaging {
         resources {
@@ -70,16 +74,18 @@ dependencies {
 
     // Room dependencies
     implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.appcompat)        // Kotlin extensions
+    ksp(libs.androidx.room.compiler)              // ✅ use KSP for code generation
+    implementation(libs.androidx.room.compiler)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.protolite.well.known.types)
-    implementation(libs.androidx.core.i18n) // Ensure this is included
-    kapt(libs.androidx.room.compiler) // KAPT for Room compiler
-    implementation(libs.androidx.room.ktx) // Room Kotlin extensions
+    implementation(libs.androidx.core.i18n)
 
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.converter.gson)
     implementation(libs.squareup.retrofit)
-
+    //implementation(libs.androidx.compose.material3) // Ensure this is included
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -93,13 +99,18 @@ dependencies {
 
     implementation(libs.androidx.material.icons.extended)
 
-    implementation(libs.androidxComposeMaterial)
+    //implementation(libs.androidxComposeMaterial)
     implementation(libs.androidxComposeMaterial3)
 
     implementation(libs.androidxLifecycleRuntimeCompose)
     implementation(libs.kotlinxCoroutinesCore)
 
     implementation(libs.accompanistInsets)
+
+    configurations.all {
+        exclude(group = "com.intellij", module = "annotations")
+    }
+
 
 
 }

@@ -1,8 +1,6 @@
 package com.example.mecca
 
 import android.app.Application
-import androidx.room.Room
-import com.example.mecca.AppDatabase
 
 //class MyApplication : Application() {
 //    val database: AppDatabase by lazy {

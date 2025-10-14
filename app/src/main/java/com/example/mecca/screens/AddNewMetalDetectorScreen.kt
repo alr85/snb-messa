@@ -1,3 +1,7 @@
+@file:Suppress("SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection")
+
+package com.example.mecca.screens
+
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -15,6 +19,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
@@ -45,8 +50,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.mecca.DataClasses.MdModelsLocal
-import com.example.mecca.DataClasses.SystemTypeLocal
+import com.example.mecca.dataClasses.MdModelsLocal
+import com.example.mecca.dataClasses.SystemTypeLocal
 import com.example.mecca.FetchResult
 import com.example.mecca.Network.isNetworkAvailable
 import com.example.mecca.Repositories.MetalDetectorModelsRepository
@@ -172,7 +177,7 @@ fun AddNewMetalDetectorScreen(
                                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedSystemType)
                             },
                             modifier = Modifier
-                                .menuAnchor()
+                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
                                 .fillMaxWidth(),
                             colors = ExposedDropdownMenuDefaults.textFieldColors(
                                 focusedIndicatorColor = Color.Red,
@@ -231,7 +236,7 @@ fun AddNewMetalDetectorScreen(
                                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedMdModel)
                             },
                             modifier = Modifier
-                                .menuAnchor()
+                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
                                 .fillMaxWidth(),
                             colors = ExposedDropdownMenuDefaults.textFieldColors(
                                 focusedIndicatorColor = Color.Red,
@@ -357,45 +362,47 @@ fun AddNewMetalDetectorScreen(
                         )
                     )
 
-                    // Site Location Row
-                    Row(
+
+
+
+                }
+
+                // Site Location Row
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp), // Adjust padding as needed
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Location Ref:",
+                        style = MaterialTheme.typography.labelLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp), // Adjust padding as needed
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Location Ref:",
-                            style = MaterialTheme.typography.labelLarge,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(end = 8.dp) // Add space between the label and the field
+                            .weight(1f)
+                            .padding(end = 8.dp) // Add space between the label and the field
+                    )
+
+                    //Location Input (Capitalized)
+                    OutlinedTextField(
+                        value = lastLocation,
+                        onValueChange = {
+                            // Allow A-Z, a-z, 0-9, space, hyphen, underscore
+                            // The ^ inside [] means "not these characters"
+                            // So, replace anything that is NOT in the allowed set.
+                            lastLocation = it.replace(Regex("[^A-Za-z0-9 _.-]"), "").uppercase()
+                        },
+                        modifier = Modifier.weight(2f),
+                        visualTransformation = UppercaseTransformation,
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color.Red,
+                            unfocusedBorderColor = Color.Gray,
+                            focusedLabelColor = Color.DarkGray,
+                            unfocusedLabelColor = Color.Gray,
                         )
-
-                        //Location Input (Capitalized)
-                        OutlinedTextField(
-                            value = lastLocation,
-                            onValueChange = {
-                                // Allow A-Z, a-z, 0-9, space, hyphen, underscore
-                                // The ^ inside [] means "not these characters"
-                                // So, replace anything that is NOT in the allowed set.
-                                lastLocation = it.replace(Regex("[^A-Za-z0-9 _.-]"), "").uppercase()
-                            },
-                            modifier = Modifier.weight(2f),
-                            visualTransformation = UppercaseTransformation,
-                            singleLine = true,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color.Red,
-                                unfocusedBorderColor = Color.Gray,
-                                focusedLabelColor = Color.DarkGray,
-                                unfocusedLabelColor = Color.Gray,
-                            )
-                        )
-
-                    }
-
+                    )
 
                 }
                 Spacer(modifier = Modifier.height(15.dp))

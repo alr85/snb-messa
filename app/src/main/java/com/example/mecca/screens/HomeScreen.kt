@@ -1,4 +1,4 @@
-package com.example.mecca
+package com.example.mecca.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.ExperimentalMaterial3Api

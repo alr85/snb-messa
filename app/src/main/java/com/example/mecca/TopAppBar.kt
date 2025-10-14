@@ -1,5 +1,6 @@
+package com.example.mecca
+
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -18,12 +19,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
-import com.example.mecca.R
+import androidx.core.net.toUri
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,7 +47,8 @@ fun MyTopAppBar(navController: NavHostController, scrollBehavior: TopAppBarScrol
             IconButton(onClick = {
                 // Create an intent to call the number
                 val intent = Intent(Intent.ACTION_DIAL).apply {
-                    data = Uri.parse("tel:01977689555")
+                    data = "tel:01977689555".toUri()
+
                 }
                 context.startActivity(intent)
             }) {

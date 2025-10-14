@@ -1,10 +1,10 @@
-package com.example.mecca
+package com.example.mecca.DAOs
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.example.mecca.DataClasses.MdModelsLocal
+import com.example.mecca.dataClasses.MdModelsLocal
 
 @Dao
 interface MdModelsDAO {

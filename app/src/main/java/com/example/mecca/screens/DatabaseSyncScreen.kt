@@ -26,7 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.mecca.CustomerRepository
+import com.example.mecca.Repositories.CustomerRepository
 import com.example.mecca.FetchResult
 import com.example.mecca.Repositories.MetalDetectorModelsRepository
 import com.example.mecca.Repositories.MetalDetectorSystemsRepository

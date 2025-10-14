@@ -2,7 +2,7 @@ package com.example.mecca.Network
 
 import android.util.Log
 import com.example.mecca.ApiService
-import com.example.mecca.MetalDetectorSystemsDAO
+import com.example.mecca.DAOs.MetalDetectorSystemsDAO
 
 class SyncManager(
     private val mdSystemsDao: MetalDetectorSystemsDAO,

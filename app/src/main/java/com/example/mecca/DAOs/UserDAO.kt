@@ -5,8 +5,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Update
-import com.example.mecca.DataClasses.UserEntity
+import com.example.mecca.dataClasses.UserEntity
 
 @Dao
 interface UserDao {

@@ -1,8 +1,8 @@
+package com.example.mecca.ui.theme
+
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import com.example.mecca.ui.theme.SnbDarkGrey
-import com.example.mecca.ui.theme.SnbRed
 
 @Composable
 fun MyAppTheme(

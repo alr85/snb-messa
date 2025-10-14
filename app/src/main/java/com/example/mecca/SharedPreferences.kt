@@ -1,8 +1,8 @@
 package com.example.mecca
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.util.Log
+import androidx.core.content.edit
 
 object PreferencesHelper {
     private const val PREFS_NAME = "user_prefs"
@@ -13,11 +13,11 @@ object PreferencesHelper {
     // Save credentials, including userID
     fun saveCredentials(context: Context, username: String, password: String, engineerId: Int) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .putString(KEY_USERNAME, username)
-            .putString(KEY_PASSWORD, password)
-            .putInt(KEY_ENGINEER_ID, engineerId)
-            .apply()
+            .edit {
+                putString(KEY_USERNAME, username)
+                    .putString(KEY_PASSWORD, password)
+                    .putInt(KEY_ENGINEER_ID, engineerId)
+            }
     }
 
     fun getCredentials(context: Context): Triple<String?, String?, Int?> {
@@ -31,11 +31,12 @@ object PreferencesHelper {
     // Clear credentials
     fun clearCredentials(context: Context) {
         val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
+        sharedPreferences.edit {
 
-        Log.d("LoginDebug", "Before Clearing: ${sharedPreferences.all}")
+            Log.d("LoginDebug", "Before Clearing: ${sharedPreferences.all}")
 
-        editor.clear().commit() // Clears all stored preferences synchronously
+            clear()
+        } // Clears all stored preferences synchronously
 
         Log.d("LoginDebug", "After Clearing: ${sharedPreferences.all}")
     }

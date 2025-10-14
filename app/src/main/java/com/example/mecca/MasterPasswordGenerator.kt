@@ -1,3 +1,5 @@
+package com.example.mecca
+
 import java.time.LocalDate
 import java.time.DayOfWeek
 import java.time.temporal.ChronoUnit
@@ -33,6 +35,9 @@ object MasterPasswordGenerator {
         // Calculate the raw value
         val rawValue = (weekOfYear * SECRET_SAUCE * multiplier) / (currentYear % 100)
         println("Raw Value: $rawValue")
+
+        //Log.d("MESSA-DEBUG", "Password generated: $rawValue")
+
 
         // Take the last 6 digits and pad if necessary
         return rawValue.toString().takeLast(6).padStart(6, '0')

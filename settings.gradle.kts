@@ -1,14 +1,8 @@
 pluginManagement {
     repositories {
-        google {
-            content {
-                includeGroupByRegex("com\\.android.*")
-                includeGroupByRegex("com\\.google.*")
-                includeGroupByRegex("androidx.*")
-            }
-        }
-        mavenCentral()
-        gradlePluginPortal()
+        google()                         // ✅ must be here
+        mavenCentral()                    // ✅ must be here
+        gradlePluginPortal()              // ✅ must be here
     }
 }
 dependencyResolutionManagement {
@@ -18,6 +12,7 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
+
 
 rootProject.name = "MECCA"
 include(":app")

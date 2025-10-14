@@ -1,6 +1,5 @@
 package com.example.mecca
 
-import MyTopAppBar
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -211,24 +210,24 @@ fun MyApp(db: AppDatabase, userViewModel: UserViewModel) {
     )
 }
 
-@Composable
-fun NoNetworkNoLoginDialog(onRetry: () -> Unit, onClose: () -> Unit) {
-    androidx.compose.material.AlertDialog(
-        onDismissRequest = { },
-        title = { Text("No Network and No Login") },
-        text = { Text("Please connect to a network or log in to continue.") },
-        confirmButton = {
-            androidx.compose.material.TextButton(onClick = { onRetry() }) {
-                Text("Retry")
-            }
-        },
-        dismissButton = {
-            androidx.compose.material.TextButton(onClick = { onClose() }) {
-                Text("Close App")
-            }
-        }
-    )
-}
+//@Composable
+//fun NoNetworkNoLoginDialog(onRetry: () -> Unit, onClose: () -> Unit) {
+//    androidx.compose.material.AlertDialog(
+//        onDismissRequest = { },
+//        title = { Text("No Network and No Login") },
+//        text = { Text("Please connect to a network or log in to continue.") },
+//        confirmButton = {
+//            androidx.compose.material.TextButton(onClick = { onRetry() }) {
+//                Text("Retry")
+//            }
+//        },
+//        dismissButton = {
+//            androidx.compose.material.TextButton(onClick = { onClose() }) {
+//                Text("Close App")
+//            }
+//        }
+//    )
+//}
 
 
 data class NavigationBarItem(

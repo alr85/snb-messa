@@ -3,7 +3,7 @@ package com.example.mecca.Repositories
 import android.util.Log
 import com.example.mecca.ApiService
 import com.example.mecca.AppDatabase
-import com.example.mecca.DataClasses.MdModelsLocal
+import com.example.mecca.dataClasses.MdModelsLocal
 import com.example.mecca.FetchResult
 
 
@@ -89,9 +89,9 @@ class MetalDetectorModelsRepository(private val apiService: ApiService, private 
     }
 
     // Function to get model description
-    suspend fun getMdModelDescription(meaId: Int): String? {
-        return db.mdModelDao().getMdModelDescriptionFromDb(meaId)
-    }
+//    suspend fun getMdModelDescription(meaId: Int): String? {
+//        return db.mdModelDao().getMdModelDescriptionFromDb(meaId)
+//    }
 
     // Function to get all model details
     suspend fun getMdModelDetails(meaId: Int): MdModelsLocal? {

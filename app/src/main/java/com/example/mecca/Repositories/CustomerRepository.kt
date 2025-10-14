@@ -1,6 +1,10 @@
-package com.example.mecca
+package com.example.mecca.Repositories
 
 import android.util.Log
+import com.example.mecca.ApiService
+import com.example.mecca.AppDatabase
+import com.example.mecca.dataClasses.CustomerLocal
+import com.example.mecca.FetchResult
 
 class CustomerRepository(private val apiService: ApiService, private val db: AppDatabase) {
 

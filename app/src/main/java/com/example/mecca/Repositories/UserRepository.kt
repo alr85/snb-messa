@@ -2,7 +2,7 @@ package com.example.mecca.Repositories
 
 import com.example.mecca.ApiService
 import com.example.mecca.DAOs.UserDao
-import com.example.mecca.DataClasses.UserEntity
+import com.example.mecca.dataClasses.UserEntity
 import java.util.Date
 
 class UserRepository(

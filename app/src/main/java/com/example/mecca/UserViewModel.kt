@@ -1,7 +1,6 @@
 package com.example.mecca
 
 
-import MasterPasswordGenerator
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel

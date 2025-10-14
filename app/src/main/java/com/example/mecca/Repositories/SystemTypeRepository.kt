@@ -3,7 +3,7 @@ package com.example.mecca.Repositories
 import android.util.Log
 import com.example.mecca.ApiService
 import com.example.mecca.AppDatabase
-import com.example.mecca.DataClasses.SystemTypeLocal
+import com.example.mecca.dataClasses.SystemTypeLocal
 import com.example.mecca.FetchResult
 
 

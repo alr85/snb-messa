@@ -1,24 +1,18 @@
 package com.example.mecca.ui.theme
 
-import AddNewMetalDetectorScreen
-import ServiceSelectSystemScreen
-import SettingsScreen
-import android.util.Log
+import com.example.mecca.screens.AddNewMetalDetectorScreen
+import com.example.mecca.screens.ServiceSelectSystemScreen
+import com.example.mecca.screens.SettingsScreen
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.mecca.AppDatabase
-import com.example.mecca.CustomerRepository
-import com.example.mecca.HomeScreen
-import com.example.mecca.MetalDetectorConveyorSystemScreen
-import com.example.mecca.MyCalibrationsScreen
-import com.example.mecca.PreferencesHelper
+import com.example.mecca.Repositories.CustomerRepository
+import com.example.mecca.screens.HomeScreen
+import com.example.mecca.screens.MetalDetectorConveyorSystemScreen
+import com.example.mecca.screens.MyCalibrationsScreen
 import com.example.mecca.Repositories.MetalDetectorModelsRepository
 import com.example.mecca.Repositories.MetalDetectorSystemsRepository
 import com.example.mecca.Repositories.SystemTypeRepository
@@ -26,10 +20,8 @@ import com.example.mecca.RetrofitClient
 import com.example.mecca.screens.AboutAppScreen
 import com.example.mecca.screens.DatabaseSyncScreen
 import com.example.mecca.screens.MessagesHomeScreen
-import com.example.mecca.ServiceSelectCustomerScreen
+import com.example.mecca.screens.ServiceSelectCustomerScreen
 import com.example.mecca.UserViewModel
-import com.example.mecca.screens.LoginScreen
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
