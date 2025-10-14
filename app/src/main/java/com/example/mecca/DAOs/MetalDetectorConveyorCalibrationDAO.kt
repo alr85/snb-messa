@@ -5,7 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.example.mecca.DataClasses.MetalDetectorConveyorCalibrationLocal
+import com.example.mecca.dataClasses.MetalDetectorConveyorCalibrationLocal
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -17,21 +17,21 @@ interface MetalDetectorConveyorCalibrationDAO {
     @Query("UPDATE MetalDetectorConveyorCalibrations SET isSynced = :isSynced WHERE calibrationId = :calibrationId")
     suspend fun updateIsSynced(calibrationId: String, isSynced: Boolean)
 
-    @Query("SELECT * FROM MetalDetectorConveyorCalibrations WHERE (cloudSystemId = :systemId OR tempSystemId = :systemId) AND (endDate IS NULL OR endDate = '')")
-    fun getUnfinishedCalibrations(systemId: Int): Flow<List<MetalDetectorConveyorCalibrationLocal>>
+//    @Query("SELECT * FROM MetalDetectorConveyorCalibrations WHERE (cloudSystemId = :systemId OR tempSystemId = :systemId) AND (endDate IS NULL OR endDate = '')")
+//    fun getUnfinishedCalibrations(systemId: Int): Flow<List<MetalDetectorConveyorCalibrationLocal>>
 
     @Query("SELECT * FROM MetalDetectorConveyorCalibrations WHERE (endDate IS NULL OR endDate = '')")
     fun getAllUnfinishedCalibrations(): Flow<List<MetalDetectorConveyorCalibrationLocal>>
 
-    @Query("SELECT * FROM MetalDetectorConveyorCalibrations WHERE (cloudSystemId = :systemId OR tempSystemId = :systemId) AND (isSynced IS NULL OR isSynced = 0) AND endDate IS NOT NULL AND endDate != ''")
-    fun getPendingCalibrations(systemId: Int): Flow<List<MetalDetectorConveyorCalibrationLocal>>
+//    @Query("SELECT * FROM MetalDetectorConveyorCalibrations WHERE (cloudSystemId = :systemId OR tempSystemId = :systemId) AND (isSynced IS NULL OR isSynced = 0) AND endDate IS NOT NULL AND endDate != ''")
+//    fun getPendingCalibrations(systemId: Int): Flow<List<MetalDetectorConveyorCalibrationLocal>>
 
     @Query("SELECT * FROM MetalDetectorConveyorCalibrations WHERE (isSynced IS NULL OR isSynced = 0) AND endDate IS NOT NULL AND endDate != ''")
     fun getAllPendingCalibrations(): Flow<List<MetalDetectorConveyorCalibrationLocal>>
 
 
-    @Query("SELECT * FROM MetalDetectorConveyorCalibrations WHERE (cloudSystemId = :systemId OR tempSystemId = :systemId) AND (isSynced = True OR isSynced = 1) AND endDate IS NOT NULL AND endDate != ''")
-    fun getCompletedCalibrations(systemId: Int): Flow<List<MetalDetectorConveyorCalibrationLocal>>
+//    @Query("SELECT * FROM MetalDetectorConveyorCalibrations WHERE (cloudSystemId = :systemId OR tempSystemId = :systemId) AND (isSynced = True OR isSynced = 1) AND endDate IS NOT NULL AND endDate != ''")
+//    fun getCompletedCalibrations(systemId: Int): Flow<List<MetalDetectorConveyorCalibrationLocal>>
 
     @Query("SELECT * FROM MetalDetectorConveyorCalibrations WHERE (isSynced = True OR isSynced = 1) AND endDate IS NOT NULL AND endDate != ''")
     fun getAllCompletedCalibrations(): Flow<List<MetalDetectorConveyorCalibrationLocal>>
@@ -46,10 +46,13 @@ interface MetalDetectorConveyorCalibrationDAO {
     @Query("SELECT * FROM MetalDetectorConveyorCalibrations WHERE calibrationId = :calibrationId")
     fun getCalibrationForCsvConversion(calibrationId: String): MetalDetectorConveyorCalibrationLocal
 
+
+
     // Save Calibration Start to database
     @Query(
         "UPDATE MetalDetectorConveyorCalibrations " +
                 "SET systemLocation = :systemLocation, " +
+                "lastLocation = :lastLocation, " +
                 "canPerformCalibration = :canPerformCalibration, " +
                 "reasonForNotCalibrating = :reasonForNotCalibrating, " +
                 "startCalibrationNotes = :startCalibrationNotes " +
@@ -57,6 +60,7 @@ interface MetalDetectorConveyorCalibrationDAO {
     )
     suspend fun updateCalibrationStart(
         systemLocation: String,
+        lastLocation: String,
         canPerformCalibration: String,
         reasonForNotCalibrating: String,
 

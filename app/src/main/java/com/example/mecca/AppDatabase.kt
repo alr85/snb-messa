@@ -6,15 +6,17 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.mecca.DAOs.CustomerDAO
-import com.example.mecca.DAOs.SystemTypeDAO
-import com.example.mecca.DataClasses.MdModelsLocal
-import com.example.mecca.DataClasses.MdSystemLocal
-import com.example.mecca.DataClasses.SystemTypeLocal
-import com.example.mecca.CustomerLocal
+import com.example.mecca.DAOs.MdModelsDAO
 import com.example.mecca.DAOs.MetalDetectorConveyorCalibrationDAO
+import com.example.mecca.DAOs.MetalDetectorSystemsDAO
+import com.example.mecca.DAOs.SystemTypeDAO
 import com.example.mecca.DAOs.UserDao
-import com.example.mecca.DataClasses.MetalDetectorConveyorCalibrationLocal
-import com.example.mecca.DataClasses.UserEntity
+import com.example.mecca.dataClasses.CustomerLocal
+import com.example.mecca.dataClasses.MdModelsLocal
+import com.example.mecca.dataClasses.MdSystemLocal
+import com.example.mecca.dataClasses.MetalDetectorConveyorCalibrationLocal
+import com.example.mecca.dataClasses.SystemTypeLocal
+import com.example.mecca.dataClasses.UserEntity
 
 
 @Database(entities = [CustomerLocal::class,
@@ -23,7 +25,7 @@ import com.example.mecca.DataClasses.UserEntity
     MdSystemLocal::class,
     MetalDetectorConveyorCalibrationLocal::class,
     SystemTypeLocal::class],
-    version = 35, // Increment the version if needed
+    version = 36, // Increment the version if needed
     exportSchema = false)
 
 @TypeConverters(Converters::class) // Add your Converters here
@@ -53,7 +55,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "app_database"
                 )
-                    .fallbackToDestructiveMigration()  // Handles migrations if the database schema changes
+                    .fallbackToDestructiveMigration(true)  // Handles migrations if the database schema changes
                     .build()
                 INSTANCE = instance
                 instance

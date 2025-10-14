@@ -1,4 +1,4 @@
-package com.example.mecca.CalibrationViewModels
+package com.example.mecca.calibrationViewModels
 
 import android.content.Context
 import android.util.Log
@@ -10,22 +10,23 @@ import androidx.lifecycle.viewModelScope
 import com.example.mecca.ApiService
 import com.example.mecca.DAOs.CustomerDAO
 import com.example.mecca.DAOs.MetalDetectorConveyorCalibrationDAO
-import com.example.mecca.DataClasses.MetalDetectorConveyorCalibrationLocal
-import com.example.mecca.MdModelsDAO
+import com.example.mecca.dataClasses.MetalDetectorConveyorCalibrationLocal
+import com.example.mecca.DAOs.MdModelsDAO
+import com.example.mecca.DAOs.MetalDetectorSystemsDAO
+import com.example.mecca.Repositories.MetalDetectorSystemsRepository
 import com.example.mecca.formModules.ConditionState
 import com.example.mecca.formModules.YesNoState
+import com.example.mecca.util.CsvUploader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -34,8 +35,11 @@ class CalibrationMetalDetectorConveyorViewModel(
     private val engineerId: Int,
     private val calibrationDao: MetalDetectorConveyorCalibrationDAO,
     private val mdModelsDAO: MdModelsDAO,
+    private val mdSystemsDAO: MetalDetectorSystemsDAO,
+    //private val apiService: ApiService,
     private val customerDAO: CustomerDAO,
-    calibrationId: String, // Pass in the unique calibration ID
+    private val repository: MetalDetectorSystemsRepository,
+    calibrationId: String,
     customerId: Int,
     systemId: Int,
     cloudSystemId: Int,
@@ -51,7 +55,9 @@ class CalibrationMetalDetectorConveyorViewModel(
     detectionSetting5label: String,
     detectionSetting6label: String,
     detectionSetting7label: String,
-    detectionSetting8label: String
+    detectionSetting8label: String,
+    lastLocation: String,
+    apiService: ApiService,
 ) : ViewModel() {
 
 
@@ -74,18 +80,20 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
 
-
     init {
         viewModelScope.launch {
             val existingCalibration = calibrationDao.getCalibrationById(calibrationId)
             if (existingCalibration != null) {
                 //_calibrationData.value = existingCalibration
                 // Populate individual state variables from the loaded calibration
-                val model = mdModelsDAO.getMdModelDescriptionFromDb(existingCalibration.modelId) ?:"Error"
+                val model =
+                    mdModelsDAO.getMdModelDescriptionFromDb(existingCalibration.modelId) ?: "Error"
                 _modelDescription.value = model
 
-                val customer = customerDAO.getCustomerName(existingCalibration.customerId) ?:"Error"
+                val customer =
+                    customerDAO.getCustomerName(existingCalibration.customerId) ?: "Error"
                 _customerName.value = customer
+
 
                 _serialNumber.value = existingCalibration.serialNumber
                 _isSynced.value = existingCalibration.isSynced
@@ -96,22 +104,27 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _cloudSystemId.intValue = existingCalibration.cloudSystemId
                 _tempSystemId.intValue = existingCalibration.tempSystemId
                 _calibrationStartTime.value = existingCalibration.startDate
-                _calibrationEndTime.value = existingCalibration.endDate
+                //_calibrationEndTime.value = existingCalibration.endDate
                 //_engineerId.value = (existingCalibration.engineerId).toString()
                 _systemLocation.value = existingCalibration.systemLocation
+                _lastLocation.value = existingCalibration.lastLocation
                 _canPerformCalibration.value = existingCalibration.canPerformCalibration.toBoolean()
                 _reasonForNotCalibrating.value = existingCalibration.reasonForNotCalibrating
                 _desiredCop.value = existingCalibration.desiredCop
                     .removeSurrounding("[", "]")
                     .split(",")
-                    .map { it.trim()}
-                    .filter { it.isNotBlank()}
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
                 _startCalibrationNotes.value = existingCalibration.startCalibrationNotes
 
-                _sensitivityRequirementFerrous.value = existingCalibration.sensitivityRequirementFerrous
-                _sensitivityRequirementNonFerrous.value = existingCalibration.sensitivityRequirementNonFerrous
-                _sensitivityRequirementStainless.value = existingCalibration.sensitivityRequirementStainless
-                _sensitivityRequirementEngineerNotes.value = existingCalibration.sensitivityRequirementEngineerNotes
+                _sensitivityRequirementFerrous.value =
+                    existingCalibration.sensitivityRequirementFerrous
+                _sensitivityRequirementNonFerrous.value =
+                    existingCalibration.sensitivityRequirementNonFerrous
+                _sensitivityRequirementStainless.value =
+                    existingCalibration.sensitivityRequirementStainless
+                _sensitivityRequirementEngineerNotes.value =
+                    existingCalibration.sensitivityRequirementEngineerNotes
 
                 _productDescription.value = existingCalibration.productDescription
                 _productLibraryReference.value = existingCalibration.productLibraryReference
@@ -121,7 +134,8 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _productHeight.value = existingCalibration.productHeight
                 _productDetailsEngineerNotes.value = existingCalibration.productDetailsEngineerNotes
 
-                _sensitivityAccessRestriction.value = existingCalibration.sensitivityAccessRestriction
+                _sensitivityAccessRestriction.value =
+                    existingCalibration.sensitivityAccessRestriction
                 _detectionSettingAsFound1.value = existingCalibration.detectionSettingAsFound1
                 _detectionSettingAsFound2.value = existingCalibration.detectionSettingAsFound2
                 _detectionSettingAsFound3.value = existingCalibration.detectionSettingAsFound3
@@ -130,49 +144,78 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _detectionSettingAsFound6.value = existingCalibration.detectionSettingAsFound6
                 _detectionSettingAsFound7.value = existingCalibration.detectionSettingAsFound7
                 _detectionSettingAsFound8.value = existingCalibration.detectionSettingAsFound8
-                _detectionSettingAsFoundEngineerNotes.value = existingCalibration.detectionSettingAsFoundEngineerNotes
+                _detectionSettingAsFoundEngineerNotes.value =
+                    existingCalibration.detectionSettingAsFoundEngineerNotes
 
                 _sensitivityAsFoundFerrous.value = existingCalibration.sensitivityAsFoundFerrous
-                _sensitivityAsFoundFerrousPeakSignal.value = existingCalibration.sensitivityAsFoundFerrousPeakSignal
-                _sensitivityAsFoundNonFerrous.value = existingCalibration.sensitivityAsFoundNonFerrous
-                _sensitivityAsFoundNonFerrousPeakSignal.value = existingCalibration.sensitivityAsFoundNonFerrousPeakSignal
+                _sensitivityAsFoundFerrousPeakSignal.value =
+                    existingCalibration.sensitivityAsFoundFerrousPeakSignal
+                _sensitivityAsFoundNonFerrous.value =
+                    existingCalibration.sensitivityAsFoundNonFerrous
+                _sensitivityAsFoundNonFerrousPeakSignal.value =
+                    existingCalibration.sensitivityAsFoundNonFerrousPeakSignal
                 _sensitivityAsFoundStainless.value = existingCalibration.sensitivityAsFoundStainless
-                _sensitivityAsFoundStainlessPeakSignal.value = existingCalibration.sensitivityAsFoundStainlessPeakSignal
+                _sensitivityAsFoundStainlessPeakSignal.value =
+                    existingCalibration.sensitivityAsFoundStainlessPeakSignal
                 _productPeakSignalAsFound.value = existingCalibration.productPeakSignalAsFound
-                _sensitivityAsFoundEngineerNotes.value = existingCalibration.sensitivityAsFoundEngineerNotes
+                _sensitivityAsFoundEngineerNotes.value =
+                    existingCalibration.sensitivityAsFoundEngineerNotes
 
                 _sensitivityAsLeftFerrous.value = existingCalibration.sensitivityAsLeftFerrous
-                _sampleCertificateNumberFerrous.value = existingCalibration.sampleCertificateNumberFerrous
-                _detectRejectFerrousLeading.value = existingCalibration.detectRejectFerrousLeading.toYesNoState()
-                _peakSignalFerrousLeading.value = existingCalibration.detectRejectFerrousLeadingPeakSignal
-                _detectRejectFerrousMiddle.value = existingCalibration.detectRejectFerrousMiddle.toYesNoState()
-                _peakSignalFerrousMiddle.value = existingCalibration.detectRejectFerrousMiddlePeakSignal
-                _detectRejectFerrousTrailing.value = existingCalibration.detectRejectFerrousTrailing.toYesNoState()
-                _peakSignalFerrousTrailing.value = existingCalibration.detectRejectFerrousTrailingPeakSignal
+                _sampleCertificateNumberFerrous.value =
+                    existingCalibration.sampleCertificateNumberFerrous
+                _detectRejectFerrousLeading.value =
+                    existingCalibration.detectRejectFerrousLeading.toYesNoState()
+                _peakSignalFerrousLeading.value =
+                    existingCalibration.detectRejectFerrousLeadingPeakSignal
+                _detectRejectFerrousMiddle.value =
+                    existingCalibration.detectRejectFerrousMiddle.toYesNoState()
+                _peakSignalFerrousMiddle.value =
+                    existingCalibration.detectRejectFerrousMiddlePeakSignal
+                _detectRejectFerrousTrailing.value =
+                    existingCalibration.detectRejectFerrousTrailing.toYesNoState()
+                _peakSignalFerrousTrailing.value =
+                    existingCalibration.detectRejectFerrousTrailingPeakSignal
                 _ferrousTestEngineerNotes.value = existingCalibration.ferrousTestEngineerNotes
 
                 _sensitivityAsLeftNonFerrous.value = existingCalibration.sensitivityAsLeftNonFerrous
-                _sampleCertificateNumberNonFerrous.value = existingCalibration.sampleCertificateNumberNonFerrous
-                _detectRejectNonFerrousLeading.value = existingCalibration.detectRejectNonFerrousLeading.toYesNoState()
-                _peakSignalNonFerrousLeading.value = existingCalibration.detectRejectNonFerrousLeadingPeakSignal
-                _detectRejectNonFerrousMiddle.value = existingCalibration.detectRejectNonFerrousMiddle.toYesNoState()
-                _peakSignalNonFerrousMiddle.value = existingCalibration.detectRejectNonFerrousMiddlePeakSignal
-                _detectRejectNonFerrousTrailing.value = existingCalibration.detectRejectNonFerrousTrailing.toYesNoState()
-                _peakSignalNonFerrousTrailing.value = existingCalibration.detectRejectNonFerrousTrailingPeakSignal
+                _sampleCertificateNumberNonFerrous.value =
+                    existingCalibration.sampleCertificateNumberNonFerrous
+                _detectRejectNonFerrousLeading.value =
+                    existingCalibration.detectRejectNonFerrousLeading.toYesNoState()
+                _peakSignalNonFerrousLeading.value =
+                    existingCalibration.detectRejectNonFerrousLeadingPeakSignal
+                _detectRejectNonFerrousMiddle.value =
+                    existingCalibration.detectRejectNonFerrousMiddle.toYesNoState()
+                _peakSignalNonFerrousMiddle.value =
+                    existingCalibration.detectRejectNonFerrousMiddlePeakSignal
+                _detectRejectNonFerrousTrailing.value =
+                    existingCalibration.detectRejectNonFerrousTrailing.toYesNoState()
+                _peakSignalNonFerrousTrailing.value =
+                    existingCalibration.detectRejectNonFerrousTrailingPeakSignal
                 _nonFerrousTestEngineerNotes.value = existingCalibration.nonFerrousTestEngineerNotes
-                
+
                 _sensitivityAsLeftStainless.value = existingCalibration.sensitivityAsLeftStainless
-                _sampleCertificateNumberStainless.value = existingCalibration.sampleCertificateNumberStainless
-                _detectRejectStainlessLeading.value = existingCalibration.detectRejectStainlessLeading.toYesNoState()
-                _peakSignalStainlessLeading.value = existingCalibration.detectRejectStainlessLeadingPeakSignal
-                _detectRejectStainlessMiddle.value = existingCalibration.detectRejectStainlessMiddle.toYesNoState()
-                _peakSignalStainlessMiddle.value = existingCalibration.detectRejectStainlessMiddlePeakSignal
-                _detectRejectStainlessTrailing.value = existingCalibration.detectRejectStainlessTrailing.toYesNoState()
-                _peakSignalStainlessTrailing.value = existingCalibration.detectRejectStainlessTrailingPeakSignal
+                _sampleCertificateNumberStainless.value =
+                    existingCalibration.sampleCertificateNumberStainless
+                _detectRejectStainlessLeading.value =
+                    existingCalibration.detectRejectStainlessLeading.toYesNoState()
+                _peakSignalStainlessLeading.value =
+                    existingCalibration.detectRejectStainlessLeadingPeakSignal
+                _detectRejectStainlessMiddle.value =
+                    existingCalibration.detectRejectStainlessMiddle.toYesNoState()
+                _peakSignalStainlessMiddle.value =
+                    existingCalibration.detectRejectStainlessMiddlePeakSignal
+                _detectRejectStainlessTrailing.value =
+                    existingCalibration.detectRejectStainlessTrailing.toYesNoState()
+                _peakSignalStainlessTrailing.value =
+                    existingCalibration.detectRejectStainlessTrailingPeakSignal
                 _stainlessTestEngineerNotes.value = existingCalibration.stainlessTestEngineerNotes
 
-                _detectRejectLargeMetal.value = existingCalibration.detectRejectLargeMetal.toYesNoState()
-                _sampleCertificateNumberLargeMetal.value = existingCalibration.sampleCertificateNumberLargeMetal
+                _detectRejectLargeMetal.value =
+                    existingCalibration.detectRejectLargeMetal.toYesNoState()
+                _sampleCertificateNumberLargeMetal.value =
+                    existingCalibration.sampleCertificateNumberLargeMetal
                 _largeMetalTestEngineerNotes.value = existingCalibration.largeMetalTestEngineerNotes
 
                 _detectionSettingAsLeft1.value = existingCalibration.detectionSettingAsLeft1
@@ -183,9 +226,11 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _detectionSettingAsLeft6.value = existingCalibration.detectionSettingAsLeft6
                 _detectionSettingAsLeft7.value = existingCalibration.detectionSettingAsLeft7
                 _detectionSettingAsLeft8.value = existingCalibration.detectionSettingAsLeft8
-                _detectionSettingAsLeftEngineerNotes.value = existingCalibration.detectionSettingAsLeftEngineerNotes
+                _detectionSettingAsLeftEngineerNotes.value =
+                    existingCalibration.detectionSettingAsLeftEngineerNotes
 
-                _rejectSynchronisationSetting.value = existingCalibration.rejectSynchronisationSetting.toYesNoState()
+                _rejectSynchronisationSetting.value =
+                    existingCalibration.rejectSynchronisationSetting.toYesNoState()
                 _rejectSynchronisationDetail.value = existingCalibration.rejectSynchronisationDetail
                 _rejectDelaySetting.value = existingCalibration.rejectDelaySetting
                 _rejectDelayUnits.value = existingCalibration.rejectDelayUnits
@@ -202,21 +247,25 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _beltSpeed.value = existingCalibration.beltSpeed
                 _rejectDevice.value = existingCalibration.rejectDevice
                 _rejectDeviceOther.value = existingCalibration.rejectDeviceOther
-                _conveyorDetailsEngineerNotes.value = existingCalibration.conveyorDetailsEngineerNotes
+                _conveyorDetailsEngineerNotes.value =
+                    existingCalibration.conveyorDetailsEngineerNotes
 
                 _beltCondition.value = existingCalibration.beltCondition.toConditionState()
                 _beltConditionComments.value = existingCalibration.beltConditionComments
                 _guardCondition.value = existingCalibration.guardCondition.toConditionState()
                 _guardConditionComments.value = existingCalibration.guardConditionComments
-                _safetyCircuitCondition.value = existingCalibration.safetyCircuitCondition.toConditionState()
-                _safetyCircuitConditionComments.value = existingCalibration.safetyCircuitConditionComments
+                _safetyCircuitCondition.value =
+                    existingCalibration.safetyCircuitCondition.toConditionState()
+                _safetyCircuitConditionComments.value =
+                    existingCalibration.safetyCircuitConditionComments
                 _linerCondition.value = existingCalibration.linerCondition.toConditionState()
                 _linerConditionComments.value = existingCalibration.linerConditionComments
                 _cablesCondition.value = existingCalibration.cablesCondition.toConditionState()
                 _cablesConditionComments.value = existingCalibration.cablesConditionComments
                 _screwsCondition.value = existingCalibration.screwsCondition.toConditionState()
                 _screwsConditionComments.value = existingCalibration.screwsConditionComments
-                _systemChecklistEngineerNotes.value = existingCalibration.systemChecklistEngineerNotes
+                _systemChecklistEngineerNotes.value =
+                    existingCalibration.systemChecklistEngineerNotes
 
                 _indicator6colour.value = existingCalibration.indicator6colour
                 _indicator6label.value = existingCalibration.indicator6label
@@ -238,23 +287,29 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _infeedSensorTestResult.value = existingCalibration.infeedSensorTestResult
                     .removeSurrounding("[", "]")
                     .split(",")
-                    .map { it.trim()}
-                    .filter { it.isNotBlank()}
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
                 _infeedSensorLatched.value = existingCalibration.infeedSensorLatched.toYesNoState()
                 _infeedSensorCR.value = existingCalibration.infeedSensorCR.toYesNoState()
                 _infeedSensorEngineerNotes.value = existingCalibration.infeedSensorEngineerNotes
 
-                _rejectConfirmSensorFitted.value = existingCalibration.rejectConfirmSensorFitted.toYesNoState()
+                _rejectConfirmSensorFitted.value =
+                    existingCalibration.rejectConfirmSensorFitted.toYesNoState()
                 _rejectConfirmSensorDetail.value = existingCalibration.rejectConfirmSensorDetail
-                _rejectConfirmSensorTestMethod.value = existingCalibration.rejectConfirmSensorTestMethod
-                _rejectConfirmSensorTestResult.value = existingCalibration.rejectConfirmSensorTestResult
-                    .removeSurrounding("[", "]")
-                    .split(",")
-                    .map { it.trim()}
-                    .filter { it.isNotBlank()}
-                _rejectConfirmSensorLatched.value = existingCalibration.rejectConfirmSensorLatched.toYesNoState()
-                _rejectConfirmSensorCR.value = existingCalibration.rejectConfirmSensorCR.toYesNoState()
-                _rejectConfirmSensorEngineerNotes.value = existingCalibration.rejectConfirmSensorEngineerNotes
+                _rejectConfirmSensorTestMethod.value =
+                    existingCalibration.rejectConfirmSensorTestMethod
+                _rejectConfirmSensorTestResult.value =
+                    existingCalibration.rejectConfirmSensorTestResult
+                        .removeSurrounding("[", "]")
+                        .split(",")
+                        .map { it.trim() }
+                        .filter { it.isNotBlank() }
+                _rejectConfirmSensorLatched.value =
+                    existingCalibration.rejectConfirmSensorLatched.toYesNoState()
+                _rejectConfirmSensorCR.value =
+                    existingCalibration.rejectConfirmSensorCR.toYesNoState()
+                _rejectConfirmSensorEngineerNotes.value =
+                    existingCalibration.rejectConfirmSensorEngineerNotes
 
                 _binFullSensorFitted.value = existingCalibration.binFullSensorFitted.toYesNoState()
                 _binFullSensorDetail.value = existingCalibration.binFullSensorDetail
@@ -262,9 +317,10 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _binFullSensorTestResult.value = existingCalibration.binFullSensorTestResult
                     .removeSurrounding("[", "]")
                     .split(",")
-                    .map { it.trim()}
-                    .filter { it.isNotBlank()}
-                _binFullSensorLatched.value = existingCalibration.binFullSensorLatched.toYesNoState()
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
+                _binFullSensorLatched.value =
+                    existingCalibration.binFullSensorLatched.toYesNoState()
                 _binFullSensorCR.value = existingCalibration.binFullSensorCR.toYesNoState()
                 _binFullSensorEngineerNotes.value = existingCalibration.binFullSensorEngineerNotes
 
@@ -274,35 +330,41 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _backupSensorTestResult.value = existingCalibration.backupSensorTestResult
                     .removeSurrounding("[", "]")
                     .split(",")
-                    .map { it.trim()}
-                    .filter { it.isNotBlank()}
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
                 _backupSensorLatched.value = existingCalibration.backupSensorLatched.toYesNoState()
                 _backupSensorCR.value = existingCalibration.backupSensorCR.toYesNoState()
                 _backupSensorEngineerNotes.value = existingCalibration.backupSensorEngineerNotes
 
-                _airPressureSensorFitted.value = existingCalibration.airPressureSensorFitted.toYesNoState()
+                _airPressureSensorFitted.value =
+                    existingCalibration.airPressureSensorFitted.toYesNoState()
                 _airPressureSensorDetail.value = existingCalibration.airPressureSensorDetail
                 _airPressureSensorTestMethod.value = existingCalibration.airPressureSensorTestMethod
                 _airPressureSensorTestResult.value = existingCalibration.airPressureSensorTestResult
                     .removeSurrounding("[", "]")
                     .split(",")
-                    .map { it.trim()}
-                    .filter { it.isNotBlank()}
-                _airPressureSensorLatched.value = existingCalibration.airPressureSensorLatched.toYesNoState()
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
+                _airPressureSensorLatched.value =
+                    existingCalibration.airPressureSensorLatched.toYesNoState()
                 _airPressureSensorCR.value = existingCalibration.airPressureSensorCR.toYesNoState()
-                _airPressureSensorEngineerNotes.value = existingCalibration.airPressureSensorEngineerNotes
+                _airPressureSensorEngineerNotes.value =
+                    existingCalibration.airPressureSensorEngineerNotes
 
-                _packCheckSensorFitted.value = existingCalibration.packCheckSensorFitted.toYesNoState()
+                _packCheckSensorFitted.value =
+                    existingCalibration.packCheckSensorFitted.toYesNoState()
                 _packCheckSensorDetail.value = existingCalibration.packCheckSensorDetail
                 _packCheckSensorTestMethod.value = existingCalibration.packCheckSensorTestMethod
                 _packCheckSensorTestResult.value = existingCalibration.packCheckSensorTestResult
                     .removeSurrounding("[", "]")
                     .split(",")
-                    .map { it.trim()}
-                    .filter { it.isNotBlank()}
-                _packCheckSensorLatched.value = existingCalibration.packCheckSensorLatched.toYesNoState()
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
+                _packCheckSensorLatched.value =
+                    existingCalibration.packCheckSensorLatched.toYesNoState()
                 _packCheckSensorCR.value = existingCalibration.packCheckSensorCR.toYesNoState()
-                _packCheckSensorEngineerNotes.value = existingCalibration.packCheckSensorEngineerNotes
+                _packCheckSensorEngineerNotes.value =
+                    existingCalibration.packCheckSensorEngineerNotes
 
                 _speedSensorFitted.value = existingCalibration.speedSensorFitted.toYesNoState()
                 _speedSensorDetail.value = existingCalibration.speedSensorDetail
@@ -310,8 +372,8 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _speedSensorTestResult.value = existingCalibration.speedSensorTestResult
                     .removeSurrounding("[", "]")
                     .split(",")
-                    .map { it.trim()}
-                    .filter { it.isNotBlank()}
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
                 _speedSensorLatched.value = existingCalibration.speedSensorLatched.toYesNoState()
                 _speedSensorCR.value = existingCalibration.speedSensorCR.toYesNoState()
                 _speedSensorEngineerNotes.value = existingCalibration.speedSensorEngineerNotes
@@ -319,53 +381,65 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _detectNotificationResult.value = existingCalibration.detectNotificationResult
                     .removeSurrounding("[", "]")
                     .split(",")
-                    .map { it.trim()}
-                    .filter { it.isNotBlank()}
-                _detectNotificationEngineerNotes.value = existingCalibration.detectNotificationEngineerNotes
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
+                _detectNotificationEngineerNotes.value =
+                    existingCalibration.detectNotificationEngineerNotes
 
-                _binDoorMonitorFitted.value = existingCalibration.binDoorMonitorFitted.toYesNoState()
+                _binDoorMonitorFitted.value =
+                    existingCalibration.binDoorMonitorFitted.toYesNoState()
                 _binDoorMonitorDetail.value = existingCalibration.binDoorMonitorDetail
                 _binDoorStatusAsFound.value = existingCalibration.binDoorStatusAsFound
                 _binDoorOpenIndication.value = existingCalibration.binDoorOpenIndication
                     .removeSurrounding("[", "]")
                     .split(",")
-                    .map { it.trim()}
-                    .filter { it.isNotBlank()}
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
                 _binDoorUnlockedIndication.value = existingCalibration.binDoorUnlockedIndication
                     .removeSurrounding("[", "]")
                     .split(",")
-                    .map { it.trim()}
-                    .filter { it.isNotBlank()}
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
                 _binDoorTimeoutTimer.value = existingCalibration.binDoorTimeoutTimer
                 _binDoorTimeoutResult.value = existingCalibration.binDoorTimeoutResult
                     .removeSurrounding("[", "]")
                     .split(",")
-                    .map { it.trim()}
-                    .filter { it.isNotBlank()}
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
                 _binDoorLatched.value = existingCalibration.binDoorLatched.toYesNoState()
                 _binDoorCR.value = existingCalibration.binDoorCR.toYesNoState()
                 _binDoorEngineerNotes.value = existingCalibration.binDoorEngineerNotes
 
-                _operatorTestWitnessed.value = existingCalibration.operatorTestWitnessed.toYesNoState()
+                _operatorTestWitnessed.value =
+                    existingCalibration.operatorTestWitnessed.toYesNoState()
                 _operatorName.value = existingCalibration.operatorName
                 _operatorTestResultFerrous.value = existingCalibration.operatorTestResultFerrous
-                _operatorTestResultNonFerrous.value = existingCalibration.operatorTestResultNonFerrous
+                _operatorTestResultNonFerrous.value =
+                    existingCalibration.operatorTestResultNonFerrous
                 _operatorTestResultStainless.value = existingCalibration.operatorTestResultStainless
-                _operatorTestResultLargeMetal.value = existingCalibration.operatorTestResultLargeMetal
-                _operatorTestResultCertNumberFerrous.value = existingCalibration.operatorTestResultCertNumberFerrous
-                _operatorTestResultCertNumberNonFerrous.value = existingCalibration.operatorTestResultCertNumberNonFerrous
-                _operatorTestResultCertNumberStainless.value = existingCalibration.operatorTestResultCertNumberStainless
-                _operatorTestResultCertNumberLargeMetal.value = existingCalibration.operatorTestResultCertNumberLargeMetal
+                _operatorTestResultLargeMetal.value =
+                    existingCalibration.operatorTestResultLargeMetal
+                _operatorTestResultCertNumberFerrous.value =
+                    existingCalibration.operatorTestResultCertNumberFerrous
+                _operatorTestResultCertNumberNonFerrous.value =
+                    existingCalibration.operatorTestResultCertNumberNonFerrous
+                _operatorTestResultCertNumberStainless.value =
+                    existingCalibration.operatorTestResultCertNumberStainless
+                _operatorTestResultCertNumberLargeMetal.value =
+                    existingCalibration.operatorTestResultCertNumberLargeMetal
                 _smeName.value = existingCalibration.smeName
                 _smeEngineerNotes.value = existingCalibration.smeEngineerNotes
 
-                _sensitivityCompliance.value = existingCalibration.sensitivityCompliance.toYesNoState()
-                _essentialRequirementCompliance.value = existingCalibration.essentialRequirementCompliance.toYesNoState()
+                _sensitivityCompliance.value =
+                    existingCalibration.sensitivityCompliance.toYesNoState()
+                _essentialRequirementCompliance.value =
+                    existingCalibration.essentialRequirementCompliance.toYesNoState()
                 _failsafeCompliance.value = existingCalibration.failsafeCompliance.toYesNoState()
-                _bestSensitivityCompliance.value = existingCalibration.bestSensitivityCompliance.toYesNoState()
+                _bestSensitivityCompliance.value =
+                    existingCalibration.bestSensitivityCompliance.toYesNoState()
                 _sensitivityRecommendations.value = existingCalibration.sensitivityRecommendations
-                _performanceValidationIssued.value = existingCalibration.performanceValidationIssued.toYesNoState()
-
+                _performanceValidationIssued.value =
+                    existingCalibration.performanceValidationIssued.toYesNoState()
 
 
             } else {
@@ -440,12 +514,11 @@ class CalibrationMetalDetectorConveyorViewModel(
     private val _modelId = mutableIntStateOf(modelId)
     val modelId: State<Int> = _modelId
 
-    private val _calibrationStartTime = mutableStateOf(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+    private val _calibrationStartTime = mutableStateOf(
+        LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+    )
     private val calibrationStartTime: State<String> = _calibrationStartTime
 
-    private val _calibrationEndTime = mutableStateOf("")
-
-    //val calibrationEndTime: State<String> = _calibrationEndTime
 
     private val _isSynced = mutableStateOf<Boolean?>(false)
     val isSynced: State<Boolean?> = _isSynced
@@ -525,6 +598,10 @@ class CalibrationMetalDetectorConveyorViewModel(
         _detectionSetting8label.value = newDetectionSetting8label
     }
 
+    private val _lastLocation = mutableStateOf(lastLocation)
+    val lastLocation: State<String> = _lastLocation
+
+
     private fun saveNewCalibration() {
         viewModelScope.launch {
             val newCalibration = MetalDetectorConveyorCalibrationLocal(
@@ -546,11 +623,10 @@ class CalibrationMetalDetectorConveyorViewModel(
                 detectionSetting6label = detectionSetting6label.value,
                 detectionSetting7label = detectionSetting7label.value,
                 detectionSetting8label = detectionSetting8label.value,
+                lastLocation = lastLocation.value
 
 
-
-
-                )
+            )
             calibrationDao.insertOrUpdateCalibration(newCalibration)
         }
     }
@@ -560,6 +636,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         viewModelScope.launch {
             calibrationDao.updateCalibrationStart(
                 systemLocation = systemLocation.value,
+                lastLocation.value,
                 canPerformCalibration = canPerformCalibration.value.toString(),
                 reasonForNotCalibrating = reasonForNotCalibrating.value,
                 startCalibrationNotes = startCalibrationNotes.value,
@@ -1008,7 +1085,8 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun updateCalibrationEnd() {
         viewModelScope.launch {
             calibrationDao.updateCalibrationEnd(
-                endDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                endDate = LocalDateTime.now()
+                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 calibrationId = calibrationId.value
             )
         }
@@ -1019,7 +1097,6 @@ class CalibrationMetalDetectorConveyorViewModel(
 
 
     //-----------------------------------------------------------------------------Start Calibration
-
 
 
     private var _systemLocation = mutableStateOf("")
@@ -1044,8 +1121,8 @@ class CalibrationMetalDetectorConveyorViewModel(
         _reasonForNotCalibrating.value = reason
     }
 
-    private val _appVersion = mutableStateOf("")
-    val appVersion: State<String> = _appVersion
+//    private val _appVersion = mutableStateOf("")
+//    val appVersion: State<String> = _appVersion
 
 //    fun setAppVersion(version: String) {
 //        _appVersion.value = version
@@ -1141,7 +1218,6 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
 
-
     ///
 
     private val _detectionSettingAsFound2 = mutableStateOf("")
@@ -1211,7 +1287,6 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun setDetectionSettingAsFound8(newDetectionSettingAsFound8: String) {
         _detectionSettingAsFound8.value = newDetectionSettingAsFound8
     }
-
 
 
     private val _detectionSettingAsFoundEngineerNotes = mutableStateOf("")
@@ -1292,7 +1367,8 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
     private val _sensitivityAsFoundNonFerrousPeakSignal = mutableStateOf("")
-    val sensitivityAsFoundNonFerrousPeakSignal: State<String> = _sensitivityAsFoundNonFerrousPeakSignal
+    val sensitivityAsFoundNonFerrousPeakSignal: State<String> =
+        _sensitivityAsFoundNonFerrousPeakSignal
 
 
     fun setSensitivityAsFoundNonFerrousPeakSignal(newSensitivityAsFoundNonFerrousPeakSignal: String) {
@@ -1308,7 +1384,8 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
     private val _sensitivityAsFoundStainlessPeakSignal = mutableStateOf("")
-    val sensitivityAsFoundStainlessPeakSignal: State<String> = _sensitivityAsFoundStainlessPeakSignal
+    val sensitivityAsFoundStainlessPeakSignal: State<String> =
+        _sensitivityAsFoundStainlessPeakSignal
 
 
     fun setSensitivityAsFoundStainlessPeakSignal(newSensitivityAsFoundStainlessPeakSignal: String) {
@@ -1415,7 +1492,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun setSensitivityAsLeftNonFerrous(newSensitivityAsLeftNonFerrous: String) {
         _sensitivityAsLeftNonFerrous.value = newSensitivityAsLeftNonFerrous
     }
-    
+
     //-----
 
     private val _detectRejectNonFerrousLeading = mutableStateOf(YesNoState.NO)
@@ -1424,7 +1501,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun setDetectRejectNonFerrousLeading(newValue: YesNoState) {
         _detectRejectNonFerrousLeading.value = newValue
     }
-    
+
     //-----
 
     private val _detectRejectNonFerrousMiddle = mutableStateOf(YesNoState.NO)
@@ -1433,7 +1510,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun setDetectRejectNonFerrousMiddle(newValue: YesNoState) {
         _detectRejectNonFerrousMiddle.value = newValue
     }
-    
+
     //-----
 
     private val _detectRejectNonFerrousTrailing = mutableStateOf(YesNoState.NO)
@@ -1442,7 +1519,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun setDetectRejectNonFerrousTrailing(newValue: YesNoState) {
         _detectRejectNonFerrousTrailing.value = newValue
     }
-    
+
     //-----
 
     private val _peakSignalNonFerrousLeading = mutableStateOf("")
@@ -1451,7 +1528,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun setPeakSignalNonFerrousLeading(newPeakSignalNonFerrousLeading: String) {
         _peakSignalNonFerrousLeading.value = newPeakSignalNonFerrousLeading
     }
-    
+
     //-----
 
     private val _peakSignalNonFerrousMiddle = mutableStateOf("")
@@ -1460,7 +1537,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun setPeakSignalNonFerrousMiddle(newPeakSignalNonFerrousMiddle: String) {
         _peakSignalNonFerrousMiddle.value = newPeakSignalNonFerrousMiddle
     }
-    
+
     //-----
 
     private val _peakSignalNonFerrousTrailing = mutableStateOf("")
@@ -1469,7 +1546,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun setPeakSignalNonFerrousTrailing(newPeakSignalNonFerrousTrailing: String) {
         _peakSignalNonFerrousTrailing.value = newPeakSignalNonFerrousTrailing
     }
-    
+
     //-----
 
     private val _sampleCertificateNumberNonFerrous = mutableStateOf("")
@@ -1479,7 +1556,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun setSampleCertificateNumberNonFerrous(newSampleCertificateNumberNonFerrous: String) {
         _sampleCertificateNumberNonFerrous.value = newSampleCertificateNumberNonFerrous
     }
-    
+
     //-----
 
     private val _nonFerrousTestEngineerNotes = mutableStateOf("")
@@ -1500,7 +1577,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         _sensitivityAsLeftStainless.value = newSensitivityAsLeftStainless
     }
 
-    
+
     //-----
 
     private val _peakSignalStainlessLeading = mutableStateOf("")
@@ -1509,7 +1586,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun setPeakSignalStainlessLeading(newPeakSignalStainlessLeading: String) {
         _peakSignalStainlessLeading.value = newPeakSignalStainlessLeading
     }
-    
+
     //-----
 
     private val _peakSignalStainlessMiddle = mutableStateOf("")
@@ -1518,7 +1595,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun setPeakSignalStainlessMiddle(newPeakSignalStainlessMiddle: String) {
         _peakSignalStainlessMiddle.value = newPeakSignalStainlessMiddle
     }
-    
+
     //------
 
     private val _peakSignalStainlessTrailing = mutableStateOf("")
@@ -1527,7 +1604,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun setPeakSignalStainlessTrailing(newPeakSignalStainlessTrailing: String) {
         _peakSignalStainlessTrailing.value = newPeakSignalStainlessTrailing
     }
-    
+
     //------
 
     private val _sampleCertificateNumberStainless = mutableStateOf("")
@@ -1537,19 +1614,19 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun setSampleCertificateNumberStainless(newSampleCertificateNumberStainless: String) {
         _sampleCertificateNumberStainless.value = newSampleCertificateNumberStainless
     }
-    
+
     //-----
 
     private val _detectRejectStainlessLeading = mutableStateOf(YesNoState.NO)
     val detectRejectStainlessLeading: State<YesNoState> = _detectRejectStainlessLeading
-    
+
 
     fun setDetectRejectStainlessLeading(newValue: YesNoState) {
         _detectRejectStainlessLeading.value = newValue
     }
-    
+
     //-----
-    
+
     private val _detectRejectStainlessMiddle = mutableStateOf(YesNoState.NO)
     val detectRejectStainlessMiddle: State<YesNoState> = _detectRejectStainlessMiddle
 
@@ -1558,14 +1635,14 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
     //-----
-    
+
     private val _detectRejectStainlessTrailing = mutableStateOf(YesNoState.NO)
     val detectRejectStainlessTrailing: State<YesNoState> = _detectRejectStainlessTrailing
 
     fun setDetectRejectStainlessTrailing(newValue: YesNoState) {
         _detectRejectStainlessTrailing.value = newValue
     }
-    
+
     //------
 
     private val _stainlessTestEngineerNotes = mutableStateOf("")
@@ -1584,7 +1661,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun setDetectRejectLargeMetal(newValue: YesNoState) {
         _detectRejectLargeMetal.value = newValue
     }
-    
+
     //-----
 
 
@@ -2726,7 +2803,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun setPerformanceValidationIssued(newValue: YesNoState) {
         _performanceValidationIssued.value = newValue
     }
-
+    //-------------------------------------------------------------------------------End Calibration
 
     //---------------------------------------------------------------------------CSV File Processing
     suspend fun createAndUploadCsv(
@@ -2740,7 +2817,11 @@ class CalibrationMetalDetectorConveyorViewModel(
         val csvFile = createCsvFile(context, calibrationId) ?: return false
 
         // Step 2: Attempt upload and store result
-        val uploadSuccessful = uploadCsvFile(csvFile, apiService, calibrationId)
+        val uploadSuccessful = CsvUploader.uploadCsvFile(
+            csvFile = csvFile,
+            apiService = apiService,
+            fileName = calibrationId
+        )
 
         // Step 3: Update upload status in database
         calibrationDao.updateIsSynced(calibrationId, uploadSuccessful)
@@ -2994,61 +3075,65 @@ class CalibrationMetalDetectorConveyorViewModel(
 
                 // Check if file exists and is not empty
                 if (csvFile.exists() && csvFile.length() > 0) {
-                    Log.d("CSV", "File written successfully: ${csvFile.absolutePath}")
+                    Log.d("MESSA-DEBUG", "File written successfully: ${csvFile.absolutePath}")
                     _isUploading.value = false
                     csvFile  // Return the file on success
                 } else {
-                    Log.d("CSV", "CSV file was either empty or does not exist.")
+                    Log.d("MESSA-DEBUG", "CSV file was either empty or does not exist.")
                     _isUploading.value = false
                     null  // Return null if the file is empty
 
                 }
             } catch (e: IOException) {
                 e.printStackTrace()
-                Log.d("CSV", "There was an exception when writing the CSV file: ${e.message}")
+                Log.d("MESSA-DEBUG", "There was an exception when writing the CSV file: ${e.message}")
                 _isUploading.value = false
                 null  // Return null on any exception
             }
         }
     }
 
-    private suspend fun uploadCsvFile(csvFile: File, apiService: ApiService, fileName: String): Boolean {
-        return withContext(Dispatchers.IO) {
-
-            _isUploading.value = true
-
-            try {
-                // Create the request body and multipart part from the CSV file
-                val requestFile = csvFile.asRequestBody("text/csv".toMediaTypeOrNull())
-                val multipartBody = MultipartBody.Part.createFormData("file", fileName, requestFile)
-
-                // Log upload attempt
-                Log.d("Upload", "Attempting to upload file: $fileName")
-
-                // Execute the upload call
-                val response = apiService.uploadMdCalibrationCSV(multipartBody).execute()
-
-                if (response.isSuccessful) {
-                    Log.d("Upload", "File uploaded successfully!")
-                    _isUploading.value = false
-                    // update the isSynced field
-
-                    true
-                } else {
-                    Log.e("Upload", "Upload failed: ${response.errorBody()?.string()}")
-                    _isUploading.value = false
-                    false
-                }
-            } catch (e: Exception) {
-                Log.e("UploadError", "Error uploading file: ${e.message}")
-                _isUploading.value = false
-                false
-            }
-        }
-    }
-
-
-
+//    private suspend fun uploadCsvFile(
+//        csvFile: File,
+//        apiService: ApiService,
+//        fileName: String
+//    ): Boolean = withContext(Dispatchers.IO) {
+//
+//        _isUploading.value = true
+//
+//        try {
+//            // Make sure filename ends with .csv
+//            val safeFileName = if (fileName.endsWith(".csv")) fileName else "$fileName.csv"
+//
+//            // Create the request body with correct MIME type
+//            val requestBody = csvFile.asRequestBody("text/csv".toMediaType())
+//
+//            // NOTE: "File" must match the property name in CsvUploadRequest on the server
+//            val multipartPart = MultipartBody.Part.createFormData("File", safeFileName, requestBody)
+//
+//            Log.d("MESSA-DEBUG", "Uploading file: $safeFileName (${csvFile.length()} bytes)")
+//            Log.d("MESSA-DEBUG", "Uploading to ${apiService} with URL ${RetrofitClient.BASE_URL}")
+//
+//            val response = apiService.uploadMdCalibrationCSV(multipartPart).execute()
+//
+//            if (response.isSuccessful) {
+//                Log.d("MESSA-DEBUG", "✅ File uploaded successfully!")
+//                true
+//            } else {
+//                val body = response.errorBody()?.string()
+//                Log.e(
+//                    "MESSA-DEBUG",
+//                    "❌ Upload failed: code=${response.code()} message=${response.message()} body=$body"
+//                )
+//                false
+//            }
+//        } catch (e: Exception) {
+//            Log.e("MESSA-DEBUG", "⚠️ Exception during upload: ${e.message}", e)
+//            false
+//        } finally {
+//            _isUploading.value = false
+//        }
+//    }
 
 
 
@@ -3057,7 +3142,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
 
     fun deleteCalibration(calibrationId: String) {
-        Log.d("CalibrationViewModel", "Deleting calibration with ID: $calibrationId")
+        Log.d("MESSA-DEBUG", "Deleting calibration with ID: $calibrationId")
         viewModelScope.launch {
             calibrationDao.deleteCalibration(calibrationId)
         }
@@ -3066,11 +3151,54 @@ class CalibrationMetalDetectorConveyorViewModel(
     // Add this to stop the ViewModel scope
     override fun onCleared() {
         super.onCleared()
-        Log.d("CalibrationViewModel", "ViewmodelCleared")
+        Log.d("MESSA-DEBUG", "ViewmodelCleared")
         viewModelScope.cancel()  // Cancels all active jobs in this ViewModel scope
+    }
+
+    suspend fun updateSystemLocationLocally() {
+        mdSystemsDAO.updateLastLocation(systemId.value, systemLocation.value)
+
+    }
+
+    suspend fun finaliseCalibrationAndUpload(
+        context: Context,
+        apiService: ApiService,
+        onResult: (String) -> Unit
+    ) {
+        try {
+            // End calibration
+            updateCalibrationEnd()
+
+            // Update local database last calibration date
+            mdSystemsDAO.updateLastCalibrationDate(
+                systemId.value,
+                LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+            )
+
+            // Try syncing with the cloud (Room is gospel)
+            repository.updateSystem(
+                context = context,
+                cloudId = cloudSystemId.value,
+                localId = systemId.value,
+                tempId = tempSystemId.value
+            )
+
+            // Generate + upload CSV
+            val csvSuccess = createAndUploadCsv(context, calibrationId.value, apiService)
+            if (csvSuccess) {
+                onResult("✅ Calibration completed and uploaded to the cloud.")
+            } else {
+                onResult("⚠️ Calibration completed, but NOT uploaded to the cloud. Please try again later.")
+            }
+        } catch (e: Exception) {
+            Log.e("MESSA-DEBUG", "Error finishing calibration: ${e.message}")
+            onResult("❌ An error occurred while finishing calibration. Please try again.")
+        }
     }
 
 
 
 
 }
+
+

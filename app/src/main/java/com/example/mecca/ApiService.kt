@@ -1,13 +1,12 @@
 package com.example.mecca
 
-import com.example.mecca.DAOs.UserResponse
-import com.example.mecca.DataClasses.CloudUser
-import com.example.mecca.DataClasses.MdModel
-import com.example.mecca.DataClasses.MdSystem
-import com.example.mecca.DataClasses.MdSystemCloud
-import com.example.mecca.DataClasses.MdSystemCloudResponse
-import com.example.mecca.DataClasses.MdSystemLocal
-import com.example.mecca.DataClasses.SystemType
+import com.example.mecca.dataClasses.CloudUser
+import com.example.mecca.dataClasses.Customer
+import com.example.mecca.dataClasses.MdModel
+import com.example.mecca.dataClasses.MdSystem
+import com.example.mecca.dataClasses.MdSystemCloud
+import com.example.mecca.dataClasses.MdSystemLocal
+import com.example.mecca.dataClasses.SystemType
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.Call
@@ -16,6 +15,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
 
@@ -49,6 +49,15 @@ interface ApiService {
     fun uploadMdCalibrationCSV(
         @Part file: MultipartBody.Part
     ): Call<ResponseBody>
+
+    @PUT("MdSystems/{id}")
+    suspend fun updateMdSystem(
+        @Path("id") id: Int,
+        @Body systemData: MdSystemCloud
+    ): Response<Unit>
+
+
+
 
 }
 

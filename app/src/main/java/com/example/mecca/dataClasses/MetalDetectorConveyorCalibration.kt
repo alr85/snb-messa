@@ -1,4 +1,4 @@
-package com.example.mecca.DataClasses
+package com.example.mecca.dataClasses
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -26,6 +26,7 @@ data class MetalDetectorConveyorCalibrationLocal(
     //-----------------------------------------------------------------------------Calibration Start
 
     var systemLocation: String = "",
+    var lastLocation: String = "",
     var canPerformCalibration: String = "",
     var reasonForNotCalibrating: String = "",
     var desiredCop: String = "",

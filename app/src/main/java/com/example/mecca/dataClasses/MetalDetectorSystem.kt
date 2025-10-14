@@ -1,4 +1,4 @@
-package com.example.mecca.DataClasses
+package com.example.mecca.dataClasses
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -33,20 +33,20 @@ data class MdSystemCloud(
 )
 
 // This is for retrieving systems from the cloud
-data class MdSystemCloudResponse(
-    val id: Int,
-    val modelId: Int,
-    val customerId: Int,
-    val serialNumber: String,
-    val apertureWidth: Int,
-    val apertureHeight: Int,
-    val lastCalibration: String,
-    val addedDate: String,
-    val calibrationInterval: Int,
-    val systemTypeId: Int,
-    val lastLocation: String
-
-)
+//data class MdSystemCloudResponse(
+//    val id: Int,
+//    val modelId: Int,
+//    val customerId: Int,
+//    val serialNumber: String,
+//    val apertureWidth: Int,
+//    val apertureHeight: Int,
+//    val lastCalibration: String,
+//    val addedDate: String,
+//    val calibrationInterval: Int,
+//    val systemTypeId: Int,
+//    val lastLocation: String? = null
+//
+//)
 
 
 // This is the entity class that corresponds to the local Room database table
@@ -68,7 +68,7 @@ data class MdSystemLocal(
     val calibrationInterval: Int,
     val systemTypeId: Int,
     var isSynced: Boolean,
-    var lastLocation: String
+    var lastLocation: String = ""
 
 )
 
@@ -92,6 +92,5 @@ data class MetalDetectorWithFullDetails(
     val fusionID: Int,
     val lastLocation: String
 )
-
 
 

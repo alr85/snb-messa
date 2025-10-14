@@ -1,4 +1,4 @@
-package com.example.mecca
+package com.example.mecca.screens
 
 import android.content.Intent
 import android.util.Log
@@ -12,14 +12,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -47,14 +43,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.mecca.CalibrationViewModels.CsvUploadViewModel
-import com.example.mecca.DAOs.CustomerDAO
+import com.example.mecca.ApiService
+import com.example.mecca.AppDatabase
 import com.example.mecca.DAOs.MetalDetectorConveyorCalibrationDAO
-import com.example.mecca.DataClasses.MetalDetectorConveyorCalibrationLocal
+import com.example.mecca.dataClasses.MetalDetectorConveyorCalibrationLocal
 import com.example.mecca.Network.isNetworkAvailable
+import com.example.mecca.Repositories.CustomerRepository
 import com.example.mecca.Repositories.MetalDetectorSystemsRepository
 import com.example.mecca.activities.MetalDetectorConveyorCalibrationActivity
+import com.example.mecca.formatDate
 import com.example.mecca.ui.theme.ExpandableSection
+import com.example.mecca.util.CsvUploader
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -62,12 +61,15 @@ import java.io.File
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyCalibrationsScreen(
-    navController: NavHostController,
-    db: AppDatabase,
-    repositoryMD: MetalDetectorSystemsRepository,
+    //navController: NavHostController,
+    //db: AppDatabase,
+    //repositoryMD: MetalDetectorSystemsRepository,
     dao: MetalDetectorConveyorCalibrationDAO, // DAO for fetching unfinished calibrations
     customerRepository: CustomerRepository,
-    apiService: ApiService
+    apiService: ApiService,
+    navController: NavHostController,
+    db: AppDatabase,
+    repositoryMD: MetalDetectorSystemsRepository
 ) {
 
     var isMenuExpanded by remember { mutableStateOf(false) } // Tracks menu visibility
@@ -183,6 +185,7 @@ fun MyCalibrationsScreen(
                     Column {
                         val pendingCalibrations by dao.getAllPendingCalibrations()
                             .collectAsState(initial = emptyList())
+
                         pendingCalibrations.forEach { calibration ->
                             MyCalibrationItem(
                                 calibration = calibration,
@@ -192,30 +195,43 @@ fun MyCalibrationsScreen(
                                     coroutineScope.launch {
                                         if (isNetworkAvailable(context)) {
 
-                                            // Check to see if the calibration has a valid cloud ID before uploading
+                                            Log.d("MESSA-DEBUG", "Starting upload: ${calibration.calibrationId}")
+                                            Log.d("MESSA-DEBUG", "Checking for a matching system: ${calibration.cloudSystemId}")
+
+
+
+                                            // --- Ensure system exists in the cloud ---
                                             if (calibration.cloudSystemId == 0) {
-                                                snackbarHostState.showSnackbar("Please add this system to the cloud first.")
+                                                Log.d("MESSA-DEBUG", "No cloud ID found")
+                                                snackbarHostState.showSnackbar("No matching system found. Please add this system to the cloud first")
                                                 return@launch
                                             }
 
+                                            Log.d("MESSA-DEBUG", "Building the CSV file")
 
-
-
+                                            // --- Build CSV file path ---
                                             val csvFile = File(
                                                 context.filesDir,
-                                                "calibration_data_" + calibration.calibrationId + ".csv"
+                                                "calibration_data_${calibration.calibrationId}.csv"
                                             )
-                                            val uploadSuccess = CsvUploadViewModel(apiService)
-                                                .uploadCsvFile(context, csvFile, calibration.calibrationId)
-                                            if (uploadSuccess) {
-                                                dao.updateIsSynced(
-                                                    calibration.calibrationId,
-                                                    uploadSuccess
-                                                )
+
+                                            Log.d("MESSA-DEBUG", "Uploading the CSV file: $csvFile")
+
+                                            val success = CsvUploader.uploadCsvFile(
+                                                csvFile = csvFile,
+                                                apiService = apiService,
+                                                fileName = calibration.calibrationId
+                                            )
+                                            if (success) {
+                                                Log.d("MESSA-DEBUG", "Upload of csvFile: $csvFile successful ")
+                                                Log.d("MESSA-DEBUG", "Updating 'isSynced' flag to true ")
+                                                dao.updateIsSynced(calibration.calibrationId, true)
+                                                Log.d("MESSA-DEBUG", "Upload complete")
                                                 snackbarHostState.showSnackbar("Upload successful!")
                                             } else {
                                                 snackbarHostState.showSnackbar("Upload failed.")
                                             }
+
                                         } else {
                                             snackbarHostState.showSnackbar("No internet connection. Unable to upload.")
                                         }
@@ -224,9 +240,9 @@ fun MyCalibrationsScreen(
                             )
                         }
                     }
-
                 }
             }
+
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
 

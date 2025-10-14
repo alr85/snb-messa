@@ -1,3 +1,5 @@
+package com.example.mecca.screens
+
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -29,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.mecca.AppDatabase
-import com.example.mecca.DataClasses.MetalDetectorWithFullDetails
+import com.example.mecca.dataClasses.MetalDetectorWithFullDetails
 import com.example.mecca.FetchResult
 import com.example.mecca.R
 import com.example.mecca.Repositories.MetalDetectorSystemsRepository
@@ -310,6 +312,16 @@ fun ServiceSelectSystemScreen(
                             // Model description
                             Text(
                                 text = mdSystem.modelDescription,
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .fillMaxWidth(),
+                                textAlign = TextAlign.Center,
+                                fontSize = 14.sp
+                            )
+
+                            // Location description
+                            Text(
+                                text = mdSystem.lastLocation,
                                 modifier = Modifier
                                     .padding(8.dp)
                                     .fillMaxWidth(),

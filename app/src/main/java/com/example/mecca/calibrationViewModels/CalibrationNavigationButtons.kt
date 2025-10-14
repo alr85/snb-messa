@@ -1,7 +1,7 @@
-package com.example.mecca.CalibrationViewModels
+package com.example.mecca.calibrationViewModels
 
 
-import android.app.Activity
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.mecca.ui.theme.AppConstants
@@ -45,7 +44,7 @@ fun CalibrationNavigationButtons(
     isFirstStep: Boolean
 ) {
     var showDialog by remember { mutableStateOf(false) }
-    val activity = LocalContext.current as? Activity // Get current activity
+    val activity = LocalActivity.current
 
     Row(
         modifier = Modifier
@@ -55,6 +54,7 @@ fun CalibrationNavigationButtons(
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Previous Step Button (disabled on the first step)
+
         if (!isFirstStep) {
             OutlinedButton(
 

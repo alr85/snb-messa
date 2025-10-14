@@ -1,3 +1,5 @@
+package com.example.mecca.screens
+
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.background
@@ -23,8 +25,10 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -53,6 +57,7 @@ fun SettingsScreen(navController: NavHostController, userViewModel: UserViewMode
     val settingsItems = listOf(
         SettingItem("My Calibrations"),
         SettingItem("Database Sync"),
+        SettingItem("Phonebook"),
         SettingItem("About App"),
         SettingItem("Logout") // Add Logout button
         //SettingItem("Another switch", isSwitch = true, isChecked = false),
@@ -185,17 +190,17 @@ data class SettingItem(
 
 @Composable
 fun LogoutConfirmationDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
-    androidx.compose.material.AlertDialog(
+    AlertDialog(
         onDismissRequest = { onDismiss() },
         title = { Text("Confirm Logout") },
         text = { Text("Are you sure you want to log out and close the app?") },
         confirmButton = {
-            androidx.compose.material.TextButton(onClick = { onConfirm() }) {
+            TextButton(onClick = { onConfirm() }) {
                 Text("Yes")
             }
         },
         dismissButton = {
-            androidx.compose.material.TextButton(onClick = { onDismiss() }) {
+            TextButton(onClick = { onDismiss() }) {
                 Text("No")
             }
         }

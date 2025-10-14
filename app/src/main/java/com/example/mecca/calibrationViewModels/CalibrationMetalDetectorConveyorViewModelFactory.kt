@@ -1,14 +1,20 @@
-package com.example.mecca.CalibrationViewModels
+package com.example.mecca.calibrationViewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.example.mecca.ApiService
 import com.example.mecca.DAOs.CustomerDAO
 import com.example.mecca.DAOs.MetalDetectorConveyorCalibrationDAO
-import com.example.mecca.MdModelsDAO
+import com.example.mecca.DAOs.MdModelsDAO
+import com.example.mecca.DAOs.MetalDetectorSystemsDAO
+import com.example.mecca.Repositories.MetalDetectorSystemsRepository
 
 class CalibrationMetalDetectorConveyorViewModelFactory(
     private val calibrationDao: MetalDetectorConveyorCalibrationDAO,
+    private val repository: MetalDetectorSystemsRepository,
     private val mdModelsDAO: MdModelsDAO,
+    private val mdSystemsDAO: MetalDetectorSystemsDAO,
+    private val apiService: ApiService,
     private val calibrationId: String,
     private val customerId: Int,
     private val systemId: Int,
@@ -27,8 +33,10 @@ class CalibrationMetalDetectorConveyorViewModelFactory(
     private val detectionSetting5label: String,
     private val detectionSetting6label: String,
     private val detectionSetting7label: String,
-    private val detectionSetting8label: String
-) : ViewModelProvider.Factory {
+    private val detectionSetting8label: String,
+    private val lastLocation: String,
+
+    ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -36,7 +44,10 @@ class CalibrationMetalDetectorConveyorViewModelFactory(
             return CalibrationMetalDetectorConveyorViewModel(
                 engineerId = engineerId,
                 calibrationDao = calibrationDao,
+                repository = repository,
                 mdModelsDAO = mdModelsDAO,
+                mdSystemsDAO = mdSystemsDAO,
+                apiService = apiService,
                 calibrationId = calibrationId,
                 customerId = customerId,
                 systemId = systemId,
@@ -54,7 +65,8 @@ class CalibrationMetalDetectorConveyorViewModelFactory(
                 detectionSetting5label = detectionSetting5label,
                 detectionSetting6label = detectionSetting6label,
                 detectionSetting7label = detectionSetting7label,
-                detectionSetting8label = detectionSetting8label
+                detectionSetting8label = detectionSetting8label,
+                lastLocation = lastLocation,
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")

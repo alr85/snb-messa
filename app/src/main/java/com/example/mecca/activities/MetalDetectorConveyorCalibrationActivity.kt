@@ -1,6 +1,6 @@
 package com.example.mecca.activities
 
-import MyAppTheme
+import com.example.mecca.ui.theme.MyAppTheme
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -8,10 +8,21 @@ import androidx.activity.viewModels
 import androidx.navigation.compose.rememberNavController
 import com.example.mecca.ApiService
 import com.example.mecca.AppDatabase
-import com.example.mecca.CalibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.CalibrationViewModels.CalibrationMetalDetectorConveyorViewModelFactory
+import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
+import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModelFactory
+import com.example.mecca.Repositories.MetalDetectorSystemsRepository
 import com.example.mecca.RetrofitClient
 import com.example.mecca.ui.theme.MetalDetectorConveyorCalibrationNavGraph
+import kotlin.getValue
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.activity.OnBackPressedCallback
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+
 
 class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
 
@@ -35,7 +46,7 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
 
     private var detectionSetting7label: String = ""
     private var detectionSetting8label: String = ""
-
+    private var lastLocation: String = ""
 
 
     // Initialize the database and DAO using the AppDatabase instance
@@ -47,6 +58,10 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
         AppDatabase.getDatabase(applicationContext).mdModelDao()
     }
 
+    private val mdSystemsDAO by lazy {
+        AppDatabase.getDatabase(applicationContext).mdSystemDAO()
+    }
+
     private val customerDAO by lazy {
         AppDatabase.getDatabase(applicationContext).customerDao()
     }
@@ -55,16 +70,19 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
         RetrofitClient.instance
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-        // Do nothing, effectively disabling the back button
+    private val repository by lazy {
+        MetalDetectorSystemsRepository(apiService, AppDatabase.getDatabase(applicationContext))
     }
+
 
     // Scoping the ViewModel to the activity
     private val calibrationViewModel: CalibrationMetalDetectorConveyorViewModel by viewModels {
         CalibrationMetalDetectorConveyorViewModelFactory(
-            calibrationDao,
+            calibrationDao = calibrationDao,
+            repository = repository,
             mdModelsDAO,
+            mdSystemsDAO,
+            apiService,
             calibrationId,
             customerId,
             systemId,
@@ -83,23 +101,37 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
             detectionSetting5label,
             detectionSetting6label,
             detectionSetting7label,
-            detectionSetting8label
-            )
+            detectionSetting8label,
+            lastLocation
+        )
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        var showBackDisabledDialog by mutableStateOf(false)
+
+        onBackPressedDispatcher.addCallback(
+            this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    showBackDisabledDialog = true
+                }
+            }
+        )
+
+
         // Retrieve calibrationId from the intent extras
         calibrationId = intent.getStringExtra("CALIBRATION_ID") ?: ""
-        customerId = intent.getIntExtra("CUSTOMER_ID",0)
-        systemId = intent.getIntExtra("SYSTEM_ID",0)
-        cloudSystemId = intent.getIntExtra("CLOUD_SYSTEM_ID",0)
+        customerId = intent.getIntExtra("CUSTOMER_ID", 0)
+        systemId = intent.getIntExtra("SYSTEM_ID", 0)
+        cloudSystemId = intent.getIntExtra("CLOUD_SYSTEM_ID", 0)
         tempSystemId = intent.getIntExtra("TEMP_SYSTEM_ID", 0)
         serialNumber = intent.getStringExtra("SERIAL_NUMBER") ?: ""
         modelDescription = intent.getStringExtra("MODEL_DESCRIPTION") ?: ""
         customerName = intent.getStringExtra("CUSTOMER_NAME") ?: ""
-        modelId = intent.getIntExtra("MODEL_ID",0)
+        modelId = intent.getIntExtra("MODEL_ID", 0)
         engineerId = intent.getIntExtra("ENGINEER_ID", 0) // Retrieve the engineerId
         detectionSetting1label = intent.getStringExtra("DETECTION_SETTING_1_LABEL") ?: ""
         detectionSetting2label = intent.getStringExtra("DETECTION_SETTING_2_LABEL") ?: ""
@@ -109,8 +141,10 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
         detectionSetting6label = intent.getStringExtra("DETECTION_SETTING_6_LABEL") ?: ""
         detectionSetting7label = intent.getStringExtra("DETECTION_SETTING_7_LABEL") ?: ""
         detectionSetting8label = intent.getStringExtra("DETECTION_SETTING_8_LABEL") ?: ""
+        lastLocation = intent.getStringExtra("LAST_LOCATION") ?: ""
 
 
+// Set up the UI
 
 
         setContent {
@@ -125,6 +159,30 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
                     calibrationId = calibrationId,
                     apiService = apiService
                 )
+
+                if (showBackDisabledDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showBackDisabledDialog = false },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                showBackDisabledDialog = false
+                            }
+                            ) {
+                                Text("OK")
+                            }
+                        },
+                        title = {
+                            Text("Warning")
+                        },
+                        text = {
+                            Text(
+                                "Back navigation is disabled during the calibration process to prevent data loss"
+                            )
+
+
+                        }
+                    )
+                }
             }
         }
     }

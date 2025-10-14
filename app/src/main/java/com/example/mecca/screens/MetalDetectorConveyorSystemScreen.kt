@@ -1,11 +1,9 @@
-package com.example.mecca
+package com.example.mecca.screens
 
 import android.content.Intent
 import android.util.Log
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,10 +20,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -39,19 +35,17 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.mecca.DAOs.MetalDetectorConveyorCalibrationDAO
-import com.example.mecca.DataClasses.MdModelsLocal
-import com.example.mecca.DataClasses.MetalDetectorConveyorCalibrationLocal
-import com.example.mecca.DataClasses.MetalDetectorWithFullDetails
+import com.example.mecca.dataClasses.MdModelsLocal
+import com.example.mecca.dataClasses.MetalDetectorWithFullDetails
 import com.example.mecca.Network.isNetworkAvailable
+import com.example.mecca.PreferencesHelper
 import com.example.mecca.Repositories.MetalDetectorModelsRepository
 import com.example.mecca.Repositories.MetalDetectorSystemsRepository
 import com.example.mecca.activities.MetalDetectorConveyorCalibrationActivity
@@ -179,6 +173,7 @@ fun MetalDetectorConveyorSystemScreen(
                                         putExtra("DETECTION_SETTING_6_LABEL", modelDetails?.detectionSetting6)
                                         putExtra("DETECTION_SETTING_7_LABEL", modelDetails?.detectionSetting7)
                                         putExtra("DETECTION_SETTING_8_LABEL", modelDetails?.detectionSetting8)
+                                        putExtra("LAST_LOCATION", mdSystem?.lastLocation)
                                     }
                                     context.startActivity(intent)
                                 }
@@ -315,6 +310,7 @@ fun MetalDetectorConveyorSystemScreen(
                         label = "Aperture Height",
                         value = "${mdSystem?.apertureHeight ?: "?"} mm"
                     )
+                    DetailItem(label = "Location", value = mdSystem?.lastLocation ?: "?")
                 }
             }
 
@@ -353,44 +349,44 @@ fun MetalDetectorConveyorSystemScreen(
     }
 }
 
-@Composable
-fun CalibrationItem(
-    calibration: MetalDetectorConveyorCalibrationLocal,
-    status: String,
-    onClick: () -> Unit
-) {
-    val formattedDate = try {
-        formatDate(calibration.startDate)
-    } catch (e: Exception) {
-        "Invalid date"
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(vertical = 8.dp, horizontal = 16.dp)
-    ) {
-        Text(
-            text = "Calibration ID: ${calibration.calibrationId}",
-            fontWeight = FontWeight.Bold,
-            style = MaterialTheme.typography.bodyLarge,
-            color = Color.Black
-        )
-        Text(
-            text = status,
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray
-        )
-        Text(
-            text = "Started on: $formattedDate",
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray
-        )
-        HorizontalDivider(
-            modifier = Modifier.padding(top = 8.dp),
-            thickness = 1.dp,
-            color = Color.LightGray
-        )
-    }
-}
+//@Composable
+//fun CalibrationItem(
+//    calibration: MetalDetectorConveyorCalibrationLocal,
+//    status: String,
+//    onClick: () -> Unit
+//) {
+//    val formattedDate = try {
+//        formatDate(calibration.startDate)
+//    } catch (e: Exception) {
+//        "Invalid date"
+//    }
+//
+//    Column(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .clickable { onClick() }
+//            .padding(vertical = 8.dp, horizontal = 16.dp)
+//    ) {
+//        Text(
+//            text = "Calibration ID: ${calibration.calibrationId}",
+//            fontWeight = FontWeight.Bold,
+//            style = MaterialTheme.typography.bodyLarge,
+//            color = Color.Black
+//        )
+//        Text(
+//            text = status,
+//            style = MaterialTheme.typography.bodyMedium,
+//            color = Color.Gray
+//        )
+//        Text(
+//            text = "Started on: $formattedDate",
+//            style = MaterialTheme.typography.bodyMedium,
+//            color = Color.Gray
+//        )
+//        HorizontalDivider(
+//            modifier = Modifier.padding(top = 8.dp),
+//            thickness = 1.dp,
+//            color = Color.LightGray
+//        )
+//    }
+//}
