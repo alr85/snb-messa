@@ -1,27 +1,19 @@
 package com.example.mecca.activities
 
-import com.example.mecca.ui.theme.MyAppTheme
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.navigation.compose.rememberNavController
 import com.example.mecca.ApiService
 import com.example.mecca.AppDatabase
-import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModelFactory
 import com.example.mecca.Repositories.MetalDetectorSystemsRepository
 import com.example.mecca.RetrofitClient
+import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
+import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModelFactory
 import com.example.mecca.ui.theme.MetalDetectorConveyorCalibrationNavGraph
-import kotlin.getValue
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.activity.OnBackPressedCallback
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.example.mecca.ui.theme.MyAppTheme
 
 
 class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
@@ -110,18 +102,6 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        var showBackDisabledDialog by mutableStateOf(false)
-
-        onBackPressedDispatcher.addCallback(
-            this,
-            object : OnBackPressedCallback(true) {
-                override fun handleOnBackPressed() {
-                    showBackDisabledDialog = true
-                }
-            }
-        )
-
-
         // Retrieve calibrationId from the intent extras
         calibrationId = intent.getStringExtra("CALIBRATION_ID") ?: ""
         customerId = intent.getIntExtra("CUSTOMER_ID", 0)
@@ -160,29 +140,6 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
                     apiService = apiService
                 )
 
-                if (showBackDisabledDialog) {
-                    AlertDialog(
-                        onDismissRequest = { showBackDisabledDialog = false },
-                        confirmButton = {
-                            TextButton(onClick = {
-                                showBackDisabledDialog = false
-                            }
-                            ) {
-                                Text("OK")
-                            }
-                        },
-                        title = {
-                            Text("Warning")
-                        },
-                        text = {
-                            Text(
-                                "Back navigation is disabled during the calibration process to prevent data loss"
-                            )
-
-
-                        }
-                    )
-                }
             }
         }
     }

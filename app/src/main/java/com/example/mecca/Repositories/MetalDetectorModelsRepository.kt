@@ -1,103 +1,89 @@
 package com.example.mecca.Repositories
 
-import android.util.Log
 import com.example.mecca.ApiService
 import com.example.mecca.AppDatabase
-import com.example.mecca.dataClasses.MdModelsLocal
 import com.example.mecca.FetchResult
-
+import com.example.mecca.dataClasses.MdModelsLocal
+import com.example.mecca.util.InAppLogger
 
 class MetalDetectorModelsRepository(private val apiService: ApiService, private val db: AppDatabase) {
 
     // Function to fetch data from the API and store it in the database
     suspend fun fetchAndStoreMdModels(): FetchResult {
 
-        Log.d("DEBUG", "Fetching MD models from API...")
+        InAppLogger.d("Fetching metal detector models from API...")
 
         return try {
-            // Make the API call
             val response = apiService.getMdModels()
+            InAppLogger.d("API call to fetch MD models complete. HTTP ${response.code()}")
 
-            // Check if the response was successful
             if (response.isSuccessful) {
                 val apiMdModels = response.body()
-                if (apiMdModels != null) {
+                InAppLogger.d("API returned ${apiMdModels?.size ?: 0} models.")
 
-                    // Clear the existing records before inserting new ones
+                if (apiMdModels != null) {
                     try {
                         db.mdModelDao().deleteAllMdModels()
-                        Log.d("DEBUG", "Cleared local MD systems database")
+                        InAppLogger.d("Cleared local MD models database.")
                     } catch (e: Exception) {
-                        val errorMessage = "Error clearing MD systems database: ${e.message}"
-                        Log.e("DEBUG", errorMessage)
+                        val errorMessage = "Error clearing MD models database: ${e.message}"
+                        InAppLogger.e(errorMessage)
                         return FetchResult.Failure(errorMessage)
                     }
 
-                    // Map API data to local entities
-                    val mdModelLocals = apiMdModels.mapIndexed { index, apiMdModels ->
+                    val mdModelLocals = apiMdModels.mapIndexed { index, apiMdModel ->
+//                        InAppLogger.d(
+//                            "Mapping model $index: ID=${apiMdModel.model_id ?: "Null"}, " +
+//                                    "Description=${apiMdModel.model_description ?: "Null"}"
+//                        )
 
-                        Log.d(
-                            "DEBUG",
-                            "Mapping MD Systems $index: ID=${apiMdModels.model_id}, Model ID=${apiMdModels.model_id ?: "Null"}"
-                        )
-
-                        // Return MD ModelLocal for insertion
-                    MdModelsLocal(
-                        id = 0,  // Auto-generate ID in the Room database
-                        meaId = apiMdModels.model_id ?:0,
-                        modelDescription = apiMdModels.model_description ?: "Unknown Name",  // Default to "Unknown Name" if null
-                        detectionSetting1 = apiMdModels.detectionSetting1 ?: "N/A",
-                        detectionSetting2 = apiMdModels.detectionSetting2 ?: "N/A",
-                        detectionSetting3 = apiMdModels.detectionSetting3 ?: "N/A",
-                        detectionSetting4 = apiMdModels.detectionSetting4 ?: "N/A",
-                        detectionSetting5 = apiMdModels.detectionSetting5 ?: "N/A",
-                        detectionSetting6 = apiMdModels.detectionSetting6 ?: "N/A",
-                        detectionSetting7 = apiMdModels.detectionSetting7 ?: "N/A",
-                        detectionSetting8 = apiMdModels.detectionSetting8 ?: "N/A"
+                        MdModelsLocal(
+                            id = 0, // Auto-generate ID in Room
+                            meaId = apiMdModel.model_id ?: 0,
+                            modelDescription = apiMdModel.model_description ?: "Unknown Name",
+                            detectionSetting1 = apiMdModel.detectionSetting1 ?: "N/A",
+                            detectionSetting2 = apiMdModel.detectionSetting2 ?: "N/A",
+                            detectionSetting3 = apiMdModel.detectionSetting3 ?: "N/A",
+                            detectionSetting4 = apiMdModel.detectionSetting4 ?: "N/A",
+                            detectionSetting5 = apiMdModel.detectionSetting5 ?: "N/A",
+                            detectionSetting6 = apiMdModel.detectionSetting6 ?: "N/A",
+                            detectionSetting7 = apiMdModel.detectionSetting7 ?: "N/A",
+                            detectionSetting8 = apiMdModel.detectionSetting8 ?: "N/A"
                         )
                     }
 
-                    // Insert the mapped data into the local database
                     db.mdModelDao().insertMdModel(mdModelLocals)
-                    Log.d("DEBUG", "System Types successfully inserted into the local database.")
+                    InAppLogger.d("Inserted ${mdModelLocals.size} MD models into local database.")
 
-                    return FetchResult.Success("System Types successfully fetched and stored")
-
+                    return FetchResult.Success("MD models successfully fetched and stored.")
                 } else {
-                    // Handle the case where body is null
-                    val errorMessage = "No data found."
-                    Log.e("API", errorMessage)
+                    val errorMessage = "No MD model data returned by API."
+                    InAppLogger.e(errorMessage)
                     return FetchResult.Failure(errorMessage)
                 }
             } else {
-                // Handle HTTP errors (4xx, 5xx)
-                val errorMessage = "Error: ${response.code()}, Message: ${response.message()}"
-                Log.e("API", errorMessage)
+                val errorMessage = "HTTP ${response.code()} error: ${response.message()}"
+                InAppLogger.e(errorMessage)
                 return FetchResult.Failure(errorMessage)
             }
         } catch (e: Exception) {
-            // Handle any exceptions that occurred during the API call
-            val errorMessage = "Exception occurred: ${e.message}"
-            Log.e("API", errorMessage)
+            val errorMessage = "Exception during MD model fetch: ${e.message}"
+            InAppLogger.e(errorMessage)
             return FetchResult.Failure(errorMessage)
         }
     }
 
-    // Function to get all customers from the local database
+    // Function to get all models from the local database
     suspend fun getMdModelsFromDb(): List<MdModelsLocal> {
-        return db.mdModelDao().getAllMdModels()
+        val models = db.mdModelDao().getAllMdModels()
+        InAppLogger.d("Fetched ${models.size} MD models from local database.")
+        return models
     }
 
-    // Function to get model description
-//    suspend fun getMdModelDescription(meaId: Int): String? {
-//        return db.mdModelDao().getMdModelDescriptionFromDb(meaId)
-//    }
-
-    // Function to get all model details
+    // Function to get full model details by meaId
     suspend fun getMdModelDetails(meaId: Int): MdModelsLocal? {
-        return db.mdModelDao().getMdModelDetailsFromDb(meaId)
+        val details = db.mdModelDao().getMdModelDetailsFromDb(meaId)
+        InAppLogger.d("Fetched MD model details for meaId=$meaId -> $details")
+        return details
     }
-
-
 }
-

@@ -10,9 +10,9 @@ import com.example.mecca.dataClasses.SystemType
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.Call
-import retrofit2.http.GET
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.PUT
@@ -22,7 +22,7 @@ import retrofit2.http.Path
 
 interface ApiService {
     @GET("Users") // Endpoint to fetch users
-    suspend fun getUsers(): List<CloudUser>
+    suspend fun getUsers(): Response<List<CloudUser>>
 
     @GET("Customers")
     suspend fun getCustomers(): Response<List<Customer>> // Use suspend function for coroutines

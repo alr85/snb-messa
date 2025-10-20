@@ -1,7 +1,6 @@
 package com.example.mecca.calibrationViewModels
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -9,14 +8,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mecca.ApiService
 import com.example.mecca.DAOs.CustomerDAO
-import com.example.mecca.DAOs.MetalDetectorConveyorCalibrationDAO
-import com.example.mecca.dataClasses.MetalDetectorConveyorCalibrationLocal
 import com.example.mecca.DAOs.MdModelsDAO
+import com.example.mecca.DAOs.MetalDetectorConveyorCalibrationDAO
 import com.example.mecca.DAOs.MetalDetectorSystemsDAO
 import com.example.mecca.Repositories.MetalDetectorSystemsRepository
+import com.example.mecca.dataClasses.MetalDetectorConveyorCalibrationLocal
 import com.example.mecca.formModules.ConditionState
 import com.example.mecca.formModules.YesNoState
 import com.example.mecca.util.CsvUploader
+import com.example.mecca.util.InAppLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -82,9 +82,12 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     init {
         viewModelScope.launch {
+
+            InAppLogger.d("MD Calibration started. Checking for existing calibration...")
             val existingCalibration = calibrationDao.getCalibrationById(calibrationId)
+
             if (existingCalibration != null) {
-                //_calibrationData.value = existingCalibration
+                InAppLogger.d("Found existing calibration. Updating UI...")
                 // Populate individual state variables from the loaded calibration
                 val model =
                     mdModelsDAO.getMdModelDescriptionFromDb(existingCalibration.modelId) ?: "Error"
@@ -106,7 +109,7 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _calibrationStartTime.value = existingCalibration.startDate
                 //_calibrationEndTime.value = existingCalibration.endDate
                 //_engineerId.value = (existingCalibration.engineerId).toString()
-                _systemLocation.value = existingCalibration.systemLocation
+                _newLocation.value = existingCalibration.newLocation
                 _lastLocation.value = existingCalibration.lastLocation
                 _canPerformCalibration.value = existingCalibration.canPerformCalibration.toBoolean()
                 _reasonForNotCalibrating.value = existingCalibration.reasonForNotCalibrating
@@ -440,10 +443,20 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _sensitivityRecommendations.value = existingCalibration.sensitivityRecommendations
                 _performanceValidationIssued.value =
                     existingCalibration.performanceValidationIssued.toYesNoState()
+                _detectionSetting1label.value = existingCalibration.detectionSetting1label
+                _detectionSetting2label.value = existingCalibration.detectionSetting2label
+                _detectionSetting3label.value = existingCalibration.detectionSetting3label
+                _detectionSetting4label.value = existingCalibration.detectionSetting4label
+                _detectionSetting5label.value = existingCalibration.detectionSetting5label
+                _detectionSetting6label.value = existingCalibration.detectionSetting6label
+                _detectionSetting7label.value = existingCalibration.detectionSetting7label
+                _detectionSetting8label.value = existingCalibration.detectionSetting8label
+
 
 
             } else {
                 // Handle the case where no calibration exists
+                InAppLogger.d("No existing calibration found. Starting a new one.")
                 saveNewCalibration()
             }
         }
@@ -635,8 +648,8 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun updateCalibrationStart() {
         viewModelScope.launch {
             calibrationDao.updateCalibrationStart(
-                systemLocation = systemLocation.value,
-                lastLocation.value,
+                newLocation = newLocation.value,
+                lastLocation = lastLocation.value,
                 canPerformCalibration = canPerformCalibration.value.toString(),
                 reasonForNotCalibrating = reasonForNotCalibrating.value,
                 startCalibrationNotes = startCalibrationNotes.value,
@@ -1099,12 +1112,12 @@ class CalibrationMetalDetectorConveyorViewModel(
     //-----------------------------------------------------------------------------Start Calibration
 
 
-    private var _systemLocation = mutableStateOf("")
-    val systemLocation: State<String> = _systemLocation
+    private var _newLocation = mutableStateOf("")
+    val newLocation: State<String> = _newLocation
 
     // Functions to update the state
-    fun setSystemLocation(location: String) {
-        _systemLocation.value = location
+    fun setNewLocation(location: String) {
+        _newLocation.value = location
     }
 
     private var _canPerformCalibration = mutableStateOf<Boolean?>(null)
@@ -2814,9 +2827,11 @@ class CalibrationMetalDetectorConveyorViewModel(
 
 
         // Step 1: Create CSV
+        InAppLogger.d("Creating CSV file for calibration: $calibrationId")
         val csvFile = createCsvFile(context, calibrationId) ?: return false
 
         // Step 2: Attempt upload and store result
+        InAppLogger.d("Uploading CSV file for calibration: $calibrationId")
         val uploadSuccessful = CsvUploader.uploadCsvFile(
             csvFile = csvFile,
             apiService = apiService,
@@ -2853,7 +2868,7 @@ class CalibrationMetalDetectorConveyorViewModel(
                     row.startDate,
                     row.endDate,
                     row.isSynced,
-                    row.systemLocation,
+                    row.newLocation,
                     row.canPerformCalibration,
                     row.reasonForNotCalibrating,
                     row.desiredCop,
@@ -3075,74 +3090,30 @@ class CalibrationMetalDetectorConveyorViewModel(
 
                 // Check if file exists and is not empty
                 if (csvFile.exists() && csvFile.length() > 0) {
-                    Log.d("MESSA-DEBUG", "File written successfully: ${csvFile.absolutePath}")
+                    InAppLogger.d("CSV file written successfully: ${csvFile.absolutePath}")
                     _isUploading.value = false
                     csvFile  // Return the file on success
                 } else {
-                    Log.d("MESSA-DEBUG", "CSV file was either empty or does not exist.")
+                    InAppLogger.d("CSV file was either empty or does not exist.")
                     _isUploading.value = false
                     null  // Return null if the file is empty
 
                 }
             } catch (e: IOException) {
                 e.printStackTrace()
-                Log.d("MESSA-DEBUG", "There was an exception when writing the CSV file: ${e.message}")
+                InAppLogger.e("Error writing CSV file: ${e.message}")
                 _isUploading.value = false
                 null  // Return null on any exception
             }
         }
     }
 
-//    private suspend fun uploadCsvFile(
-//        csvFile: File,
-//        apiService: ApiService,
-//        fileName: String
-//    ): Boolean = withContext(Dispatchers.IO) {
-//
-//        _isUploading.value = true
-//
-//        try {
-//            // Make sure filename ends with .csv
-//            val safeFileName = if (fileName.endsWith(".csv")) fileName else "$fileName.csv"
-//
-//            // Create the request body with correct MIME type
-//            val requestBody = csvFile.asRequestBody("text/csv".toMediaType())
-//
-//            // NOTE: "File" must match the property name in CsvUploadRequest on the server
-//            val multipartPart = MultipartBody.Part.createFormData("File", safeFileName, requestBody)
-//
-//            Log.d("MESSA-DEBUG", "Uploading file: $safeFileName (${csvFile.length()} bytes)")
-//            Log.d("MESSA-DEBUG", "Uploading to ${apiService} with URL ${RetrofitClient.BASE_URL}")
-//
-//            val response = apiService.uploadMdCalibrationCSV(multipartPart).execute()
-//
-//            if (response.isSuccessful) {
-//                Log.d("MESSA-DEBUG", "✅ File uploaded successfully!")
-//                true
-//            } else {
-//                val body = response.errorBody()?.string()
-//                Log.e(
-//                    "MESSA-DEBUG",
-//                    "❌ Upload failed: code=${response.code()} message=${response.message()} body=$body"
-//                )
-//                false
-//            }
-//        } catch (e: Exception) {
-//            Log.e("MESSA-DEBUG", "⚠️ Exception during upload: ${e.message}", e)
-//            false
-//        } finally {
-//            _isUploading.value = false
-//        }
-//    }
-
-
-
     // Add a method to clear all relevant data
     fun clearCalibrationData() {}
 
 
     fun deleteCalibration(calibrationId: String) {
-        Log.d("MESSA-DEBUG", "Deleting calibration with ID: $calibrationId")
+        InAppLogger.d("Deleting MD calibration with ID: $calibrationId")
         viewModelScope.launch {
             calibrationDao.deleteCalibration(calibrationId)
         }
@@ -3151,12 +3122,12 @@ class CalibrationMetalDetectorConveyorViewModel(
     // Add this to stop the ViewModel scope
     override fun onCleared() {
         super.onCleared()
-        Log.d("MESSA-DEBUG", "ViewmodelCleared")
+        InAppLogger.d("Clearing the MD Calibration View Model")
         viewModelScope.cancel()  // Cancels all active jobs in this ViewModel scope
     }
 
     suspend fun updateSystemLocationLocally() {
-        mdSystemsDAO.updateLastLocation(systemId.value, systemLocation.value)
+        mdSystemsDAO.updateLastLocation(systemId.value, newLocation.value)
 
     }
 
@@ -3187,11 +3158,13 @@ class CalibrationMetalDetectorConveyorViewModel(
             val csvSuccess = createAndUploadCsv(context, calibrationId.value, apiService)
             if (csvSuccess) {
                 onResult("✅ Calibration completed and uploaded to the cloud.")
+                InAppLogger.d("Calibration completed and uploaded to the cloud.")
             } else {
                 onResult("⚠️ Calibration completed, but NOT uploaded to the cloud. Please try again later.")
+                InAppLogger.d("Calibration completed, but NOT uploaded to the cloud.")
             }
         } catch (e: Exception) {
-            Log.e("MESSA-DEBUG", "Error finishing calibration: ${e.message}")
+            InAppLogger.e("Error finishing calibration: ${e.message}")
             onResult("❌ An error occurred while finishing calibration. Please try again.")
         }
     }

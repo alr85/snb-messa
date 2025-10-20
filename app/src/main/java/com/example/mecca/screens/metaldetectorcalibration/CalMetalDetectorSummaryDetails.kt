@@ -92,7 +92,7 @@ fun CalMetalDetectorConveyorSummaryDetails(
             SummaryItem(label = "Model Description", value = viewModel.modelDescription.value)
             SummaryItem(label = "Serial Number", value = viewModel.serialNumber.value)
             SummaryItem(label = "System Location", value = viewModel.lastLocation.value)
-            SummaryItem(label = "New Location", value = viewModel.systemLocation.value)
+            SummaryItem(label = "New Location", value = viewModel.newLocation.value)
         }
         Section(title = "Sensitivity Requirements") {
             SummaryItem(label = "Desired COP", value = desiredCop.joinToString(" | "))
@@ -341,7 +341,7 @@ fun CalMetalDetectorConveyorSummaryDetails(
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-
+        Spacer(modifier = Modifier.weight(22f))
 
 
     }

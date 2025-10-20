@@ -46,11 +46,11 @@ import androidx.navigation.NavHostController
 import com.example.mecca.ApiService
 import com.example.mecca.AppDatabase
 import com.example.mecca.DAOs.MetalDetectorConveyorCalibrationDAO
-import com.example.mecca.dataClasses.MetalDetectorConveyorCalibrationLocal
 import com.example.mecca.Network.isNetworkAvailable
 import com.example.mecca.Repositories.CustomerRepository
 import com.example.mecca.Repositories.MetalDetectorSystemsRepository
 import com.example.mecca.activities.MetalDetectorConveyorCalibrationActivity
+import com.example.mecca.dataClasses.MetalDetectorConveyorCalibrationLocal
 import com.example.mecca.formatDate
 import com.example.mecca.ui.theme.ExpandableSection
 import com.example.mecca.util.CsvUploader
@@ -330,7 +330,7 @@ fun MyCalibrationItem(
             color = Color.Gray
         )
         Text(
-            text = "Location: ${calibration.systemLocation}",
+            text = "Location: ${calibration.lastLocation}",
             style = MaterialTheme.typography.bodyMedium,
             color = Color.Gray
         )

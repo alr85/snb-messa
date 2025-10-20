@@ -1,6 +1,5 @@
 package com.example.mecca.util
 
-import android.util.Log
 import com.example.mecca.ApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -26,7 +25,7 @@ object CsvUploader {
     ): Boolean = withContext(Dispatchers.IO) {
         try {
             if (!csvFile.exists() || !csvFile.isFile) {
-                Log.e("MESSA-DEBUG", "File not found: ${csvFile.absolutePath}")
+                InAppLogger.e("CSV upload aborted — file not found: ${csvFile.absolutePath}")
                 return@withContext false
             }
 
@@ -37,26 +36,24 @@ object CsvUploader {
             val body = csvFile.asRequestBody("text/csv".toMediaType())
             val part = MultipartBody.Part.createFormData("File", safeName, body)
 
-            Log.d(
-                "MESSA-DEBUG",
-                "Uploading $safeName (${csvFile.length()} bytes) from ${csvFile.absolutePath}"
+            InAppLogger.d(
+                "Preparing upload: $safeName (${csvFile.length()} bytes) from ${csvFile.absolutePath}"
             )
 
             val response = apiService.uploadMdCalibrationCSV(part).execute()
 
             if (response.isSuccessful) {
-                Log.d("MESSA-DEBUG", "✅ Upload OK (${response.code()})")
+                InAppLogger.d("CSV upload successful (HTTP ${response.code()})")
                 true
             } else {
                 val err = response.errorBody()?.string()
-                Log.e(
-                    "MESSA-DEBUG",
-                    "❌ Upload failed: code=${response.code()} message=${response.message()} body=$err"
+                InAppLogger.e(
+                    "CSV upload failed: HTTP ${response.code()} message=${response.message()} body=$err"
                 )
                 false
             }
         } catch (e: Exception) {
-            Log.e("MESSA-DEBUG", "⚠️ Exception during upload: ${e.message}", e)
+            InAppLogger.e("Exception during CSV upload: ${e.message}")
             false
         }
     }

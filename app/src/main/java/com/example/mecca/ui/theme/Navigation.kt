@@ -1,8 +1,5 @@
 package com.example.mecca.ui.theme
 
-import com.example.mecca.screens.AddNewMetalDetectorScreen
-import com.example.mecca.screens.ServiceSelectSystemScreen
-import com.example.mecca.screens.SettingsScreen
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
@@ -10,18 +7,22 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.mecca.AppDatabase
 import com.example.mecca.Repositories.CustomerRepository
-import com.example.mecca.screens.HomeScreen
-import com.example.mecca.screens.MetalDetectorConveyorSystemScreen
-import com.example.mecca.screens.MyCalibrationsScreen
 import com.example.mecca.Repositories.MetalDetectorModelsRepository
 import com.example.mecca.Repositories.MetalDetectorSystemsRepository
 import com.example.mecca.Repositories.SystemTypeRepository
 import com.example.mecca.RetrofitClient
-import com.example.mecca.screens.AboutAppScreen
-import com.example.mecca.screens.DatabaseSyncScreen
-import com.example.mecca.screens.MessagesHomeScreen
-import com.example.mecca.screens.ServiceSelectCustomerScreen
 import com.example.mecca.UserViewModel
+import com.example.mecca.screens.AboutAppScreen
+import com.example.mecca.screens.AddNewMetalDetectorScreen
+import com.example.mecca.screens.DatabaseSyncScreen
+import com.example.mecca.screens.HomeScreen
+import com.example.mecca.screens.MessagesHomeScreen
+import com.example.mecca.screens.MetalDetectorConveyorSystemScreen
+import com.example.mecca.screens.MyCalibrationsScreen
+import com.example.mecca.screens.ServiceSelectCustomerScreen
+import com.example.mecca.screens.ServiceSelectSystemScreen
+import com.example.mecca.screens.SettingsScreen
+import com.example.mecca.util.LogConsole
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,6 +35,7 @@ fun AppNavGraph(navController: NavHostController, db: AppDatabase, userViewModel
 
     NavHost(navController = navController, startDestination = "serviceHome") {
 
+        composable("logsScreen") { LogConsole() }
 
         composable("serviceHome") { HomeScreen(navController) }
         composable("menu") { SettingsScreen(navController, userViewModel) }

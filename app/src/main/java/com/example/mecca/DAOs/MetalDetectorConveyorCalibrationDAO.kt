@@ -51,7 +51,7 @@ interface MetalDetectorConveyorCalibrationDAO {
     // Save Calibration Start to database
     @Query(
         "UPDATE MetalDetectorConveyorCalibrations " +
-                "SET systemLocation = :systemLocation, " +
+                "SET newLocation = :newLocation, " +
                 "lastLocation = :lastLocation, " +
                 "canPerformCalibration = :canPerformCalibration, " +
                 "reasonForNotCalibrating = :reasonForNotCalibrating, " +
@@ -59,7 +59,7 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "WHERE calibrationId = :calibrationId"
     )
     suspend fun updateCalibrationStart(
-        systemLocation: String,
+        newLocation: String,
         lastLocation: String,
         canPerformCalibration: String,
         reasonForNotCalibrating: String,

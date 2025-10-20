@@ -2,6 +2,7 @@ package com.example.mecca
 
 import android.os.Bundle
 import android.util.Log
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -47,6 +48,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_SECURE,
+            WindowManager.LayoutParams.FLAG_SECURE
+        )
+
         val app = application as MyApplication
         val db = app.database
         val apiService = app.apiService
@@ -60,31 +66,34 @@ class MainActivity : ComponentActivity() {
         setContent {
             val syncStatus by userViewModel.syncStatus.collectAsState()
             val loginStatus by userViewModel.loginStatus.collectAsState()
+            val loginError by userViewModel.loginError.collectAsState()
 
             when {
+                // Case 1: sync not yet complete or failed
                 !syncStatus -> {
-                    // Show syncing message
                     Text(
-                        text = "Syncing users... Please wait.",
+                        text = loginError ?: "Syncing users... Please wait.",
                         modifier = Modifier
                             .fillMaxSize()
                             .background(Color.White)
                             .padding(16.dp),
-                        color = Color.Gray,
+                        color = if (loginError != null) Color.Red else Color.Gray,
                         textAlign = TextAlign.Center
                     )
                 }
+
+                // Case 2: login already successful
                 loginStatus -> {
-                    // Navigate to main app if logged in
                     MyApp(db, userViewModel)
                 }
+
+                // Case 3: ready for user to log in
                 else -> {
-                    // Show login screen
                     LoginScreen(
                         userViewModel = userViewModel,
                         defaultUsername = savedUsername,
                         defaultPassword = savedPassword,
-                        loginError = userViewModel.loginError.collectAsState().value,
+                        loginError = loginError,
                         onLoginClick = { username, password ->
                             userViewModel.login(this, username, password)
                         }
@@ -93,8 +102,9 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+
         // Start syncing users when the app launches
-        userViewModel.syncUsers()
+        userViewModel.syncUsers(this)
     }
 }
 
@@ -124,7 +134,8 @@ fun MyApp(db: AppDatabase, userViewModel: UserViewModel) {
             selectedIcon = Icons.Filled.Email,
             unselectedIcon = Icons.Default.Email
         ),
-        NavigationBarItem(
+
+                NavigationBarItem(
             title = "Menu",
             selectedIcon = Icons.Filled.Menu,
             unselectedIcon = Icons.Default.Menu

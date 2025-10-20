@@ -1,7 +1,6 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
 //import com.example.mecca.screens.getAppVersion
-import com.example.mecca.CalibrationBanner
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
@@ -32,7 +32,7 @@ fun CalMetalDetectorConveyorCalibrationStart(
     val progress = viewModel.progress
 
     // Get current values from the ViewModel
-    val systemLocation by viewModel.systemLocation
+    val lastLocation by viewModel.lastLocation
     val canPerformCalibration by viewModel.canPerformCalibration
     val reasonForNotCalibrating by viewModel.reasonForNotCalibrating
     //val lastLocation by viewModel.lastLocation
@@ -40,11 +40,9 @@ fun CalMetalDetectorConveyorCalibrationStart(
 
 
     //Determine if "Next Step" button should be enabled
-    val isNextStepEnabled = systemLocation.isNotBlank() &&
+    val isNextStepEnabled =
             (canPerformCalibration == true || (canPerformCalibration == false && reasonForNotCalibrating.isNotBlank()))
 
-//    val isNextStepEnabled =
-//            (canPerformCalibration == true || (canPerformCalibration == false && reasonForNotCalibrating.isNotBlank()))
 
 
     //viewModel.setAppVersion(getAppVersion())
@@ -123,9 +121,9 @@ fun CalMetalDetectorConveyorCalibrationStart(
 
         LabeledTextFieldWithHelp(
             label = "New Location",
-            value = viewModel.systemLocation.value,
+            value = viewModel.newLocation.value,
             onValueChange = { newValue ->
-                viewModel.setSystemLocation(
+                viewModel.setNewLocation(
                     newValue
                 )
             },

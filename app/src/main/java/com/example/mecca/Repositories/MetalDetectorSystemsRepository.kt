@@ -1,79 +1,63 @@
 package com.example.mecca.Repositories
 
 import android.content.Context
-import android.util.Log
 import com.example.mecca.ApiService
 import com.example.mecca.AppDatabase
+import com.example.mecca.FetchResult
+import com.example.mecca.Network.isNetworkAvailable
 import com.example.mecca.dataClasses.MdSystemCloud
 import com.example.mecca.dataClasses.MdSystemLocal
 import com.example.mecca.dataClasses.MetalDetectorWithFullDetails
-import com.example.mecca.FetchResult
-import com.example.mecca.Network.isNetworkAvailable
+import com.example.mecca.util.InAppLogger
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.random.Random
 
-
 class MetalDetectorSystemsRepository(private val apiService: ApiService, private val db: AppDatabase) {
 
-
-    //Function to update the isSynced status of a metal detector
+    // Function to update the isSynced status of a metal detector
     suspend fun updateSyncStatus(tempId: Int, isSynced: Boolean, newCloudId: Int): FetchResult {
-        try{
+        try {
             db.mdSystemDAO().updateSyncStatus(tempId = tempId, isSynced = isSynced, newCloudId = newCloudId)
         } catch (e: Exception) {
             val errorMessage = "Error updating the isSynced field for tempId $tempId: ${e.message}"
-            Log.e("MESSA", errorMessage)
+            InAppLogger.e(errorMessage)
             return FetchResult.Failure(errorMessage)
         }
         return FetchResult.Success("Sync Status Updated")
     }
 
-
-    
-
     // Function to fetch data from the API and store it in the database
     suspend fun fetchAndStoreMdSystems(): FetchResult {
 
-        Log.d("MESSA", "Fetching MD systems from API...")
+        InAppLogger.d("Fetching MD systems...")
 
-        try{
-            // Make the API call
+        try {
             val response = apiService.getMdSystems()
-            Log.d("MESSA", "getMdSystems = $response")
-            // Check if the response was successful
+            InAppLogger.d("API call to fetch MD systems complete. response = $response")
+
             if (response.isSuccessful) {
                 val apiMdSystems = response.body()
-                Log.d("MESSA", "$apiMdSystems")
-                if (apiMdSystems != null) {
+                //InAppLogger.d("API call successful. body = $apiMdSystems")
 
-                    // Clear the existing records before inserting new ones
+                if (apiMdSystems != null) {
                     try {
                         db.mdSystemDAO().deleteAllMdSystems()
-                        Log.d("MESSA", "Cleared local MD systems database")
+                        InAppLogger.d("Cleared local MD systems database")
                     } catch (e: Exception) {
                         val errorMessage = "Error clearing MD systems database: ${e.message}"
-                        Log.e("MESSA", errorMessage)
+                        InAppLogger.e(errorMessage)
                         return FetchResult.Failure(errorMessage)
                     }
 
-                    // Map API data to local entities
-                    val mdSystemsLocal = apiMdSystems.mapIndexed { index, apiMdSystems ->
-
-//                        Log.d(
-//                            "MESSA",
-//                            "Mapping MD Systems $index: ID=${apiMdSystems.id}, Model ID=${apiMdSystems.modelId ?: "Null"}"
-//                        )
-
-                        // Return MdSystemLocal for insertion
+                    val mdSystemsLocal = apiMdSystems.mapIndexed { _, apiMdSystems ->
                         MdSystemLocal(
-                            //id = 0,  // Auto-generate ID in the Room database
-                            modelId = apiMdSystems.modelId ?:0,
-                            cloudId = apiMdSystems.id ?:0,
-                            customerId = apiMdSystems.customerId?:0,
-                            serialNumber = apiMdSystems.serialNumber ?:"Unknown",
-                            apertureWidth = apiMdSystems.apertureWidth ?:0,
-                            apertureHeight = apiMdSystems.apertureHeight ?:0,
+                            modelId = apiMdSystems.modelId ?: 0,
+                            cloudId = apiMdSystems.id ?: 0,
+                            customerId = apiMdSystems.customerId ?: 0,
+                            serialNumber = apiMdSystems.serialNumber ?: "Unknown",
+                            apertureWidth = apiMdSystems.apertureWidth ?: 0,
+                            apertureHeight = apiMdSystems.apertureHeight ?: 0,
                             lastCalibration = apiMdSystems.lastCalibration,
                             addedDate = apiMdSystems.addedDate,
                             calibrationInterval = apiMdSystems.calibrationInterval,
@@ -83,74 +67,61 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
                             lastLocation = apiMdSystems.lastLocation ?: "Unknown"
                         )
                     }
-                    Log.d("MESSA", "Systems to be inserted inserted into the local database: $mdSystemsLocal.")
-                    // Insert the mapped data into the local database
+
+                    //InAppLogger.d("Systems to be inserted into the local database: $mdSystemsLocal")
                     db.mdSystemDAO().insertMdSystem(mdSystemsLocal)
-                    Log.d("MESSA", "Systems successfully inserted into the local database.")
+                    InAppLogger.d("Systems successfully inserted into the local database.")
 
                     return FetchResult.Success("Metal Detector Sync Complete")
-
                 } else {
-                    // Handle the case where body is null
                     val errorMessage = "No data found."
-                    Log.e("MESSA", errorMessage)
+                    InAppLogger.e(errorMessage)
                     return FetchResult.Failure(errorMessage)
                 }
             } else {
-                // Handle HTTP errors (4xx, 5xx)
                 val errorMessage = "Error: ${response.code()}, Message: ${response.message()}"
-                Log.e("MESSA", errorMessage)
+                InAppLogger.e(errorMessage)
                 return FetchResult.Failure(errorMessage)
             }
         } catch (e: Exception) {
-            // Handle any exceptions that occurred during the API call
             val errorMessage = "Exception occurred: ${e.message}"
-            Log.e("MESSA", errorMessage)
+            InAppLogger.e(errorMessage)
             return FetchResult.Failure(errorMessage)
         }
     }
-    
-    
-//    // Function to get all systems from the local database
-//    suspend fun getMdSystemsFromDb(): List<MdSystemLocal> {
-//        return db.mdSystemDAO().getAllMdSystems()
-//    }
 
-
-    //function to return MD systems using the cloud id
+    // Return MD systems using the cloud id
     suspend fun getMetalDetectorUsingCloudId(id: Int?): List<MetalDetectorWithFullDetails> {
         val result = db.mdSystemDAO().getMetalDetectorsWithFullDetailsUsingCloudId(id)
-        Log.d("MESSA", "Query Result: $result")
+        //InAppLogger.d("Get Metal Detectors With Full Details Using Cloud ID: Query Result: $result")
         return result
     }
 
-    //function to return MD systems using the Local id
+    // Return MD systems using the Local id
     suspend fun getMetalDetectorsWithFullDetailsUsingLocalId(id: Int?): List<MetalDetectorWithFullDetails> {
         val result = db.mdSystemDAO().getMetalDetectorsWithFullDetailsUsingLocalId(id)
-        Log.d("MESSA", "Query Result: $result")
+        //InAppLogger.d("Get Metal Detectors With Full Details Using Local ID: Query Result: $result")
         return result
     }
 
-    // function to check if a serial number already exists in the local database
+    // Check if a serial number already exists in the local database
     suspend fun isSerialNumberExists(serialNumber: String): Boolean {
         return db.mdSystemDAO().getSystemBySerialNumber(serialNumber) != null
-}
+    }
 
-// function to check if a serial number already exists in the cloud database
+    // Check if a serial number already exists in the cloud database
     suspend fun isSerialNumberExistsInCloud(serialNumber: String): Boolean {
-    Log.d("MESSA", "Checking serial number: $serialNumber")
+        InAppLogger.d("Checking serial number: $serialNumber")
         return try {
-            // Call the API to check if the serial number exists in the cloud
-            Log.d("MESSA", "Checking serial number in cloud: $serialNumber")
+            InAppLogger.d("Checking serial number in cloud: $serialNumber")
             apiService.checkSerialNumberExists(serialNumber)
         } catch (e: Exception) {
-            // Handle any errors with the network or API call
-            Log.e("MESSA-DEBUG", "Error checking serial number in cloud: ${e.message}")
+            InAppLogger.e("Error checking serial number in cloud: ${e.message}")
             false
         }
     }
 
-    //function to add a new metal detector to the local database if there is no network connection
+    // Add a new metal detector to the local database (offline mode)
     suspend fun addMetalDetectorToLocalDb(
         customerID: Int,
         serialNumber: String,
@@ -161,10 +132,9 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
         modelId: Int,
         calibrationInterval: Int
     ) {
-        // Add code to save data locally in the Room database
-        val today = LocalDateTime.now()  // Using LocalDateTime for date and time
-        val todayString = today.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))  // ISO 8601 format
-        val tempId: Int = Random.nextInt(10000000, 20000000) // Generates a random integer between 1 and 9999
+        val today = LocalDateTime.now()
+        val todayString = today.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))
+        val tempId: Int = Random.nextInt(10000000, 20000000)
 
         val newMetalDetector = MdSystemLocal(
             customerId = customerID,
@@ -182,11 +152,10 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
             lastLocation = lastLocation
         )
         db.mdSystemDAO().insertNewMdSystem(newMetalDetector)
-
+        InAppLogger.d("Added new MD locally: $newMetalDetector")
     }
 
-
-    // function to add a new Metal Detector to the Cloud Database
+    // Add a new Metal Detector to the Cloud Database
     suspend fun addMetalDetectorToCloud(
         customerID: Int,
         serialNumber: String,
@@ -196,7 +165,6 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
         modelId: Int,
         calibrationInterval: Int,
         lastLocation: String
-
     ): Int? {
         val today = LocalDateTime.now()
         val todayString = today.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
@@ -217,28 +185,27 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
 
         try {
             val response = apiService.postMdSystem(newMetalDetector)
-            Log.d("MESSA", "API Response: ${response.code()}")
+            InAppLogger.d("API Response: ${response.code()}")
 
             if (response.isSuccessful) {
                 response.body()?.let { responseBody ->
-                    val newCloudId = responseBody.id // Extract cloudId from the response
-
-
-                    Log.d("MESSA", "Data uploaded successfully, new cloud ID: $newCloudId")
+                    val newCloudId = responseBody.id
+                    InAppLogger.d("Data uploaded successfully, new cloud ID: $newCloudId")
                     return newCloudId
                 }
             } else {
-                Log.e("MESSA", "Error uploading data: ${response.errorBody()?.string()}")
+                InAppLogger.e("Error uploading data: ${response.errorBody()?.string()}")
                 return null
             }
         } catch (e: Exception) {
-            Log.e("MESSA", "API call failed: ${e.message}")
+            InAppLogger.e("API call failed: ${e.message}")
         }
-
         return null
     }
 
     suspend fun updateSystem(context: Context, cloudId: Int?, tempId: Int?, localId: Int?) {
+        InAppLogger.d("updateSystem() called with cloudId=$cloudId, localId=$localId, tempId=$tempId")
+
         val system = when {
             cloudId != null -> db.mdSystemDAO().getSystemByCloudId(cloudId)
             localId != null -> db.mdSystemDAO().getSystemByLocalId(localId)
@@ -247,7 +214,7 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
         }
 
         if (system == null) {
-            Log.e("MESSA", "System not found locally")
+            InAppLogger.e("System not found locally")
             return
         }
 
@@ -269,25 +236,17 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
                 val response = apiService.updateMdSystem(cloudId, systemCloud)
                 if (response.isSuccessful) {
                     db.mdSystemDAO().updateIsSynced(true, cloudId, localId)
-                    Log.d("MESSA", "Cloud sync success for cloud ID=$cloudId")
+                    InAppLogger.d("Cloud sync success for cloud ID=$cloudId")
                 } else {
                     db.mdSystemDAO().updateIsSynced(false, cloudId, localId)
-                    Log.w("MESSA", "Cloud sync failed: ${response.code()}")
+                    InAppLogger.e("Cloud sync failed: ${response.code()}")
                 }
             } catch (e: Exception) {
-                Log.e("MESSA", "Exception: ${e.message}")
+                InAppLogger.e("Exception during cloud sync: ${e.message}")
             }
         } else {
             db.mdSystemDAO().updateIsSynced(false, cloudId, localId)
-            Log.d("MESSA", "📴 Offline: local update only, marked unsynced")
+            InAppLogger.d("📴 Offline: local update only, marked unsynced")
         }
     }
-
-
-
-
-
-
 }
-
-

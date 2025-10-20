@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.ListAlt
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Info
@@ -58,6 +59,7 @@ fun SettingsScreen(navController: NavHostController, userViewModel: UserViewMode
         SettingItem("My Calibrations"),
         SettingItem("Database Sync"),
         SettingItem("Phonebook"),
+        SettingItem("Debug Logs"),
         SettingItem("About App"),
         SettingItem("Logout") // Add Logout button
         //SettingItem("Another switch", isSwitch = true, isChecked = false),
@@ -127,6 +129,8 @@ fun SettingRow(setting: SettingItem, navController: NavHostController, showDialo
                         "Database Sync" -> navController.navigate("databaseSync")
                         "About App" -> navController.navigate("aboutApp")
                         "My Calibrations" -> navController.navigate("myCalibrations")
+                        //"Phonebook" -> navController.navigate("serviceSelectCustomer")
+                        "Debug Logs" -> navController.navigate("logsScreen")
                         "Logout" -> {
                             // Show confirmation dialog for logout
                             showDialog.value = true
@@ -144,6 +148,8 @@ fun SettingRow(setting: SettingItem, navController: NavHostController, showDialo
                     "Account settings" -> Icons.Filled.Person
                     "About App" -> Icons.Default.Info
                     "My Calibrations" -> Icons.Filled.EditNote
+                    "Phonebook" -> Icons.Filled.Person
+                    "Debug Logs" -> Icons.AutoMirrored.Filled.ListAlt
                     "Logout" -> Icons.Default.Refresh
                     else -> Icons.Filled.Settings
                 },

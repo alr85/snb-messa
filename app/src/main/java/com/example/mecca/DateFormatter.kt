@@ -3,7 +3,7 @@ package com.example.mecca
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-fun formatDate(dateString: String): String {
+fun formatDate(dateString: String?): String {
     // Define the input format (without 'T')
     val inputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 

@@ -25,7 +25,7 @@ import com.example.mecca.dataClasses.UserEntity
     MdSystemLocal::class,
     MetalDetectorConveyorCalibrationLocal::class,
     SystemTypeLocal::class],
-    version = 36, // Increment the version if needed
+    version = 38, // Increment the version if needed
     exportSchema = false)
 
 @TypeConverters(Converters::class) // Add your Converters here
@@ -38,11 +38,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun systemTypeDAO(): SystemTypeDAO
     abstract fun metalDetectorConveyorCalibrationDAO(): MetalDetectorConveyorCalibrationDAO
 
-
-    // What it does: The main access point for the database. It ties the entity and DAO together, providing a place where you can request the DAO.
-    // How it interacts: The AppDatabase class knows about all the entities (tables) and DAOs (operations) and is responsible for managing the actual SQLite database.
-    // AppDatabase: Registers the entities (tables like MdSystemLocal) and DAOs (like CalibrationMdSystemsDAO).
-    // The getDatabase() method provides a way to access the database. This method will create the database if it doesn’t exist yet and manage it for the app.
 
     companion object {
         @Volatile

@@ -2,15 +2,6 @@ package com.example.mecca
 
 import android.app.Application
 
-//class MyApplication : Application() {
-//    val database: AppDatabase by lazy {
-//        Room.databaseBuilder(
-//            applicationContext,
-//            AppDatabase::class.java, "my-database"
-//        ).build()
-//    }
-//}
-
 class MyApplication : Application() {
 
 

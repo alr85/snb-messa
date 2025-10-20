@@ -40,15 +40,18 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.navigation.NavHostController
 import com.example.mecca.DAOs.MetalDetectorConveyorCalibrationDAO
-import com.example.mecca.dataClasses.MdModelsLocal
-import com.example.mecca.dataClasses.MetalDetectorWithFullDetails
 import com.example.mecca.Network.isNetworkAvailable
 import com.example.mecca.PreferencesHelper
 import com.example.mecca.Repositories.MetalDetectorModelsRepository
 import com.example.mecca.Repositories.MetalDetectorSystemsRepository
 import com.example.mecca.activities.MetalDetectorConveyorCalibrationActivity
+import com.example.mecca.dataClasses.MdModelsLocal
+import com.example.mecca.dataClasses.MetalDetectorWithFullDetails
+import com.example.mecca.formatDate
 import com.example.mecca.ui.theme.DetailItem
 import com.example.mecca.ui.theme.ExpandableSection
 import kotlinx.coroutines.launch
@@ -77,6 +80,16 @@ fun MetalDetectorConveyorSystemScreen(
         mdSystem = repositoryMD.getMetalDetectorsWithFullDetailsUsingLocalId(systemId).firstOrNull()
         modelDetails = repositoryModels.getMdModelDetails(mdSystem?.modelId ?: 0)
     }
+
+    // Re-fetch data whenever the screen is resumed (e.g. returning from calibration)
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        coroutineScope.launch {
+            Log.d("MESSA-DEBUG", "Refreshing system details after resume")
+            mdSystem = repositoryMD.getMetalDetectorsWithFullDetailsUsingLocalId(systemId).firstOrNull()
+            modelDetails = repositoryModels.getMdModelDetails(mdSystem?.modelId ?: 0)
+        }
+    }
+
 
     modelDetails?.let { Log.d("calibrationscreen", it.detectionSetting1) }
 
@@ -294,6 +307,12 @@ fun MetalDetectorConveyorSystemScreen(
                 }
             }
 
+            val formattedDate = try {
+                formatDate(mdSystem?.lastCalibration)
+            } catch (e: Exception) {
+                "Invalid date"
+            }
+
             item {
                 ExpandableSection(
                     title = "System Details",
@@ -311,6 +330,7 @@ fun MetalDetectorConveyorSystemScreen(
                         value = "${mdSystem?.apertureHeight ?: "?"} mm"
                     )
                     DetailItem(label = "Location", value = mdSystem?.lastLocation ?: "?")
+                    DetailItem(label = "Last Calibrated", value = formattedDate)
                 }
             }
 
@@ -349,44 +369,3 @@ fun MetalDetectorConveyorSystemScreen(
     }
 }
 
-//@Composable
-//fun CalibrationItem(
-//    calibration: MetalDetectorConveyorCalibrationLocal,
-//    status: String,
-//    onClick: () -> Unit
-//) {
-//    val formattedDate = try {
-//        formatDate(calibration.startDate)
-//    } catch (e: Exception) {
-//        "Invalid date"
-//    }
-//
-//    Column(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .clickable { onClick() }
-//            .padding(vertical = 8.dp, horizontal = 16.dp)
-//    ) {
-//        Text(
-//            text = "Calibration ID: ${calibration.calibrationId}",
-//            fontWeight = FontWeight.Bold,
-//            style = MaterialTheme.typography.bodyLarge,
-//            color = Color.Black
-//        )
-//        Text(
-//            text = status,
-//            style = MaterialTheme.typography.bodyMedium,
-//            color = Color.Gray
-//        )
-//        Text(
-//            text = "Started on: $formattedDate",
-//            style = MaterialTheme.typography.bodyMedium,
-//            color = Color.Gray
-//        )
-//        HorizontalDivider(
-//            modifier = Modifier.padding(top = 8.dp),
-//            thickness = 1.dp,
-//            color = Color.LightGray
-//        )
-//    }
-//}

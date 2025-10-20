@@ -25,7 +25,7 @@ data class MetalDetectorConveyorCalibrationLocal(
 
     //-----------------------------------------------------------------------------Calibration Start
 
-    var systemLocation: String = "",
+    var newLocation: String = "",
     var lastLocation: String = "",
     var canPerformCalibration: String = "",
     var reasonForNotCalibrating: String = "",

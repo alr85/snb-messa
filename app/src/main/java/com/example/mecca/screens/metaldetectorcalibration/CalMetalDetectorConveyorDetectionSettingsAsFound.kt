@@ -1,6 +1,5 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
-import com.example.mecca.CalibrationBanner
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
@@ -66,6 +66,14 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
                 detectionSettingAsFound6.isNotBlank() &&
                 detectionSettingAsFound7.isNotBlank() &&
                 detectionSettingAsFound8.isNotBlank() &&
+                detectionSetting1label.isNotBlank() &&
+                detectionSetting2label.isNotBlank() &&
+                detectionSetting3label.isNotBlank() &&
+                detectionSetting4label.isNotBlank() &&
+                detectionSetting5label.isNotBlank() &&
+                detectionSetting6label.isNotBlank() &&
+                detectionSetting7label.isNotBlank() &&
+                detectionSetting8label.isNotBlank() &&
                 sensitivityAccessRestriction.isNotBlank()
 
 

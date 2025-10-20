@@ -1,5 +1,6 @@
 package com.example.mecca.Repositories
 
+import android.util.Log
 import com.example.mecca.ApiService
 import com.example.mecca.DAOs.UserDao
 import com.example.mecca.dataClasses.UserEntity
@@ -18,30 +19,51 @@ class UserRepository(
         return userDao.getUserIdByUsername(username)
     }
 
+    suspend fun hasLocalUsers(): Boolean {
+        return userDao.getUserCount() > 0
+    }
+
+
     suspend fun syncUsers() {
-        try {
+
             // Fetch users from cloud
+            Log.d("MESSA-DEBUG", "Fetching users from API...")
             val cloudUsers = apiService.getUsers()
+                .also { Log.d("MESSA-DEBUG", "API call complete. success = ${it.isSuccessful} code = ${it.code()}") }
+
+            if (!cloudUsers.isSuccessful) {
+                val body = cloudUsers.errorBody()?.string()
+                Log.e("MESSA-DEBUG", "Error fetching users from API: HTTP ${cloudUsers.code()} ${cloudUsers.message()} body=$body")
+                throw IllegalStateException("Users API failed: ${cloudUsers.code()} ${cloudUsers.message()}")
+            }
+
+            val users = cloudUsers.body() ?: emptyList()
+            Log.d("MESSA-DEBUG", "Fetched ${users.size} users from cloud")
 
             // Map cloud users to local entities (if necessary)
-            val localUsers = cloudUsers.map { cloudUser ->
+            val localUsers = users.map { u ->
                 UserEntity(
                     id = 0,
-                    meaId = cloudUser.meaId,
-                    fusionId = cloudUser.fusionId,
-                    username = cloudUser.username,
-                    isActive = cloudUser.isActive,
+                    meaId = u.meaId,
+                    fusionId = u.fusionId,
+                    username = u.username,
+                    isActive = u.isActive,
                     lastSynced = Date()
                 )
             }
 
+            if (localUsers.isEmpty()) {
+                Log.d("MESSA-DEBUG", "No users fetched; skipping clear to avoid wiping cache")
+                return
+            }
+
             // Update the local database
+            Log.d("MESSA-DEBUG", "Clearing local users table...")
             userDao.clearAllUsers()
+            Log.d("MESSA-DEBUG", "Inserting ${localUsers.size} users...")
             userDao.insertUsers(localUsers)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            // Handle error gracefully, maybe show a message to the user
-        }
+            Log.d("MESSA-DEBUG", "Insert OK.")
+
     }
 }
 

@@ -1,7 +1,6 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
 
-import com.example.mecca.CalibrationBanner
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +16,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
@@ -109,7 +109,8 @@ fun CalMetalDetectorConveyorSystemChecklist(
             currentCondition = beltCondition,
             onConditionChange = { newCondition -> viewModel.setBeltCondition(newCondition)},
             keyboardType = KeyboardType.Text,
-            isNAToggleEnabled = true // Set this to false if you don't need the N/A toggle
+            isNAToggleEnabled = true, // Set this to false if you don't need the N/A toggle
+            helper = "Conveyor belts should be clean, and free from tears or missing sections. Check for correct tracking alignment"
         )
 
         Spacer(modifier = Modifier.padding(16.dp))
@@ -124,7 +125,8 @@ fun CalMetalDetectorConveyorSystemChecklist(
             currentCondition = guardCondition,
             onConditionChange = { newCondition -> viewModel.setGuardCondition(newCondition)},
             keyboardType = KeyboardType.Text,
-            isNAToggleEnabled = true // Set this to false if you don't need the N/A toggle
+            isNAToggleEnabled = true, // Set this to false if you don't need the N/A toggle
+            helper = "Guarding should be intact (no cracks or damage), and cover the area from the search head to the end of the conveyor belt as a minimum. Any access hatches should be interlocked as part of the safety circuit"
         )
 
         Spacer(modifier = Modifier.padding(16.dp))
@@ -139,7 +141,8 @@ fun CalMetalDetectorConveyorSystemChecklist(
             currentCondition = safetyCircuitCondition,
             onConditionChange = { newCondition -> viewModel.setSafetyCircuitCondition(newCondition)},
             keyboardType = KeyboardType.Text,
-            isNAToggleEnabled = true // Set this to false if you don't need the N/A toggle
+            isNAToggleEnabled = true, // Set this to false if you don't need the N/A toggle
+            helper = "Check all emergency stops, guard interlocks etc for correct operation"
         )
 
         Spacer(modifier = Modifier.padding(16.dp))
@@ -154,7 +157,8 @@ fun CalMetalDetectorConveyorSystemChecklist(
             currentCondition = linerCondition,
             onConditionChange = { newCondition -> viewModel.setLinerCondition(newCondition)},
             keyboardType = KeyboardType.Text,
-            isNAToggleEnabled = true // Set this to false if you don't need the N/A toggle
+            isNAToggleEnabled = true,
+            helper = "The search head liner (AKA chute) should be checked for damage and wear. Any gaskets or seals on control panels/electrical enclosures should also be checked"
         )
 
         Spacer(modifier = Modifier.padding(16.dp))
@@ -169,7 +173,8 @@ fun CalMetalDetectorConveyorSystemChecklist(
             currentCondition = cablesCondition,
             onConditionChange = { newCondition -> viewModel.setCablesCondition(newCondition)},
             keyboardType = KeyboardType.Text,
-            isNAToggleEnabled = true // Set this to false if you don't need the N/A toggle
+            isNAToggleEnabled = true,
+            helper = "Check all cables and associated fittings for damage and wear"
         )
 
         Spacer(modifier = Modifier.padding(16.dp))
@@ -184,7 +189,8 @@ fun CalMetalDetectorConveyorSystemChecklist(
             currentCondition = screwsCondition,
             onConditionChange = { newCondition -> viewModel.setScrewsCondition(newCondition)},
             keyboardType = KeyboardType.Text,
-            isNAToggleEnabled = true // Set this to false if you don't need the N/A toggle
+            isNAToggleEnabled = true,
+            helper = "Check all screws and fittings for damage and wear. Screws must be tight"
         )
 
         Spacer(modifier = Modifier.height(16.dp))
