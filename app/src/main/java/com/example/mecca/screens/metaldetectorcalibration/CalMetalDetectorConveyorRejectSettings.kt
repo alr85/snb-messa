@@ -1,6 +1,5 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
-import com.example.mecca.CalibrationBanner
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +15,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
@@ -106,7 +106,7 @@ fun CalMetalDetectorConveyorRejectSettings(
         Spacer(modifier = Modifier.height(20.dp))
 
         LabeledTriStateSwitchAndTextInputWithHelp(
-            label = "Reject Synchronisation",
+            label = "Synchronisation",
             currentState = rejectSynchronisationSetting,
             onStateChange = { newState -> viewModel.setRejectSynchronisationSetting(newState) },
             helpText = "Select if there is a method of reject synchronisation",
@@ -125,7 +125,7 @@ fun CalMetalDetectorConveyorRejectSettings(
             selectedOption = rejectDurationUnits,
             onOptionChange = { newValue -> viewModel.setRejectDurationUnits(newValue) },
             helpText = "Select the units for the reject duration",
-            inputLabel = "Reject Duration",
+            inputLabel = "Duration",
             inputValue = rejectDurationSetting,
             onInputValueChange = { newValue -> viewModel.setRejectDurationSetting(newValue) },
             inputKeyboardType = KeyboardType.Number
@@ -138,7 +138,7 @@ fun CalMetalDetectorConveyorRejectSettings(
             selectedOption = rejectDelayUnits,
             onOptionChange = { newValue -> viewModel.setRejectDelayUnits(newValue) },
             helpText = "Select the units for the reject delay",
-            inputLabel = "Reject Delay",
+            inputLabel = "Delay",
             inputValue = rejectDelaySetting,
             onInputValueChange = { newValue -> viewModel.setRejectDelaySetting(newValue) },
             inputKeyboardType = KeyboardType.Number

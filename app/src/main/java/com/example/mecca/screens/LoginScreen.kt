@@ -35,6 +35,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -58,6 +61,7 @@ fun LoginScreen(
     var password by remember { mutableStateOf(defaultPassword ?: "") }
 
     val appVersion = getAppVersion()  // Get the app version
+    val audiowide = FontFamily(Font(R.font.audiowide))
 
     // Main container
     Column(
@@ -67,7 +71,7 @@ fun LoginScreen(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(25.dp))
+        Spacer(modifier = Modifier.height(5.dp))
 
         Image(
             painter = painterResource(id = R.drawable.logo_electronics),
@@ -75,22 +79,24 @@ fun LoginScreen(
             contentDescription = "Company Logo"
         )
 
-        Spacer(modifier = Modifier.height(15.dp))
-
+        Spacer(modifier = Modifier.height(5.dp))
 
         Text(
-            text = "Mobile Engineering Service Application",
-            color = Color.Black, // You can use different color for the second line
-            fontSize = 23.sp, // Adjust font size for the description text
-            maxLines = 1,
+            text = "MESA",
+            color = Color.Black,
+            fontSize = 64.sp, // Adjust font size for "MESSA"
+            fontWeight = FontWeight.Bold, // Optional: make it bold
+            fontFamily = audiowide,
+            maxLines = 1, // Ensure each Text takes only one line
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center // Center-align the text
         )
+
 
         Spacer(modifier = Modifier.height(5.dp))
         Text(
-            text = "Version: $appVersion",
+            text = "v$appVersion",
             color = Color.Black, // You can use different color for the second line
             fontSize = 16.sp, // Adjust font size for the description text
             maxLines = 1,
@@ -98,6 +104,7 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center
         )
+
         Spacer(modifier = Modifier.height(30.dp))
 
 

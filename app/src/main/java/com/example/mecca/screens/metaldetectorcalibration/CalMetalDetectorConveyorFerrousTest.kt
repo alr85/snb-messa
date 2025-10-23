@@ -129,6 +129,8 @@ fun CalMetalDetectorConveyorFerrousTest(
             //inputKeyboardType = KeyboardType.Number
         )
 
+
+
         LabeledTriStateSwitchAndTextInputWithHelp(
             label = "D&R (Middle)",
             currentState = detectRejectFerrousMiddle,

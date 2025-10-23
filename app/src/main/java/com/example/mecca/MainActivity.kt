@@ -5,9 +5,17 @@ import android.util.Log
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material.icons.Icons
@@ -17,6 +25,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -28,18 +37,23 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
+import com.example.mecca.Network.isNetworkAvailable
 import com.example.mecca.Repositories.UserRepository
 import com.example.mecca.screens.LoginScreen
 import com.example.mecca.ui.theme.AppNavGraph
+import kotlinx.coroutines.delay
 
 
 class MainActivity : ComponentActivity() {
@@ -62,6 +76,8 @@ class MainActivity : ComponentActivity() {
         val savedCredentials = PreferencesHelper.getCredentials(this)
         val savedUsername = savedCredentials.first
         val savedPassword = savedCredentials.second
+
+
 
         setContent {
             val syncStatus by userViewModel.syncStatus.collectAsState()
@@ -113,6 +129,17 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MyApp(db: AppDatabase, userViewModel: UserViewModel) {
     val navController = rememberNavController()
+    val context = LocalContext.current
+    var isOffline by remember { mutableStateOf(false) }
+
+    // Periodically check connection
+    LaunchedEffect(Unit) {
+        while (true) {
+            isOffline = !isNetworkAvailable(context)
+            delay(3000)
+        }
+    }
+
 
     var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
     var showBottomBar by rememberSaveable { mutableStateOf(true) }
@@ -163,6 +190,7 @@ fun MyApp(db: AppDatabase, userViewModel: UserViewModel) {
             if (navController.currentBackStackEntry?.destination?.route != "login") {
                 MyTopAppBar(navController = navController)
             }
+
         },
         bottomBar = {
             // Conditionally show or hide the bottom bar based on the current route
@@ -215,30 +243,43 @@ fun MyApp(db: AppDatabase, userViewModel: UserViewModel) {
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
+
+                OfflineBanner(isOffline)
+
                 AppNavGraph(navController = navController, db = db, userViewModel = userViewModel)
             }
         }
     )
 }
 
-//@Composable
-//fun NoNetworkNoLoginDialog(onRetry: () -> Unit, onClose: () -> Unit) {
-//    androidx.compose.material.AlertDialog(
-//        onDismissRequest = { },
-//        title = { Text("No Network and No Login") },
-//        text = { Text("Please connect to a network or log in to continue.") },
-//        confirmButton = {
-//            androidx.compose.material.TextButton(onClick = { onRetry() }) {
-//                Text("Retry")
-//            }
-//        },
-//        dismissButton = {
-//            androidx.compose.material.TextButton(onClick = { onClose() }) {
-//                Text("Close App")
-//            }
-//        }
-//    )
-//}
+@Composable
+fun OfflineBanner(isOffline: Boolean) {
+    AnimatedVisibility(
+        visible = isOffline,
+        enter = fadeIn(animationSpec = tween(400)) + slideInVertically(
+            initialOffsetY = { -it } // slide down from top
+        ),
+        exit = fadeOut(animationSpec = tween(400)) + slideOutVertically(
+            targetOffsetY = { -it } // slide back up
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFFB71C1C)) // Deep red
+                .padding(vertical = 6.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Offline mode: changes will require synchronising when network is available.",
+                color = Color.White,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
+}
+
+
 
 
 data class NavigationBarItem(

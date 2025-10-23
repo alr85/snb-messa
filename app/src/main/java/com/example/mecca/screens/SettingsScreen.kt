@@ -58,7 +58,6 @@ fun SettingsScreen(navController: NavHostController, userViewModel: UserViewMode
     val settingsItems = listOf(
         SettingItem("My Calibrations"),
         SettingItem("Database Sync"),
-        SettingItem("Phonebook"),
         SettingItem("Debug Logs"),
         SettingItem("About App"),
         SettingItem("Logout") // Add Logout button
@@ -129,7 +128,6 @@ fun SettingRow(setting: SettingItem, navController: NavHostController, showDialo
                         "Database Sync" -> navController.navigate("databaseSync")
                         "About App" -> navController.navigate("aboutApp")
                         "My Calibrations" -> navController.navigate("myCalibrations")
-                        //"Phonebook" -> navController.navigate("serviceSelectCustomer")
                         "Debug Logs" -> navController.navigate("logsScreen")
                         "Logout" -> {
                             // Show confirmation dialog for logout
@@ -148,7 +146,6 @@ fun SettingRow(setting: SettingItem, navController: NavHostController, showDialo
                     "Account settings" -> Icons.Filled.Person
                     "About App" -> Icons.Default.Info
                     "My Calibrations" -> Icons.Filled.EditNote
-                    "Phonebook" -> Icons.Filled.Person
                     "Debug Logs" -> Icons.AutoMirrored.Filled.ListAlt
                     "Logout" -> Icons.Default.Refresh
                     else -> Icons.Filled.Settings

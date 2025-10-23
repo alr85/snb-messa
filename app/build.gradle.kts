@@ -75,7 +75,8 @@ dependencies {
     // Room dependencies
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    implementation(libs.androidx.appcompat)        // Kotlin extensions
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.compose.ui)        // Kotlin extensions
     ksp(libs.androidx.room.compiler)              // ✅ use KSP for code generation
     implementation(libs.androidx.room.compiler)
     implementation(libs.androidx.runtime.livedata)
