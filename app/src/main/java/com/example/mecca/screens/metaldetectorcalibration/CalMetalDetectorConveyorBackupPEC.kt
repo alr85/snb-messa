@@ -1,6 +1,5 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
-import com.example.mecca.CalibrationBanner
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
@@ -84,16 +84,12 @@ fun CalMetalDetectorConveyorBackupPEC(
                     backupSensorLatched != YesNoState.NA &&
                     backupSensorCR != YesNoState.NA
         }
+
         else -> false // Default to false for safety
     }
 
-    // Column layout
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(scrollState)
-    ) {
+    Column(modifier = Modifier.fillMaxSize()) {
+
         CalibrationBanner(
             progress = progress,
             viewModel = viewModel
@@ -107,7 +103,8 @@ fun CalMetalDetectorConveyorBackupPEC(
             },
             onNextClick = {
                 viewModel.updateBackupSensor()
-                navController.navigate("CalMetalDetectorConveyorAirPressureSensor") },
+                navController.navigate("CalMetalDetectorConveyorAirPressureSensor")
+            },
             isNextEnabled = isNextStepEnabled,
             isFirstStep = false,
             navController = navController,
@@ -117,101 +114,117 @@ fun CalMetalDetectorConveyorBackupPEC(
             },
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
         CalibrationHeader("Compliance Checks - Backup")
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(scrollState)
+        ) {
 
-        Spacer(modifier = Modifier.height(20.dp))
+            LabeledTriStateSwitchAndTextInputWithHelp(
+                label = "Back-up sensor fitted?",
+                currentState = backupSensorFitted,
+                onStateChange = { newState ->
+                    viewModel.setBackupSensorFitted(newState)
+                    if (newState == YesNoState.NA || newState == YesNoState.NO) {
+                        // Set all relevant fields to N/A
+                        viewModel.setBackupSensorDetail("N/A")
+                        viewModel.setBackupSensorTestMethod("N/A")
+                        viewModel.setBackupSensorTestMethodOther("N/A")
+                        viewModel.setBackupSensorTestResult(emptyList())
+                        viewModel.setBackupSensorLatched(YesNoState.NA)
+                        viewModel.setBackupSensorCR(YesNoState.NA)
+                        selectedOptions = listOf("N/A")
+                    } else if (newState == YesNoState.YES) {
+                        viewModel.setBackupSensorDetail("")
+                        viewModel.setBackupSensorTestMethod("")
+                        viewModel.setBackupSensorTestMethodOther("")
+                        viewModel.setBackupSensorTestResult(emptyList())
+                        viewModel.setBackupSensorLatched(YesNoState.NO)
+                        viewModel.setBackupSensorCR(YesNoState.NO)
+                        selectedOptions = emptyList() // Clear any selected options
 
-        LabeledTriStateSwitchAndTextInputWithHelp(
-            label = "Back-up sensor fitted?",
-            currentState = backupSensorFitted,
-            onStateChange = { newState ->
-                viewModel.setBackupSensorFitted(newState)
-                if (newState == YesNoState.NA || newState == YesNoState.NO) {
-                    // Set all relevant fields to N/A
-                    viewModel.setBackupSensorDetail("N/A")
-                    viewModel.setBackupSensorTestMethod("N/A")
-                    viewModel.setBackupSensorTestMethodOther("N/A")
-                    viewModel.setBackupSensorTestResult(emptyList())
-                    viewModel.setBackupSensorLatched(YesNoState.NA)
-                    viewModel.setBackupSensorCR(YesNoState.NA)
-                    selectedOptions = listOf("N/A")
-                } else if (newState == YesNoState.YES) {
-                    // Clear N/A from selected options when switching back to YES
-                    selectedOptions = emptyList() // Clear any selected options
-                    viewModel.setBackupSensorTestResult(emptyList()) // Clear the result in the ViewModel as well
-                }
-            },
-            helpText = "Select if there is a reject confirm sensor fitted",
-            inputLabel = "Detail",
-            inputValue = backupSensorDetail,
-            onInputValueChange = { newValue -> viewModel.setBackupSensorDetail(newValue) }
-        )
-
-
-        // Conditionally display remaining fields if "Yes" is selected for In-feed sensor fitted
-        if (backupSensorFitted == YesNoState.YES) {
-            LabeledDropdownWithHelp(
-                label = "Test Method",
-                options = backupSensorTestOptions,
-                selectedOption = backupSensorTestMethod,
-                onSelectionChange = { newSelection ->
-                    viewModel.setBackupSensorTestMethod(newSelection)
+                    }
                 },
-                helpText = "Select one option from the dropdown.",
-                isNAToggleEnabled = false
+                helpText = "Select if there is a reject confirm sensor fitted",
+                inputLabel = "Detail",
+                inputValue = backupSensorDetail,
+                onInputValueChange = { newValue -> viewModel.setBackupSensorDetail(newValue) }
             )
 
-            if (backupSensorTestMethod == "Other") {
-                LabeledTextFieldWithHelp(
-                    label = "Other Test Method",
-                    value = backupSensorTestMethodOther,
-                    onValueChange = { newValue -> viewModel.setBackupSensorTestMethodOther(newValue) },
-                    helpText = "Enter the custom test method",
+
+            // Conditionally display remaining fields if "Yes" is selected for In-feed sensor fitted
+            if (backupSensorFitted == YesNoState.YES) {
+                LabeledDropdownWithHelp(
+                    label = "Test Method",
+                    options = backupSensorTestOptions,
+                    selectedOption = backupSensorTestMethod,
+                    onSelectionChange = { newSelection ->
+                        viewModel.setBackupSensorTestMethod(newSelection)
+                    },
+                    helpText = "Select one option from the dropdown.",
+                    isNAToggleEnabled = false
+                )
+
+                if (backupSensorTestMethod == "Other") {
+                    LabeledTextFieldWithHelp(
+                        label = "Other Test Method",
+                        value = backupSensorTestMethodOther,
+                        onValueChange = { newValue ->
+                            viewModel.setBackupSensorTestMethodOther(
+                                newValue
+                            )
+                        },
+                        helpText = "Enter the custom test method",
+                        isNAToggleEnabled = false
+                    )
+                }
+
+                val selectedOptions by viewModel.backupSensorTestResult.collectAsState()
+
+                LabeledMultiSelectDropdownWithHelp(
+                    label = "Test Result",
+                    options = backupSensorTestResults,
+                    value = selectedOptions.joinToString(", "),
+                    selectedOptions = selectedOptions,
+                    onSelectionChange = { newSelectedOptions ->
+                        viewModel.setBackupSensorTestResult(
+                            newSelectedOptions
+                        )
+                    },
+                    helpText = "Select one or more items from the dropdown.",
+                    isNAToggleEnabled = false
+                )
+
+                LabeledTriStateSwitchWithHelp(
+                    label = "Fault Latched?",
+                    currentState = backupSensorLatched,
+                    onStateChange = { newState -> viewModel.setBackupSensorLatched(newState) },
+                    helpText = "Is the fault output latched, or does it clear automatically?",
+                    isNAToggleEnabled = false
+                )
+
+                LabeledTriStateSwitchWithHelp(
+                    label = "Fault Controlled Restart?",
+                    currentState = backupSensorCR,
+                    onStateChange = { newState -> viewModel.setBackupSensorCR(newState) },
+                    helpText = "Is the fault output latched, or does it clear automatically?",
                     isNAToggleEnabled = false
                 )
             }
 
-            val selectedOptions by viewModel.backupSensorTestResult.collectAsState()
+            Spacer(modifier = Modifier.height(16.dp))
 
-            LabeledMultiSelectDropdownWithHelp(
-                label = "Test Result",
-                options = backupSensorTestResults,
-                value = selectedOptions.joinToString(", "),
-                selectedOptions = selectedOptions,
-                onSelectionChange = { newSelectedOptions -> viewModel.setBackupSensorTestResult(newSelectedOptions) },
-                helpText = "Select one or more items from the dropdown.",
+            LabeledTextFieldWithHelp(
+                label = "Engineer Comments",
+                value = backupSensorEngineerNotes,
+                onValueChange = { newValue -> viewModel.setBackupSensorEngineerNotes(newValue) },
+                helpText = "Enter any notes relevant to this section",
                 isNAToggleEnabled = false
             )
 
-            LabeledTriStateSwitchWithHelp(
-                label = "Fault Latched?",
-                currentState = backupSensorLatched,
-                onStateChange = { newState -> viewModel.setBackupSensorLatched(newState) },
-                helpText = "Is the fault output latched, or does it clear automatically?",
-                isNAToggleEnabled = false
-            )
-
-            LabeledTriStateSwitchWithHelp(
-                label = "Fault Controlled Restart?",
-                currentState = backupSensorCR,
-                onStateChange = { newState -> viewModel.setBackupSensorCR(newState) },
-                helpText = "Is the fault output latched, or does it clear automatically?",
-                isNAToggleEnabled = false
-            )
+            Spacer(modifier = Modifier.height(16.dp))
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        LabeledTextFieldWithHelp(
-            label = "Engineer Comments",
-            value = backupSensorEngineerNotes,
-            onValueChange = { newValue -> viewModel.setBackupSensorEngineerNotes(newValue) },
-            helpText = "Enter any notes relevant to this section",
-            isNAToggleEnabled = false
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
     }
 }

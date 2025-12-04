@@ -1,6 +1,5 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
-import android.util.Log
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -44,6 +43,7 @@ import com.example.mecca.ApiService
 import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
+import com.example.mecca.util.InAppLogger
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,6 +65,8 @@ fun CalMetalDetectorConveyorSummary(
     var showLocationChangeDialog by remember { mutableStateOf(false) }
     var showResultDialog by remember { mutableStateOf(false) }
     var dialogMessage by remember { mutableStateOf("") }
+
+    var pendingLocationCandidate by remember { mutableStateOf<String?>(null) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -107,10 +109,18 @@ fun CalMetalDetectorConveyorSummary(
             item {
                 OutlinedButton(
                     onClick = {
-                        val oldLocation = viewModel.lastLocation.value
-                        val newLocation = viewModel.newLocation.value
+                        InAppLogger.d("Finish button clicked")
+                        val oldLocation = viewModel.lastLocation.value.trim()
+                        val proposed = viewModel.newLocation.value.trim()
 
-                        if (oldLocation != newLocation) {
+                        val candidate: String? = when {
+                            proposed.isBlank() -> null
+                            proposed.equals(oldLocation, ignoreCase = true) -> null
+                            else -> proposed
+                        }
+
+                        if (candidate != null) {
+                            pendingLocationCandidate = candidate
                             showLocationChangeDialog = true
                         } else {
                             coroutineScope.launch {
@@ -120,6 +130,7 @@ fun CalMetalDetectorConveyorSummary(
                                 }
                             }
                         }
+
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -158,23 +169,23 @@ fun CalMetalDetectorConveyorSummary(
 
         // Location-change confirmation dialog
         if (showLocationChangeDialog) {
+            val candidate = pendingLocationCandidate
             AlertDialog(
                 onDismissRequest = { showLocationChangeDialog = false },
                 title = { Text("Confirm Location Change") },
                 text = {
                     Text(
                         "The system location has changed from " +
-                                "'${viewModel.lastLocation.value}' to '${viewModel.newLocation.value}'. " +
-                                "Do you want to update this in the database and cloud?"
+                                "'${viewModel.lastLocation.value}' to '$candidate'. " +
+                                "Are you sure you want to update this in the database?"
                     )
                 },
                 confirmButton = {
                     TextButton(onClick = {
                         showLocationChangeDialog = false
                         coroutineScope.launch {
-                            Log.d("MESSA-DEBUG", "User confirmed location change — updating local DB")
-                            viewModel.updateSystemLocationLocally()
-                            Log.d("MESSA-DEBUG", "Starting finaliseCalibrationAndUpload")
+                            viewModel.setNewLocation(candidate!!)          // keep VM consistent
+                            viewModel.updateSystemLocationLocally()        // your existing impl
                             viewModel.finaliseCalibrationAndUpload(context, apiService) { message ->
                                 dialogMessage = message
                                 showResultDialog = true

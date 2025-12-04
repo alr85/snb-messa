@@ -55,6 +55,7 @@ fun CalMetalDetectorConveyorRejectSettings(
     val rejectTimerUnitOptions = listOf(
         "Secs",
         "mSecs",
+        "mm",
         "pulses"
     )
 
@@ -71,12 +72,8 @@ fun CalMetalDetectorConveyorRejectSettings(
                         )
 
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(scrollState) // Add scrolling to the whole column
-    ) {
+    Column(modifier = Modifier.fillMaxSize()) {
+
         CalibrationBanner(
             progress = progress,
             viewModel = viewModel
@@ -89,7 +86,8 @@ fun CalMetalDetectorConveyorRejectSettings(
             onCancelClick = { viewModel.updateRejectSettings() },
             onNextClick = {
                 viewModel.updateRejectSettings()
-                navController.navigate("CalMetalDetectorConveyorConveyorDetails") },
+                navController.navigate("CalMetalDetectorConveyorSystemChecklist")
+            },
             isNextEnabled = isNextStepEnabled,
             isFirstStep = false, // Indicates this is the first step and disables the Previous button
             navController = navController,
@@ -98,99 +96,79 @@ fun CalMetalDetectorConveyorRejectSettings(
                 viewModel.updateRejectSettings()
             },
         )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
         CalibrationHeader("Reject Settings")
 
-        Spacer(modifier = Modifier.height(20.dp))
-
-        LabeledTriStateSwitchAndTextInputWithHelp(
-            label = "Synchronisation",
-            currentState = rejectSynchronisationSetting,
-            onStateChange = { newState -> viewModel.setRejectSynchronisationSetting(newState) },
-            helpText = "Select if there is a method of reject synchronisation",
-            inputLabel = "Detail",
-            inputValue = rejectSynchronisationDetail,
-            onInputValueChange = { newValue -> viewModel.setRejectSynchronisationDetail(newValue) },
-            //inputKeyboardType = KeyboardType.Number
-        )
-
-
-
-        LabeledDropdownWithTextInput(
-            label = "Reject Duration",
-            dropdownLabel = "Units",
-            options = rejectTimerUnitOptions,
-            selectedOption = rejectDurationUnits,
-            onOptionChange = { newValue -> viewModel.setRejectDurationUnits(newValue) },
-            helpText = "Select the units for the reject duration",
-            inputLabel = "Duration",
-            inputValue = rejectDurationSetting,
-            onInputValueChange = { newValue -> viewModel.setRejectDurationSetting(newValue) },
-            inputKeyboardType = KeyboardType.Number
-        )
-
-        LabeledDropdownWithTextInput(
-            label = "Reject Delay",
-            dropdownLabel = "Units",
-            options = rejectTimerUnitOptions,
-            selectedOption = rejectDelayUnits,
-            onOptionChange = { newValue -> viewModel.setRejectDelayUnits(newValue) },
-            helpText = "Select the units for the reject delay",
-            inputLabel = "Delay",
-            inputValue = rejectDelaySetting,
-            onInputValueChange = { newValue -> viewModel.setRejectDelaySetting(newValue) },
-            inputKeyboardType = KeyboardType.Number
-        )
-
-        LabeledDropdownWithTextInput(
-            label = "Rej. Conf. Window",
-            dropdownLabel = "Units",
-            options = rejectTimerUnitOptions,
-            selectedOption = rejectConfirmWindowUnits,
-            onOptionChange = { newValue -> viewModel.setRejectConfirmWindowUnits(newValue) },
-            helpText = "Select the units for the reject confirm",
-            inputLabel = "Conf. Window",
-            inputValue = rejectConfirmWindowSetting,
-            onInputValueChange = { newValue -> viewModel.setRejectConfirmWindowSetting(newValue) },
-            inputKeyboardType = KeyboardType.Number
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(scrollState) // Add scrolling to the whole column
+        ) {
+            LabeledTriStateSwitchAndTextInputWithHelp(
+                label = "Synchronisation",
+                currentState = rejectSynchronisationSetting,
+                onStateChange = { newState -> viewModel.setRejectSynchronisationSetting(newState) },
+                helpText = "Select if there is a method of reject synchronisation",
+                inputLabel = "Detail",
+                inputValue = rejectSynchronisationDetail,
+                onInputValueChange = { newValue -> viewModel.setRejectSynchronisationDetail(newValue) },
+                //inputKeyboardType = KeyboardType.Number
+            )
 
 
-//        LabeledTextFieldWithHelp(
-//            label = "Reject Delay",
-//            value = rejectDelaySetting,
-//            onValueChange = { newValue -> viewModel.setRejectDelaySetting(newValue) },
-//            helpText = "Enter the reject delay setting",
-//            keyboardType = KeyboardType.Number
-//        )
-//
-//        LabeledTextFieldWithHelp(
-//            label = "Reject Duration",
-//            value = rejectDurationSetting,
-//            onValueChange = { newValue -> viewModel.setRejectDurationSetting(newValue) },
-//            helpText = "Enter the metal test sample certificate number, usually located on the test piece",
-//        )
-//
-//        LabeledTextFieldWithHelp(
-//            label = "Reject Confirm Window",
-//            value = rejectConfirmWindowSetting,
-//            onValueChange = { newValue -> viewModel.setRejectConfirmWindowSetting(newValue) },
-//            helpText = "Enter the metal test sample certificate number, usually located on the test piece",
-//        )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            LabeledDropdownWithTextInput(
+                label = "Reject Duration",
+                dropdownLabel = "Units",
+                options = rejectTimerUnitOptions,
+                selectedOption = rejectDurationUnits,
+                onOptionChange = { newValue -> viewModel.setRejectDurationUnits(newValue) },
+                helpText = "Select the units for the reject duration",
+                inputLabel = "Duration",
+                inputValue = rejectDurationSetting,
+                onInputValueChange = { newValue -> viewModel.setRejectDurationSetting(newValue) },
+                inputKeyboardType = KeyboardType.Number
+            )
 
-        LabeledTextFieldWithHelp(
-            label = "Engineer Notes",
-            value = rejectSettingsEngineerNotes,
-            onValueChange = { newValue -> viewModel.setRejectSettingsEngineerNotes(newValue) },
-            helpText = "Enter any notes relevant to this section",
-            isNAToggleEnabled = false
-        )
+            LabeledDropdownWithTextInput(
+                label = "Reject Delay",
+                dropdownLabel = "Units",
+                options = rejectTimerUnitOptions,
+                selectedOption = rejectDelayUnits,
+                onOptionChange = { newValue -> viewModel.setRejectDelayUnits(newValue) },
+                helpText = "Select the units for the reject delay",
+                inputLabel = "Delay",
+                inputValue = rejectDelaySetting,
+                onInputValueChange = { newValue -> viewModel.setRejectDelaySetting(newValue) },
+                inputKeyboardType = KeyboardType.Number
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            LabeledDropdownWithTextInput(
+                label = "Rej. Conf. Window",
+                dropdownLabel = "Units",
+                options = rejectTimerUnitOptions,
+                selectedOption = rejectConfirmWindowUnits,
+                onOptionChange = { newValue -> viewModel.setRejectConfirmWindowUnits(newValue) },
+                helpText = "Select the units for the reject confirm",
+                inputLabel = "Conf. Window",
+                inputValue = rejectConfirmWindowSetting,
+                onInputValueChange = { newValue -> viewModel.setRejectConfirmWindowSetting(newValue) },
+                inputKeyboardType = KeyboardType.Number
+            )
 
+
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            LabeledTextFieldWithHelp(
+                label = "Engineer Notes",
+                value = rejectSettingsEngineerNotes,
+                onValueChange = { newValue -> viewModel.setRejectSettingsEngineerNotes(newValue) },
+                helpText = "Enter any notes relevant to this section",
+                isNAToggleEnabled = false
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
     }
 }

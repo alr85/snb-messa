@@ -4,10 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.mecca.ApiService
 import com.example.mecca.DAOs.CustomerDAO
-import com.example.mecca.DAOs.MetalDetectorConveyorCalibrationDAO
 import com.example.mecca.DAOs.MdModelsDAO
+import com.example.mecca.DAOs.MetalDetectorConveyorCalibrationDAO
 import com.example.mecca.DAOs.MetalDetectorSystemsDAO
-import com.example.mecca.Repositories.MetalDetectorSystemsRepository
+import com.example.mecca.repositories.MetalDetectorConveyorCalibrationRepository
+import com.example.mecca.repositories.MetalDetectorSystemsRepository
+import com.example.mecca.repositories.RetailerSensitivitiesRepository
 
 class CalibrationMetalDetectorConveyorViewModelFactory(
     private val calibrationDao: MetalDetectorConveyorCalibrationDAO,
@@ -35,6 +37,8 @@ class CalibrationMetalDetectorConveyorViewModelFactory(
     private val detectionSetting7label: String,
     private val detectionSetting8label: String,
     private val lastLocation: String,
+    private val retailerSensitivitiesRepo: RetailerSensitivitiesRepository,
+    private val calibrationRepository: MetalDetectorConveyorCalibrationRepository,
 
     ) : ViewModelProvider.Factory {
 
@@ -44,10 +48,11 @@ class CalibrationMetalDetectorConveyorViewModelFactory(
             return CalibrationMetalDetectorConveyorViewModel(
                 engineerId = engineerId,
                 calibrationDao = calibrationDao,
-                repository = repository,
+                calibrationRepository = calibrationRepository,
                 mdModelsDAO = mdModelsDAO,
                 mdSystemsDAO = mdSystemsDAO,
-                apiService = apiService,
+                customerDAO = customersDao,
+                repository = repository,
                 calibrationId = calibrationId,
                 customerId = customerId,
                 systemId = systemId,
@@ -57,7 +62,6 @@ class CalibrationMetalDetectorConveyorViewModelFactory(
                 modelDescription = modelDescription,
                 customerName = customerName,
                 modelId = modelId,
-                customerDAO = customersDao,
                 detectionSetting1label = detectionSetting1label,
                 detectionSetting2label = detectionSetting2label,
                 detectionSetting3label = detectionSetting3label,
@@ -67,6 +71,8 @@ class CalibrationMetalDetectorConveyorViewModelFactory(
                 detectionSetting7label = detectionSetting7label,
                 detectionSetting8label = detectionSetting8label,
                 lastLocation = lastLocation,
+                apiService = apiService,
+                retailerSensitivitiesRepo = retailerSensitivitiesRepo
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")

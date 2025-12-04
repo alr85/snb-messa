@@ -9,13 +9,10 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.mecca.formModules.YesNoState
@@ -30,27 +27,23 @@ fun TriStateSwitchWithInput(
     inputKeyboardType: KeyboardType = KeyboardType.Text,
     isDisabled: Boolean
 ) {
-    var localCurrentState by remember {
-        mutableStateOf(if (currentState == YesNoState.UNSPECIFIED) YesNoState.NO else currentState)
-    }
-
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        // Switch only does YES/NO and is disabled when NA
         Switch(
-            checked = localCurrentState == YesNoState.YES,
-            onCheckedChange = {
+            checked = currentState == YesNoState.YES,
+            onCheckedChange = { checked ->
                 if (!isDisabled) {
-                    localCurrentState = if (it) YesNoState.YES else YesNoState.NO
-                    onStateChange(localCurrentState)
+                    onStateChange(if (checked) YesNoState.YES else YesNoState.NO)
                 }
             },
             enabled = !isDisabled
         )
 
         Text(
-            text = when (localCurrentState) {
+            text = when (currentState) {
                 YesNoState.YES -> "Yes"
                 YesNoState.NO -> "No"
                 YesNoState.NA -> "N/A"
@@ -61,13 +54,30 @@ fun TriStateSwitchWithInput(
 
         OutlinedTextField(
             value = inputValue,
-            onValueChange = { if (!isDisabled) onInputValueChange(it) },
+            onValueChange = { raw ->
+                if (!isDisabled) {
+                    var cleaned = raw.replace(',', '.')
+                    if (inputKeyboardType == KeyboardType.Text) {
+                        cleaned = cleaned.replaceFirstChar {
+                            if (it.isLowerCase()) it.titlecase() else it.toString()
+                        }
+                    }
+                    onInputValueChange(cleaned)
+                }
+            },
             label = { Text(inputLabel) },
             enabled = !isDisabled,
             singleLine = true,
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = inputKeyboardType),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = inputKeyboardType,
+                capitalization = when (inputKeyboardType) {
+                    KeyboardType.Text -> KeyboardCapitalization.Sentences
+                    else -> KeyboardCapitalization.None
+                }
+            ),
             colors = OutlinedTextFieldDefaults.colors(disabledTextColor = Color.Gray),
             modifier = Modifier.weight(1f)
         )
     }
 }
+

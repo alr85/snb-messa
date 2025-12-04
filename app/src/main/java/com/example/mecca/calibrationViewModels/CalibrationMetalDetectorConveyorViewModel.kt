@@ -11,12 +11,45 @@ import com.example.mecca.DAOs.CustomerDAO
 import com.example.mecca.DAOs.MdModelsDAO
 import com.example.mecca.DAOs.MetalDetectorConveyorCalibrationDAO
 import com.example.mecca.DAOs.MetalDetectorSystemsDAO
-import com.example.mecca.Repositories.MetalDetectorSystemsRepository
-import com.example.mecca.dataClasses.MetalDetectorConveyorCalibrationLocal
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.setAllPvResultsNa
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toAirPressureSensorUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toBackupSensorUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toBinDoorMonitorUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toBinFullSensorUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toCalibrationEndUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toCalibrationStartUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toComplianceConfirmationUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toConveyorDetailsUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toDetectNotificationUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toDetectionSettingAsLeftUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toDetectionSettingLabelsUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toDetectionSettingsAsFoundUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toFerrousResultUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toIndicatorsUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toInfeedSensorUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toLargeMetalResultUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toNewCalibrationInsert
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toNonFerrousResultUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toOperatorTestUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toPackCheckSensorUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toProductDetailsUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toRejectConfirmSensorUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toRejectSettingsUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toSensitivitiesAsFoundUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toSensitivityRequirementsUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toSpeedSensorUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toStainlessResultUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toSystemChecklistUpdate
+import com.example.mecca.dataClasses.ConveyorRetailerSensitivitiesEntity
 import com.example.mecca.formModules.ConditionState
 import com.example.mecca.formModules.YesNoState
+import com.example.mecca.repositories.MetalDetectorConveyorCalibrationRepository
+import com.example.mecca.repositories.MetalDetectorSystemsRepository
+import com.example.mecca.repositories.RetailerSensitivitiesRepository
 import com.example.mecca.util.CsvUploader
 import com.example.mecca.util.InAppLogger
+import com.example.mecca.util.toConditionState
+import com.example.mecca.util.toYesNoState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,11 +65,11 @@ import java.time.format.DateTimeFormatter
 
 
 class CalibrationMetalDetectorConveyorViewModel(
-    private val engineerId: Int,
+    val engineerId: Int,
     private val calibrationDao: MetalDetectorConveyorCalibrationDAO,
+    private val calibrationRepository: MetalDetectorConveyorCalibrationRepository,
     private val mdModelsDAO: MdModelsDAO,
     private val mdSystemsDAO: MetalDetectorSystemsDAO,
-    //private val apiService: ApiService,
     private val customerDAO: CustomerDAO,
     private val repository: MetalDetectorSystemsRepository,
     calibrationId: String,
@@ -58,26 +91,9 @@ class CalibrationMetalDetectorConveyorViewModel(
     detectionSetting8label: String,
     lastLocation: String,
     apiService: ApiService,
+    private val retailerSensitivitiesRepo: RetailerSensitivitiesRepository
 ) : ViewModel() {
 
-
-    //private val _calibrationData = MutableLiveData<MetalDetectorConveyorCalibrationLocal?>()
-    //val calibrationData: LiveData<MetalDetectorConveyorCalibrationLocal?> get() = _calibrationData
-
-    // MutableState for loading status
-    private val _isUploading = MutableStateFlow(false)
-    val isUploading: StateFlow<Boolean> = _isUploading
-
-    private val _isNavigating = MutableStateFlow(false)
-    val isNavigating: StateFlow<Boolean> get() = _isNavigating
-
-    fun startNavigation() {
-        _isNavigating.value = true
-    }
-
-    fun finishNavigation() {
-        _isNavigating.value = false
-    }
 
 
     init {
@@ -87,7 +103,11 @@ class CalibrationMetalDetectorConveyorViewModel(
             val existingCalibration = calibrationDao.getCalibrationById(calibrationId)
 
             if (existingCalibration != null) {
+
+                //region LoadExistingCalibration
+
                 InAppLogger.d("Found existing calibration. Updating UI...")
+                InAppLogger.d("PV Required state = ${existingCalibration.pvRequired}")
                 // Populate individual state variables from the loaded calibration
                 val model =
                     mdModelsDAO.getMdModelDescriptionFromDb(existingCalibration.modelId) ?: "Error"
@@ -113,6 +133,9 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _lastLocation.value = existingCalibration.lastLocation
                 _canPerformCalibration.value = existingCalibration.canPerformCalibration.toBoolean()
                 _reasonForNotCalibrating.value = existingCalibration.reasonForNotCalibrating
+                _pvRequired.value = existingCalibration.pvRequired
+
+
                 _desiredCop.value = existingCalibration.desiredCop
                     .removeSurrounding("[", "]")
                     .split(",")
@@ -121,13 +144,20 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _startCalibrationNotes.value = existingCalibration.startCalibrationNotes
 
                 _sensitivityRequirementFerrous.value =
-                    existingCalibration.sensitivityRequirementFerrous
+                    existingCalibration.sensitivityRequirementFerrous?.toString() ?: ""
                 _sensitivityRequirementNonFerrous.value =
-                    existingCalibration.sensitivityRequirementNonFerrous
+                    existingCalibration.sensitivityRequirementNonFerrous?.toString() ?: ""
                 _sensitivityRequirementStainless.value =
-                    existingCalibration.sensitivityRequirementStainless
+                    existingCalibration.sensitivityRequirementStainless?.toString() ?: ""
                 _sensitivityRequirementEngineerNotes.value =
                     existingCalibration.sensitivityRequirementEngineerNotes
+
+
+                existingCalibration.productHeight
+                    .toDoubleOrNull()
+                    ?.let { fetchSensitivityData(it) }
+
+
 
                 _productDescription.value = existingCalibration.productDescription
                 _productLibraryReference.value = existingCalibration.productLibraryReference
@@ -137,8 +167,7 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _productHeight.value = existingCalibration.productHeight
                 _productDetailsEngineerNotes.value = existingCalibration.productDetailsEngineerNotes
 
-                _sensitivityAccessRestriction.value =
-                    existingCalibration.sensitivityAccessRestriction
+                _sensitivityAccessRestriction.value = existingCalibration.sensitivityAccessRestriction
                 _detectionSettingAsFound1.value = existingCalibration.detectionSettingAsFound1
                 _detectionSettingAsFound2.value = existingCalibration.detectionSettingAsFound2
                 _detectionSettingAsFound3.value = existingCalibration.detectionSettingAsFound3
@@ -147,6 +176,11 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _detectionSettingAsFound6.value = existingCalibration.detectionSettingAsFound6
                 _detectionSettingAsFound7.value = existingCalibration.detectionSettingAsFound7
                 _detectionSettingAsFound8.value = existingCalibration.detectionSettingAsFound8
+
+                _detectionSettingPvResult.value = existingCalibration.detectionSettingPvResult
+
+
+
                 _detectionSettingAsFoundEngineerNotes.value =
                     existingCalibration.detectionSettingAsFoundEngineerNotes
 
@@ -452,7 +486,7 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _detectionSetting7label.value = existingCalibration.detectionSetting7label
                 _detectionSetting8label.value = existingCalibration.detectionSetting8label
 
-
+                //endregion
 
             } else {
                 // Handle the case where no calibration exists
@@ -462,25 +496,24 @@ class CalibrationMetalDetectorConveyorViewModel(
         }
     }
 
-    private fun String.toYesNoState(): YesNoState {
-        return when (this.uppercase()) {
-            "YES" -> YesNoState.YES
-            "NO" -> YesNoState.NO
-            "NA" -> YesNoState.NA
-            else -> YesNoState.UNSPECIFIED
-        }
-    }
 
-    private fun String.toConditionState(): ConditionState {
-        return when (this.uppercase()) {
-            "GOOD" -> ConditionState.GOOD
-            "SATISFACTORY" -> ConditionState.SATISFACTORY
-            "POOR" -> ConditionState.POOR
-            "NA" -> ConditionState.NA
-            "UNSPECIFIED" -> ConditionState.UNSPECIFIED
-            else -> ConditionState.UNSPECIFIED
-        }
-    }
+
+
+    // -----------------------------------------------------------------------------
+    //  GENERAL FIELD STATE DUMP
+    // -----------------------------------------------------------------------------
+    // This section contains all the mutableState fields and their setters for the
+    // calibration UI.
+    // -----------------------------------------------------------------------------
+
+
+    // region MUTABLE STATES FOR UI STATE OBSERVATION
+
+    private val _isUploading = MutableStateFlow(false)
+    val isUploading: StateFlow<Boolean> = _isUploading
+
+    private val _isNavigating = MutableStateFlow(false)
+    val isNavigating: StateFlow<Boolean> get() = _isNavigating
 
     private var _currentStep = mutableIntStateOf(1) // Start from step 1
     //val currentStep: State<Int> = _currentStep
@@ -499,6 +532,294 @@ class CalibrationMetalDetectorConveyorViewModel(
             _currentStep.intValue -= 1
         }
     }
+
+    fun startNavigation() {
+        _isNavigating.value = true
+    }
+
+    fun finishNavigation() {
+        _isNavigating.value = false
+    }
+
+    // endregion
+
+
+
+    fun disableFerrousTest(){
+        _sampleCertificateNumberFerrous.value = "N/A"
+        _detectRejectFerrousLeading.value = YesNoState.NA
+        _detectRejectFerrousMiddle.value = YesNoState.NA
+        _detectRejectFerrousTrailing.value = YesNoState.NA
+        _peakSignalFerrousLeading.value = "N/A"
+        _peakSignalFerrousMiddle.value = "N/A"
+        _peakSignalFerrousTrailing.value = "N/A"
+        _ferrousTestPvResult.value = "N/A"
+    }
+
+    fun enableFerrousTest(){
+        _sampleCertificateNumberFerrous.value = ""
+        _detectRejectFerrousLeading.value = YesNoState.NO
+        _detectRejectFerrousMiddle.value = YesNoState.NO
+        _detectRejectFerrousTrailing.value = YesNoState.NO
+        _peakSignalFerrousLeading.value = ""
+        _peakSignalFerrousMiddle.value = ""
+        _peakSignalFerrousTrailing.value = ""
+        _ferrousTestPvResult.value = ""
+    }
+
+
+
+
+
+
+
+
+    // -----------------------------------------------------------------------------
+//  DATABASE UPDATE TRIGGERS
+// -----------------------------------------------------------------------------
+// Each section of the calibration process has its own "update" function here.
+// These functions do NOT build SQL queries directly. Instead:
+//
+//   1. They convert the current ViewModel state into a structured update object
+//      using a `toXUpdate()` mapper (defined in DatabaseUpdates.kt).
+//
+//   2. They hand that object to the CalibrationRepository, which is the only
+//      class allowed to talk to the DAO.
+//
+// This keeps the ViewModel focused on UI state and business logic, while the
+// repository handles the persistence layer.
+//
+// If you ever need to change how a section of calibration is saved to the
+// database, update the corresponding mapper and repository function—NOT the
+// ViewModel. The ViewModel should remain thin and readable.
+// -----------------------------------------------------------------------------
+
+    //region UPDATE FUNCTIONS
+
+    private fun saveNewCalibration() {
+        val insert = toNewCalibrationInsert()
+
+        viewModelScope.launch {
+            calibrationRepository.insertNewCalibration(insert)
+        }
+    }
+
+    fun updateCalibrationStart() {
+        if (!pvRequired.value) {
+            setAllPvResultsNa()
+        }
+
+        val update = toCalibrationStartUpdate()
+
+        viewModelScope.launch {
+            calibrationRepository.updateCalibrationStart(update)
+        }
+    }
+
+    fun updateSensitivityRequirements() {
+        val update = toSensitivityRequirementsUpdate()
+
+        viewModelScope.launch {
+            calibrationRepository.updateSensitivityRequirements(update)
+        }
+    }
+
+    fun updateProductDetails() {
+        val update = toProductDetailsUpdate()
+
+        viewModelScope.launch {
+            calibrationRepository.updateProductDetails(update)
+        }
+    }
+
+    fun updateDetectionSettingsAsFound() {
+        val update = toDetectionSettingsAsFoundUpdate()
+
+        viewModelScope.launch {
+            calibrationRepository.updateDetectionSettingsAsFound(update)
+        }
+
+    }
+
+    fun updateSensitivitiesAsFound() {
+        val update = toSensitivitiesAsFoundUpdate()
+
+        viewModelScope.launch {
+            calibrationRepository.updateSensitivitiesAsFound(update)
+        }
+    }
+
+    fun updateFerrousResult() {
+        val update = toFerrousResultUpdate()
+
+        viewModelScope.launch {
+            calibrationRepository.updateFerrousResult(update)
+        }
+    }
+
+    fun updateNonFerrousResult() {
+        val update = toNonFerrousResultUpdate()
+
+        viewModelScope.launch {
+            calibrationRepository.updateNonFerrousResult(update)
+        }
+    }
+
+    fun updateStainlessResult() {
+        val update = toStainlessResultUpdate()
+
+        viewModelScope.launch {
+            calibrationRepository.updateStainlessResult(update)
+        }
+    }
+
+    fun updateLargeMetalResult() {
+        val update = toLargeMetalResultUpdate()
+
+        viewModelScope.launch {
+            calibrationRepository.updateLargeMetalResult(update)
+        }
+    }
+
+    fun updateDetectionSettingAsLeft() {
+        val update = toDetectionSettingAsLeftUpdate()
+
+        viewModelScope.launch {
+            calibrationRepository.updateDetectionSettingAsLeft(update)
+        }
+    }
+
+    fun updateRejectSettings() {
+        val update = toRejectSettingsUpdate()
+
+        viewModelScope.launch {
+            calibrationRepository.updateRejectSettings(update)
+        }
+    }
+
+    fun updateConveyorDetails() {
+        val update = toConveyorDetailsUpdate()
+
+        viewModelScope.launch {
+            calibrationRepository.updateConveyorDetails(update)
+        }
+    }
+
+    fun updateSystemChecklist() {
+        val update = toSystemChecklistUpdate()
+
+        viewModelScope.launch {
+            calibrationRepository.updateSystemChecklist(update)
+        }
+    }
+
+    fun updateIndicators() {
+        val update = toIndicatorsUpdate()
+
+        viewModelScope.launch {
+            calibrationRepository.updateIndicators(update)
+        }
+    }
+
+    fun updateInfeedSensor() {
+        val update = toInfeedSensorUpdate()
+
+        viewModelScope.launch {
+            calibrationRepository.updateInfeedSensor(update)
+        }
+    }
+
+    fun updateRejectConfirmSensor() {
+        val update = toRejectConfirmSensorUpdate()
+
+        viewModelScope.launch {
+            calibrationRepository.updateRejectConfirmSensor(update)
+        }
+    }
+
+    fun updateBinFullSensor() {
+        val update = toBinFullSensorUpdate()
+        viewModelScope.launch { calibrationRepository.updateBinFullSensor(update) }
+    }
+
+    fun updateBackupSensor() {
+        val update = toBackupSensorUpdate()
+        viewModelScope.launch { calibrationRepository.updateBackupSensor(update) }
+    }
+
+    fun updateAirPressureSensor() {
+        val update = toAirPressureSensorUpdate()
+        viewModelScope.launch { calibrationRepository.updateAirPressureSensor(update) }
+    }
+
+    fun updatePackCheckSensor() {
+        val update = toPackCheckSensorUpdate()
+        viewModelScope.launch { calibrationRepository.updatePackCheckSensor(update) }
+    }
+
+    fun updateSpeedSensor() {
+        val update = toSpeedSensorUpdate()
+        viewModelScope.launch { calibrationRepository.updateSpeedSensor(update) }
+    }
+
+    fun updateDetectNotification() {
+        val update = toDetectNotificationUpdate()
+        viewModelScope.launch { calibrationRepository.updateDetectNotification(update) }
+    }
+
+    fun updateBinDoorMonitor() {
+        val update = toBinDoorMonitorUpdate()
+        viewModelScope.launch { calibrationRepository.updateBinDoorMonitor(update) }
+    }
+
+    fun updateOperatorTest() {
+        val update = toOperatorTestUpdate()
+        viewModelScope.launch { calibrationRepository.updateOperatorTest(update) }
+    }
+
+    fun updateComplianceConfirmation() {
+        val update = toComplianceConfirmationUpdate()
+        viewModelScope.launch { calibrationRepository.updateComplianceConfirmation(update) }
+    }
+
+    fun updateDetectionSettingLabels() {
+        val update = toDetectionSettingLabelsUpdate()
+        viewModelScope.launch { calibrationRepository.updateDetectionSettingLabels(update) }
+    }
+
+    fun updateCalibrationEnd() {
+        val update = toCalibrationEndUpdate()
+        viewModelScope.launch { calibrationRepository.updateCalibrationEnd(update) }
+    }
+
+
+    //endregion
+
+
+
+
+// -----------------------------------------------------------------------------
+//  CALIBRATION FIELD STATE DUMP (a.k.a. The Sock Drawer)
+// -----------------------------------------------------------------------------
+// This section contains all the mutableState fields and their setters for the
+// calibration process.
+// -----------------------------------------------------------------------------
+
+    //region MUTABLE STATE FIELDS, AND SETTERS
+
+//    val location = mutableStateOf("")
+//    private var originalLocation: String? = null
+//
+//    fun setInitialLocation(value: String) {
+//        originalLocation = value
+//        location.value = value
+//    }
+//
+//    fun locationChanged(): Boolean {
+//        val old = originalLocation?.trim() ?: ""
+//        val new = location.value.trim()
+//        return !new.equals(old, ignoreCase = true)
+//    }
 
     private val _calibrationId = mutableStateOf(calibrationId)
     val calibrationId: State<String> = _calibrationId
@@ -530,7 +851,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     private val _calibrationStartTime = mutableStateOf(
         LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
     )
-    private val calibrationStartTime: State<String> = _calibrationStartTime
+    val calibrationStartTime: State<String> = _calibrationStartTime
 
 
     private val _isSynced = mutableStateOf<Boolean?>(false)
@@ -615,503 +936,6 @@ class CalibrationMetalDetectorConveyorViewModel(
     val lastLocation: State<String> = _lastLocation
 
 
-    private fun saveNewCalibration() {
-        viewModelScope.launch {
-            val newCalibration = MetalDetectorConveyorCalibrationLocal(
-                calibrationId = calibrationId.value,
-                mapVersion = "MDC1.0",
-                systemId = systemId.value,
-                tempSystemId = tempSystemId.value,
-                cloudSystemId = cloudSystemId.value,
-                modelId = modelId.value,
-                serialNumber = serialNumber.value,
-                engineerId = engineerId,
-                customerId = customerId.value,
-                startDate = calibrationStartTime.value,
-                detectionSetting1label = detectionSetting1label.value,
-                detectionSetting2label = detectionSetting2label.value,
-                detectionSetting3label = detectionSetting3label.value,
-                detectionSetting4label = detectionSetting4label.value,
-                detectionSetting5label = detectionSetting5label.value,
-                detectionSetting6label = detectionSetting6label.value,
-                detectionSetting7label = detectionSetting7label.value,
-                detectionSetting8label = detectionSetting8label.value,
-                lastLocation = lastLocation.value
-
-
-            )
-            calibrationDao.insertOrUpdateCalibration(newCalibration)
-        }
-    }
-
-
-    fun updateCalibrationStart() {
-        viewModelScope.launch {
-            calibrationDao.updateCalibrationStart(
-                newLocation = newLocation.value,
-                lastLocation = lastLocation.value,
-                canPerformCalibration = canPerformCalibration.value.toString(),
-                reasonForNotCalibrating = reasonForNotCalibrating.value,
-                startCalibrationNotes = startCalibrationNotes.value,
-                calibrationId = calibrationId.value
-            )
-        }
-    }
-
-
-    fun updateSensitivityRequirements() {
-        viewModelScope.launch {
-            calibrationDao.updateSensitivityRequirements(
-                desiredCop = desiredCop.value.toString(),
-                sensitivityRequirementFerrous = sensitivityRequirementFerrous.value,
-                sensitivityRequirementNonFerrous = sensitivityRequirementNonFerrous.value,
-                sensitivityRequirementStainless = sensitivityRequirementStainless.value,
-                sensitivityRequirementEngineerNotes = sensitivityRequirementEngineerNotes.value,
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-    fun updateProductDetails() {
-        viewModelScope.launch {
-            calibrationDao.updateProductDetails(
-                productDescription = productDescription.value,
-                productLibraryReference = productLibraryReference.value,
-                productLibraryNumber = productLibraryNumber.value,
-                productLength = productLength.value,
-                productWidth = productWidth.value,
-                productHeight = productHeight.value,
-                productDetailsEngineerNotes = productDetailsEngineerNotes.value,
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-
-    fun updateDetectionSettingsAsFound() {
-        viewModelScope.launch {
-            calibrationDao.updateDetectionSettingsAsFound(
-                detectionSettingAsFound1 = detectionSettingAsFound1.value,
-                detectionSettingAsFound2 = detectionSettingAsFound2.value,
-                detectionSettingAsFound3 = detectionSettingAsFound3.value,
-                detectionSettingAsFound4 = detectionSettingAsFound4.value,
-                detectionSettingAsFound5 = detectionSettingAsFound5.value,
-                detectionSettingAsFound6 = detectionSettingAsFound6.value,
-                detectionSettingAsFound7 = detectionSettingAsFound7.value,
-                detectionSettingAsFound8 = detectionSettingAsFound8.value,
-                detectionSettingAsFoundEngineerNotes = detectionSettingAsFoundEngineerNotes.value,
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-    fun updateSensitivitiesAsFound() {
-        viewModelScope.launch {
-            calibrationDao.updateSensitivitiesAsFound(
-                sensitivityAccessRestriction = sensitivityAccessRestriction.value,
-                sensitivityAsFoundFerrous = sensitivityAsFoundFerrous.value,
-                sensitivityAsFoundFerrousPeakSignal = sensitivityAsFoundFerrousPeakSignal.value,
-                sensitivityAsFoundNonFerrous = sensitivityAsFoundNonFerrous.value,
-                sensitivityAsFoundNonFerrousPeakSignal = sensitivityAsFoundNonFerrousPeakSignal.value,
-                sensitivityAsFoundStainless = sensitivityAsFoundStainless.value,
-                sensitivityAsFoundStainlessPeakSignal = sensitivityAsFoundStainlessPeakSignal.value,
-                productPeakSignalAsFound = productPeakSignalAsFound.value,
-                sensitivityAsFoundEngineerNotes = sensitivityAsFoundEngineerNotes.value,
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-
-    fun updateFerrousResult() {
-        viewModelScope.launch {
-            calibrationDao.updateFerrousResult(
-                sensitivityAsLeftFerrous = sensitivityAsLeftFerrous.value,
-                sampleCertificateNumberFerrous = sampleCertificateNumberFerrous.value,
-                detectRejectFerrousLeading = detectRejectFerrousLeading.value.toString(),
-                detectRejectFerrousLeadingPeakSignal = peakSignalFerrousLeading.value,
-                detectRejectFerrousMiddle = detectRejectFerrousMiddle.value.toString(),
-                detectRejectFerrousMiddlePeakSignal = peakSignalFerrousMiddle.value,
-                detectRejectFerrousTrailing = detectRejectFerrousTrailing.value.toString(),
-                detectRejectFerrousTrailingPeakSignal = peakSignalFerrousTrailing.value,
-                ferrousTestEngineerNotes = ferrousTestEngineerNotes.value,
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-
-    fun updateNonFerrousResult() {
-        viewModelScope.launch {
-            calibrationDao.updateNonFerrousResult(
-                sensitivityAsLeftNonFerrous = sensitivityAsLeftNonFerrous.value,
-                sampleCertificateNumberNonFerrous = sampleCertificateNumberNonFerrous.value,
-                detectRejectNonFerrousLeading = detectRejectNonFerrousLeading.value.toString(),
-                detectRejectNonFerrousLeadingPeakSignal = peakSignalNonFerrousLeading.value,
-                detectRejectNonFerrousMiddle = detectRejectNonFerrousMiddle.value.toString(),
-                detectRejectNonFerrousMiddlePeakSignal = peakSignalNonFerrousMiddle.value,
-                detectRejectNonFerrousTrailing = detectRejectNonFerrousTrailing.value.toString(),
-                detectRejectNonFerrousTrailingPeakSignal = peakSignalNonFerrousTrailing.value,
-                nonFerrousTestEngineerNotes = nonFerrousTestEngineerNotes.value,
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-    fun updateStainlessResult() {
-        viewModelScope.launch {
-            calibrationDao.updateStainlessResult(
-                sensitivityAsLeftStainless = sensitivityAsLeftStainless.value,
-                sampleCertificateNumberStainless = sampleCertificateNumberStainless.value,
-                detectRejectStainlessLeading = detectRejectStainlessLeading.value.toString(),
-                detectRejectStainlessLeadingPeakSignal = peakSignalStainlessLeading.value,
-                detectRejectStainlessMiddle = detectRejectStainlessMiddle.value.toString(),
-                detectRejectStainlessMiddlePeakSignal = peakSignalStainlessMiddle.value,
-                detectRejectStainlessTrailing = detectRejectStainlessTrailing.value.toString(),
-                detectRejectStainlessTrailingPeakSignal = peakSignalStainlessTrailing.value,
-                stainlessTestEngineerNotes = stainlessTestEngineerNotes.value,
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-    fun updateLargeMetalResult() {
-        viewModelScope.launch {
-            calibrationDao.updateLargeMetalResult(
-                detectRejectLargeMetal = detectRejectLargeMetal.value.toString(),
-                sampleCertificateNumberLargeMetal = sampleCertificateNumberLargeMetal.value,
-                largeMetalTestEngineerNotes = largeMetalTestEngineerNotes.value,
-                calibrationId = calibrationId.value
-            )
-        }
-    }
-
-    fun updateDetectionSettingAsLeft() {
-        viewModelScope.launch {
-            calibrationDao.updateDetectionSettingAsLeft(
-                detectionSettingAsLeft1 = detectionSettingAsLeft1.value,
-                detectionSettingAsLeft2 = detectionSettingAsLeft2.value,
-                detectionSettingAsLeft3 = detectionSettingAsLeft3.value,
-                detectionSettingAsLeft4 = detectionSettingAsLeft4.value,
-                detectionSettingAsLeft5 = detectionSettingAsLeft5.value,
-                detectionSettingAsLeft6 = detectionSettingAsLeft6.value,
-                detectionSettingAsLeft7 = detectionSettingAsLeft7.value,
-                detectionSettingAsLeft8 = detectionSettingAsLeft8.value,
-                detectionSettingAsLeftEngineerNotes = detectionSettingAsLeftEngineerNotes.value,
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-
-    fun updateRejectSettings() {
-        viewModelScope.launch {
-            calibrationDao.updateRejectSettings(
-                rejectSynchronisationSetting = rejectSynchronisationSetting.value.toString(),
-                rejectSynchronisationDetail = rejectSynchronisationDetail.value,
-                rejectDelaySetting = rejectDelaySetting.value,
-                rejectDelayUnits = rejectDelayUnits.value,
-                rejectDurationSetting = rejectDurationSetting.value,
-                rejectDurationUnits = rejectDurationUnits.value,
-                rejectConfirmWindowSetting = rejectConfirmWindowSetting.value,
-                rejectConfirmWindowUnits = rejectConfirmWindowUnits.value,
-                rejectSettingsEngineerNotes = rejectSettingsEngineerNotes.value,
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-    fun updateConveyorDetails() {
-        viewModelScope.launch {
-            calibrationDao.updateConveyorDetails(
-                infeedBeltHeight = infeedBeltHeight.value,
-                outfeedBeltHeight = outfeedBeltHeight.value,
-                conveyorLength = conveyorLength.value,
-                conveyorHanding = conveyorHanding.value,
-                beltSpeed = beltSpeed.value,
-                rejectDevice = rejectDevice.value,
-                rejectDeviceOther = rejectDeviceOther.value,
-                conveyorDetailsEngineerNotes = conveyorDetailsEngineerNotes.value,
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-
-    fun updateSystemChecklist() {
-        viewModelScope.launch {
-            calibrationDao.updateSystemChecklist(
-                beltCondition = beltCondition.value.toString(),
-                beltConditionComments = beltConditionComments.value,
-                guardCondition = guardCondition.value.toString(),
-                guardConditionComments = guardConditionComments.value,
-                safetyCircuitCondition = safetyCircuitCondition.value.toString(),
-                safetyCircuitConditionComments = safetyCircuitConditionComments.value,
-                linerCondition = linerCondition.value.toString(),
-                linerConditionComments = linerConditionComments.value,
-                cablesCondition = cablesCondition.value.toString(),
-                cablesConditionComments = cablesConditionComments.value,
-                screwsCondition = screwsCondition.value.toString(),
-                screwsConditionComments = screwsConditionComments.value,
-                systemChecklistEngineerNotes = systemChecklistEngineerNotes.value,
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-    fun updateIndicators() {
-        viewModelScope.launch {
-            calibrationDao.updateIndicators(
-                indicator6label = indicator6label.value,
-                indicator6colour = indicator6colour.value,
-                indicator5label = indicator5label.value,
-                indicator5colour = indicator5colour.value,
-                indicator4label = indicator4label.value,
-                indicator4colour = indicator4colour.value,
-                indicator3label = indicator3label.value,
-                indicator3colour = indicator3colour.value,
-                indicator2label = indicator2label.value,
-                indicator2colour = indicator2colour.value,
-                indicator1label = indicator1label.value,
-                indicator1colour = indicator1colour.value,
-                indicatorsEngineerNotes = indicatorsEngineerNotes.value,
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-    fun updateInfeedSensor() {
-        viewModelScope.launch {
-            calibrationDao.updateInfeedSensor(
-                infeedSensorFitted = infeedSensorFitted.value.toString(),
-                infeedSensorDetail = infeedSensorDetail.value,
-                infeedSensorTestMethod = infeedSensorTestMethod.value,
-                infeedSensorTestMethodOther = infeedSensorTestMethodOther.value,
-                infeedSensorTestResult = infeedSensorTestResult.value.toString(),
-                infeedSensorEngineerNotes = infeedSensorEngineerNotes.value,
-                infeedSensorLatched = infeedSensorLatched.value.toString(),
-                infeedSensorCR = infeedSensorCR.value.toString(),
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-    fun updateRejectConfirmSensor() {
-        viewModelScope.launch {
-            calibrationDao.updateRejectConfirmSensor(
-                rejectConfirmSensorFitted = rejectConfirmSensorFitted.value.toString(),
-                rejectConfirmSensorDetail = rejectConfirmSensorDetail.value,
-                rejectConfirmSensorTestMethod = rejectConfirmSensorTestMethod.value,
-                rejectConfirmSensorTestMethodOther = rejectConfirmSensorTestMethodOther.value,
-                rejectConfirmSensorTestResult = rejectConfirmSensorTestResult.value.toString(),
-                rejectConfirmSensorEngineerNotes = rejectConfirmSensorEngineerNotes.value,
-                rejectConfirmSensorLatched = rejectConfirmSensorLatched.value.toString(),
-                rejectConfirmSensorCR = rejectConfirmSensorCR.value.toString(),
-                rejectConfirmSensorStopPosition = rejectConfirmSensorStopPosition.value,
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-    fun updateBinFullSensor() {
-        viewModelScope.launch {
-            calibrationDao.updateBinFullSensor(
-                binFullSensorFitted = binFullSensorFitted.value.toString(),
-                binFullSensorDetail = binFullSensorDetail.value,
-                binFullSensorTestMethod = binFullSensorTestMethod.value,
-                binFullSensorTestMethodOther = binFullSensorTestMethodOther.value,
-                binFullSensorTestResult = binFullSensorTestResult.value.toString(),
-                binFullSensorEngineerNotes = binFullSensorEngineerNotes.value,
-                binFullSensorLatched = binFullSensorLatched.value.toString(),
-                binFullSensorCR = binFullSensorCR.value.toString(),
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-    fun updateBackupSensor() {
-        viewModelScope.launch {
-            calibrationDao.updateBackupSensor(
-                backupSensorFitted = backupSensorFitted.value.toString(),
-                backupSensorDetail = backupSensorDetail.value,
-                backupSensorTestMethod = backupSensorTestMethod.value,
-                backupSensorTestMethodOther = backupSensorTestMethodOther.value,
-                backupSensorTestResult = backupSensorTestResult.value.toString(),
-                backupSensorEngineerNotes = backupSensorEngineerNotes.value,
-                backupSensorLatched = backupSensorLatched.value.toString(),
-                backupSensorCR = backupSensorCR.value.toString(),
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-    fun updateAirPressureSensor() {
-        viewModelScope.launch {
-            calibrationDao.updateAirPressureSensor(
-                airPressureSensorFitted = airPressureSensorFitted.value.toString(),
-                airPressureSensorDetail = airPressureSensorDetail.value,
-                airPressureSensorTestMethod = airPressureSensorTestMethod.value,
-                airPressureSensorTestMethodOther = airPressureSensorTestMethodOther.value,
-                airPressureSensorTestResult = airPressureSensorTestResult.value.toString(),
-                airPressureSensorEngineerNotes = airPressureSensorEngineerNotes.value,
-                airPressureSensorLatched = airPressureSensorLatched.value.toString(),
-                airPressureSensorCR = airPressureSensorCR.value.toString(),
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-    fun updatePackCheckSensor() {
-        viewModelScope.launch {
-            calibrationDao.updatePackCheckSensor(
-                packCheckSensorFitted = packCheckSensorFitted.value.toString(),
-                packCheckSensorDetail = packCheckSensorDetail.value,
-                packCheckSensorTestMethod = packCheckSensorTestMethod.value,
-                packCheckSensorTestMethodOther = packCheckSensorTestMethodOther.value,
-                packCheckSensorTestResult = packCheckSensorTestResult.value.toString(),
-                packCheckSensorEngineerNotes = packCheckSensorEngineerNotes.value,
-                packCheckSensorLatched = packCheckSensorLatched.value.toString(),
-                packCheckSensorCR = packCheckSensorCR.value.toString(),
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-    fun updateSpeedSensor() {
-        viewModelScope.launch {
-            calibrationDao.updateSpeedSensor(
-                speedSensorFitted = speedSensorFitted.value.toString(),
-                speedSensorDetail = speedSensorDetail.value,
-                speedSensorTestMethod = speedSensorTestMethod.value,
-                speedSensorTestMethodOther = speedSensorTestMethodOther.value,
-                speedSensorTestResult = speedSensorTestResult.value.toString(),
-                speedSensorEngineerNotes = speedSensorEngineerNotes.value,
-                speedSensorLatched = speedSensorLatched.value.toString(),
-                speedSensorCR = speedSensorCR.value.toString(),
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-    fun updateDetectNotification() {
-        viewModelScope.launch {
-            calibrationDao.updateDetectNotification(
-                detectNotificationResult = detectNotificationResult.value.toString(),
-                detectNotificationEngineerNotes = detectNotificationEngineerNotes.value,
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-    fun updateBinDoorMonitor() {
-        viewModelScope.launch {
-            calibrationDao.updateBinDoorMonitor(
-                binDoorMonitorFitted = binDoorMonitorFitted.value.toString(),
-                binDoorMonitorDetail = binDoorMonitorDetail.value,
-                binDoorStatusAsFound = binDoorStatusAsFound.value,
-                binDoorUnlockedIndication = binDoorUnlockedIndication.value.toString(),
-                binDoorOpenIndication = binDoorOpenIndication.value.toString(),
-                binDoorTimeoutTimer = binDoorTimeoutTimer.value,
-                binDoorTimeoutResult = binDoorTimeoutResult.value.toString(),
-                binDoorLatched = binDoorLatched.value.toString(),
-                binDoorCR = binDoorCR.value.toString(),
-                binDoorEngineerNotes = binDoorEngineerNotes.value,
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-
-    fun updateOperatorTest() {
-        viewModelScope.launch {
-            calibrationDao.updateOperatorTest(
-                operatorName = operatorName.value,
-                operatorTestWitnessed = operatorTestWitnessed.value.toString(),
-                operatorTestResultFerrous = operatorTestResultFerrous.value,
-                operatorTestResultNonFerrous = operatorTestResultNonFerrous.value,
-                operatorTestResultStainless = operatorTestResultStainless.value,
-                operatorTestResultLargeMetal = operatorTestResultLargeMetal.value,
-                operatorTestResultCertNumberFerrous = operatorTestResultCertNumberFerrous.value,
-                operatorTestResultCertNumberNonFerrous = operatorTestResultCertNumberNonFerrous.value,
-                operatorTestResultCertNumberStainless = operatorTestResultCertNumberStainless.value,
-                operatorTestResultCertNumberLargeMetal = operatorTestResultCertNumberLargeMetal.value,
-                smeName = smeName.value,
-                smeEngineerNotes = smeEngineerNotes.value,
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-    fun updateComplianceConfirmation() {
-        viewModelScope.launch {
-            calibrationDao.updateComplianceConfirmation(
-                sensitivityCompliance = sensitivityCompliance.value.toString(),
-                essentialRequirementCompliance = essentialRequirementCompliance.value.toString(),
-                failsafeCompliance = failsafeCompliance.value.toString(),
-                bestSensitivityCompliance = bestSensitivityCompliance.value.toString(),
-                sensitivityRecommendations = sensitivityRecommendations.value,
-                performanceValidationIssued = performanceValidationIssued.value.toString(),
-                calibrationId = calibrationId.value
-
-            )
-        }
-    }
-
-    fun updateDetectionSettingLabels() {
-        viewModelScope.launch {
-            calibrationDao.updateDetectionSettingLabels(
-                detectionSetting1label = detectionSetting1label.value,
-                detectionSetting2label = detectionSetting2label.value,
-                detectionSetting3label = detectionSetting3label.value,
-                detectionSetting4label = detectionSetting4label.value,
-                detectionSetting5label = detectionSetting5label.value,
-                detectionSetting6label = detectionSetting6label.value,
-                detectionSetting7label = detectionSetting7label.value,
-                detectionSetting8label = detectionSetting8label.value,
-                calibrationId = calibrationId.value
-            )
-        }
-    }
-
-    fun updateCalibrationEnd() {
-        viewModelScope.launch {
-            calibrationDao.updateCalibrationEnd(
-                endDate = LocalDateTime.now()
-                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                calibrationId = calibrationId.value
-            )
-        }
-    }
-
-
-    //----------------------------------------------------------------------Screen Banner Parameters
-
-
-    //-----------------------------------------------------------------------------Start Calibration
-
-
     private var _newLocation = mutableStateOf("")
     val newLocation: State<String> = _newLocation
 
@@ -1120,11 +944,18 @@ class CalibrationMetalDetectorConveyorViewModel(
         _newLocation.value = location
     }
 
-    private var _canPerformCalibration = mutableStateOf<Boolean?>(null)
-    val canPerformCalibration: State<Boolean?> = _canPerformCalibration
+    private var _canPerformCalibration = mutableStateOf(false)
+    val canPerformCalibration: State<Boolean> = _canPerformCalibration
 
-    fun setCanPerformCalibration(canPerform: Boolean?) {
+    fun setCanPerformCalibration(canPerform: Boolean) {
         _canPerformCalibration.value = canPerform
+    }
+
+    private var _pvRequired = mutableStateOf(false)
+    val pvRequired: State<Boolean> = _pvRequired
+
+    fun setPvRequired(pvRequired: Boolean) {
+        _pvRequired.value = pvRequired
     }
 
     private var _reasonForNotCalibrating = mutableStateOf("")
@@ -1208,9 +1039,28 @@ class CalibrationMetalDetectorConveyorViewModel(
     private val _productHeight = mutableStateOf("")
     val productHeight: State<String> = _productHeight
 
+    private val _sensitivityData = mutableStateOf<ConveyorRetailerSensitivitiesEntity?>(null)
+    val sensitivityData: State<ConveyorRetailerSensitivitiesEntity?> get() = _sensitivityData
+
     // Function to update product height
+//    fun setProductHeight(newHeight: String) {
+//        _productHeight.value = newHeight
+//    }
+
+    // Function to set product height and fetch sensitivities
     fun setProductHeight(newHeight: String) {
         _productHeight.value = newHeight
+        val heightMm = newHeight.toDoubleOrNull() ?: return // Handle invalid input
+        fetchSensitivityData(heightMm)
+    }
+
+    // Function to fetch sensitivity data
+    private fun fetchSensitivityData(heightMm: Double) {
+        viewModelScope.launch {
+            // Fetch sensitivities from repository
+            val sensitivities = retailerSensitivitiesRepo.getSensitivitiesByHeight(heightMm)
+            _sensitivityData.value = sensitivities
+        }
     }
 
     private val _productDetailsEngineerNotes = mutableStateOf("")
@@ -1310,6 +1160,14 @@ class CalibrationMetalDetectorConveyorViewModel(
         _detectionSettingAsFoundEngineerNotes.value = newValue
     }
 
+    private val _detectionSettingPvResult = mutableStateOf("")
+    val detectionSettingPvResult: State<String> = _detectionSettingPvResult
+
+    fun setDetectionSettingPvResult(newValue: String) {
+        _detectionSettingPvResult.value = newValue
+    }
+
+
 
     //----------------------------------------------------------------------Sensitivity Requirements
 
@@ -1317,25 +1175,27 @@ class CalibrationMetalDetectorConveyorViewModel(
     val sensitivityRequirementFerrous: State<String> = _sensitivityRequirementFerrous
 
 
-    fun setSensitivityRequirementFerrous(newSensitivityRequirementFerrous: String) {
-        _sensitivityRequirementFerrous.value = newSensitivityRequirementFerrous
+
+    fun setSensitivityRequirementFerrous(newValue: String) {
+        _sensitivityRequirementFerrous.value = newValue
     }
 
     private val _sensitivityRequirementNonFerrous = mutableStateOf("")
     val sensitivityRequirementNonFerrous: State<String> = _sensitivityRequirementNonFerrous
 
 
-    fun setSensitivityRequirementNonFerrous(newSensitivityRequirementNonFerrous: String) {
-        _sensitivityRequirementNonFerrous.value = newSensitivityRequirementNonFerrous
+    fun setSensitivityRequirementNonFerrous(newValue: String) {
+        _sensitivityRequirementNonFerrous.value = newValue
     }
 
     private val _sensitivityRequirementStainless = mutableStateOf("")
     val sensitivityRequirementStainless: State<String> = _sensitivityRequirementStainless
 
 
-    fun setSensitivityRequirementStainless(newSensitivityRequirementStainless: String) {
-        _sensitivityRequirementStainless.value = newSensitivityRequirementStainless
+    fun setSensitivityRequirementStainless(newValue: String) {
+        _sensitivityRequirementStainless.value = newValue
     }
+
 
     private val _sensitivityRequirementEngineerNotes = mutableStateOf("")
     val sensitivityRequirementEngineerNotes: State<String> = _sensitivityRequirementEngineerNotes
@@ -1428,9 +1288,9 @@ class CalibrationMetalDetectorConveyorViewModel(
     val sensitivityAsLeftFerrous: State<String> = _sensitivityAsLeftFerrous
 
 
-    fun setSensitivityAsLeftFerrous(newSensitivityAsLeftFerrous: String) {
-        _sensitivityAsLeftFerrous.value = newSensitivityAsLeftFerrous
-    }
+    fun setSensitivityAsLeftFerrous(value: String) {
+        _sensitivityAsLeftFerrous.value = value}
+
 
     // Sample Certificate Number
     private val _sampleCertificateNumberFerrous = mutableStateOf("")
@@ -1493,6 +1353,14 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setFerrousTestEngineerNotes(newValue: String) {
         _ferrousTestEngineerNotes.value = newValue
+    }
+
+    private val _ferrousTestPvResult = mutableStateOf("")
+    val ferrousTestPvResult: State<String> = _ferrousTestPvResult
+
+
+    fun setFerrousTestPvResult(newValue: String) {
+        _ferrousTestPvResult.value = newValue
     }
 
 
@@ -2816,7 +2684,18 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun setPerformanceValidationIssued(newValue: YesNoState) {
         _performanceValidationIssued.value = newValue
     }
-    //-------------------------------------------------------------------------------End Calibration
+
+    //endregion
+
+
+
+
+
+
+
+
+
+
 
     //---------------------------------------------------------------------------CSV File Processing
     suspend fun createAndUploadCsv(
@@ -2871,6 +2750,7 @@ class CalibrationMetalDetectorConveyorViewModel(
                     row.newLocation,
                     row.canPerformCalibration,
                     row.reasonForNotCalibrating,
+                    row.pvRequired,
                     row.desiredCop,
                     row.startCalibrationNotes,
                     row.productDescription,
@@ -3138,15 +3018,23 @@ class CalibrationMetalDetectorConveyorViewModel(
     ) {
         try {
             // End calibration
+            InAppLogger.d("Updating the calibration end time...")
             updateCalibrationEnd()
 
+
+            InAppLogger.d("Updating the last calibration in the local database...")
             // Update local database last calibration date
+
+            val lastCalibrationDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+
             mdSystemsDAO.updateLastCalibrationDate(
                 systemId.value,
-                LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                lastCalibrationDate
             )
 
-            // Try syncing with the cloud (Room is gospel)
+            InAppLogger.d("Syncing with the cloud...")
+
+            // Try syncing with the cloud
             repository.updateSystem(
                 context = context,
                 cloudId = cloudSystemId.value,
@@ -3168,8 +3056,6 @@ class CalibrationMetalDetectorConveyorViewModel(
             onResult("❌ An error occurred while finishing calibration. Please try again.")
         }
     }
-
-
 
 
 }

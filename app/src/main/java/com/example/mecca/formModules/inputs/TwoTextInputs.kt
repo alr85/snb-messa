@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 
@@ -26,6 +27,14 @@ fun TwoTextInputs(
     secondKeyboard: KeyboardType = KeyboardType.Text,
     isDisabled: Boolean
 ) {
+    fun sanitize(value: String, keyboard: KeyboardType): String {
+        var v = value.replace(',', '.')
+        if (keyboard == KeyboardType.Text) {
+            v = v.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+        }
+        return v
+    }
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -33,22 +42,38 @@ fun TwoTextInputs(
     ) {
         OutlinedTextField(
             value = firstValue,
-            onValueChange = { if (!isDisabled) onFirstChange(it) },
+            onValueChange = { raw ->
+                if (!isDisabled) onFirstChange(sanitize(raw, firstKeyboard))
+            },
             label = { Text(firstLabel) },
             enabled = !isDisabled,
             singleLine = true,
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = firstKeyboard),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = firstKeyboard,
+                capitalization = when (firstKeyboard) {
+                    KeyboardType.Text -> KeyboardCapitalization.Sentences
+                    else -> KeyboardCapitalization.None
+                }
+            ),
             colors = OutlinedTextFieldDefaults.colors(disabledTextColor = Color.Gray),
             modifier = Modifier.weight(1f)
         )
 
         OutlinedTextField(
             value = secondValue,
-            onValueChange = { if (!isDisabled) onSecondChange(it) },
+            onValueChange = { raw ->
+                if (!isDisabled) onSecondChange(sanitize(raw, secondKeyboard))
+            },
             label = { Text(secondLabel) },
             enabled = !isDisabled,
             singleLine = true,
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = secondKeyboard),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = secondKeyboard,
+                capitalization = when (secondKeyboard) {
+                    KeyboardType.Text -> KeyboardCapitalization.Sentences
+                    else -> KeyboardCapitalization.None
+                }
+            ),
             colors = OutlinedTextFieldDefaults.colors(disabledTextColor = Color.Gray),
             modifier = Modifier.weight(1f)
         )

@@ -2,6 +2,7 @@
 
 package com.example.mecca.screens
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -50,14 +51,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.mecca.FetchResult
+import com.example.mecca.repositories.MetalDetectorModelsRepository
+import com.example.mecca.repositories.MetalDetectorSystemsRepository
+import com.example.mecca.repositories.SystemTypeRepository
 import com.example.mecca.dataClasses.MdModelsLocal
 import com.example.mecca.dataClasses.SystemTypeLocal
-import com.example.mecca.FetchResult
-import com.example.mecca.Network.isNetworkAvailable
-import com.example.mecca.Repositories.MetalDetectorModelsRepository
-import com.example.mecca.Repositories.MetalDetectorSystemsRepository
-import com.example.mecca.Repositories.SystemTypeRepository
+import com.example.mecca.util.InAppLogger
+import com.example.mecca.util.SerialCheckResult
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 // Capitalization transformation
 object UppercaseTransformation : VisualTransformation {
@@ -103,14 +107,6 @@ fun AddNewMetalDetectorScreen(
     // Keyboard controller to close keyboard on submit
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    // Function to check for network availability
-//    fun isNetworkAvailable(context: Context): Boolean {
-//        val connectivityManager =
-//            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-//        val network = connectivityManager.activeNetwork ?: return false
-//        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-//        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-//    }
 
     // Fetch system types and MdModels when the composable is launched
     LaunchedEffect(Unit) {
@@ -363,8 +359,6 @@ fun AddNewMetalDetectorScreen(
                     )
 
 
-
-
                 }
 
                 // Site Location Row
@@ -412,117 +406,44 @@ fun AddNewMetalDetectorScreen(
 
                 Button(
                     onClick = {
-                        //hide keyboard
                         keyboardController?.hide()
 
-                        // Check if fields are valid
-                        if (serialNumber.isNotBlank() && apertureWidth.isNotBlank() && apertureHeight.isNotBlank()
-                            && selectedSystemType != null && selectedMdModel != null && lastLocation.isNotBlank()
-                        ) {
-                            // Disable the button while processing
-                            isProcessing = true
+                        val valid = serialNumber.isNotBlank() &&
+                                apertureWidth.isNotBlank() &&
+                                apertureHeight.isNotBlank() &&
+                                selectedSystemType != null &&
+                                selectedMdModel != null &&
+                                lastLocation.isNotBlank()
 
-                            coroutineScope.launch { // Start a coroutine here
+                        if (!valid) return@Button
 
-                                try {
-                                    // Check if the serial number already exists (local or cloud based on network)
-                                    val serialExists = if (isNetworkAvailable(context)) {
-                                        // Perform cloud check if connected
-                                        mdSystemsRepository.isSerialNumberExistsInCloud(serialNumber)
-                                    } else {
-                                        // Perform local check if no network
-                                        mdSystemsRepository.isSerialNumberExists(serialNumber)
-                                    }
-                                    Log.d("NewMD", "Serial number exists: $serialExists")
+                        isProcessing = true
 
-                                    if (serialExists) {
-                                        // Serial number already exists, show a warning
-                                        snackbarHostState.showSnackbar("Serial number already exists!")
-                                        Log.d(
-                                            "NewMD",
-                                            "Serial number exists, cannot add duplicate."
-                                        )
-                                    } else {
-                                        // Serial number does not exist, proceed with adding the system
-                                        Log.d("NewMD", "All Fields ok")
-
-                                        if (isNetworkAvailable(context)) {
-                                            // Network available, try to upload to cloud
-                                            Log.d("NewMD", "Network check OK")
-                                            try {
-                                                Log.d("NewMD", "CustomerID = $customerID.")
-                                                mdSystemsRepository.addMetalDetectorToCloud(
-                                                    customerID = customerID,
-                                                    serialNumber = serialNumber,
-                                                    apertureWidth = apertureWidth.toInt(),
-                                                    apertureHeight = apertureHeight.toInt(),
-                                                    systemTypeId = selectedSystemType!!.id,
-                                                    modelId = selectedMdModel!!.meaId,
-                                                    calibrationInterval = 0,
-                                                    lastLocation = lastLocation
-                                                )
-                                                Log.d("NewMD", "Data uploaded to cloud.")
-
-                                                // sync local to cloud
-
-                                                when (val result = mdSystemsRepository.fetchAndStoreMdSystems()) {
-                                                    is FetchResult.Success -> {
-                                                        Log.d("SyncMetalDetectors", "Full database sync successful: ${result.message}")
-                                                    }
-                                                    is FetchResult.Failure -> {
-                                                        Log.e("SyncMetalDetectors", "Full database sync failed: ${result.errorMessage}")
-
-                                                    }
-                                                }
-
-                                                snackbarHostState.showSnackbar("System added to cloud")
-                                                // Go back to the previous screen
-                                                navController.popBackStack()
-                                            } catch (e: Exception) {
-                                                // Handle network or server failure
-                                                Log.e(
-                                                    "NewMD",
-                                                    "Failed to upload to cloud: ${e.message}"
-                                                )
-                                                snackbarHostState.showSnackbar("Failed to add system to cloud. Try again later.")
-                                                return@launch // Exit early since the upload failed
-                                            }
-                                        } else {
-                                            // No network, store in Room
-                                            Log.d("NewMD", "Network check Fail")
-                                            Log.d("NewMD", "CustomerID = $customerID.")
-                                            mdSystemsRepository.addMetalDetectorToLocalDb(
-                                                customerID = customerID,
-                                                serialNumber = serialNumber,
-                                                apertureWidth = apertureWidth.toInt(),
-                                                apertureHeight = apertureHeight.toInt(),
-                                                systemTypeId = selectedSystemType!!.id,
-                                                modelId = selectedMdModel!!.meaId,
-                                                calibrationInterval = 0,
-                                                lastLocation = lastLocation
-                                            )
-                                            Log.d("NewMD", "Data added to Room.")
-                                            snackbarHostState.showSnackbar("No Network Connection. System Added to Local Database")
-                                            // Go back to the previous screen
-                                            navController.popBackStack()
-                                        }
-                                    }
-                                } catch (e: Exception) {
-                                    // Catch any unexpected errors
-                                    Log.e("NewMD", "Error checking serial number: ${e.message}")
-                                    snackbarHostState.showSnackbar("Failed to check serial number. Please try again.")
-                                } finally {
-                                    // Enable the button again after processing is complete
-                                    isProcessing = false
-                                }
+                        coroutineScope.launch {
+                            try {
+                                submitNewMdSystem(
+                                    context = context,
+                                    customerID = customerID,
+                                    serialNumber = serialNumber,
+                                    apertureWidth = apertureWidth.toInt(),
+                                    apertureHeight = apertureHeight.toInt(),
+                                    systemTypeId = selectedSystemType!!.id,
+                                    modelId = selectedMdModel!!.meaId,
+                                    lastLocation = lastLocation,
+                                    mdSystemsRepository = mdSystemsRepository,
+                                    snackbarHostState = snackbarHostState,
+                                    navController = navController
+                                )
+                            } finally {
+                                isProcessing = false
                             }
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !isProcessing, // Disable button if processing is ongoing
+                    enabled = !isProcessing,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Gray,  // Background color
-                        contentColor = Color.White           // Text color
+                        containerColor = Color.Gray,
+                        contentColor = Color.White
                     )
                 ) {
                     if (isProcessing) {
@@ -532,7 +453,147 @@ fun AddNewMetalDetectorScreen(
                     }
                 }
             }
+        })
+    }
 
+suspend fun submitNewMdSystem(
+    context: Context,
+    customerID: Int,
+    serialNumber: String,
+    apertureWidth: Int,
+    apertureHeight: Int,
+    systemTypeId: Int,
+    modelId: Int,
+    lastLocation: String,
+    mdSystemsRepository: MetalDetectorSystemsRepository,
+    snackbarHostState: SnackbarHostState,
+    navController: NavHostController
+) {
+    InAppLogger.d("Adding new MD system...")
+    // Ask cloud if online; else check local cache
+    when (val status = mdSystemsRepository.checkSerialNumberStatus(context, serialNumber)) {
+        SerialCheckResult.Exists -> {
+            snackbarHostState.showSnackbar("This serial number was found in the cloud database - unable to create new system.")
+            InAppLogger.d("Serial already exists in cloud - Abort.")
+            return
         }
-    )
+        SerialCheckResult.NotFound -> {
+            InAppLogger.d("Serial not found in cloud - creating new system...")
+            createInCloud(
+                repo = mdSystemsRepository,
+                customerID = customerID,
+                serialNumber = serialNumber,
+                apertureWidth = apertureWidth,
+                apertureHeight = apertureHeight,
+                systemTypeId = systemTypeId,
+                modelId = modelId,
+                lastLocation = lastLocation,
+                snackbar = snackbarHostState,
+                navController = navController
+            )
+        }
+        SerialCheckResult.ExistsLocalOffline -> {
+            snackbarHostState.showSnackbar("Offline: serial exists locally. Cannot create.")
+            return
+        }
+        SerialCheckResult.NotFoundLocalOffline -> {
+            createInLocal(
+                repo = mdSystemsRepository,
+                customerID = customerID,
+                serialNumber = serialNumber,
+                apertureWidth = apertureWidth,
+                apertureHeight = apertureHeight,
+                systemTypeId = systemTypeId,
+                modelId = modelId,
+                lastLocation = lastLocation,
+                snackbar = snackbarHostState,
+                navController = navController
+            )
+        }
+        is SerialCheckResult.Error -> {
+            snackbarHostState.showSnackbar("Couldn’t verify serial: ${status.message ?: "network error"}")
+            return
+        }
+    }
 }
+
+suspend fun createInCloud(
+    repo: MetalDetectorSystemsRepository,
+    customerID: Int,
+    serialNumber: String,
+    apertureWidth: Int,
+    apertureHeight: Int,
+    systemTypeId: Int,
+    modelId: Int,
+    lastLocation: String,
+    snackbar: SnackbarHostState,
+    navController: NavHostController
+) = withContext(Dispatchers.IO) {
+    try {
+        val newCloudId = repo.addMetalDetectorToCloud(
+            customerID = customerID,
+            serialNumber = serialNumber,
+            apertureWidth = apertureWidth,
+            apertureHeight = apertureHeight,
+            systemTypeId = systemTypeId,
+            modelId = modelId,
+            calibrationInterval = 0,
+            lastLocation = lastLocation
+        )
+
+        if (newCloudId != null && newCloudId != 0) {
+            when (val result = repo.fetchAndStoreMdSystems()) {
+                is FetchResult.Success -> Log.d("NewMD", "Cloud sync OK: ${result.message}")
+                is FetchResult.Failure -> Log.e("NewMD", "Cloud sync failed: ${result.errorMessage}")
+            }
+            withContext(Dispatchers.Main) {
+                snackbar.showSnackbar("System added to cloud")
+                navController.popBackStack()
+            }
+        } else {
+            withContext(Dispatchers.Main) { snackbar.showSnackbar("Failed to add system to cloud.") }
+        }
+    } catch (e: Exception) {
+        Log.e("NewMD", "Cloud create failed", e)
+        withContext(Dispatchers.Main) {
+            snackbar.showSnackbar("Failed to add system to cloud. Try again later.")
+        }
+    }
+}
+
+suspend fun createInLocal(
+    repo: MetalDetectorSystemsRepository,
+    customerID: Int,
+    serialNumber: String,
+    apertureWidth: Int,
+    apertureHeight: Int,
+    systemTypeId: Int,
+    modelId: Int,
+    lastLocation: String,
+    snackbar: SnackbarHostState,
+    navController: NavHostController
+) = withContext(Dispatchers.IO) {
+    try {
+        repo.addMetalDetectorToLocalDb(
+            customerID = customerID,
+            serialNumber = serialNumber,
+            apertureWidth = apertureWidth,
+            apertureHeight = apertureHeight,
+            systemTypeId = systemTypeId,
+            modelId = modelId,
+            calibrationInterval = 0,
+            lastLocation = lastLocation
+        )
+        Log.d("NewMD", "Local Room insert OK.")
+        withContext(Dispatchers.Main) {
+            snackbar.showSnackbar("No network. System added locally.")
+            navController.popBackStack()
+        }
+    } catch (e: Exception) {
+        Log.e("NewMD", "Local create failed", e)
+        withContext(Dispatchers.Main) {
+            snackbar.showSnackbar("Failed to add system locally.")
+        }
+    }
+}
+

@@ -57,12 +57,8 @@ fun CalMetalDetectorConveyorConveyorDetails(
                 beltSpeed.isNotBlank() &&
                 rejectDevice.isNotBlank()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(scrollState)
-    ) {
+    Column(modifier = Modifier.fillMaxSize()) {
+
         CalibrationBanner(
             progress = progress,
             viewModel = viewModel
@@ -74,7 +70,9 @@ fun CalMetalDetectorConveyorConveyorDetails(
             onCancelClick = { viewModel.updateConveyorDetails() },
             onNextClick = {
                 viewModel.updateConveyorDetails()
-                navController.navigate("CalMetalDetectorConveyorSystemChecklist") },
+                navController.navigate("CalMetalDetectorConveyorSensitivityRequirements" +
+                        "")
+            },
             isNextEnabled = isNextStepEnabled,
             isFirstStep = false,
             navController = navController,
@@ -84,96 +82,101 @@ fun CalMetalDetectorConveyorConveyorDetails(
             },
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
         CalibrationHeader("Conveyor Details")
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(scrollState)
+        ) {
 
-        LabeledTextFieldWithHelp(
-            label = "In-feed Belt Height (mm)",
-            value = infeedBeltHeight,
-            onValueChange = { newValue -> viewModel.setInfeedBeltHeight(newValue) },
-            helpText = "Enter the distance from the floor to the belt on the in feed end",
-            keyboardType = KeyboardType.Number
-        )
-
-        LabeledTextFieldWithHelp(
-            label = "Out-feed Belt Height (mm)",
-            value = outfeedBeltHeight,
-            onValueChange = { newValue -> viewModel.setOutfeedBeltHeight(newValue) },
-            helpText = "Enter the distance from the floor to the belt on the out feed end",
-            keyboardType = KeyboardType.Number
-        )
-
-        LabeledTextFieldWithHelp(
-            label = "Conveyor Length (mm)",
-            value = conveyorLength,
-            onValueChange = { newValue -> viewModel.setConveyorLength(newValue) },
-            helpText = "Enter the length of the conveyor. For inclined conveyors - enter the base, or the amount of floor space the conveyor takes up",
-            keyboardType = KeyboardType.Number
-        )
-
-        LabeledTextFieldWithHelp(
-            label = "Belt Speed (m/m)",
-            value = beltSpeed,
-            onValueChange = { newValue -> viewModel.setBeltSpeed(newValue) },
-            helpText = "Using a tachometer, enter the speed of the belt in metres per minute",
-            keyboardType = KeyboardType.Number
-        )
-
-        val rejectOptions = listOf(
-            "Alarm Belt Stop",
-            "Air Blast",
-            "Air Kicker",
-            "Air Divert Arm",
-            "Air Divert Flap",
-            "Electric Divert Arm",
-            "Other")
-
-        val handingOptions = listOf(
-            "Left to Right",
-            "Right to Left",
-            "Universal")
-
-        LabeledDropdownWithHelp(
-            label = "Conveyor Handing",
-            options = handingOptions,
-            selectedOption = conveyorHanding,
-            onSelectionChange = { newSelection ->
-                viewModel.setConveyorHanding(newSelection) // Update the ViewModel with the selected option
-            },
-            helpText = "Select one option from the dropdown."
-        )
-
-        LabeledDropdownWithHelp(
-            label = "Reject System",
-            options = rejectOptions,
-            selectedOption = rejectDevice,
-            onSelectionChange = { newSelection ->
-                viewModel.setRejectDevice(newSelection) // Update the ViewModel with the selected option
-            },
-            helpText = "Select one option from the dropdown."
-        )
-
-        if(rejectDevice == "Other"){
             LabeledTextFieldWithHelp(
-                label = "Other Reject Device",
-                value = rejectDeviceOther,
-                onValueChange = { newValue -> viewModel.setRejectDeviceOther(newValue) },
-                helpText = "Enter the custom reject device name",
+                label = "In-feed Belt Height (mm)",
+                value = infeedBeltHeight,
+                onValueChange = { newValue -> viewModel.setInfeedBeltHeight(newValue) },
+                helpText = "Enter the distance from the floor to the belt on the in feed end",
+                keyboardType = KeyboardType.Number
+            )
+
+            LabeledTextFieldWithHelp(
+                label = "Out-feed Belt Height (mm)",
+                value = outfeedBeltHeight,
+                onValueChange = { newValue -> viewModel.setOutfeedBeltHeight(newValue) },
+                helpText = "Enter the distance from the floor to the belt on the out feed end",
+                keyboardType = KeyboardType.Number
+            )
+
+            LabeledTextFieldWithHelp(
+                label = "Conveyor Length (mm)",
+                value = conveyorLength,
+                onValueChange = { newValue -> viewModel.setConveyorLength(newValue) },
+                helpText = "Enter the length of the conveyor. For inclined conveyors - enter the base, or the amount of floor space the conveyor takes up",
+                keyboardType = KeyboardType.Number
+            )
+
+            LabeledTextFieldWithHelp(
+                label = "Belt Speed (m/m)",
+                value = beltSpeed,
+                onValueChange = { newValue -> viewModel.setBeltSpeed(newValue) },
+                helpText = "Using a tachometer, enter the speed of the belt in metres per minute",
+                keyboardType = KeyboardType.Number
+            )
+
+            val rejectOptions = listOf(
+                "Alarm Belt Stop",
+                "Air Blast",
+                "Air Kicker",
+                "Air Divert Arm",
+                "Air Divert Flap",
+                "Electric Divert Arm",
+                "Other"
+            )
+
+            val handingOptions = listOf(
+                "Left to Right",
+                "Right to Left",
+                "Universal"
+            )
+
+            LabeledDropdownWithHelp(
+                label = "Conveyor Handing",
+                options = handingOptions,
+                selectedOption = conveyorHanding,
+                onSelectionChange = { newSelection ->
+                    viewModel.setConveyorHanding(newSelection) // Update the ViewModel with the selected option
+                },
+                helpText = "Select one option from the dropdown."
+            )
+
+            LabeledDropdownWithHelp(
+                label = "Reject System",
+                options = rejectOptions,
+                selectedOption = rejectDevice,
+                onSelectionChange = { newSelection ->
+                    viewModel.setRejectDevice(newSelection) // Update the ViewModel with the selected option
+                },
+                helpText = "Select one option from the dropdown."
+            )
+
+            if (rejectDevice == "Other") {
+                LabeledTextFieldWithHelp(
+                    label = "Other Reject Device",
+                    value = rejectDeviceOther,
+                    onValueChange = { newValue -> viewModel.setRejectDeviceOther(newValue) },
+                    helpText = "Enter the custom reject device name",
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            LabeledTextFieldWithHelp(
+                label = "Engineer Notes",
+                value = conveyorDetailsEngineerNotes,
+                onValueChange = { newValue -> viewModel.setConveyorDetailsEngineerNotes(newValue) },
+                helpText = "Enter any notes relevant to this section",
+                isNAToggleEnabled = false
             )
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        LabeledTextFieldWithHelp(
-            label = "Engineer Notes",
-            value = conveyorDetailsEngineerNotes,
-            onValueChange = { newValue -> viewModel.setConveyorDetailsEngineerNotes(newValue) },
-            helpText = "Enter any notes relevant to this section",
-            isNAToggleEnabled = false
-        )
-
     }
 }

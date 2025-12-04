@@ -18,6 +18,7 @@
         android:theme="@style/Theme.MECCA" >
         <activity
             android:name=".MainActivity"
+            android:windowSoftInputMode="adjustResize"
             android:exported="true"
             android:theme="@style/Theme.MECCA">
             <intent-filter>

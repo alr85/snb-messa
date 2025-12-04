@@ -1,4 +1,4 @@
-package com.example.mecca.Repositories
+package com.example.mecca.repositories
 
 import android.content.Context
 import com.example.mecca.ApiService
@@ -9,6 +9,7 @@ import com.example.mecca.dataClasses.MdSystemCloud
 import com.example.mecca.dataClasses.MdSystemLocal
 import com.example.mecca.dataClasses.MetalDetectorWithFullDetails
 import com.example.mecca.util.InAppLogger
+import com.example.mecca.util.SerialCheckResult
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.random.Random
@@ -52,19 +53,19 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
 
                     val mdSystemsLocal = apiMdSystems.mapIndexed { _, apiMdSystems ->
                         MdSystemLocal(
-                            modelId = apiMdSystems.modelId ?: 0,
-                            cloudId = apiMdSystems.id ?: 0,
-                            customerId = apiMdSystems.customerId ?: 0,
-                            serialNumber = apiMdSystems.serialNumber ?: "Unknown",
-                            apertureWidth = apiMdSystems.apertureWidth ?: 0,
-                            apertureHeight = apiMdSystems.apertureHeight ?: 0,
+                            modelId = apiMdSystems.modelId,
+                            cloudId = apiMdSystems.id,
+                            customerId = apiMdSystems.customerId,
+                            serialNumber = apiMdSystems.serialNumber,
+                            apertureWidth = apiMdSystems.apertureWidth,
+                            apertureHeight = apiMdSystems.apertureHeight,
                             lastCalibration = apiMdSystems.lastCalibration,
                             addedDate = apiMdSystems.addedDate,
                             calibrationInterval = apiMdSystems.calibrationInterval,
                             systemTypeId = apiMdSystems.systemTypeId,
                             tempId = 0,
                             isSynced = true,
-                            lastLocation = apiMdSystems.lastLocation ?: "Unknown"
+                            lastLocation = apiMdSystems.lastLocation
                         )
                     }
 
@@ -93,7 +94,7 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
     // Return MD systems using the cloud id
     suspend fun getMetalDetectorUsingCloudId(id: Int?): List<MetalDetectorWithFullDetails> {
         val result = db.mdSystemDAO().getMetalDetectorsWithFullDetailsUsingCloudId(id)
-        //InAppLogger.d("Get Metal Detectors With Full Details Using Cloud ID: Query Result: $result")
+        InAppLogger.d("Get Metal Detectors With Full Details Using Cloud ID: Query Result: $result")
         return result
     }
 
@@ -109,15 +110,26 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
         return db.mdSystemDAO().getSystemBySerialNumber(serialNumber) != null
     }
 
-    // Check if a serial number already exists in the cloud database
-    suspend fun isSerialNumberExistsInCloud(serialNumber: String): Boolean {
-        InAppLogger.d("Checking serial number: $serialNumber")
+    suspend fun checkSerialNumberStatus(
+        context: Context,
+        serialNumber: String
+    ): SerialCheckResult {
+        // 1) No network? Use local cache so engineers can still work
+        if (!isNetworkAvailable(context)) {
+            val localExists = isSerialNumberExists(serialNumber)
+            return if (localExists) {
+                SerialCheckResult.ExistsLocalOffline
+            } else {
+                SerialCheckResult.NotFoundLocalOffline
+            }
+        }
+
+        // 2) Online: ask the cloud. If it flakes out, return Error, not "false".
         return try {
-            InAppLogger.d("Checking serial number in cloud: $serialNumber")
-            apiService.checkSerialNumberExists(serialNumber)
+            val exists = apiService.checkSerialNumberExists(serialNumber)
+            if (exists) SerialCheckResult.Exists else SerialCheckResult.NotFound
         } catch (e: Exception) {
-            InAppLogger.e("Error checking serial number in cloud: ${e.message}")
-            false
+            SerialCheckResult.Error(e.message)
         }
     }
 
@@ -178,14 +190,14 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
             modelId = modelId,
             addedDate = todayString,
             calibrationInterval = calibrationInterval,
-            lastCalibration = todayString,
+            lastCalibration = "",
             isSynced = true,
             lastLocation = lastLocation
         )
 
         try {
             val response = apiService.postMdSystem(newMetalDetector)
-            InAppLogger.d("API Response: ${response.code()}")
+            InAppLogger.d("Calling API... Response: ${response.code()}")
 
             if (response.isSuccessful) {
                 response.body()?.let { responseBody ->
@@ -213,12 +225,19 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
             else -> null
         }
 
+        InAppLogger.d("System retrieved: $system")
+
+
         if (system == null) {
             InAppLogger.e("System not found locally")
             return
         }
 
+        InAppLogger.d("Checking network availability...")
+
+
         if (isNetworkAvailable(context) && cloudId != null) {
+            InAppLogger.d("Network available, attempting cloud sync with cloudId=$cloudId")
             val systemCloud = MdSystemCloud(
                 modelId = system.modelId,
                 customerId = system.customerId,
@@ -233,13 +252,17 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
             )
 
             try {
+
+
                 val response = apiService.updateMdSystem(cloudId, systemCloud)
                 if (response.isSuccessful) {
                     db.mdSystemDAO().updateIsSynced(true, cloudId, localId)
                     InAppLogger.d("Cloud sync success for cloud ID=$cloudId")
                 } else {
+                    val body = response.errorBody()?.string()
+                    InAppLogger.e("Cloud sync failed: ${response.code()} body = $body")
                     db.mdSystemDAO().updateIsSynced(false, cloudId, localId)
-                    InAppLogger.e("Cloud sync failed: ${response.code()}")
+
                 }
             } catch (e: Exception) {
                 InAppLogger.e("Exception during cloud sync: ${e.message}")

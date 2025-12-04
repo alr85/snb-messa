@@ -1,7 +1,6 @@
 package com.example.mecca
 
 import android.os.Bundle
-import android.util.Log
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,10 +13,14 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.DateRange
@@ -50,7 +53,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import com.example.mecca.Network.isNetworkAvailable
-import com.example.mecca.Repositories.UserRepository
+import com.example.mecca.repositories.UserRepository
 import com.example.mecca.screens.LoginScreen
 import com.example.mecca.ui.theme.AppNavGraph
 import kotlinx.coroutines.delay
@@ -125,14 +128,16 @@ class MainActivity : ComponentActivity() {
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun MyApp(db: AppDatabase, userViewModel: UserViewModel) {
     val navController = rememberNavController()
     val context = LocalContext.current
     var isOffline by remember { mutableStateOf(false) }
+    var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
+    var showBottomBar by rememberSaveable { mutableStateOf(true) }
 
-    // Periodically check connection
+    //Detect offline status
     LaunchedEffect(Unit) {
         while (true) {
             isOffline = !isNetworkAvailable(context)
@@ -140,70 +145,48 @@ fun MyApp(db: AppDatabase, userViewModel: UserViewModel) {
         }
     }
 
-
-    var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
-    var showBottomBar by rememberSaveable { mutableStateOf(true) }
-
-    // Navigation bar items
-    val items = listOf(
-        NavigationBarItem(
-            title = "Diary",
-            selectedIcon = Icons.Filled.DateRange,
-            unselectedIcon = Icons.Default.DateRange
-        ),
-        NavigationBarItem(
-            title = "Service",
-            selectedIcon = Icons.Filled.Build,
-            unselectedIcon = Icons.Default.Build
-        ),
-        NavigationBarItem(
-            title = "Messages",
-            selectedIcon = Icons.Filled.Email,
-            unselectedIcon = Icons.Default.Email
-        ),
-
-                NavigationBarItem(
-            title = "Menu",
-            selectedIcon = Icons.Filled.Menu,
-            unselectedIcon = Icons.Default.Menu
-        )
-    )
-
+    // detect current route
     LaunchedEffect(navController) {
         navController.addOnDestinationChangedListener { _, destination, _ ->
             showBottomBar = when {
                 destination.route?.startsWith("CalibrationProcess") == true ||
                         destination.route?.startsWith("login") == true ||
-                        destination.route?.startsWith("CalMetalDetectorConveyor") == true -> false // Hide for calibration routes
-                else -> true // Show for other routes
+                        destination.route?.startsWith("CalMetalDetectorConveyor") == true -> false
+                else -> true
             }
         }
     }
 
+    // detect if keyboard visible
+    val imeVisible = WindowInsets.isImeVisible
+
+
+
+    val items = listOf(
+        NavigationBarItem("Diary", Icons.Filled.DateRange, Icons.Default.DateRange),
+        NavigationBarItem("Service", Icons.Filled.Build, Icons.Default.Build),
+        NavigationBarItem("Messages", Icons.Filled.Email, Icons.Default.Email),
+        NavigationBarItem("Menu", Icons.Filled.Menu, Icons.Default.Menu)
+    )
+
+
+
     Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .systemBarsPadding()
-            .background(color = Color.LightGray),
+        modifier = Modifier.fillMaxSize(), //.background(Color.LightGray),
+        contentWindowInsets = WindowInsets.systemBars,
         topBar = {
-            // Hide the TopAppBar if on the login screen
             if (navController.currentBackStackEntry?.destination?.route != "login") {
                 MyTopAppBar(navController = navController)
             }
-
         },
         bottomBar = {
-            // Conditionally show or hide the bottom bar based on the current route
             if (showBottomBar) {
-                NavigationBar(
-                    containerColor = Color.LightGray
-                ) {
+                NavigationBar(containerColor = Color.LightGray) {
                     items.forEachIndexed { index, item ->
                         NavigationBarItem(
                             selected = selectedItemIndex == index,
                             onClick = {
                                 selectedItemIndex = index
-                                Log.d("NavigationDebug", "Navigating to ${item.title} at index $index")
                                 when (index) {
                                     0 -> navController.navigate("serviceHome")
                                     1 -> navController.navigate("serviceSelectCustomer")
@@ -220,9 +203,7 @@ fun MyApp(db: AppDatabase, userViewModel: UserViewModel) {
                             },
                             icon = {
                                 Icon(
-                                    imageVector = if (index == selectedItemIndex) {
-                                        item.selectedIcon
-                                    } else item.unselectedIcon,
+                                    imageVector = if (index == selectedItemIndex) item.selectedIcon else item.unselectedIcon,
                                     contentDescription = item.title,
                                     tint = if (selectedItemIndex == index) Color.Red else Color.Unspecified
                                 )
@@ -236,21 +217,22 @@ fun MyApp(db: AppDatabase, userViewModel: UserViewModel) {
                     }
                 }
             }
-        },
-        content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-
-                OfflineBanner(isOffline)
-
-                AppNavGraph(navController = navController, db = db, userViewModel = userViewModel)
-            }
         }
-    )
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding)
+        ) {
+            OfflineBanner(isOffline)
+
+            // App navigation
+            AppNavGraph(navController = navController, db = db, userViewModel = userViewModel)
+        }
+    }
 }
+
 
 @Composable
 fun OfflineBanner(isOffline: Boolean) {

@@ -31,6 +31,7 @@ data class MetalDetectorConveyorCalibrationLocal(
     var reasonForNotCalibrating: String = "",
     var desiredCop: String = "",
     var startCalibrationNotes: String = "",
+    var pvRequired: Boolean = false,
 
     //------------------------------------------------------------------------------Product Settings
 
@@ -52,14 +53,17 @@ data class MetalDetectorConveyorCalibrationLocal(
     var detectionSettingAsFound6: String = "",
     var detectionSettingAsFound7: String = "",
     var detectionSettingAsFound8: String = "",
+    var detectionSettingPvResult: String = "",
     var detectionSettingAsFoundEngineerNotes: String = "",
 
     //----------------------------------------------------------------------Sensitivity Requirements
 
-    var sensitivityRequirementFerrous: String = "",
-    var sensitivityRequirementNonFerrous: String = "",
-    var sensitivityRequirementStainless: String = "",
+    var sensitivityRequirementFerrous: Double? = null,
+    var sensitivityRequirementNonFerrous: Double? = null,
+    var sensitivityRequirementStainless: Double? = null,
     var sensitivityRequirementEngineerNotes: String = "",
+
+
 
     //----------------------------------------------------------------------Sensitivities 'As Found'
 
@@ -72,6 +76,7 @@ data class MetalDetectorConveyorCalibrationLocal(
     var sensitivityAsFoundStainlessPeakSignal: String = "",
     var productPeakSignalAsFound: String = "",
     var sensitivityAsFoundEngineerNotes: String = "",
+    var ferrousTestPvResult: String = "",
 
     //--------------------------------------------------------------------------------Ferrous Result
 

@@ -17,6 +17,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,7 +44,11 @@ fun LabeledTextFieldWithConditionToggle(
     helper: String
 ) {
     var showHelpDialog by remember { mutableStateOf(false) }
-    var isDisabled by remember { mutableStateOf(false) }
+    // Single source of truth: disabled <-> NA
+    var isDisabled by remember { mutableStateOf(currentCondition == ConditionState.NA) }
+    LaunchedEffect(currentCondition) {
+        isDisabled = currentCondition == ConditionState.NA
+    }
 
     Column(
         modifier = Modifier
@@ -72,10 +77,11 @@ fun LabeledTextFieldWithConditionToggle(
             isDisabled = isDisabled,
             onNaClick = if (isNAToggleEnabled) {
                 {
-                    isDisabled = !isDisabled
-                    val newState = if (isDisabled) ConditionState.NA else ConditionState.UNSPECIFIED
+                    // Toggle NA <-> UNSPECIFIED, and mirror comments sentinel
+                    val newState = if (!isDisabled) ConditionState.NA else ConditionState.UNSPECIFIED
                     onConditionChange(newState)
-                    onValueChange(if (isDisabled) "N/A" else "")
+                    onValueChange(if (newState == ConditionState.NA) "N/A" else "")
+                    // local mirror updates via LaunchedEffect(currentCondition)
                 }
             } else null,
             onHelpClick = { showHelpDialog = true }
@@ -127,7 +133,8 @@ fun LabeledTextFieldWithConditionToggle(
         // --- Second Row: Input field inside wrapper ---
         FormRowWrapper(
             label = label,
-            onNaClick = null, // we already have an N/A toggle above
+            isDisabled = isDisabled,
+            onNaClick = null,
             onHelpClick = null
         ) { disabled ->
             OutlinedTextField(

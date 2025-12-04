@@ -1,11 +1,14 @@
 package com.example.mecca
 
 import com.example.mecca.dataClasses.CloudUser
+import com.example.mecca.dataClasses.ConveyorRetailerSensitivitiesEntity
 import com.example.mecca.dataClasses.Customer
+import com.example.mecca.dataClasses.FreefallThroatRetailerSensitivitiesEntity
 import com.example.mecca.dataClasses.MdModel
 import com.example.mecca.dataClasses.MdSystem
 import com.example.mecca.dataClasses.MdSystemCloud
 import com.example.mecca.dataClasses.MdSystemLocal
+import com.example.mecca.dataClasses.PipelineRetailerSensitivitiesEntity
 import com.example.mecca.dataClasses.SystemType
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
@@ -55,6 +58,15 @@ interface ApiService {
         @Path("id") id: Int,
         @Body systemData: MdSystemCloud
     ): Response<Unit>
+
+    @GET("detectionlevels/conveyor")
+    suspend fun getConveyorLevels(): List<ConveyorRetailerSensitivitiesEntity>
+
+    @GET("detectionlevels/freefall")
+    suspend fun getFreefallLevels(): List<FreefallThroatRetailerSensitivitiesEntity>
+
+    @GET("detectionlevels/pipeline")
+    suspend fun getPipelineLevels(): List<PipelineRetailerSensitivitiesEntity>
 
 
 

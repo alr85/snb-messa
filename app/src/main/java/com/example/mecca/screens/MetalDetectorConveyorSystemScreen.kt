@@ -44,16 +44,17 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.navigation.NavHostController
 import com.example.mecca.DAOs.MetalDetectorConveyorCalibrationDAO
-import com.example.mecca.Network.isNetworkAvailable
 import com.example.mecca.PreferencesHelper
-import com.example.mecca.Repositories.MetalDetectorModelsRepository
-import com.example.mecca.Repositories.MetalDetectorSystemsRepository
 import com.example.mecca.activities.MetalDetectorConveyorCalibrationActivity
 import com.example.mecca.dataClasses.MdModelsLocal
 import com.example.mecca.dataClasses.MetalDetectorWithFullDetails
 import com.example.mecca.formatDate
+import com.example.mecca.repositories.MetalDetectorModelsRepository
+import com.example.mecca.repositories.MetalDetectorSystemsRepository
 import com.example.mecca.ui.theme.DetailItem
 import com.example.mecca.ui.theme.ExpandableSection
+import com.example.mecca.util.InAppLogger
+import com.example.mecca.util.SerialCheckResult
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -229,7 +230,7 @@ fun MetalDetectorConveyorSystemScreen(
                                                 modifier = Modifier.size(20.dp)
                                             )
                                             Text(
-                                                text = "Upload to Cloud",
+                                                text = "Sync to Cloud",
                                                 fontSize = 18.sp,
                                                 modifier = Modifier.padding(start = 8.dp)
                                             )
@@ -239,67 +240,94 @@ fun MetalDetectorConveyorSystemScreen(
                                         isMenuExpanded = false
                                         mdSystem?.let { system ->
                                             coroutineScope.launch {
-                                                if (isNetworkAvailable(context)) {
-                                                    val serialExists =
-                                                        repositoryMD.isSerialNumberExistsInCloud(
-                                                            system.serialNumber
+                                                InAppLogger.d("Attempting to sync this machine to the cloud...")
+
+                                                try {
+                                                    isUploading = true
+
+                                                    if (system.cloudId != 0) {
+                                                        // Has cloudId -> just update
+                                                        InAppLogger.d("System has a cloud ID. Performing update...")
+                                                        repositoryMD.updateSystem(
+                                                            context = context,
+                                                            cloudId = system.cloudId,
+                                                            localId = system.id,
+                                                            tempId = system.tempId
                                                         )
-                                                    if (serialExists) {
-                                                        snackbarHostState.showSnackbar("Serial number already exists!")
-                                                    } else {
-                                                        try {
-                                                            isUploading = true
+                                                        snackbarHostState.showSnackbar("System updated successfully.")
+                                                        return@launch
+                                                    }
 
-                                                            val systemTypeId =
-                                                                system.systemTypeId ?: 0
+                                                    // No cloudId -> decide using new status check
+                                                    InAppLogger.d("System has no cloud ID. Checking serial status...")
+                                                    when (val status = repositoryMD.checkSerialNumberStatus(context, system.serialNumber)) {
 
-                                                            val newCloudId =
-                                                                repositoryMD.addMetalDetectorToCloud(
-                                                                    customerID = system.customerId,
-                                                                    serialNumber = system.serialNumber,
-                                                                    apertureWidth = system.apertureWidth,
-                                                                    apertureHeight = system.apertureHeight,
-                                                                    systemTypeId = systemTypeId,
-                                                                    modelId = system.modelId,
-                                                                    lastLocation = system.lastLocation,
-                                                                    calibrationInterval = 0
-                                                                )
-
-                                                            if (newCloudId != null && newCloudId != 0) {
-                                                                snackbarHostState.showSnackbar("System added to cloud... Updating local calibrations...")
-
-                                                                // now update any calibrations with the new cloud id
-                                                                dao.updateCalibrationWithCloudId(
-                                                                    system.tempId,
-                                                                    newCloudId
-                                                                )
-
-                                                                snackbarHostState.showSnackbar("Updating local system database...")
-                                                                repositoryMD.fetchAndStoreMdSystems()
-
-                                                                navController.popBackStack()
-
-
-
-                                                            } else {
-                                                                snackbarHostState.showSnackbar("1. Failed to add system to cloud. Try again later.")
-                                                            }
-
-                                                        } catch (e: Exception) {
-                                                            snackbarHostState.showSnackbar("2. Failed to add system to cloud. Try again later.")
-                                                        } finally {
-                                                            isUploading = false
+                                                        SerialCheckResult.Exists -> {
+                                                            InAppLogger.d("Serial exists in cloud. Block creating duplicate.")
+                                                            snackbarHostState.showSnackbar(
+                                                                "Serial already exists in cloud. Link it or change the serial."
+                                                            )
                                                         }
 
+                                                        SerialCheckResult.NotFound -> {
+                                                            InAppLogger.d("Serial free in cloud. Creating...")
+                                                            val newCloudId = repositoryMD.addMetalDetectorToCloud(
+                                                                customerID = system.customerId,
+                                                                serialNumber = system.serialNumber,
+                                                                apertureWidth = system.apertureWidth,
+                                                                apertureHeight = system.apertureHeight,
+                                                                systemTypeId = system.systemTypeId,
+                                                                modelId = system.modelId,
+                                                                lastLocation = system.lastLocation,
+                                                                calibrationInterval = 0
+                                                            )
 
+                                                            if (newCloudId != null && newCloudId != 0) {
+                                                                snackbarHostState.showSnackbar("System added to cloud. Updating local records...")
+                                                                // Update any calibrations that referenced the tempId
+                                                                dao.updateCalibrationWithCloudId(system.tempId, newCloudId)
 
+                                                                // Refresh local cache so this system now has its cloudId
+                                                                repositoryMD.fetchAndStoreMdSystems()
+
+                                                                // Optional: pop back if this screen becomes stale
+                                                                navController.popBackStack()
+                                                            } else {
+                                                                snackbarHostState.showSnackbar("Failed to add system to cloud. Try again later.")
+                                                            }
+                                                        }
+
+                                                        SerialCheckResult.ExistsLocalOffline -> {
+                                                            InAppLogger.d("Offline and serial exists locally. Wait for network.")
+                                                            snackbarHostState.showSnackbar(
+                                                                "Offline: serial exists locally. Connect to the internet to sync."
+                                                            )
+                                                        }
+
+                                                        SerialCheckResult.NotFoundLocalOffline -> {
+                                                            InAppLogger.d("Offline and not found locally. Can't push to cloud right now.")
+                                                            snackbarHostState.showSnackbar(
+                                                                "No network. System must be synced when online."
+                                                            )
+                                                        }
+
+                                                        is SerialCheckResult.Error -> {
+                                                            InAppLogger.e("Serial check error: ${status.message}")
+                                                            snackbarHostState.showSnackbar(
+                                                                "Error checking serial: ${status.message ?: "network error"}"
+                                                            )
+                                                        }
                                                     }
-                                                } else {
-                                                    snackbarHostState.showSnackbar("No internet connection. Unable to upload.")
+                                                } catch (e: Exception) {
+                                                    InAppLogger.e("Sync flow crashed: ${e.message}")
+                                                    snackbarHostState.showSnackbar("Sync failed. Try again later.")
+                                                } finally {
+                                                    isUploading = false
                                                 }
                                             }
                                         }
                                     }
+
                                 )
                             }
                         }
@@ -307,8 +335,14 @@ fun MetalDetectorConveyorSystemScreen(
                 }
             }
 
-            val formattedDate = try {
+            val formattedLastCalibrationDate = try {
                 formatDate(mdSystem?.lastCalibration)
+            } catch (e: Exception) {
+                "Invalid date"
+            }
+
+            val formattedAddedDate = try {
+                formatDate(mdSystem?.addedDate)
             } catch (e: Exception) {
                 "Invalid date"
             }
@@ -330,7 +364,7 @@ fun MetalDetectorConveyorSystemScreen(
                         value = "${mdSystem?.apertureHeight ?: "?"} mm"
                     )
                     DetailItem(label = "Location", value = mdSystem?.lastLocation ?: "?")
-                    DetailItem(label = "Last Calibrated", value = formattedDate)
+                    DetailItem(label = "Last Calibrated", value = formattedLastCalibrationDate)
                 }
             }
 
@@ -349,6 +383,7 @@ fun MetalDetectorConveyorSystemScreen(
                     DetailItem(label = "Cloud ID", value = mdSystem?.cloudId.toString())
                     DetailItem(label = "Temp ID", value = (mdSystem?.tempId ?: 0).toString())
                     DetailItem(label = "Fusion Customer ID", value = mdSystem?.fusionID.toString())
+                    DetailItem(label = "Date added", value = formattedAddedDate)
                 }
             }
 

@@ -64,13 +64,8 @@ fun CalMetalDetectorConveyorSystemChecklist(
                 cablesCondition != ConditionState.UNSPECIFIED &&
                 screwsCondition != ConditionState.UNSPECIFIED
 
+    Column(modifier = Modifier.fillMaxSize()) {
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(scrollState)
-    ) {
         CalibrationBanner(
             progress = progress,
             viewModel = viewModel
@@ -80,9 +75,10 @@ fun CalMetalDetectorConveyorSystemChecklist(
         CalibrationNavigationButtons(
             onPreviousClick = { viewModel.updateSystemChecklist() },
             onCancelClick = { viewModel.updateSystemChecklist() },
-            onNextClick ={
-            viewModel.updateSystemChecklist()
-            navController.navigate("CalMetalDetectorConveyorIndicators") },
+            onNextClick = {
+                viewModel.updateSystemChecklist()
+                navController.navigate("CalMetalDetectorConveyorIndicators")
+            },
             isNextEnabled = isNextStepEnabled,
             isFirstStep = false,
             navController = navController,
@@ -92,117 +88,123 @@ fun CalMetalDetectorConveyorSystemChecklist(
             },
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
         CalibrationHeader("System Checklist")
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(scrollState)
+        ) {
 
+            LabeledTextFieldWithConditionToggle(
+                title = "Conveyor Belt",
+                label = "Comments",
+                value = beltConditionComments,
+                onValueChange = { newText -> viewModel.setBeltConditionComments(newText) },
+                helpText = "Enter the condition, and any extra comments regarding the Conveyor Belt. Comments should include details about the type of Conveyor Belt, and any defects that need to be fixed.",
+                conditionLabel = "Condition",
+                currentCondition = beltCondition,
+                onConditionChange = { newCondition -> viewModel.setBeltCondition(newCondition) },
+                keyboardType = KeyboardType.Text,
+                isNAToggleEnabled = true, // Set this to false if you don't need the N/A toggle
+                helper = "Conveyor belts should be clean, and free from tears or missing sections. Check for correct tracking alignment"
+            )
 
-        LabeledTextFieldWithConditionToggle(
-            title = "Conveyor Belt",
-            label = "Comments",
-            value = beltConditionComments,
-            onValueChange = { newText -> viewModel.setBeltConditionComments( newText ) },
-            helpText = "Enter the condition, and any extra comments regarding the Conveyor Belt. Comments should include details about the type of Conveyor Belt, and any defects that need to be fixed.",
-            conditionLabel = "Condition",
-            currentCondition = beltCondition,
-            onConditionChange = { newCondition -> viewModel.setBeltCondition(newCondition)},
-            keyboardType = KeyboardType.Text,
-            isNAToggleEnabled = true, // Set this to false if you don't need the N/A toggle
-            helper = "Conveyor belts should be clean, and free from tears or missing sections. Check for correct tracking alignment"
-        )
+            Spacer(modifier = Modifier.padding(16.dp))
 
-        Spacer(modifier = Modifier.padding(16.dp))
+            LabeledTextFieldWithConditionToggle(
+                title = "Guarding",
+                label = "Comments",
+                value = guardConditionComments,
+                onValueChange = { newText -> viewModel.setGuardConditionComments(newText) },
+                helpText = "Enter the condition, and any extra comments regarding the Guarding. Comments should include details about the type of Guarding, and any defects that need to be fixed.",
+                conditionLabel = "Condition",
+                currentCondition = guardCondition,
+                onConditionChange = { newCondition -> viewModel.setGuardCondition(newCondition) },
+                keyboardType = KeyboardType.Text,
+                isNAToggleEnabled = true, // Set this to false if you don't need the N/A toggle
+                helper = "Guarding should be intact (no cracks or damage), and cover the area from the search head to the end of the conveyor belt as a minimum. Any access hatches should be interlocked as part of the safety circuit"
+            )
 
-        LabeledTextFieldWithConditionToggle(
-            title = "Guarding",
-            label = "Comments",
-            value = guardConditionComments,
-            onValueChange =  { newText -> viewModel.setGuardConditionComments( newText ) },
-            helpText = "Enter the condition, and any extra comments regarding the Guarding. Comments should include details about the type of Guarding, and any defects that need to be fixed.",
-            conditionLabel = "Condition",
-            currentCondition = guardCondition,
-            onConditionChange = { newCondition -> viewModel.setGuardCondition(newCondition)},
-            keyboardType = KeyboardType.Text,
-            isNAToggleEnabled = true, // Set this to false if you don't need the N/A toggle
-            helper = "Guarding should be intact (no cracks or damage), and cover the area from the search head to the end of the conveyor belt as a minimum. Any access hatches should be interlocked as part of the safety circuit"
-        )
+            Spacer(modifier = Modifier.padding(16.dp))
 
-        Spacer(modifier = Modifier.padding(16.dp))
+            LabeledTextFieldWithConditionToggle(
+                title = "Safety Circuit",
+                label = "Comments",
+                value = safetyCircuitConditionComments,
+                onValueChange = { newText -> viewModel.setSafetyCircuitConditionComments(newText) },
+                helpText = "Enter the condition, and any extra comments regarding the Safety Circuit. Comments should include details about the type of Safety Circuit, and any defects that need to be fixed.",
+                conditionLabel = "Condition",
+                currentCondition = safetyCircuitCondition,
+                onConditionChange = { newCondition ->
+                    viewModel.setSafetyCircuitCondition(
+                        newCondition
+                    )
+                },
+                keyboardType = KeyboardType.Text,
+                isNAToggleEnabled = true, // Set this to false if you don't need the N/A toggle
+                helper = "Check all emergency stops, guard interlocks etc for correct operation"
+            )
 
-        LabeledTextFieldWithConditionToggle(
-            title = "Safety Circuit",
-            label = "Comments",
-            value = safetyCircuitConditionComments,
-            onValueChange = { newText -> viewModel.setSafetyCircuitConditionComments( newText ) },
-            helpText = "Enter the condition, and any extra comments regarding the Safety Circuit. Comments should include details about the type of Safety Circuit, and any defects that need to be fixed.",
-            conditionLabel = "Condition",
-            currentCondition = safetyCircuitCondition,
-            onConditionChange = { newCondition -> viewModel.setSafetyCircuitCondition(newCondition)},
-            keyboardType = KeyboardType.Text,
-            isNAToggleEnabled = true, // Set this to false if you don't need the N/A toggle
-            helper = "Check all emergency stops, guard interlocks etc for correct operation"
-        )
+            Spacer(modifier = Modifier.padding(16.dp))
 
-        Spacer(modifier = Modifier.padding(16.dp))
+            LabeledTextFieldWithConditionToggle(
+                title = "Detector Liner, Gaskets and Seals",
+                label = "Comments",
+                value = linerConditionComments,
+                onValueChange = { newText -> viewModel.setLinerConditionComments(newText) },
+                helpText = "Enter the condition, and any extra comments regarding the Detector Liner, Gaskets and Seals. Comments should include details about the type of Detector Liner, Gaskets and Seals, and any defects that need to be fixed.",
+                conditionLabel = "Condition",
+                currentCondition = linerCondition,
+                onConditionChange = { newCondition -> viewModel.setLinerCondition(newCondition) },
+                keyboardType = KeyboardType.Text,
+                isNAToggleEnabled = true,
+                helper = "The search head liner (AKA chute) should be checked for damage and wear. Any gaskets or seals on control panels/electrical enclosures should also be checked"
+            )
 
-        LabeledTextFieldWithConditionToggle(
-            title = "Detector Liner, Gaskets and Seals",
-            label = "Comments",
-            value = linerConditionComments,
-            onValueChange = { newText -> viewModel.setLinerConditionComments( newText ) },
-            helpText = "Enter the condition, and any extra comments regarding the Detector Liner, Gaskets and Seals. Comments should include details about the type of Detector Liner, Gaskets and Seals, and any defects that need to be fixed.",
-            conditionLabel = "Condition",
-            currentCondition = linerCondition,
-            onConditionChange = { newCondition -> viewModel.setLinerCondition(newCondition)},
-            keyboardType = KeyboardType.Text,
-            isNAToggleEnabled = true,
-            helper = "The search head liner (AKA chute) should be checked for damage and wear. Any gaskets or seals on control panels/electrical enclosures should also be checked"
-        )
+            Spacer(modifier = Modifier.padding(16.dp))
 
-        Spacer(modifier = Modifier.padding(16.dp))
+            LabeledTextFieldWithConditionToggle(
+                title = "Cable Fittings",
+                label = "Comments",
+                value = cablesConditionComments,
+                onValueChange = { newText -> viewModel.setCablesConditionComments(newText) },
+                helpText = "Enter the condition, and any extra comments regarding the Cable Fittings. Comments should include details about the type of Cable Fittings, and any defects that need to be fixed.",
+                conditionLabel = "Condition",
+                currentCondition = cablesCondition,
+                onConditionChange = { newCondition -> viewModel.setCablesCondition(newCondition) },
+                keyboardType = KeyboardType.Text,
+                isNAToggleEnabled = true,
+                helper = "Check all cables and associated fittings for damage and wear"
+            )
 
-        LabeledTextFieldWithConditionToggle(
-            title = "Cable Fittings",
-            label = "Comments",
-            value = cablesConditionComments,
-            onValueChange = { newText -> viewModel.setCablesConditionComments( newText ) },
-            helpText = "Enter the condition, and any extra comments regarding the Cable Fittings. Comments should include details about the type of Cable Fittings, and any defects that need to be fixed.",
-            conditionLabel = "Condition",
-            currentCondition = cablesCondition,
-            onConditionChange = { newCondition -> viewModel.setCablesCondition(newCondition)},
-            keyboardType = KeyboardType.Text,
-            isNAToggleEnabled = true,
-            helper = "Check all cables and associated fittings for damage and wear"
-        )
+            Spacer(modifier = Modifier.padding(16.dp))
 
-        Spacer(modifier = Modifier.padding(16.dp))
+            LabeledTextFieldWithConditionToggle(
+                title = "Screws and Fittings",
+                label = "Comments",
+                value = screwsConditionComments,
+                onValueChange = { newText -> viewModel.setScrewsConditionComments(newText) },
+                helpText = "Enter the condition, and any extra comments regarding the Screws and Fittings. Comments should include details about the type of Screws and Fittings, and any defects that need to be fixed.",
+                conditionLabel = "Condition",
+                currentCondition = screwsCondition,
+                onConditionChange = { newCondition -> viewModel.setScrewsCondition(newCondition) },
+                keyboardType = KeyboardType.Text,
+                isNAToggleEnabled = true,
+                helper = "Check all screws and fittings for damage and wear. Screws must be tight"
+            )
 
-        LabeledTextFieldWithConditionToggle(
-            title = "Screws and Fittings",
-            label = "Comments",
-            value = screwsConditionComments,
-            onValueChange = { newText -> viewModel.setScrewsConditionComments( newText ) },
-            helpText = "Enter the condition, and any extra comments regarding the Screws and Fittings. Comments should include details about the type of Screws and Fittings, and any defects that need to be fixed.",
-            conditionLabel = "Condition",
-            currentCondition = screwsCondition,
-            onConditionChange = { newCondition -> viewModel.setScrewsCondition(newCondition)},
-            keyboardType = KeyboardType.Text,
-            isNAToggleEnabled = true,
-            helper = "Check all screws and fittings for damage and wear. Screws must be tight"
-        )
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
+            LabeledTextFieldWithHelp(
+                label = "Engineer Notes",
+                value = systemChecklistEngineerNotes,
+                onValueChange = { newValue -> viewModel.setSystemChecklistEngineerNotes(newValue) },
+                helpText = "Enter any notes relevant to this section",
+                isNAToggleEnabled = false
+            )
 
-        LabeledTextFieldWithHelp(
-            label = "Engineer Notes",
-            value = systemChecklistEngineerNotes,
-            onValueChange = { newValue -> viewModel.setSystemChecklistEngineerNotes(newValue) },
-            helpText = "Enter any notes relevant to this section",
-            isNAToggleEnabled = false
-        )
-
-
+        }
     }
 }

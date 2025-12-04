@@ -1,6 +1,5 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
-import com.example.mecca.CalibrationBanner
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
@@ -67,13 +67,7 @@ fun CalMetalDetectorConveyorIndicators(
                 indicator2label.isNotBlank() &&
                 indicator1label.isNotBlank()
 
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(scrollState) // Add scrolling to the whole column
-    ) {
+    Column(modifier = Modifier.fillMaxSize()) {
         CalibrationBanner(
             progress = progress,
             viewModel = viewModel
@@ -86,7 +80,8 @@ fun CalMetalDetectorConveyorIndicators(
             onCancelClick = { viewModel.updateIndicators() },
             onNextClick = {
                 viewModel.updateIndicators()
-                navController.navigate("CalMetalDetectorConveyorInfeedPEC") },
+                navController.navigate("CalMetalDetectorConveyorLargeMetalTest")
+            },
             isNextEnabled = isNextStepEnabled,
             isFirstStep = false, // Indicates this is the first step and disables the Previous button
             navController = navController,
@@ -95,104 +90,118 @@ fun CalMetalDetectorConveyorIndicators(
                 viewModel.updateIndicators()
             },
         )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
         CalibrationHeader("Indicators")
 
-        Spacer(modifier = Modifier.height(20.dp))
 
-        val colourOptions = listOf("Red", "Yellow", "Green", "White", "Green", "Blue", "Amber", "Sounder", "Other")
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(scrollState) // Add scrolling to the whole column
+        ) {
 
-        LabeledDropdownWithTextInput(
-            label = "Indicator 6",
-            dropdownLabel = "Colour",
-            options = colourOptions,
-            selectedOption = indicator6colour,
-            onOptionChange = { viewModel.setIndicator6colour(it) },
-            helpText = "Please select an option from the dropdown. If 'Other' is selected, provide more details.",
-            inputLabel = "Label",
-            inputValue = indicator6label,
-            onInputValueChange = { viewModel.setIndicator6label(it) },
-            isNAToggleEnabled = true
-        )
+            val colourOptions =
+                listOf(
+                    "Red",
+                    "Yellow",
+                    "Green",
+                    "White",
+                    "Green",
+                    "Blue",
+                    "Amber",
+                    "Sounder",
+                    "Other"
+                )
 
-
-        LabeledDropdownWithTextInput(
-            label = "Indicator 5",
-            dropdownLabel = "Colour",
-            options = colourOptions,
-            selectedOption = indicator5colour,
-            onOptionChange = { viewModel.setIndicator5colour(it) },
-            helpText = "Please select an option from the dropdown. If 'Other' is selected, provide more details.",
-            inputLabel = "Label",
-            inputValue = indicator5label,
-            onInputValueChange = { viewModel.setIndicator5label(it) },
-            isNAToggleEnabled = true
-        )
-
-        LabeledDropdownWithTextInput(
-            label = "Indicator 4",
-            dropdownLabel = "Colour",
-            options = colourOptions,
-            selectedOption = indicator4colour,
-            onOptionChange = { viewModel.setIndicator4colour(it) },
-            helpText = "Please select an option from the dropdown. If 'Other' is selected, provide more details.",
-            inputLabel = "Label",
-            inputValue = indicator4label,
-            onInputValueChange = { viewModel.setIndicator4label(it) },
-            isNAToggleEnabled = true
-        )
+            LabeledDropdownWithTextInput(
+                label = "Indicator 6",
+                dropdownLabel = "Colour",
+                options = colourOptions,
+                selectedOption = indicator6colour,
+                onOptionChange = { viewModel.setIndicator6colour(it) },
+                helpText = "Please select an option from the dropdown. If 'Other' is selected, provide more details.",
+                inputLabel = "Label",
+                inputValue = indicator6label,
+                onInputValueChange = { viewModel.setIndicator6label(it) },
+                isNAToggleEnabled = true
+            )
 
 
-        LabeledDropdownWithTextInput(
-            label = "Indicator 3",
-            dropdownLabel = "Colour",
-            options = colourOptions,
-            selectedOption = indicator3colour,
-            onOptionChange = { viewModel.setIndicator3colour(it) },
-            helpText = "Please select an option from the dropdown. If 'Other' is selected, provide more details.",
-            inputLabel = "Label",
-            inputValue = indicator3label,
-            onInputValueChange = { viewModel.setIndicator3label(it) },
-            isNAToggleEnabled = true
-        )
+            LabeledDropdownWithTextInput(
+                label = "Indicator 5",
+                dropdownLabel = "Colour",
+                options = colourOptions,
+                selectedOption = indicator5colour,
+                onOptionChange = { viewModel.setIndicator5colour(it) },
+                helpText = "Please select an option from the dropdown. If 'Other' is selected, provide more details.",
+                inputLabel = "Label",
+                inputValue = indicator5label,
+                onInputValueChange = { viewModel.setIndicator5label(it) },
+                isNAToggleEnabled = true
+            )
 
-        LabeledDropdownWithTextInput(
-            label = "Indicator 2",
-            dropdownLabel = "Colour",
-            options = colourOptions,
-            selectedOption = indicator2colour,
-            onOptionChange = { viewModel.setIndicator2colour(it) },
-            helpText = "Please select an option from the dropdown. If 'Other' is selected, provide more details.",
-            inputLabel = "Label",
-            inputValue = indicator2label,
-            onInputValueChange = { viewModel.setIndicator2label(it) },
-            isNAToggleEnabled = true
-        )
+            LabeledDropdownWithTextInput(
+                label = "Indicator 4",
+                dropdownLabel = "Colour",
+                options = colourOptions,
+                selectedOption = indicator4colour,
+                onOptionChange = { viewModel.setIndicator4colour(it) },
+                helpText = "Please select an option from the dropdown. If 'Other' is selected, provide more details.",
+                inputLabel = "Label",
+                inputValue = indicator4label,
+                onInputValueChange = { viewModel.setIndicator4label(it) },
+                isNAToggleEnabled = true
+            )
 
-        LabeledDropdownWithTextInput(
-            label = "Indicator 1",
-            dropdownLabel = "Colour",
-            options = colourOptions,
-            selectedOption = indicator1colour,
-            onOptionChange = { viewModel.setIndicator1colour(it) },
-            helpText = "Please select an option from the dropdown. If 'Other' is selected, provide more details.",
-            inputLabel = "Label",
-            inputValue = indicator1label,
-            onInputValueChange = { viewModel.setIndicator1label(it) },
-            isNAToggleEnabled = true
-        )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            LabeledDropdownWithTextInput(
+                label = "Indicator 3",
+                dropdownLabel = "Colour",
+                options = colourOptions,
+                selectedOption = indicator3colour,
+                onOptionChange = { viewModel.setIndicator3colour(it) },
+                helpText = "Please select an option from the dropdown. If 'Other' is selected, provide more details.",
+                inputLabel = "Label",
+                inputValue = indicator3label,
+                onInputValueChange = { viewModel.setIndicator3label(it) },
+                isNAToggleEnabled = true
+            )
 
-        LabeledTextFieldWithHelp(
-            label = "Engineer Notes",
-            value = indicatorsEngineerNotes,
-            onValueChange = { newValue -> viewModel.setIndicatorsEngineerNotes(newValue) },
-            helpText = "Enter any notes relevant to this section",
-            isNAToggleEnabled = false
-        )
+            LabeledDropdownWithTextInput(
+                label = "Indicator 2",
+                dropdownLabel = "Colour",
+                options = colourOptions,
+                selectedOption = indicator2colour,
+                onOptionChange = { viewModel.setIndicator2colour(it) },
+                helpText = "Please select an option from the dropdown. If 'Other' is selected, provide more details.",
+                inputLabel = "Label",
+                inputValue = indicator2label,
+                onInputValueChange = { viewModel.setIndicator2label(it) },
+                isNAToggleEnabled = true
+            )
 
+            LabeledDropdownWithTextInput(
+                label = "Indicator 1",
+                dropdownLabel = "Colour",
+                options = colourOptions,
+                selectedOption = indicator1colour,
+                onOptionChange = { viewModel.setIndicator1colour(it) },
+                helpText = "Please select an option from the dropdown. If 'Other' is selected, provide more details.",
+                inputLabel = "Label",
+                inputValue = indicator1label,
+                onInputValueChange = { viewModel.setIndicator1label(it) },
+                isNAToggleEnabled = true
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            LabeledTextFieldWithHelp(
+                label = "Engineer Notes",
+                value = indicatorsEngineerNotes,
+                onValueChange = { newValue -> viewModel.setIndicatorsEngineerNotes(newValue) },
+                helpText = "Enter any notes relevant to this section",
+                isNAToggleEnabled = false
+            )
+        }
     }
 }

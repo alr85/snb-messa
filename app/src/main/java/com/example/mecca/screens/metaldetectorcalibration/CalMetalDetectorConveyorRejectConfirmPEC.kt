@@ -1,6 +1,5 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
-import com.example.mecca.CalibrationBanner
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
@@ -70,8 +70,6 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
         "Other"
     )
 
-    //var selectedOptions by remember { mutableStateOf(listOf<String>()) }
-
     //Determine if "Next Step" button should be enabled
     val isNextStepEnabled = when (rejectConfirmSensorFitted) {
         YesNoState.NO, YesNoState.NA -> true // Button enabled for NO or NA
@@ -81,18 +79,15 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                     rejectConfirmSensorTestMethod.isNotBlank() &&
                     rejectConfirmSensorTestResult.isNotEmpty() &&
                     rejectConfirmSensorLatched != YesNoState.NA &&
-                    rejectConfirmSensorCR != YesNoState.NA
+                    rejectConfirmSensorCR != YesNoState.NA  &&
+                    rejectConfirmSensorStopPosition.isNotEmpty()
         }
+
         else -> false // Default to false for safety
     }
 
-    // Column layout
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(scrollState)
-    ) {
+    Column(modifier = Modifier.fillMaxSize()) {
+
         CalibrationBanner(
             progress = progress,
             viewModel = viewModel
@@ -104,7 +99,8 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
             onCancelClick = { viewModel.updateRejectConfirmSensor() },
             onNextClick = {
                 viewModel.updateRejectConfirmSensor()
-                navController.navigate("CalMetalDetectorConveyorBinFullPEC") },
+                navController.navigate("CalMetalDetectorConveyorBinFullPEC")
+            },
             isNextEnabled = isNextStepEnabled,
             isFirstStep = false,
             navController = navController,
@@ -114,119 +110,134 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
             },
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
         CalibrationHeader("Compliance Checks - Reject Confirm")
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        LabeledTriStateSwitchAndTextInputWithHelp(
-            label = "Reject Confirm sensor fitted?",
-            currentState = rejectConfirmSensorFitted,
-            onStateChange = { newState ->
-                viewModel.setRejectConfirmSensorFitted(newState)
-                if (newState == YesNoState.NO || newState == YesNoState.NA) {
-                    // Set all relevant fields to N/A
-                    viewModel.setRejectConfirmSensorDetail("N/A")
-                    viewModel.setRejectConfirmSensorTestMethod("N/A")
-                    viewModel.setRejectConfirmSensorTestMethodOther("N/A")
-                    viewModel.setRejectConfirmSensorTestResult(emptyList())
-                    viewModel.setRejectConfirmSensorLatched(YesNoState.NA)
-                    viewModel.setRejectConfirmSensorCR(YesNoState.NA)
-                    //selectedOptions = listOf("N/A")
-                    viewModel.setRejectConfirmSensorStopPosition("N/A")
-                } else if (newState == YesNoState.YES) {
-                    // Clear N/A from selected options when switching back to YES
-                    //selectedOptions = emptyList() // Clear any selected options
-                    viewModel.setRejectConfirmSensorTestResult(emptyList()) // Clear the result in the ViewModel as well
-                }
-            },
-            helpText = "Select if there is a reject confirm sensor fitted",
-            inputLabel = "Detail",
-            inputValue = rejectConfirmSensorDetail,
-            onInputValueChange = { newValue -> viewModel.setRejectConfirmSensorDetail(newValue) }
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(scrollState)
+        ) {
 
 
-        // Conditionally display remaining fields if "Yes" is selected for In-feed sensor fitted
-        if (rejectConfirmSensorFitted == YesNoState.YES) {
-            LabeledDropdownWithHelp(
-                label = "Test Method",
-                options = rejectConfirmSensorTestOptions,
-                selectedOption = rejectConfirmSensorTestMethod,
-                onSelectionChange = { newSelection ->
-                    viewModel.setRejectConfirmSensorTestMethod(newSelection)
+            LabeledTriStateSwitchAndTextInputWithHelp(
+                label = "Reject Confirm sensor fitted?",
+                currentState = rejectConfirmSensorFitted,
+                onStateChange = { newState ->
+                    viewModel.setRejectConfirmSensorFitted(newState)
+                    if (newState == YesNoState.NO || newState == YesNoState.NA) {
+                        viewModel.setRejectConfirmSensorDetail("N/A")
+                        viewModel.setRejectConfirmSensorTestMethod("N/A")
+                        viewModel.setRejectConfirmSensorTestMethodOther("N/A")
+                        viewModel.setRejectConfirmSensorTestResult(emptyList())
+                        viewModel.setRejectConfirmSensorLatched(YesNoState.NA)
+                        viewModel.setRejectConfirmSensorCR(YesNoState.NA)
+                        viewModel.setRejectConfirmSensorStopPosition("N/A")
+                    } else if (newState == YesNoState.YES) {
+                        // Re-enable section: give interactive defaults
+                        viewModel.setRejectConfirmSensorDetail("")
+                        viewModel.setRejectConfirmSensorTestMethod("")
+                        viewModel.setRejectConfirmSensorTestMethodOther("")
+                        viewModel.setRejectConfirmSensorTestResult(emptyList())
+                        viewModel.setRejectConfirmSensorLatched(YesNoState.NO)   // <-- important
+                        viewModel.setRejectConfirmSensorCR(YesNoState.NO)        // <-- important
+                        viewModel.setRejectConfirmSensorStopPosition("")
+                    }
                 },
-                helpText = "Select one option from the dropdown.",
-                isNAToggleEnabled = false
+                helpText = "Select if there is a reject confirm sensor fitted",
+                inputLabel = "Detail",
+                inputValue = rejectConfirmSensorDetail,
+                onInputValueChange = { newValue -> viewModel.setRejectConfirmSensorDetail(newValue) }
             )
 
-            if (rejectConfirmSensorTestMethod == "Other") {
-                LabeledTextFieldWithHelp(
-                    label = "Other Test Method",
-                    value = rejectConfirmSensorTestMethodOther,
-                    onValueChange = { newValue -> viewModel.setRejectConfirmSensorTestMethodOther(newValue) },
-                    helpText = "Enter the custom test method",
+
+            // Conditionally display remaining fields if "Yes" is selected for In-feed sensor fitted
+            if (rejectConfirmSensorFitted == YesNoState.YES) {
+                LabeledDropdownWithHelp(
+                    label = "Test Method",
+                    options = rejectConfirmSensorTestOptions,
+                    selectedOption = rejectConfirmSensorTestMethod,
+                    onSelectionChange = { newSelection ->
+                        viewModel.setRejectConfirmSensorTestMethod(newSelection)
+                    },
+                    helpText = "Select one option from the dropdown.",
+                    isNAToggleEnabled = false
+                )
+
+                if (rejectConfirmSensorTestMethod == "Other") {
+                    LabeledTextFieldWithHelp(
+                        label = "Other Test Method",
+                        value = rejectConfirmSensorTestMethodOther,
+                        onValueChange = { newValue ->
+                            viewModel.setRejectConfirmSensorTestMethodOther(
+                                newValue
+                            )
+                        },
+                        helpText = "Enter the custom test method",
+                        isNAToggleEnabled = false
+                    )
+                }
+
+                val selectedOptions by viewModel.rejectConfirmSensorTestResult.collectAsState()
+
+                LabeledMultiSelectDropdownWithHelp(
+                    label = "Test Result",
+                    value = selectedOptions.joinToString(", "),
+                    options = rejectConfirmSensorTestResults,
+                    selectedOptions = selectedOptions,
+                    onSelectionChange = { newSelectedOptions ->
+                        viewModel.setRejectConfirmSensorTestResult(
+                            newSelectedOptions
+                        )
+                    },
+                    helpText = "Select one or more items from the dropdown.",
+                    isNAToggleEnabled = false
+                )
+
+                LabeledTriStateSwitchWithHelp(
+                    label = "Fault Latched?",
+                    currentState = rejectConfirmSensorLatched,
+                    onStateChange = { newState -> viewModel.setRejectConfirmSensorLatched(newState) },
+                    helpText = "Is the fault output latched, or does it clear automatically?",
+                    isNAToggleEnabled = false
+                )
+
+                LabeledTriStateSwitchWithHelp(
+                    label = "Fault Controlled Restart?",
+                    currentState = rejectConfirmSensorCR,
+                    onStateChange = { newState -> viewModel.setRejectConfirmSensorCR(newState) },
+                    helpText = "Is the fault output latched, or does it clear automatically?",
+                    isNAToggleEnabled = false
+                )
+
+                val rejectConfirmStopPositionOptions = listOf(
+                    "System Belt",
+                    "Out-feed Belt (Controlled)",
+                    "Out-feed Belt (Uncontrolled)"
+                )
+
+                LabeledDropdownWithHelp(
+                    label = "Test Pack Stop Position",
+                    options = rejectConfirmStopPositionOptions,
+                    selectedOption = rejectConfirmSensorStopPosition,
+                    onSelectionChange = { newSelection ->
+                        viewModel.setRejectConfirmSensorStopPosition(newSelection)
+                    },
+                    helpText = "Select one option from the dropdown.",
                     isNAToggleEnabled = false
                 )
             }
 
-            val selectedOptions by viewModel.rejectConfirmSensorTestResult.collectAsState()
+            Spacer(modifier = Modifier.height(16.dp))
 
-            LabeledMultiSelectDropdownWithHelp(
-                label = "Test Result",
-                value = selectedOptions.joinToString ( ", " ),
-                options = rejectConfirmSensorTestResults,
-                selectedOptions = selectedOptions,
-                onSelectionChange = { newSelectedOptions -> viewModel.setRejectConfirmSensorTestResult(newSelectedOptions) },
-                helpText = "Select one or more items from the dropdown.",
+            LabeledTextFieldWithHelp(
+                label = "Engineer Comments",
+                value = rejectConfirmSensorEngineerNotes,
+                onValueChange = { newValue -> viewModel.setRejectConfirmSensorEngineerNotes(newValue) },
+                helpText = "Enter any notes relevant to this section",
                 isNAToggleEnabled = false
             )
 
-            LabeledTriStateSwitchWithHelp(
-                label = "Fault Latched?",
-                currentState = rejectConfirmSensorLatched,
-                onStateChange = { newState -> viewModel.setRejectConfirmSensorLatched(newState) },
-                helpText = "Is the fault output latched, or does it clear automatically?",
-                isNAToggleEnabled = false
-            )
-
-            LabeledTriStateSwitchWithHelp(
-                label = "Fault Controlled Restart?",
-                currentState = rejectConfirmSensorCR,
-                onStateChange = { newState -> viewModel.setRejectConfirmSensorCR(newState) },
-                helpText = "Is the fault output latched, or does it clear automatically?",
-                isNAToggleEnabled = false
-            )
-
-            val rejectConfirmStopPositionOptions = listOf(
-                "System Belt",
-                "Out-feed Belt (Controlled)",
-                "Out-feed Belt (Uncontrolled)"
-            )
-
-            LabeledDropdownWithHelp(
-                label = "Test Pack Stop Position",
-                options = rejectConfirmStopPositionOptions,
-                selectedOption = rejectConfirmSensorStopPosition,
-                onSelectionChange = { newSelection ->
-                    viewModel.setRejectConfirmSensorStopPosition(newSelection)
-                },
-                helpText = "Select one option from the dropdown.",
-                isNAToggleEnabled = false
-            )
+            Spacer(modifier = Modifier.height(16.dp))
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        LabeledTextFieldWithHelp(
-            label = "Engineer Comments",
-            value = rejectConfirmSensorEngineerNotes,
-            onValueChange = { newValue -> viewModel.setRejectConfirmSensorEngineerNotes(newValue) },
-            helpText = "Enter any notes relevant to this section",
-            isNAToggleEnabled = false
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
     }
 }

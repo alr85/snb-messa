@@ -8,10 +8,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.navigation.compose.rememberNavController
 import com.example.mecca.ApiService
 import com.example.mecca.AppDatabase
-import com.example.mecca.Repositories.MetalDetectorSystemsRepository
 import com.example.mecca.RetrofitClient
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModelFactory
+import com.example.mecca.repositories.MetalDetectorConveyorCalibrationRepository
+import com.example.mecca.repositories.MetalDetectorSystemsRepository
+import com.example.mecca.repositories.RetailerSensitivitiesRepository
 import com.example.mecca.ui.theme.MetalDetectorConveyorCalibrationNavGraph
 import com.example.mecca.ui.theme.MyAppTheme
 
@@ -66,6 +68,19 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
         MetalDetectorSystemsRepository(apiService, AppDatabase.getDatabase(applicationContext))
     }
 
+    private val retailerSensitivitiesRepo by lazy {
+        RetailerSensitivitiesRepository(apiService, AppDatabase.getDatabase(applicationContext))
+    }
+
+    private val calibrationRepository by lazy {
+        MetalDetectorConveyorCalibrationRepository(calibrationDao)
+    }
+
+
+
+
+
+
 
     // Scoping the ViewModel to the activity
     private val calibrationViewModel: CalibrationMetalDetectorConveyorViewModel by viewModels {
@@ -94,7 +109,9 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
             detectionSetting6label,
             detectionSetting7label,
             detectionSetting8label,
-            lastLocation
+            lastLocation,
+            retailerSensitivitiesRepo,
+            calibrationRepository
         )
     }
 

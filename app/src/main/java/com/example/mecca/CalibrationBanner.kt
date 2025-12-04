@@ -50,11 +50,11 @@ fun CalibrationBanner(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White) // Or any color you want
-            .padding(16.dp)
+            .background(Color.White)
+            .padding(10.dp)
     ) {
         // Banner content
-
+        Spacer(modifier = Modifier.height(20.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -81,10 +81,33 @@ fun CalibrationBanner(
                     .fillMaxWidth(), // Ensure it uses all the space allocated
                 contentAlignment = Alignment.Center // Center content in the Box
             ) {
-                Text(
-                    text = "Metal Detector Calibration",
-                    style = MaterialTheme.typography.headlineMedium
-                )
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ){
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Metal Detector Calibration",
+                            style = MaterialTheme.typography.headlineMedium
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Calibration ID: ${viewModel.calibrationId.value}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Gray, // Use a predefined grey color
+                            //modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
+                    }
+                }
+
+
+
             }
         }
 
@@ -95,21 +118,13 @@ fun CalibrationBanner(
 
 
         Text(
-            text = "${viewModel.modelDescription.value} | S/N: ${viewModel.serialNumber.value} | ${viewModel.customerName.value}",
+            text = "${viewModel.modelDescription.value} ( ${viewModel.serialNumber.value} ) ",
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
-        Text(
-            text = "Calibration ID: ${viewModel.calibrationId.value}",
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Gray, // Use a predefined grey color
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
 
         // Progress Bar - Clickable to show details
         LinearProgressIndicator(

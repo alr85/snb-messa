@@ -1,4 +1,4 @@
-package com.example.mecca.Repositories
+package com.example.mecca.repositories
 
 import android.util.Log
 import com.example.mecca.ApiService

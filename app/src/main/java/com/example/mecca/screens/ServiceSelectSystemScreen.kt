@@ -57,12 +57,14 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.navigation.NavHostController
 import com.example.mecca.AppDatabase
 import com.example.mecca.FetchResult
 import com.example.mecca.R
-import com.example.mecca.Repositories.MetalDetectorSystemsRepository
 import com.example.mecca.dataClasses.MetalDetectorWithFullDetails
+import com.example.mecca.repositories.MetalDetectorSystemsRepository
+import com.example.mecca.util.InAppLogger
 import kotlinx.coroutines.launch
 
 
@@ -257,7 +259,8 @@ fun ServiceSelectSystemScreen(
                                 onClick = {
                                     isMenuExpanded = false
                                     try {
-                                        val gmmIntentUri = Uri.parse("google.navigation:q=${Uri.encode(customerPostcode)}")
+                                        val gmmIntentUri =
+                                            "google.navigation:q=${Uri.encode(customerPostcode)}".toUri()
                                         val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
                                             setPackage("com.google.android.apps.maps")
                                         }
@@ -306,6 +309,7 @@ fun ServiceSelectSystemScreen(
 
                 // Filtered and sorted systems list
                 val filteredSystems = metalDetectorsCalibrationsList.value.sortedBy { it.serialNumber }
+                InAppLogger.d("Filtered Systems: $filteredSystems")
                 Log.d("DEBUG", "UNFiltered Systems: $metalDetectorsCalibrationsList")
                 Log.d("DEBUG", "Filtered Systems: $filteredSystems")
 

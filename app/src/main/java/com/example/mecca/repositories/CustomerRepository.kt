@@ -1,4 +1,4 @@
-package com.example.mecca.Repositories
+package com.example.mecca.repositories
 
 import com.example.mecca.ApiService
 import com.example.mecca.AppDatabase

@@ -85,16 +85,11 @@ fun CalMetalDetectorConveyorBinFullPEC(
                     binFullSensorLatched != YesNoState.NA &&
                     binFullSensorCR != YesNoState.NA
         }
+
         else -> false // Default to false for safety
     }
 
-    // Column layout
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(scrollState)
-    ) {
+    Column(modifier = Modifier.fillMaxSize()) {
         CalibrationBanner(
             progress = progress,
             viewModel = viewModel
@@ -106,8 +101,10 @@ fun CalMetalDetectorConveyorBinFullPEC(
             onCancelClick = {
                 viewModel.updateBinFullSensor()
             },
-            onNextClick = { navController.navigate("CalMetalDetectorConveyorBackupPEC")
-                viewModel.updateBinFullSensor()},
+            onNextClick = {
+                navController.navigate("CalMetalDetectorConveyorBackupPEC")
+                viewModel.updateBinFullSensor()
+            },
             isNextEnabled = isNextStepEnabled,
             isFirstStep = false,
             navController = navController,
@@ -117,100 +114,117 @@ fun CalMetalDetectorConveyorBinFullPEC(
             },
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
         CalibrationHeader("Compliance Checks - Bin Full")
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(scrollState)
+        ) {
 
-        Spacer(modifier = Modifier.height(20.dp))
-
-        LabeledTriStateSwitchAndTextInputWithHelp(
-            label = "Bin Full sensor fitted?",
-            currentState = binFullSensorFitted,
-            onStateChange = { newState ->
-                viewModel.setBinFullSensorFitted(newState)
-                if (newState == YesNoState.NA  || newState == YesNoState.NO) {
-                    // Set all relevant fields to N/A
-                    viewModel.setBinFullSensorDetail("N/A")
-                    viewModel.setBinFullSensorTestMethod("N/A")
-                    viewModel.setBinFullSensorTestMethodOther("N/A")
-                    viewModel.setBinFullSensorTestResult(emptyList())
-                    viewModel.setBinFullSensorLatched(YesNoState.NA)
-                    viewModel.setBinFullSensorCR(YesNoState.NA)
-                    selectedOptions = listOf("N/A")
-                } else if (newState == YesNoState.YES) {
-                    // Clear N/A from selected options when switching back to YES
-                    selectedOptions = emptyList() // Clear any selected options
-                    viewModel.setBinFullSensorTestResult(emptyList()) // Clear the result in the ViewModel as well
-                }
-            },
-            helpText = "Select if there is a bin full sensor fitted",
-            inputLabel = "Detail",
-            inputValue = binFullSensorDetail,
-            onInputValueChange = { newValue -> viewModel.setBinFullSensorDetail(newValue) }
-        )
-
-
-        // Conditionally display remaining fields if "Yes" is selected for In-feed sensor fitted
-        if (binFullSensorFitted == YesNoState.YES) {
-            LabeledDropdownWithHelp(
-                label = "Test Method",
-                options = binFullSensorTestOptions,
-                selectedOption = binFullSensorTestMethod,
-                onSelectionChange = { newSelection ->
-                    viewModel.setBinFullSensorTestMethod(newSelection)
+            LabeledTriStateSwitchAndTextInputWithHelp(
+                label = "Bin Full sensor fitted?",
+                currentState = binFullSensorFitted,
+                onStateChange = { newState ->
+                    viewModel.setBinFullSensorFitted(newState)
+                    if (newState == YesNoState.NA || newState == YesNoState.NO) {
+                        // Set all relevant fields to N/A
+                        viewModel.setBinFullSensorDetail("N/A")
+                        viewModel.setBinFullSensorTestMethod("N/A")
+                        viewModel.setBinFullSensorTestMethodOther("N/A")
+                        viewModel.setBinFullSensorTestResult(emptyList())
+                        viewModel.setBinFullSensorLatched(YesNoState.NA)
+                        viewModel.setBinFullSensorCR(YesNoState.NA)
+                        selectedOptions = listOf("N/A")
+                    } else if (newState == YesNoState.YES) {
+                        // Clear N/A from selected options when switching back to YES
+                        viewModel.setBinFullSensorDetail("")
+                        viewModel.setBinFullSensorTestMethod("")
+                        viewModel.setBinFullSensorTestMethodOther("")
+                        viewModel.setBinFullSensorTestResult(emptyList())
+                        viewModel.setBinFullSensorLatched(YesNoState.NO)
+                        viewModel.setBinFullSensorCR(YesNoState.NO)
+                        selectedOptions = emptyList() // Clear any selected options
+                        viewModel.setBinFullSensorTestResult(emptyList()) // Clear the result in the ViewModel as well
+                    }
                 },
-                helpText = "Select one option from the dropdown.",
-                isNAToggleEnabled = false
+                helpText = "Select if there is a bin full sensor fitted",
+                inputLabel = "Detail",
+                inputValue = binFullSensorDetail,
+                onInputValueChange = { newValue -> viewModel.setBinFullSensorDetail(newValue) }
             )
 
-            if (binFullSensorTestMethod == "Other") {
-                LabeledTextFieldWithHelp(
-                    label = "Other Test Method",
-                    value = binFullSensorTestMethodOther,
-                    onValueChange = { newValue -> viewModel.setBinFullSensorTestMethodOther(newValue) },
-                    helpText = "Enter the custom test method",
+
+            // Conditionally display remaining fields if "Yes" is selected for In-feed sensor fitted
+            if (binFullSensorFitted == YesNoState.YES) {
+                LabeledDropdownWithHelp(
+                    label = "Test Method",
+                    options = binFullSensorTestOptions,
+                    selectedOption = binFullSensorTestMethod,
+                    onSelectionChange = { newSelection ->
+                        viewModel.setBinFullSensorTestMethod(newSelection)
+                    },
+                    helpText = "Select one option from the dropdown.",
+                    isNAToggleEnabled = false
+                )
+
+                if (binFullSensorTestMethod == "Other") {
+                    LabeledTextFieldWithHelp(
+                        label = "Other Test Method",
+                        value = binFullSensorTestMethodOther,
+                        onValueChange = { newValue ->
+                            viewModel.setBinFullSensorTestMethodOther(
+                                newValue
+                            )
+                        },
+                        helpText = "Enter the custom test method",
+                        isNAToggleEnabled = false
+                    )
+                }
+                val selectedOptions by viewModel.binFullSensorTestResult.collectAsState()
+
+                LabeledMultiSelectDropdownWithHelp(
+                    label = "Test Result",
+                    value = selectedOptions.joinToString(", "),
+                    options = binFullSensorTestResults,
+                    selectedOptions = selectedOptions,
+                    onSelectionChange = { newSelectedOptions ->
+                        viewModel.setBinFullSensorTestResult(
+                            newSelectedOptions
+                        )
+                    },
+                    helpText = "Select one or more items from the dropdown.",
+                    isNAToggleEnabled = false
+                )
+
+                LabeledTriStateSwitchWithHelp(
+                    label = "Fault Latched?",
+                    currentState = binFullSensorLatched,
+                    onStateChange = { newState -> viewModel.setBinFullSensorLatched(newState) },
+                    helpText = "Is the fault output latched, or does it clear automatically?",
+                    isNAToggleEnabled = false
+                )
+
+                LabeledTriStateSwitchWithHelp(
+                    label = "Fault Controlled Restart?",
+                    currentState = binFullSensorCR,
+                    onStateChange = { newState -> viewModel.setBinFullSensorCR(newState) },
+                    helpText = "Is the fault output latched, or does it clear automatically?",
                     isNAToggleEnabled = false
                 )
             }
-            val selectedOptions by viewModel.binFullSensorTestResult.collectAsState()
 
-            LabeledMultiSelectDropdownWithHelp(
-                label = "Test Result",
-                value = selectedOptions.joinToString(", "),
-                options = binFullSensorTestResults,
-                selectedOptions = selectedOptions,
-                onSelectionChange =  { newSelectedOptions -> viewModel.setBinFullSensorTestResult(newSelectedOptions) },
-                helpText = "Select one or more items from the dropdown.",
+            Spacer(modifier = Modifier.height(16.dp))
+
+            LabeledTextFieldWithHelp(
+                label = "Engineer Comments",
+                value = binFullSensorEngineerNotes,
+                onValueChange = { newValue -> viewModel.setBinFullSensorEngineerNotes(newValue) },
+                helpText = "Enter any notes relevant to this section",
                 isNAToggleEnabled = false
             )
 
-            LabeledTriStateSwitchWithHelp(
-                label = "Fault Latched?",
-                currentState = binFullSensorLatched,
-                onStateChange = { newState -> viewModel.setBinFullSensorLatched(newState) },
-                helpText = "Is the fault output latched, or does it clear automatically?",
-                isNAToggleEnabled = false
-            )
-
-            LabeledTriStateSwitchWithHelp(
-                label = "Fault Controlled Restart?",
-                currentState = binFullSensorCR,
-                onStateChange = { newState -> viewModel.setBinFullSensorCR(newState) },
-                helpText = "Is the fault output latched, or does it clear automatically?",
-                isNAToggleEnabled = false
-            )
+            Spacer(modifier = Modifier.height(16.dp))
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        LabeledTextFieldWithHelp(
-            label = "Engineer Comments",
-            value = binFullSensorEngineerNotes,
-            onValueChange = { newValue -> viewModel.setBinFullSensorEngineerNotes(newValue) },
-            helpText = "Enter any notes relevant to this section",
-            isNAToggleEnabled = false
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
     }
 }

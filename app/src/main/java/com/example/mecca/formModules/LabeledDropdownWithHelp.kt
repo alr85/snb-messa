@@ -4,6 +4,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -14,13 +15,16 @@ import com.example.mecca.formModules.inputs.SimpleDropdown
 fun LabeledDropdownWithHelp(
     label: String,
     options: List<String>,
-    selectedOption: String?,
+    selectedOption: String?,                 // nullable is fine
     onSelectionChange: (String) -> Unit,
     helpText: String,
     isNAToggleEnabled: Boolean = true
 ) {
     var showHelpDialog by remember { mutableStateOf(false) }
-    var isDisabled by remember { mutableStateOf(false) }
+
+    // Disabled iff the model says "N/A"
+    var isDisabled by remember { mutableStateOf(selectedOption == "N/A") }
+    LaunchedEffect(selectedOption) { isDisabled = (selectedOption == "N/A") }
 
     FormRowWrapper(
         label = label,
@@ -28,8 +32,9 @@ fun LabeledDropdownWithHelp(
         isDisabled = isDisabled,
         onNaClick = if (isNAToggleEnabled) {
             {
-                isDisabled = !isDisabled
-                onSelectionChange(if (isDisabled) "N/A" else "")
+                val next = !isDisabled
+                isDisabled = next
+                onSelectionChange(if (next) "N/A" else "")
             }
         } else null,
         onHelpClick = { showHelpDialog = true }
@@ -37,7 +42,7 @@ fun LabeledDropdownWithHelp(
         SimpleDropdown(
             options = options,
             selectedOption = selectedOption,
-            onSelectionChange = onSelectionChange,
+            onSelectionChange = { if (!disabled) onSelectionChange(it) },
             isDisabled = disabled
         )
     }
@@ -48,13 +53,12 @@ fun LabeledDropdownWithHelp(
             title = { Text(label) },
             text = { Text(helpText) },
             confirmButton = {
-                TextButton(onClick = { showHelpDialog = false }) {
-                    Text("OK")
-                }
+                TextButton(onClick = { showHelpDialog = false }) { Text("OK") }
             }
         )
     }
 }
+
 
 
 //@Composable

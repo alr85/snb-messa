@@ -96,6 +96,9 @@ fun CalMetalDetectorConveyorComplianceConfirmation(
             helpText = "If the achieved sensitivities comply with the M&S code of practice sensitivity requirements, select Yes. Otherwise, select No."
         )
 
+
+
+
         LabeledTriStateSwitchWithHelp(
             label = "Essential Compliance",
             currentState = essentialRequirementCompliance,

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -16,11 +17,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.mecca.CalibrationBanner
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateDetectionSettingPvResult
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelpEdit
+import com.example.mecca.formModules.LabeledThreeOptionRadioWithHelp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,25 +79,18 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
                 detectionSetting8label.isNotBlank() &&
                 sensitivityAccessRestriction.isNotBlank()
 
+    Column(modifier = Modifier.fillMaxSize()) {
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(scrollState)
-    ) {
-        // Display the consistent banner at the top
         CalibrationBanner(
             progress = progress,
             viewModel = viewModel
         )
 
-        // Navigation Buttons
         CalibrationNavigationButtons(
             onPreviousClick = { viewModel.updateDetectionSettingsAsFound()
-                              viewModel.updateDetectionSettingLabels()},
+                viewModel.updateDetectionSettingLabels()},
             onCancelClick = { viewModel.updateDetectionSettingsAsFound()
-                             viewModel.updateDetectionSettingLabels()},
+                viewModel.updateDetectionSettingLabels()},
             onNextClick = {
                 viewModel.updateDetectionSettingLabels()
                 viewModel.updateDetectionSettingsAsFound()
@@ -108,95 +104,126 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
             },
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
         CalibrationHeader("Detection Settings (As Found)")
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 16.dp)
+                .verticalScroll(scrollState)
+                .imePadding()
+        ) {
 
-        LabeledTextFieldWithHelp(
-            label = "Access Restriction:",
-            value = sensitivityAccessRestriction,
-            onValueChange = { newValue -> viewModel.setSensitivityAccessRestriction(newValue) },
-            helpText = "Enter details about how the sensitivity settings are restricted e.g. 'Password Protected'",
-        )
-
-        LabeledTextFieldWithHelpEdit(
-            label = detectionSetting1label,
-            onLabelChange = { newLabel -> viewModel.setDetectionSetting1Label(newLabel) },
-            value = detectionSettingAsFound1,
-            onValueChange = { newValue -> viewModel.setDetectionSettingAsFound1(newValue) },
-            helpText = "Enter the value of this detection setting. To change the label, click on the label text."
-        )
-
-        LabeledTextFieldWithHelpEdit(
-            label = detectionSetting2label,
-            onLabelChange = { newLabel -> viewModel.setDetectionSetting2Label(newLabel) },
-            value = detectionSettingAsFound2,
-            onValueChange = { newValue -> viewModel.setDetectionSettingAsFound2(newValue) },
-            helpText = "Enter the value of this detection setting. To change the label, click on the label text."
-        )
-
-        LabeledTextFieldWithHelpEdit(
-            label = detectionSetting3label,
-            onLabelChange = { newLabel -> viewModel.setDetectionSetting3Label(newLabel) },
-            value = detectionSettingAsFound3,
-            onValueChange = { newValue -> viewModel.setDetectionSettingAsFound3(newValue) },
-            helpText = "Enter the value of this detection setting. To change the label, click on the label text."
-        )
-
-        LabeledTextFieldWithHelpEdit(
-            label = detectionSetting4label,
-            onLabelChange = { newLabel -> viewModel.setDetectionSetting4Label(newLabel) },
-            value = detectionSettingAsFound4,
-            onValueChange = { newValue -> viewModel.setDetectionSettingAsFound4(newValue) },
-            helpText = "Enter the value of this detection setting. To change the label, click on the label text."
-        )
-
-        LabeledTextFieldWithHelpEdit(
-            label = detectionSetting5label,
-            onLabelChange = { newLabel -> viewModel.setDetectionSetting5Label(newLabel) },
-            value = detectionSettingAsFound5,
-            onValueChange = { newValue -> viewModel.setDetectionSettingAsFound5(newValue) },
-            helpText = "Enter the value of this detection setting. To change the label, click on the label text."
-        )
-
-        LabeledTextFieldWithHelpEdit(
-            label = detectionSetting6label,
-            onLabelChange = { newLabel -> viewModel.setDetectionSetting6Label(newLabel) },
-            value = detectionSettingAsFound6,
-            onValueChange = { newValue -> viewModel.setDetectionSettingAsFound6(newValue) },
-            helpText = "Enter the value of this detection setting. To change the label, click on the label text."
-        )
-
-        LabeledTextFieldWithHelpEdit(
-            label = detectionSetting7label,
-            onLabelChange = { newLabel -> viewModel.setDetectionSetting7Label(newLabel) },
-            value = detectionSettingAsFound7,
-            onValueChange = { newValue -> viewModel.setDetectionSettingAsFound7(newValue) },
-            helpText = "Enter the value of this detection setting. To change the label, click on the label text."
-        )
-
-        LabeledTextFieldWithHelpEdit(
-            label = detectionSetting8label,
-            onLabelChange = { newLabel -> viewModel.setDetectionSetting8Label(newLabel) },
-            value = detectionSettingAsFound8,
-            onValueChange = { newValue -> viewModel.setDetectionSettingAsFound8(newValue) },
-            helpText = "Enter the value of this detection setting. To change the label, click on the label text."
-        )
+            Spacer(modifier = Modifier.height(6.dp))
 
 
+            LabeledTextFieldWithHelpEdit(
+                label = detectionSetting1label,
+                onLabelChange = { newLabel -> viewModel.setDetectionSetting1Label(newLabel) },
+                value = detectionSettingAsFound1,
+                onValueChange = { newValue -> viewModel.setDetectionSettingAsFound1(newValue) },
+                helpText = "Enter the value of this detection setting. To change the label, click on the label text."
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            LabeledTextFieldWithHelpEdit(
+                label = detectionSetting2label,
+                onLabelChange = { newLabel -> viewModel.setDetectionSetting2Label(newLabel) },
+                value = detectionSettingAsFound2,
+                onValueChange = { newValue -> viewModel.setDetectionSettingAsFound2(newValue) },
+                helpText = "Enter the value of this detection setting. To change the label, click on the label text."
+            )
 
-        LabeledTextFieldWithHelp(
-            label = "Engineer Notes",
-            value = viewModel.detectionSettingAsFoundEngineerNotes.value,
-            onValueChange = { newValue -> viewModel.setDetectionSettingAsFoundEngineerNotes(newValue) },
-            helpText = "Enter any notes relevant to this section",
-            isNAToggleEnabled = false
-        )
+            LabeledTextFieldWithHelpEdit(
+                label = detectionSetting3label,
+                onLabelChange = { newLabel -> viewModel.setDetectionSetting3Label(newLabel) },
+                value = detectionSettingAsFound3,
+                onValueChange = { newValue -> viewModel.setDetectionSettingAsFound3(newValue) },
+                helpText = "Enter the value of this detection setting. To change the label, click on the label text."
+            )
+
+            LabeledTextFieldWithHelpEdit(
+                label = detectionSetting4label,
+                onLabelChange = { newLabel -> viewModel.setDetectionSetting4Label(newLabel) },
+                value = detectionSettingAsFound4,
+                onValueChange = { newValue -> viewModel.setDetectionSettingAsFound4(newValue) },
+                helpText = "Enter the value of this detection setting. To change the label, click on the label text."
+            )
+
+            LabeledTextFieldWithHelpEdit(
+                label = detectionSetting5label,
+                onLabelChange = { newLabel -> viewModel.setDetectionSetting5Label(newLabel) },
+                value = detectionSettingAsFound5,
+                onValueChange = { newValue -> viewModel.setDetectionSettingAsFound5(newValue) },
+                helpText = "Enter the value of this detection setting. To change the label, click on the label text."
+            )
+
+            LabeledTextFieldWithHelpEdit(
+                label = detectionSetting6label,
+                onLabelChange = { newLabel -> viewModel.setDetectionSetting6Label(newLabel) },
+                value = detectionSettingAsFound6,
+                onValueChange = { newValue -> viewModel.setDetectionSettingAsFound6(newValue) },
+                helpText = "Enter the value of this detection setting. To change the label, click on the label text."
+            )
+
+            LabeledTextFieldWithHelpEdit(
+                label = detectionSetting7label,
+                onLabelChange = { newLabel -> viewModel.setDetectionSetting7Label(newLabel) },
+                value = detectionSettingAsFound7,
+                onValueChange = { newValue -> viewModel.setDetectionSettingAsFound7(newValue) },
+                helpText = "Enter the value of this detection setting. To change the label, click on the label text."
+            )
+
+            LabeledTextFieldWithHelpEdit(
+                label = detectionSetting8label,
+                onLabelChange = { newLabel -> viewModel.setDetectionSetting8Label(newLabel) },
+                value = detectionSettingAsFound8,
+                onValueChange = { newValue -> viewModel.setDetectionSettingAsFound8(newValue) },
+                helpText = "Enter the value of this detection setting. To change the label, click on the label text."
+            )
+
+
+            LabeledTextFieldWithHelp(
+                label = "Access Restriction:",
+                value = sensitivityAccessRestriction,
+                onValueChange = { newValue -> viewModel.setSensitivityAccessRestriction(newValue)
+                                viewModel.autoUpdateDetectionSettingPvResult()},
+                helpText = "Enter details about how the sensitivity settings are restricted e.g. 'Password Protected'",
+            )
+
+            if (viewModel.pvRequired.value) {
+                LabeledThreeOptionRadioWithHelp(
+                    label = "P.V. Result",
+                    value = viewModel.detectionSettingPvResult.value,
+                    onValueChange = { viewModel.setDetectionSettingPvResult(it) },
+                    helpText = """
+                        If there is a value entered in 'Access Restriction', 'P.V. Result' will automatically set to 'Pass'.
+                        
+                        If there is no value entered in 'Access Restriction', 'P.V. Result' will automatically set to 'Fail'
+                        
+                        If 'Access Restriction' is set to 'N/A', 'P.V. Result' will automatically set to 'N/A'.
+                        
+                        You can manually select Pass, Fail, or N/A as appropriate.
+                        
+                        """.trimIndent()
+                )
+
+            }
+
+
+            LabeledTextFieldWithHelp(
+                label = "Engineer Notes",
+                value = viewModel.detectionSettingAsFoundEngineerNotes.value,
+                onValueChange = { newValue -> viewModel.setDetectionSettingAsFoundEngineerNotes(newValue) },
+                helpText = "Enter any notes relevant to this section",
+                isNAToggleEnabled = false
+            )
+
+            Spacer(modifier = Modifier.height(60.dp))
+
+
+        }
 
 
     }
+
 }

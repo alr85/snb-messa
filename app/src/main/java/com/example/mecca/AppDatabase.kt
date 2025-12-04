@@ -1,36 +1,49 @@
 package com.example.mecca
 
+// ADD: import your three new entity classes
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.example.mecca.DAOs.ConveyorDao
 import com.example.mecca.DAOs.CustomerDAO
+import com.example.mecca.DAOs.FreefallDao
 import com.example.mecca.DAOs.MdModelsDAO
 import com.example.mecca.DAOs.MetalDetectorConveyorCalibrationDAO
 import com.example.mecca.DAOs.MetalDetectorSystemsDAO
+import com.example.mecca.DAOs.PipelineDao
 import com.example.mecca.DAOs.SystemTypeDAO
 import com.example.mecca.DAOs.UserDao
+import com.example.mecca.dataClasses.ConveyorRetailerSensitivitiesEntity
 import com.example.mecca.dataClasses.CustomerLocal
+import com.example.mecca.dataClasses.FreefallThroatRetailerSensitivitiesEntity
 import com.example.mecca.dataClasses.MdModelsLocal
 import com.example.mecca.dataClasses.MdSystemLocal
 import com.example.mecca.dataClasses.MetalDetectorConveyorCalibrationLocal
+import com.example.mecca.dataClasses.PipelineRetailerSensitivitiesEntity
 import com.example.mecca.dataClasses.SystemTypeLocal
 import com.example.mecca.dataClasses.UserEntity
 
+@Database(
+    entities = [
+        CustomerLocal::class,
+        UserEntity::class,
+        MdModelsLocal::class,
+        MdSystemLocal::class,
+        MetalDetectorConveyorCalibrationLocal::class,
+        SystemTypeLocal::class,
+        ConveyorRetailerSensitivitiesEntity::class,
+        FreefallThroatRetailerSensitivitiesEntity::class,
+        PipelineRetailerSensitivitiesEntity::class
 
-@Database(entities = [CustomerLocal::class,
-    UserEntity::class,
-    MdModelsLocal::class,
-    MdSystemLocal::class,
-    MetalDetectorConveyorCalibrationLocal::class,
-    SystemTypeLocal::class],
-    version = 38, // Increment the version if needed
-    exportSchema = false)
-
-@TypeConverters(Converters::class) // Add your Converters here
-
+    ],
+    version = 46,
+    exportSchema = false
+)
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
+
     abstract fun userDao(): UserDao
     abstract fun customerDao(): CustomerDAO
     abstract fun mdModelDao(): MdModelsDAO
@@ -38,23 +51,29 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun systemTypeDAO(): SystemTypeDAO
     abstract fun metalDetectorConveyorCalibrationDAO(): MetalDetectorConveyorCalibrationDAO
 
+    abstract fun conveyorDao(): ConveyorDao
+    abstract fun freefallDao(): FreefallDao
+    abstract fun pipelineDao(): PipelineDao
 
     companion object {
-        @Volatile
-        private var INSTANCE: AppDatabase? = null
+        @Volatile private var INSTANCE: AppDatabase? = null
 
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
+                val db = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "app_database"
                 )
-                    .fallbackToDestructiveMigration(true)  // Handles migrations if the database schema changes
+                    .fallbackToDestructiveMigration(true)
                     .build()
-                INSTANCE = instance
-                instance
+
+                INSTANCE = db
+
+                db
             }
         }
     }
+
+
 }

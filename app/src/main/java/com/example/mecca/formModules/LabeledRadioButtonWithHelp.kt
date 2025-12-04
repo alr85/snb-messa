@@ -25,55 +25,52 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun LabeledRadioButtonWithHelp(
     label: String,
-    value: Boolean?, // true = Yes, false = No, null = unset
+    value: Boolean?,                // true = Yes, false = No, null = unset
     onValueChange: (Boolean) -> Unit,
-    helpText: String
+    helpText: String,
+    isDisabled: Boolean = false     // parent can pass this
 ) {
     var showHelpDialog by remember { mutableStateOf(false) }
 
     FormRowWrapper(
         label = label,
-        onNaClick = null, // no N/A button for radio inputs
+        isDisabled = isDisabled,
+        onNaClick = null,
         onHelpClick = { showHelpDialog = true }
-    ) { _ ->
-
+    ) { disabled ->
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Yes option
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RadioButton(
                     selected = value == true,
-                    onClick = { onValueChange(true) },
+                    onClick = { if (!disabled) onValueChange(true) },
+                    enabled = !disabled,
                     colors = RadioButtonDefaults.colors(
-                        selectedColor = Color.Red,
-                        unselectedColor = Color.Gray
+                        selectedColor = MaterialTheme.colorScheme.primary,
+                        unselectedColor = if (disabled) Color.Gray else Color.Gray,
+                        disabledSelectedColor = Color.Gray,
+                        disabledUnselectedColor = Color.Gray
                     )
                 )
-                Text(
-                    text = "Yes",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(start = 4.dp)
-                )
+                Text("Yes", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 4.dp), color = if (disabled) Color.Gray else Color.Unspecified)
             }
 
-            // No option
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RadioButton(
                     selected = value == false,
-                    onClick = { onValueChange(false) },
+                    onClick = { if (!disabled) onValueChange(false) },
+                    enabled = !disabled,
                     colors = RadioButtonDefaults.colors(
-                        selectedColor = Color.Red,
-                        unselectedColor = Color.Gray
+                        selectedColor = MaterialTheme.colorScheme.primary,
+                        unselectedColor = if (disabled) Color.Gray else Color.Gray,
+                        disabledSelectedColor = Color.Gray,
+                        disabledUnselectedColor = Color.Gray
                     )
                 )
-                Text(
-                    text = "No",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(start = 4.dp)
-                )
+                Text("No", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 4.dp), color = if (disabled) Color.Gray else Color.Unspecified)
             }
         }
     }
@@ -83,11 +80,7 @@ fun LabeledRadioButtonWithHelp(
             onDismissRequest = { showHelpDialog = false },
             title = { Text(text = label) },
             text = { Text(helpText) },
-            confirmButton = {
-                TextButton(onClick = { showHelpDialog = false }) {
-                    Text("OK")
-                }
-            }
+            confirmButton = { TextButton(onClick = { showHelpDialog = false }) { Text("OK") } }
         )
     }
 }

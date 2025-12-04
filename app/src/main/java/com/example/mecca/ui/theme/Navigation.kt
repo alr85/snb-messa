@@ -6,10 +6,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.mecca.AppDatabase
-import com.example.mecca.Repositories.CustomerRepository
-import com.example.mecca.Repositories.MetalDetectorModelsRepository
-import com.example.mecca.Repositories.MetalDetectorSystemsRepository
-import com.example.mecca.Repositories.SystemTypeRepository
+import com.example.mecca.repositories.CustomerRepository
+import com.example.mecca.repositories.MetalDetectorModelsRepository
+import com.example.mecca.repositories.MetalDetectorSystemsRepository
+import com.example.mecca.repositories.RetailerSensitivitiesRepository
+import com.example.mecca.repositories.SystemTypeRepository
 import com.example.mecca.RetrofitClient
 import com.example.mecca.UserViewModel
 import com.example.mecca.screens.AboutAppScreen
@@ -32,6 +33,8 @@ fun AppNavGraph(navController: NavHostController, db: AppDatabase, userViewModel
     val repositoryMdModels = MetalDetectorModelsRepository(apiService, db)
     val repositoryMdSystems = MetalDetectorSystemsRepository(apiService, db)
     val repositorySystemTypes = SystemTypeRepository(apiService, db)
+    val repositoryDetectionLevels = RetailerSensitivitiesRepository(apiService, db)
+
 
     NavHost(navController = navController, startDestination = "serviceHome") {
 
@@ -45,7 +48,8 @@ fun AppNavGraph(navController: NavHostController, db: AppDatabase, userViewModel
                 repositoryCustomer,
                 repositoryMdModels,
                 repositoryMdSystems,
-                repositorySystemTypes
+                repositorySystemTypes,
+                repositoryDetectionLevels
             )
         }
         composable("aboutApp") { AboutAppScreen(navController) }

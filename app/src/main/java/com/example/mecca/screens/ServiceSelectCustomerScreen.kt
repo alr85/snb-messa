@@ -28,7 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.example.mecca.AppDatabase
 import com.example.mecca.dataClasses.CustomerLocal
-import com.example.mecca.Repositories.CustomerRepository
+import com.example.mecca.repositories.CustomerRepository
 
 @Composable
 fun ServiceSelectCustomerScreen(navController: NavHostController, db: AppDatabase, repository: CustomerRepository) {

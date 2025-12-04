@@ -1,6 +1,5 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
-import com.example.mecca.CalibrationBanner
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +15,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
@@ -57,15 +57,8 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
                 sensitivityAsFoundStainlessPeakSignal.isNotBlank() &&
                 productPeakSignalAsFound.isNotBlank()
 
+    Column(modifier = Modifier.fillMaxSize()) {
 
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(scrollState)
-    ) {
-        // Display the consistent banner at the top
         CalibrationBanner(
             progress = progress,
             viewModel = viewModel
@@ -79,47 +72,25 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
             onNextClick = {
                 navController.navigate("CalMetalDetectorConveyorFerrousTest")
                 viewModel.updateSensitivitiesAsFound()
-                          },
+            },
             isNextEnabled = isNextStepEnabled,
             isFirstStep = false, // Indicates this is the first step and disables the Previous button
             navController = navController,
             viewModel = viewModel,
             onSaveAndExitClick = {
                 //viewModel.saveCalibrationData() // Custom save logic here
-            },
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
+            })
 
         CalibrationHeader("Sensitivities (As Found)")
 
-        Spacer(modifier = Modifier.height(20.dp))
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(scrollState)
+    ) {
 
 
-//        LabeledTextFieldWithHelp(
-//            label = "Ferrous (mm)",
-//            value = sensitivityAsFoundFerrous,
-//            onValueChange = { newValue -> viewModel.setSensitivityAsFoundFerrous(newValue) },
-//            helpText = "Enter the 'As Found' Ferrous sensitivity",
-//            keyboardType = KeyboardType.Number
-//        )
-
-//        LabeledTextFieldWithHelp(
-//            label = "Non Ferrous (mm)",
-//            value = sensitivityAsFoundNonFerrous,
-//            onValueChange = { newValue -> viewModel.setSensitivityAsFoundNonFerrous(newValue) },
-//            helpText = "Enter the 'As Found' Non Ferrous sensitivity",
-//            keyboardType = KeyboardType.Number
-//        )
-//
-//        LabeledTextFieldWithHelp(
-//            label = "Stainless Steel (mm)",
-//            value = sensitivityAsFoundStainless,
-//            onValueChange = { newValue -> viewModel.setSensitivityAsFoundStainless(newValue) },
-//            helpText = "Enter the 'As Found' Stainless Steel sensitivity",
-//            keyboardType = KeyboardType.Number
-//        )
-//
         LabeledTextFieldWithHelp(
             label = "Product Peak Signal",
             value = productPeakSignalAsFound,
@@ -132,10 +103,10 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
             firstInputLabel = "Fe",
             firstInputValue = sensitivityAsFoundFerrous,
             onFirstInputValueChange = { newValue -> viewModel.setSensitivityAsFoundFerrous(newValue) },
-            secondInputLabel = "Peak Signal",
+            secondInputLabel = "Signal L/M/T",
             secondInputValue = sensitivityAsFoundFerrousPeakSignal,
             onSecondInputValueChange = { newValue -> viewModel.setSensitivityAsFoundFerrousPeakSignal(newValue) },
-            helpText = "Enter the 'As Found' Ferrous sensitivity and peak signal",
+            helpText = "Enter the 'As Found' Ferrous sensitivity and peak signals with the test samples in the Leading / Middle / Trailing areas of the test package",
             firstInputKeyboardType = KeyboardType.Text,
             secondInputKeyboardType = KeyboardType.Text,
             isNAToggleEnabled = true
@@ -148,10 +119,10 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
             firstInputLabel = "Non-Fe",
             firstInputValue = sensitivityAsFoundNonFerrous,
             onFirstInputValueChange = { newValue -> viewModel.setSensitivityAsFoundNonFerrous(newValue) },
-            secondInputLabel = "Peak Signal",
+            secondInputLabel = "Signal L/M/T",
             secondInputValue = sensitivityAsFoundNonFerrousPeakSignal,
             onSecondInputValueChange = { newValue -> viewModel.setSensitivityAsFoundNonFerrousPeakSignal(newValue) },
-            helpText = "Enter the 'As Found' Non-Ferrous sensitivity and peak signal",
+            helpText = "Enter the 'As Found' Non-Ferrous sensitivity and peak signals with the test samples in the Leading / Middle / Trailing areas of the test package",
             firstInputKeyboardType = KeyboardType.Text,
             secondInputKeyboardType = KeyboardType.Text,
             isNAToggleEnabled = true
@@ -163,10 +134,10 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
             firstInputLabel = "S/Steel",
             firstInputValue = sensitivityAsFoundStainless,
             onFirstInputValueChange = { newValue -> viewModel.setSensitivityAsFoundStainless(newValue) },
-            secondInputLabel = "Peak Signal",
+            secondInputLabel = "Signal L/M/T",
             secondInputValue = sensitivityAsFoundStainlessPeakSignal,
             onSecondInputValueChange = { newValue -> viewModel.setSensitivityAsFoundStainlessPeakSignal(newValue) },
-            helpText = "Enter the 'As Found' Stainless Steel sensitivity and peak signal",
+            helpText = "Enter the 'As Found' Stainless Steel sensitivity and peak signals with the test samples in the Leading / Middle / Trailing areas of the test package",
             firstInputKeyboardType = KeyboardType.Text,
             secondInputKeyboardType = KeyboardType.Text,
             isNAToggleEnabled = true
@@ -191,5 +162,6 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
         Spacer(modifier = Modifier.height(16.dp))
 
 
+        }
     }
 }

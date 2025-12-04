@@ -1,6 +1,5 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
-import com.example.mecca.CalibrationBanner
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
@@ -47,10 +47,14 @@ fun CalMetalDetectorConveyorDetectNotification(
 
     val detectNotificationTestResults = listOf(
         "No Result",
-        "Audible Notification",
-        "Visual Notification",
-        "On-Screen Notification",
-        "Belt Stops",
+        "Audible Notification (Latched)",
+        "Visual Notification (Latched)",
+        "On-Screen Notification (Latched)",
+        "Belt Stops (Latched)",
+        "Audible Notification (Not Latched)",
+        "Visual Notification (Not Latched)",
+        "On-Screen Notification (Not Latched)",
+        "Belt Stops (Not Latched)",
         "In-feed Belt Stops",
         "Out-feed Belt Stops",
         "Other"

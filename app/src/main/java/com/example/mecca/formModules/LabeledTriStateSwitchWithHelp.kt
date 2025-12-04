@@ -9,6 +9,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,13 +22,27 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun LabeledTriStateSwitchWithHelp(
     label: String,
-    currentState: YesNoState,
+    currentState: YesNoState = YesNoState.NO,
     onStateChange: (YesNoState) -> Unit,
     helpText: String,
     isNAToggleEnabled: Boolean = true
 ) {
     var showHelpDialog by remember { mutableStateOf(false) }
+
+    // Local mirror of state so the UI is responsive immediately
+    var localState by remember {
+        mutableStateOf(
+            if (currentState == YesNoState.UNSPECIFIED) YesNoState.NO else currentState
+        )
+    }
+    // Local disabled flag, just like your dropdown+text component
     var isDisabled by remember { mutableStateOf(currentState == YesNoState.NA) }
+
+    // Keep locals in sync if parent changes state externally (restore, validation, etc.)
+    LaunchedEffect(currentState) {
+        isDisabled = currentState == YesNoState.NA
+        localState = if (currentState == YesNoState.UNSPECIFIED) YesNoState.NO else currentState
+    }
 
     FormRowWrapper(
         label = label,
@@ -35,39 +50,42 @@ fun LabeledTriStateSwitchWithHelp(
         isDisabled = isDisabled,
         onNaClick = if (isNAToggleEnabled) {
             {
+                // Toggle NA <-> NO exactly like your other module toggles "N/A" <-> ""
                 isDisabled = !isDisabled
                 val newState = if (isDisabled) YesNoState.NA else YesNoState.NO
+                localState = newState
                 onStateChange(newState)
             }
         } else null,
         onHelpClick = { showHelpDialog = true }
-    ) { disabled ->
+    ) { disabledFromWrapper ->
 
+        // Binary switch: YES/NO only. Disabled when NA.
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Switch control
             Switch(
-                checked = currentState == YesNoState.YES,
-                onCheckedChange = {
-                    if (!disabled) {
-                        onStateChange(if (it) YesNoState.YES else YesNoState.NO)
+                checked = localState == YesNoState.YES,
+                onCheckedChange = { checked ->
+                    if (!disabledFromWrapper) {
+                        val newState = if (checked) YesNoState.YES else YesNoState.NO
+                        localState = newState
+                        onStateChange(newState)
                     }
                 },
-                enabled = !disabled
+                enabled = !disabledFromWrapper
             )
 
-            // Text label for the state
             Text(
-                text = when (currentState) {
+                text = when (localState) {
                     YesNoState.YES -> "Yes"
                     YesNoState.NO -> "No"
                     YesNoState.NA -> "N/A"
                     YesNoState.UNSPECIFIED -> "Unspecified"
                 },
-                color = if (disabled) Color.Gray else Color.Black,
+                color = if (disabledFromWrapper) Color.Gray else Color.Black,
                 style = MaterialTheme.typography.bodyMedium
             )
         }
@@ -78,117 +96,8 @@ fun LabeledTriStateSwitchWithHelp(
             onDismissRequest = { showHelpDialog = false },
             title = { Text(label) },
             text = { Text(helpText) },
-            confirmButton = {
-                TextButton(onClick = { showHelpDialog = false }) {
-                    Text("OK")
-                }
-            }
+            confirmButton = { TextButton(onClick = { showHelpDialog = false }) { Text("OK") } }
         )
     }
 }
-
-//@Composable
-//fun LabeledTriStateSwitchWithHelp(
-//    label: String,
-//    currentState: YesNoState,
-//    onStateChange: (YesNoState) -> Unit,
-//    helpText: String,
-//    isNAToggleEnabled: Boolean = true // New parameter to control the "N/A" toggle
-//) {
-//    var showHelpDialog by remember { mutableStateOf(false) }
-//    var isDisabled by remember { mutableStateOf(false) }
-//
-//    Row(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(8.dp),
-//        verticalAlignment = Alignment.CenterVertically
-//    ) {
-//        // Label text takes up more space
-//        Text(
-//            text = label,
-//            style = MaterialTheme.typography.labelLarge,
-//            maxLines = 1,
-//            modifier = Modifier
-//                .weight(3f)
-//                .padding(end = 8.dp)
-//        )
-//
-//        // Tri-state switch control
-//        Switch(
-//            checked = currentState == YesNoState.YES,
-//            onCheckedChange = {
-//                if (!isDisabled) {
-//                    onStateChange(if (it) YesNoState.YES else YesNoState.NO)
-//                }
-//            },
-//            enabled = !isDisabled
-//        )
-//
-//        Spacer(modifier = Modifier.width(8.dp))
-//
-//        // Text to indicate current state
-//        Text(
-//            text = when (currentState) {
-//                YesNoState.YES -> "Yes"
-//                YesNoState.NO -> "No"
-//                YesNoState.NA -> "N/A"
-//                YesNoState.UNSPECIFIED -> "Unspecified"
-//            },
-//            color = if (isDisabled) Color.Gray else Color.Black
-//        )
-//
-//        Spacer(modifier = Modifier.weight(4f))
-//
-//        // Button to toggle between "N/A" and re-enable the switch
-//
-//        if (isNAToggleEnabled){
-//
-//            TextButton(
-//                onClick = {
-//                    if (isDisabled) {
-//                        onStateChange(YesNoState.NO) // Reset to a default editable state
-//                        isDisabled = false
-//                    } else {
-//                        onStateChange(YesNoState.NA) // Set "N/A" and disable the switch
-//                        isDisabled = true
-//                    }
-//                },
-//                modifier = Modifier.weight(1f)
-//            ) {
-//                Text(if (isDisabled) "Edit" else "N/A")
-//            }
-//
-//        }else {
-//            // Spacer to occupy the space of the button if the toggle is not enabled
-//            Spacer(modifier = Modifier.weight(1f))
-//        }
-//
-//
-//        // Help IconButton
-//        IconButton(
-//            onClick = { showHelpDialog = true },
-//            modifier = Modifier.weight(0.5f)
-//        ) {
-//            Icon(
-//                imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
-//                contentDescription = "Help for $label"
-//            )
-//        }
-//    }
-//
-//    // Show Help Dialog
-//    if (showHelpDialog) {
-//        AlertDialog(
-//            onDismissRequest = { showHelpDialog = false },
-//            title = { Text(text = label) },
-//            text = { Text(text = helpText) },
-//            confirmButton = {
-//                TextButton(onClick = { showHelpDialog = false }) {
-//                    Text("OK")
-//                }
-//            }
-//        )
-//    }
-//}
 

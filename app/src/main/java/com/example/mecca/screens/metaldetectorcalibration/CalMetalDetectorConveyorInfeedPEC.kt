@@ -1,6 +1,5 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
-import com.example.mecca.CalibrationBanner
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
@@ -86,18 +86,11 @@ fun CalMetalDetectorConveyorInfeedPEC(
                     infeedSensorLatched != YesNoState.NA &&
                     infeedSensorCR != YesNoState.NA
         }
+
         else -> false // Default to false for safety
     }
 
-
-
-    // Column layout
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(scrollState)
-    ) {
+    Column(modifier = Modifier.fillMaxSize()) {
         CalibrationBanner(
             progress = progress,
             viewModel = viewModel
@@ -109,7 +102,8 @@ fun CalMetalDetectorConveyorInfeedPEC(
             onCancelClick = { viewModel.updateInfeedSensor() },
             onNextClick = {
                 viewModel.updateInfeedSensor()
-                navController.navigate("CalMetalDetectorConveyorRejectConfirmPEC") },
+                navController.navigate("CalMetalDetectorConveyorRejectConfirmPEC")
+            },
             isNextEnabled = isNextStepEnabled,
             isFirstStep = false,
             navController = navController,
@@ -117,104 +111,121 @@ fun CalMetalDetectorConveyorInfeedPEC(
             onSaveAndExitClick = {
                 viewModel.updateInfeedSensor()
             },
-        )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            )
+        CalibrationHeader("Failsafe Tests - Photogating Sensor")
 
-        CalibrationHeader("Compliance Checks - Infeed Sensor")
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        LabeledTriStateSwitchAndTextInputWithHelp(
-            label = "In-feed sensor fitted?",
-            currentState = infeedSensorFitted,
-            onStateChange = { newState ->
-                viewModel.setInfeedSensorFitted(newState)
-                if (newState == YesNoState.NA  || newState == YesNoState.NO) {
-                    // Set all relevant fields to N/A
-                    viewModel.setInfeedSensorDetail("N/A")
-                    viewModel.setInfeedSensorTestMethod("N/A")
-                    viewModel.setInfeedSensorTestMethodOther("N/A")
-                    viewModel.setInfeedSensorTestResult(emptyList())
-                    viewModel.setInfeedSensorLatched(YesNoState.NA)
-                    viewModel.setInfeedSensorCR(YesNoState.NA)
-                    selectedOptions = listOf("N/A")
-                } else if (newState == YesNoState.YES) {
-                    // Clear N/A from selected options when switching back to YES
-                    selectedOptions = emptyList() // Clear any selected options
-                    viewModel.setInfeedSensorTestResult(emptyList()) // Clear the result in the ViewModel as well
-                }
-            },
-            helpText = "Select if there is an in-feed/gated timer sensor fitted",
-            inputLabel = "Detail",
-            inputValue = infeedSensorDetail,
-            onInputValueChange = { newValue -> viewModel.setInfeedSensorDetail(newValue) }
-        )
+        // Column layout
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(scrollState)
+        ) {
 
 
-        // Conditionally display remaining fields if "Yes" is selected for In-feed sensor fitted
-        if (infeedSensorFitted == YesNoState.YES) {
-            LabeledDropdownWithHelp(
-                label = "Test Method",
-                options = infeedSensorTestOptions,
-                selectedOption = infeedSensorTestMethod,
-                onSelectionChange = { newSelection ->
-                    viewModel.setInfeedSensorTestMethod(newSelection)
+            LabeledTriStateSwitchAndTextInputWithHelp(
+                label = "Sensor fitted?",
+                currentState = infeedSensorFitted,
+                onStateChange = { newState ->
+                    viewModel.setInfeedSensorFitted(newState)
+                    if (newState == YesNoState.NA || newState == YesNoState.NO) {
+                        // Set all relevant fields to N/A
+                        viewModel.setInfeedSensorDetail("N/A")
+                        viewModel.setInfeedSensorTestMethod("N/A")
+                        viewModel.setInfeedSensorTestMethodOther("N/A")
+                        viewModel.setInfeedSensorTestResult(emptyList())
+                        viewModel.setInfeedSensorLatched(YesNoState.NA)
+                        viewModel.setInfeedSensorCR(YesNoState.NA)
+                        selectedOptions = listOf("N/A")
+                    } else if (newState == YesNoState.YES) {
+                        // Clear N/A from selected options when switching back to YES
+                        viewModel.setInfeedSensorDetail("")
+                        viewModel.setInfeedSensorTestMethod("")
+                        viewModel.setInfeedSensorTestMethodOther("")
+                        viewModel.setInfeedSensorTestResult(emptyList())
+                        viewModel.setInfeedSensorLatched(YesNoState.NO)
+                        viewModel.setInfeedSensorCR(YesNoState.NO)
+                        selectedOptions = emptyList() // Clear any selected options
+
+                    }
                 },
-                helpText = "Select one option from the dropdown.",
-                isNAToggleEnabled = false
+                helpText = "Select if there is an in-feed/gated timer sensor fitted",
+                inputLabel = "Detail",
+                inputValue = infeedSensorDetail,
+                onInputValueChange = { newValue -> viewModel.setInfeedSensorDetail(newValue) }
             )
 
-            if (infeedSensorTestMethod == "Other") {
-                LabeledTextFieldWithHelp(
-                    label = "Other Test Method",
-                    value = infeedSensorTestMethodOther,
-                    onValueChange = { newValue -> viewModel.setInfeedSensorTestMethodOther(newValue) },
-                    helpText = "Enter the custom test method",
+
+            // Conditionally display remaining fields if "Yes" is selected for In-feed sensor fitted
+            if (infeedSensorFitted == YesNoState.YES) {
+                LabeledDropdownWithHelp(
+                    label = "Test Method",
+                    options = infeedSensorTestOptions,
+                    selectedOption = infeedSensorTestMethod,
+                    onSelectionChange = { newSelection ->
+                        viewModel.setInfeedSensorTestMethod(newSelection)
+                    },
+                    helpText = "Select one option from the dropdown.",
+                    isNAToggleEnabled = false
+                )
+
+                if (infeedSensorTestMethod == "Other") {
+                    LabeledTextFieldWithHelp(
+                        label = "Other Test Method",
+                        value = infeedSensorTestMethodOther,
+                        onValueChange = { newValue ->
+                            viewModel.setInfeedSensorTestMethodOther(
+                                newValue
+                            )
+                        },
+                        helpText = "Enter the custom test method",
+                        isNAToggleEnabled = false
+                    )
+                }
+
+                val selectedOptions by viewModel.infeedSensorTestResult.collectAsState()
+
+                LabeledMultiSelectDropdownWithHelp(
+                    label = "Test Result",
+                    value = selectedOptions.joinToString(", "), // Display selected options as string
+                    options = infeedSensorTestResults,
+                    selectedOptions = selectedOptions,
+                    onSelectionChange = { newSelectedOptions ->
+                        viewModel.setInfeedSensorTestResult(newSelectedOptions)
+                    },
+                    helpText = "Select one or more items from the dropdown.",
+                    isNAToggleEnabled = false
+                )
+
+                LabeledTriStateSwitchWithHelp(
+                    label = "Fault Latched?",
+                    currentState = infeedSensorLatched,
+                    onStateChange = { newState -> viewModel.setInfeedSensorLatched(newState) },
+                    helpText = "Is the fault output latched, or does it clear automatically?",
+                    isNAToggleEnabled = false
+                )
+
+                LabeledTriStateSwitchWithHelp(
+                    label = "Fault Controlled Restart?",
+                    currentState = infeedSensorCR,
+                    onStateChange = { newState -> viewModel.setInfeedSensorCR(newState) },
+                    helpText = "Is the fault output latched, or does it clear automatically?",
                     isNAToggleEnabled = false
                 )
             }
 
-            val selectedOptions by viewModel.infeedSensorTestResult.collectAsState()
+            Spacer(modifier = Modifier.height(16.dp))
 
-            LabeledMultiSelectDropdownWithHelp(
-                label = "Test Result",
-                value = selectedOptions.joinToString(", "), // Display selected options as string
-                options = infeedSensorTestResults,
-                selectedOptions = selectedOptions,
-                onSelectionChange =  { newSelectedOptions ->
-                    viewModel.setInfeedSensorTestResult(newSelectedOptions) },
-                helpText = "Select one or more items from the dropdown.",
+            LabeledTextFieldWithHelp(
+                label = "Engineer Comments",
+                value = infeedSensorEngineerNotes,
+                onValueChange = { newValue -> viewModel.setInfeedSensorEngineerNotes(newValue) },
+                helpText = "Enter any notes relevant to this section",
                 isNAToggleEnabled = false
             )
 
-            LabeledTriStateSwitchWithHelp(
-                label = "Fault Latched?",
-                currentState = infeedSensorLatched,
-                onStateChange = { newState -> viewModel.setInfeedSensorLatched(newState) },
-                helpText = "Is the fault output latched, or does it clear automatically?",
-                isNAToggleEnabled = false
-            )
-
-            LabeledTriStateSwitchWithHelp(
-                label = "Fault Controlled Restart?",
-                currentState = infeedSensorCR,
-                onStateChange = { newState -> viewModel.setInfeedSensorCR(newState) },
-                helpText = "Is the fault output latched, or does it clear automatically?",
-                isNAToggleEnabled = false
-            )
+            Spacer(modifier = Modifier.height(16.dp))
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        LabeledTextFieldWithHelp(
-            label = "Engineer Comments",
-            value = infeedSensorEngineerNotes,
-            onValueChange = { newValue -> viewModel.setInfeedSensorEngineerNotes(newValue) },
-            helpText = "Enter any notes relevant to this section",
-            isNAToggleEnabled = false
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
     }
 }

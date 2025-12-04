@@ -55,6 +55,7 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "lastLocation = :lastLocation, " +
                 "canPerformCalibration = :canPerformCalibration, " +
                 "reasonForNotCalibrating = :reasonForNotCalibrating, " +
+                "pvRequired = :pvRequired, " +
                 "startCalibrationNotes = :startCalibrationNotes " +
                 "WHERE calibrationId = :calibrationId"
     )
@@ -63,7 +64,7 @@ interface MetalDetectorConveyorCalibrationDAO {
         lastLocation: String,
         canPerformCalibration: String,
         reasonForNotCalibrating: String,
-
+        pvRequired: Boolean,
         startCalibrationNotes: String,
         calibrationId: String
     )
@@ -125,6 +126,8 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "detectionSettingAsFound6 = :detectionSettingAsFound6," +
                 "detectionSettingAsFound7 = :detectionSettingAsFound7," +
                 "detectionSettingAsFound8 = :detectionSettingAsFound8," +
+                "sensitivityAccessRestriction = :sensitivityAccessRestriction," +
+                "detectionSettingPvResult = :detectionSettingPvResult," +
                 "detectionSettingAsFoundEngineerNotes = :detectionSettingAsFoundEngineerNotes " +
                 "WHERE calibrationId = :calibrationId"
     )
@@ -137,6 +140,8 @@ interface MetalDetectorConveyorCalibrationDAO {
         detectionSettingAsFound6: String,
         detectionSettingAsFound7: String,
         detectionSettingAsFound8: String,
+        sensitivityAccessRestriction: String,
+        detectionSettingPvResult: String,
         detectionSettingAsFoundEngineerNotes: String,
         calibrationId: String
     )
@@ -145,8 +150,7 @@ interface MetalDetectorConveyorCalibrationDAO {
     // Save Sensitivities As Found to database
     @Query(
         "UPDATE MetalDetectorConveyorCalibrations " +
-                "SET sensitivityAccessRestriction = :sensitivityAccessRestriction, " +
-                "sensitivityAsFoundFerrous = :sensitivityAsFoundFerrous, " +
+                "SET sensitivityAsFoundFerrous = :sensitivityAsFoundFerrous, " +
                 "sensitivityAsFoundFerrousPeakSignal = :sensitivityAsFoundFerrousPeakSignal, " +
                 "sensitivityAsFoundNonFerrous = :sensitivityAsFoundNonFerrous, " +
                 "sensitivityAsFoundNonFerrousPeakSignal = :sensitivityAsFoundNonFerrousPeakSignal, " +
@@ -157,7 +161,6 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "WHERE calibrationId = :calibrationId"
     )
     suspend fun updateSensitivitiesAsFound(
-        sensitivityAccessRestriction: String,
         sensitivityAsFoundFerrous: String,
         sensitivityAsFoundFerrousPeakSignal: String,
         sensitivityAsFoundNonFerrous: String,
@@ -180,7 +183,8 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "detectRejectFerrousMiddlePeakSignal = :detectRejectFerrousMiddlePeakSignal, " +
                 "detectRejectFerrousTrailing = :detectRejectFerrousTrailing," +
                 "detectRejectFerrousTrailingPeakSignal = :detectRejectFerrousTrailingPeakSignal," +
-                "ferrousTestEngineerNotes = :ferrousTestEngineerNotes " +
+                "ferrousTestEngineerNotes = :ferrousTestEngineerNotes, " +
+                "ferrousTestPvResult = :ferrousTestPvResult " +
                 "WHERE calibrationId = :calibrationId"
     )
     suspend fun updateFerrousResult(
@@ -193,6 +197,7 @@ interface MetalDetectorConveyorCalibrationDAO {
         detectRejectFerrousTrailing: String,
         detectRejectFerrousTrailingPeakSignal: String,
         ferrousTestEngineerNotes: String,
+        ferrousTestPvResult: String,
         calibrationId: String
     )
 

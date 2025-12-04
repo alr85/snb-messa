@@ -65,13 +65,7 @@ fun CalMetalDetectorConveyorStainlessTest(
                         detectRejectStainlessTrailing != YesNoState.YES || peakSignalStainlessTrailing.isNotBlank()
                         )
 
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(scrollState) // Add scrolling to the whole column
-    ) {
+    Column(modifier = Modifier.fillMaxSize()) {
         CalibrationBanner(
             progress = progress,
             viewModel = viewModel
@@ -84,7 +78,7 @@ fun CalMetalDetectorConveyorStainlessTest(
             onCancelClick = { viewModel.updateStainlessResult() },
             onNextClick = {
                 viewModel.updateStainlessResult()
-                navController.navigate("CalMetalDetectorConveyorLargeMetalTest")
+                navController.navigate("CalMetalDetectorConveyorDetectionSettingsAsLeft")
             },
             isNextEnabled = isNextStepEnabled,
             isFirstStep = false, // Indicates this is the first step and disables the Previous button
@@ -95,76 +89,79 @@ fun CalMetalDetectorConveyorStainlessTest(
             },
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
         CalibrationHeader("Stainless Sensitivity (As Left)")
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(scrollState) // Add scrolling to the whole column
+        ) {
 
 
-        LabeledTextFieldWithHelp(
-            label = "Achieved Sensitivity (mm)",
-            value = sensitivityAsLeftStainless,
-            onValueChange = { newValue -> viewModel.setSensitivityAsLeftStainless(newValue) },
-            helpText = "Enter the achieved sensitivity for Stainless Steel e.g. '2.0'",
-            keyboardType = KeyboardType.Number
-        )
+            LabeledTextFieldWithHelp(
+                label = "Achieved Sensitivity (mm)",
+                value = sensitivityAsLeftStainless,
+                onValueChange = { newValue -> viewModel.setSensitivityAsLeftStainless(newValue) },
+                helpText = "Enter the achieved sensitivity for Stainless Steel e.g. '2.0'",
+                keyboardType = KeyboardType.Number
+            )
 
-        LabeledTextFieldWithHelp(
-            label = "Sample Certificate No.",
-            value = sampleCertificateNumberStainless,
-            onValueChange = { newValue -> viewModel.setSampleCertificateNumberStainless(newValue) },
-            helpText = "Enter the metal test sample certificate number, usually located on the test piece",
-        )
+            LabeledTextFieldWithHelp(
+                label = "Sample Certificate No.",
+                value = sampleCertificateNumberStainless,
+                onValueChange = { newValue -> viewModel.setSampleCertificateNumberStainless(newValue) },
+                helpText = "Enter the metal test sample certificate number, usually located on the test piece",
+            )
 
-        LabeledTriStateSwitchAndTextInputWithHelp(
-            label = "D&R (Leading)",
-            currentState = detectRejectStainlessLeading,
-            onStateChange = { newState -> viewModel.setDetectRejectStainlessLeading(newState) },
-            helpText = "Select if there was satisfactory Detection and Rejection of the pack with the metal sample placed in the leading edge. Note down the peak signal.",
-            inputLabel = "Produced Signal",
-            inputValue = peakSignalStainlessLeading,
-            onInputValueChange = { newValue -> viewModel.setPeakSignalStainlessLeading(newValue) },
-            //inputKeyboardType = KeyboardType.Number
-        )
+            LabeledTriStateSwitchAndTextInputWithHelp(
+                label = "D&R (Leading)",
+                currentState = detectRejectStainlessLeading,
+                onStateChange = { newState -> viewModel.setDetectRejectStainlessLeading(newState) },
+                helpText = "Select if there was satisfactory Detection and Rejection of the pack with the metal sample placed in the leading edge. Note down the peak signal.",
+                inputLabel = "Produced Signal",
+                inputValue = peakSignalStainlessLeading,
+                onInputValueChange = { newValue -> viewModel.setPeakSignalStainlessLeading(newValue) },
+                //inputKeyboardType = KeyboardType.Number
+            )
 
-        LabeledTriStateSwitchAndTextInputWithHelp(
-            label = "D&R (Middle)",
-            currentState = detectRejectStainlessMiddle,
-            onStateChange = { newState -> viewModel.setDetectRejectStainlessMiddle(newState) },
-            helpText = "Select if there was satisfactory detection and rejection of the pack with the metal sample placed in the middle. Note down the peak signal.",
-            inputLabel = "Produced Signal",
-            inputValue = peakSignalStainlessMiddle,
-            onInputValueChange = { newValue -> viewModel.setPeakSignalStainlessMiddle(newValue) },
-            //inputKeyboardType = KeyboardType.Number
-        )
+            LabeledTriStateSwitchAndTextInputWithHelp(
+                label = "D&R (Middle)",
+                currentState = detectRejectStainlessMiddle,
+                onStateChange = { newState -> viewModel.setDetectRejectStainlessMiddle(newState) },
+                helpText = "Select if there was satisfactory detection and rejection of the pack with the metal sample placed in the middle. Note down the peak signal.",
+                inputLabel = "Produced Signal",
+                inputValue = peakSignalStainlessMiddle,
+                onInputValueChange = { newValue -> viewModel.setPeakSignalStainlessMiddle(newValue) },
+                //inputKeyboardType = KeyboardType.Number
+            )
 
-        LabeledTriStateSwitchAndTextInputWithHelp(
-            label = "D&R (Trailing)",
-            currentState = detectRejectStainlessTrailing,
-            onStateChange = { newState -> viewModel.setDetectRejectStainlessTrailing(newState) },
-            helpText = "Select if there was satisfactory detection and rejection of the pack with the metal sample placed in the trailing edge. Note down the peak signal.",
-            inputLabel = "Produced Signal",
-            inputValue = peakSignalStainlessTrailing,
-            onInputValueChange = { newValue -> viewModel.setPeakSignalStainlessTrailing(newValue) },
-            //inputKeyboardType = KeyboardType.Number
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+            LabeledTriStateSwitchAndTextInputWithHelp(
+                label = "D&R (Trailing)",
+                currentState = detectRejectStainlessTrailing,
+                onStateChange = { newState -> viewModel.setDetectRejectStainlessTrailing(newState) },
+                helpText = "Select if there was satisfactory detection and rejection of the pack with the metal sample placed in the trailing edge. Note down the peak signal.",
+                inputLabel = "Produced Signal",
+                inputValue = peakSignalStainlessTrailing,
+                onInputValueChange = { newValue -> viewModel.setPeakSignalStainlessTrailing(newValue) },
+                //inputKeyboardType = KeyboardType.Number
+            )
+            Spacer(modifier = Modifier.height(16.dp))
 
-        LabeledTextFieldWithHelp(
-            label = "Engineer Notes",
-            value = stainlessTestEngineerNotes,
-            onValueChange = { newValue -> viewModel.setStainlessTestEngineerNotes(newValue) },
-            helpText = "Enter any notes relevant to this section",
-            isNAToggleEnabled = false
-        )
-        
-
+            LabeledTextFieldWithHelp(
+                label = "Engineer Notes",
+                value = stainlessTestEngineerNotes,
+                onValueChange = { newValue -> viewModel.setStainlessTestEngineerNotes(newValue) },
+                helpText = "Enter any notes relevant to this section",
+                isNAToggleEnabled = false
+            )
 
 
 
-        Spacer(modifier = Modifier.height(16.dp))
 
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+        }
     }
 }
