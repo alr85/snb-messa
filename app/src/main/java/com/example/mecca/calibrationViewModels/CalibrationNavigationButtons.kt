@@ -1,13 +1,11 @@
-package com.example.mecca.calibrationViewModels
-
 
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -21,7 +19,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,7 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.mecca.ui.theme.AppConstants
+import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 
 @Composable
 fun CalibrationNavigationButtons(
@@ -49,117 +46,77 @@ fun CalibrationNavigationButtons(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+            .navigationBarsPadding()
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Previous Step Button (disabled on the first step)
 
-        if (!isFirstStep) {
-            OutlinedButton(
-
-                onClick = {
-                    navController.popBackStack()
-                    onPreviousClick()
-                    viewModel.decrementStep() },
-                enabled = !viewModel.isNavigating.collectAsState().value,
-                modifier = Modifier.weight(1f)
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Previous Step",
-                    modifier = Modifier.size(AppConstants.CalibrationNavigationButtonIconSize)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "Back",
-                    fontSize = AppConstants.CalibrationNavigationButtonFontSize)
-            }
-        } else {
-            Spacer(modifier = Modifier.weight(1f))
+        // Previous
+        OutlinedButton(
+            onClick = onPreviousClick,
+            enabled = !isFirstStep,
+            modifier = Modifier.weight(1f)
+        ) {
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
+            Spacer(Modifier.width(8.dp))
+            Text("Back")
         }
 
-        Spacer(modifier = Modifier.width(16.dp))
-
-        // Cancel Calibration Button
+        // Cancel
         OutlinedButton(
             onClick = { showDialog = true },
             modifier = Modifier.weight(1f)
         ) {
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = "Cancel Calibration",
-                modifier = Modifier.size(AppConstants.CalibrationNavigationButtonIconSize)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "Cancel",
-                fontSize = AppConstants.CalibrationNavigationButtonFontSize)
+            Icon(Icons.Default.Close, null)
+            Spacer(Modifier.width(8.dp))
+            Text("Cancel")
         }
 
-        Spacer(modifier = Modifier.width(16.dp))
-
-        // Save and Exit Button
+        // Save + Exit
         OutlinedButton(
             onClick = {
-                onSaveAndExitClick() // Perform save operation
-                activity?.finish() // Close the activity without deleting the database row
+                onSaveAndExitClick()
+
+                activity?.finish()
             },
             modifier = Modifier.weight(1f)
         ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                contentDescription = "Save and Exit",
-                modifier = Modifier.size(AppConstants.CalibrationNavigationButtonIconSize)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "Exit",
-            fontSize = AppConstants.CalibrationNavigationButtonFontSize)
+            Icon(Icons.AutoMirrored.Filled.ExitToApp, null)
+            Spacer(Modifier.width(8.dp))
+            Text("Exit")
         }
 
-        Spacer(modifier = Modifier.width(16.dp))
-
-        // Next Step Button
+        // Next
         Button(
-            onClick = {
-                viewModel.startNavigation()
-                onNextClick()
-                viewModel.incrementStep()
-            },
-            enabled = isNextEnabled && !viewModel.isNavigating.collectAsState().value,
+            onClick = onNextClick,
+            enabled = isNextEnabled,
             modifier = Modifier.weight(1f)
         ) {
-            Text(text = "Next",
-                fontSize = AppConstants.CalibrationNavigationButtonFontSize)
-            Spacer(modifier = Modifier.width(8.dp))
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = "Next Step",
-                modifier = Modifier.size(AppConstants.CalibrationNavigationButtonIconSize)
-            )
+            Text("Next")
+            Spacer(Modifier.width(8.dp))
+            Icon(Icons.AutoMirrored.Filled.ArrowForward, null)
         }
+    }
 
-        // Show confirmation dialog for Cancel button
-        if (showDialog) {
-            AlertDialog(
-                onDismissRequest = { showDialog = false },
-                title = { Text(text = "Are you sure?") },
-                text = { Text("Cancelling will discard all calibration data. Do you want to proceed?") },
-                confirmButton = {
-                    TextButton(onClick = {
-                        showDialog = false
-                        viewModel.clearCalibrationData()
-                        viewModel.deleteCalibration(viewModel.calibrationId.value)
-                        onCancelClick()
-                        activity?.finish() // Close the activity
-                    }) {
-                        Text("Yes")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showDialog = false }) {
-                        Text("No")
-                    }
-                }
-            )
-        }
+    // Cancel confirmation dialog
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Are you sure?") },
+            text = { Text("Cancelling will discard all calibration data.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDialog = false
+                    viewModel.clearCalibrationData()
+                    viewModel.deleteCalibration(viewModel.calibrationId.value)
+                    onCancelClick()
+                    activity?.finish()
+                }) { Text("Yes") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) { Text("No") }
+            }
+        )
     }
 }

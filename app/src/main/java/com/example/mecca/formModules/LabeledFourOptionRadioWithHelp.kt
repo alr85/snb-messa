@@ -3,10 +3,12 @@ package com.example.mecca.formModules
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -24,14 +26,21 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun LabeledFourOptionRadioWithHelp(
     label: String,
-    value: String?,
+    value: String?,                     // "Pass", "Fail", "N/A", "N/F"
     onValueChange: (String) -> Unit,
     helpText: String,
-    isDisabled: Boolean = false
+    isDisabled: Boolean = false,
+
+    // NEW:
+    showNotFittedOption: Boolean = true,
+    notFittedEnabled: Boolean = true
 ) {
     var showHelpDialog by remember { mutableStateOf(false) }
 
-    val options = listOf("Pass", "Fail", "Not Fitted", "N/A")
+    val baseOptions = listOf("Pass", "Fail", "N/A")
+    val options = remember(showNotFittedOption) {
+        if (showNotFittedOption) baseOptions + "Not Fitted" else baseOptions
+    }
 
     FormRowWrapper(
         label = label,
@@ -40,51 +49,48 @@ fun LabeledFourOptionRadioWithHelp(
         onHelpClick = { showHelpDialog = true }
     ) { disabled ->
 
+        // 2x2 grid for four, or just 3 options if N/F hidden
         Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
+            options.chunked(2).forEach { rowOptions ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    rowOptions.forEach { option ->
 
-            // Row 1
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                listOf("Pass", "Fail").forEach { option ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(
-                            selected = value == option,
-                            onClick = { if (!disabled) onValueChange(option) },
-                            enabled = !disabled
-                        )
-                        Text(
-                            option,
-                            modifier = Modifier.padding(start = 4.dp),
-                            color = if (disabled) Color.Gray else Color.Unspecified
-                        )
+                        val optionEnabled =
+                            !disabled &&
+                                    (option != "Not Fitted" || notFittedEnabled)
+
+                        Row(
+                            modifier = Modifier.weight(1f),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = value == option,
+                                onClick = { if (optionEnabled) onValueChange(option) },
+                                enabled = optionEnabled
+                            )
+
+                            val textColor =
+                                if (optionEnabled) Color.Unspecified else Color.Gray
+
+                            Text(
+                                text = option,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(start = 4.dp),
+                                color = textColor
+                            )
+                        }
                     }
-                }
-            }
 
-            // Row 2
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                listOf("Not Fitted", "N/A").forEach { option ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(
-                            selected = value == option,
-                            onClick = { if (!disabled) onValueChange(option) },
-                            enabled = !disabled
-                        )
-                        Text(
-                            option,
-                            modifier = Modifier.padding(start = 4.dp),
-                            color = if (disabled) Color.Gray else Color.Unspecified
-                        )
+                    // keep layout stable if odd count (3 options)
+                    if (rowOptions.size == 1) {
+                        Spacer(modifier = Modifier.weight(1f))
                     }
                 }
             }
@@ -102,3 +108,4 @@ fun LabeledFourOptionRadioWithHelp(
         )
     }
 }
+

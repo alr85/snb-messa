@@ -15,9 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledDropdownWithHelp
 import com.example.mecca.formModules.LabeledMultiSelectDropdownWithHelp
@@ -36,7 +34,7 @@ fun CalMetalDetectorConveyorPackCheckSensor(
         viewModel.finishNavigation()
     }
 
-    val progress = viewModel.progress
+    //val progress = viewModel.progress
     val scrollState = rememberScrollState()
 
     // --- ViewModel data ---
@@ -78,26 +76,26 @@ fun CalMetalDetectorConveyorPackCheckSensor(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        CalibrationBanner(
-            progress = progress,
-            viewModel = viewModel
-        )
+//        CalibrationBanner(
+//            progress = progress,
+//            viewModel = viewModel
+//        )
 
-        CalibrationNavigationButtons(
-            onPreviousClick = { viewModel.updatePackCheckSensor() },
-            onCancelClick = { viewModel.updatePackCheckSensor() },
-            onNextClick = {
-                viewModel.updatePackCheckSensor()
-                navController.navigate("CalMetalDetectorConveyorSpeedSensor")
-            },
-            isNextEnabled = isNextStepEnabled,
-            isFirstStep = false,
-            navController = navController,
-            viewModel = viewModel,
-            onSaveAndExitClick = {
-                viewModel.updatePackCheckSensor()
-            },
-        )
+//        CalibrationNavigationButtons(
+//            onPreviousClick = { viewModel.updatePackCheckSensor() },
+//            onCancelClick = { viewModel.updatePackCheckSensor() },
+//            onNextClick = {
+//                viewModel.updatePackCheckSensor()
+//                navController.navigate("CalMetalDetectorConveyorSpeedSensor")
+//            },
+//            isNextEnabled = isNextStepEnabled,
+//            isFirstStep = false,
+//            navController = navController,
+//            viewModel = viewModel,
+//            onSaveAndExitClick = {
+//                viewModel.updatePackCheckSensor()
+//            },
+//        )
 
         CalibrationHeader("Compliance Checks - Pack Check")
         Column(

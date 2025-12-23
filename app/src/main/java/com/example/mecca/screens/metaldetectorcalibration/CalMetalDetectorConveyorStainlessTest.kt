@@ -5,163 +5,199 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.mecca.CalibrationBanner
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateStainlessPvResult
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
+import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchAndTextInputWithHelp
+import com.example.mecca.formModules.LabeledTwoTextInputsWithHelp
 import com.example.mecca.formModules.YesNoState
 
-//@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalMetalDetectorConveyorStainlessTest(
     navController: NavHostController,
-    viewModel: CalibrationMetalDetectorConveyorViewModel = viewModel()
+    viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
+    val scrollState = rememberScrollState()
 
-    // Stops the next button from being pressed until the screen is rendered
-    LaunchedEffect(Unit) {
-        viewModel.finishNavigation()
+    val sensitivity by viewModel.sensitivityAsLeftStainless
+    val sampleCert by viewModel.sampleCertificateNumberStainless
+
+    val peakLeading by viewModel.peakSignalStainlessLeading
+    val peakMiddle by viewModel.peakSignalStainlessMiddle
+    val peakTrailing by viewModel.peakSignalStainlessTrailing
+
+    val detectLeading by viewModel.detectRejectStainlessLeading
+    val detectMiddle by viewModel.detectRejectStainlessMiddle
+    val detectTrailing by viewModel.detectRejectStainlessTrailing
+
+    val notes by viewModel.stainlessTestEngineerNotes
+
+    // Validation for Next
+    val isNextStepEnabled =
+        sensitivity.isNotBlank() &&
+                sampleCert.isNotBlank() &&
+                (detectLeading != YesNoState.YES || peakLeading.isNotBlank()) &&
+                (detectMiddle != YesNoState.YES || peakMiddle.isNotBlank()) &&
+                (detectTrailing != YesNoState.YES || peakTrailing.isNotBlank())
+
+    LaunchedEffect(isNextStepEnabled) {
+        viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
-    val progress = viewModel.progress
-    val scrollState = rememberScrollState() // Scroll state to control the scroll behavior
-
-// Get and update data in the ViewModel
-    val sensitivityAsLeftStainless by viewModel.sensitivityAsLeftStainless
-    val peakSignalStainlessLeading by viewModel.peakSignalStainlessLeading
-    val peakSignalStainlessMiddle by viewModel.peakSignalStainlessMiddle
-    val peakSignalStainlessTrailing by viewModel.peakSignalStainlessTrailing
-    val sampleCertificateNumberStainless by viewModel.sampleCertificateNumberStainless
-    val detectRejectStainlessLeading by viewModel.detectRejectStainlessLeading
-    val detectRejectStainlessMiddle by viewModel.detectRejectStainlessMiddle
-    val detectRejectStainlessTrailing by viewModel.detectRejectStainlessTrailing
-    val stainlessTestEngineerNotes by viewModel.stainlessTestEngineerNotes
-
-
-    //Determine if "Next Step" button should be enabled
-    val isNextStepEnabled =
-        sensitivityAsLeftStainless.isNotBlank() &&
-                sampleCertificateNumberStainless.isNotBlank() &&
-                (
-                        detectRejectStainlessLeading != YesNoState.YES || peakSignalStainlessLeading.isNotBlank()
-                        ) &&
-                (
-                        detectRejectStainlessMiddle != YesNoState.YES || peakSignalStainlessMiddle.isNotBlank()
-                        ) &&
-                (
-                        detectRejectStainlessTrailing != YesNoState.YES || peakSignalStainlessTrailing.isNotBlank()
-                        )
-
-    Column(modifier = Modifier.fillMaxSize()) {
-        CalibrationBanner(
-            progress = progress,
-            viewModel = viewModel
-
-        )
-
-        // Navigation Buttons
-        CalibrationNavigationButtons(
-            onPreviousClick = { viewModel.updateStainlessResult() },
-            onCancelClick = { viewModel.updateStainlessResult() },
-            onNextClick = {
-                viewModel.updateStainlessResult()
-                navController.navigate("CalMetalDetectorConveyorDetectionSettingsAsLeft")
-            },
-            isNextEnabled = isNextStepEnabled,
-            isFirstStep = false, // Indicates this is the first step and disables the Previous button
-            navController = navController,
-            viewModel = viewModel,
-            onSaveAndExitClick = {
-                viewModel.updateStainlessResult()
-            },
-        )
+    Column(Modifier.fillMaxSize()) {
 
         CalibrationHeader("Stainless Sensitivity (As Left)")
 
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .weight(1f)
                 .padding(16.dp)
-                .verticalScroll(scrollState) // Add scrolling to the whole column
+                .verticalScroll(scrollState)
+                .imePadding()
         ) {
 
+            //-----------------------------------------------------
+            // Combined: Achieved Sensitivity + Certificate
+            //-----------------------------------------------------
+            LabeledTwoTextInputsWithHelp(
+                label = "Achieved Sensitivity & Certificate",
+                firstInputLabel = "Sensitivity",
+                firstInputValue = sensitivity,
+                onFirstInputValueChange = {
+                    viewModel.setSensitivityAsLeftStainless(it)
 
-            LabeledTextFieldWithHelp(
-                label = "Achieved Sensitivity (mm)",
-                value = sensitivityAsLeftStainless,
-                onValueChange = { newValue -> viewModel.setSensitivityAsLeftStainless(newValue) },
-                helpText = "Enter the achieved sensitivity for Stainless Steel e.g. '2.0'",
-                keyboardType = KeyboardType.Number
+                    if (it == "N/A") {
+                        viewModel.disableStainlessTest()
+                    }
+                    else {
+                        viewModel.enableStainlessTest()
+                    }
+                    viewModel.autoUpdateStainlessPvResult()
+                },
+                secondInputLabel = "Cert No.",
+                secondInputValue = sampleCert,
+                onSecondInputValueChange = {
+                    viewModel.setSampleCertificateNumberStainless(it)
+                    viewModel.autoUpdateStainlessPvResult()
+                },
+                helpText = """
+                    Enter the achieved Stainless Steel sensitivity and the certificate number.
+                    
+                    M&S Target: ${viewModel.sensitivityData.value?.Stainless316TargetMM}mm
+                    Max Allowed: ${viewModel.sensitivityData.value?.Stainless316MaxMM}mm
+                """.trimIndent(),
+                firstInputKeyboardType = KeyboardType.Number,
+                secondInputKeyboardType = KeyboardType.Text,
+                isNAToggleEnabled = true
             )
 
-            LabeledTextFieldWithHelp(
-                label = "Sample Certificate No.",
-                value = sampleCertificateNumberStainless,
-                onValueChange = { newValue -> viewModel.setSampleCertificateNumberStainless(newValue) },
-                helpText = "Enter the metal test sample certificate number, usually located on the test piece",
-            )
+            //-----------------------------------------------------
+            // Skip detection tests entirely if N/A
+            //-----------------------------------------------------
+            if (sensitivity != "N/A") {
 
-            LabeledTriStateSwitchAndTextInputWithHelp(
-                label = "D&R (Leading)",
-                currentState = detectRejectStainlessLeading,
-                onStateChange = { newState -> viewModel.setDetectRejectStainlessLeading(newState) },
-                helpText = "Select if there was satisfactory Detection and Rejection of the pack with the metal sample placed in the leading edge. Note down the peak signal.",
-                inputLabel = "Produced Signal",
-                inputValue = peakSignalStainlessLeading,
-                onInputValueChange = { newValue -> viewModel.setPeakSignalStainlessLeading(newValue) },
-                //inputKeyboardType = KeyboardType.Number
-            )
+                LabeledTriStateSwitchAndTextInputWithHelp(
+                    label = "Detected & Rejected (Leading)",
+                    currentState = detectLeading,
+                    onStateChange = {
+                        viewModel.setDetectRejectStainlessLeading(it)
+                        viewModel.autoUpdateStainlessPvResult()
+                    },
+                    helpText = "Leading-edge test result & peak signal.",
+                    inputLabel = "Produced Signal",
+                    inputValue = peakLeading,
+                    onInputValueChange = {
+                        viewModel.setPeakSignalStainlessLeading(it)
+                        viewModel.autoUpdateStainlessPvResult()
+                    }
+                )
 
-            LabeledTriStateSwitchAndTextInputWithHelp(
-                label = "D&R (Middle)",
-                currentState = detectRejectStainlessMiddle,
-                onStateChange = { newState -> viewModel.setDetectRejectStainlessMiddle(newState) },
-                helpText = "Select if there was satisfactory detection and rejection of the pack with the metal sample placed in the middle. Note down the peak signal.",
-                inputLabel = "Produced Signal",
-                inputValue = peakSignalStainlessMiddle,
-                onInputValueChange = { newValue -> viewModel.setPeakSignalStainlessMiddle(newValue) },
-                //inputKeyboardType = KeyboardType.Number
-            )
+                LabeledTriStateSwitchAndTextInputWithHelp(
+                    label = "Detected & Rejected (Middle)",
+                    currentState = detectMiddle,
+                    onStateChange = {
+                        viewModel.setDetectRejectStainlessMiddle(it)
+                        viewModel.autoUpdateStainlessPvResult()
+                    },
+                    helpText = "Middle test result & peak signal.",
+                    inputLabel = "Produced Signal",
+                    inputValue = peakMiddle,
+                    onInputValueChange = {
+                        viewModel.setPeakSignalStainlessMiddle(it)
+                        viewModel.autoUpdateStainlessPvResult()
+                    }
+                )
 
-            LabeledTriStateSwitchAndTextInputWithHelp(
-                label = "D&R (Trailing)",
-                currentState = detectRejectStainlessTrailing,
-                onStateChange = { newState -> viewModel.setDetectRejectStainlessTrailing(newState) },
-                helpText = "Select if there was satisfactory detection and rejection of the pack with the metal sample placed in the trailing edge. Note down the peak signal.",
-                inputLabel = "Produced Signal",
-                inputValue = peakSignalStainlessTrailing,
-                onInputValueChange = { newValue -> viewModel.setPeakSignalStainlessTrailing(newValue) },
-                //inputKeyboardType = KeyboardType.Number
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+                LabeledTriStateSwitchAndTextInputWithHelp(
+                    label = "Detected & Rejected (Trailing)",
+                    currentState = detectTrailing,
+                    onStateChange = {
+                        viewModel.setDetectRejectStainlessTrailing(it)
+                        viewModel.autoUpdateStainlessPvResult()
+                    },
+                    helpText = "Trailing test result & peak signal.",
+                    inputLabel = "Produced Signal",
+                    inputValue = peakTrailing,
+                    onInputValueChange = {
+                        viewModel.setPeakSignalStainlessTrailing(it)
+                        viewModel.autoUpdateStainlessPvResult()
+                    }
+                )
+            }
 
+            Spacer(Modifier.height(16.dp))
+
+            //-----------------------------------------------------
+            // ⭐ PV RESULT (only when required)
+            //-----------------------------------------------------
+            if (viewModel.pvRequired.value) {
+                LabeledFourOptionRadioWithHelp(
+                    label = "P.V. Result",
+                    value = viewModel.stainlessTestPvResult.value,
+                    onValueChange = viewModel::setStainlessTestPvResult,
+                    helpText = """
+                        Auto-Pass rules:
+                          • Achieved Sensitivity ≤ M&S Max
+                          • Certificate number entered
+                          • All three D&R = Yes
+                          • All peak signals entered
+
+                        Otherwise auto-fail. You may override manually.
+                    """.trimIndent(),
+                    showNotFittedOption = true,
+                    notFittedEnabled = false
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            //-----------------------------------------------------
+            // Notes
+            //-----------------------------------------------------
             LabeledTextFieldWithHelp(
                 label = "Engineer Notes",
-                value = stainlessTestEngineerNotes,
-                onValueChange = { newValue -> viewModel.setStainlessTestEngineerNotes(newValue) },
+                value = notes,
+                onValueChange = viewModel::setStainlessTestEngineerNotes,
                 helpText = "Enter any notes relevant to this section",
                 isNAToggleEnabled = false
             )
 
-
-
-
-
-            Spacer(modifier = Modifier.height(16.dp))
-
+            Spacer(Modifier.height(60.dp))
         }
     }
 }

@@ -4,62 +4,52 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledDropdownWithTextInput
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.YesNoState
 
-//@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalMetalDetectorConveyorRejectSettings(
     navController: NavHostController,
-    viewModel: CalibrationMetalDetectorConveyorViewModel = viewModel()
+    viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-
-    // Stops the next button from being pressed until the screen is rendered
-    LaunchedEffect(Unit) {
-        viewModel.finishNavigation()
-    }
-
-    val progress = viewModel.progress
-    val scrollState = rememberScrollState() // Scroll state to control the scroll behavior
-
-// Get and update data in the ViewModel
+    val scrollState = rememberScrollState()
 
     val rejectSynchronisationSetting by viewModel.rejectSynchronisationSetting
     val rejectSynchronisationDetail by viewModel.rejectSynchronisationDetail
+
     val rejectDelaySetting by viewModel.rejectDelaySetting
     val rejectDelayUnits by viewModel.rejectDelayUnits
+
     val rejectDurationSetting by viewModel.rejectDurationSetting
     val rejectDurationUnits by viewModel.rejectDurationUnits
+
     val rejectConfirmWindowSetting by viewModel.rejectConfirmWindowSetting
     val rejectConfirmWindowUnits by viewModel.rejectConfirmWindowUnits
+
     val rejectSettingsEngineerNotes by viewModel.rejectSettingsEngineerNotes
 
-    // Test options
-    val rejectTimerUnitOptions = listOf(
-        "Secs",
-        "mSecs",
-        "mm",
-        "pulses"
-    )
+    // Don’t rebuild this list every time Compose sneezes
+    val rejectTimerUnitOptions = remember {
+        listOf("Secs", "mSecs", "mm", "pulses")
+    }
 
-    //Determine if "Next Step" button should be enabled
+    // Next enabled
     val isNextStepEnabled =
         rejectDelaySetting.isNotBlank() &&
                 rejectDurationSetting.isNotBlank() &&
@@ -67,66 +57,45 @@ fun CalMetalDetectorConveyorRejectSettings(
                 rejectDelayUnits.isNotBlank() &&
                 rejectDurationUnits.isNotBlank() &&
                 rejectConfirmWindowUnits.isNotBlank() &&
-                (
-                        rejectSynchronisationSetting != YesNoState.YES || rejectSynchronisationDetail.isNotBlank()
-                        )
+                (rejectSynchronisationSetting != YesNoState.YES || rejectSynchronisationDetail.isNotBlank())
 
+    // Tell wrapper
+    LaunchedEffect(isNextStepEnabled) {
+        viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        CalibrationBanner(
-            progress = progress,
-            viewModel = viewModel
-
-        )
-
-        // Navigation Buttons
-        CalibrationNavigationButtons(
-            onPreviousClick = { viewModel.updateRejectSettings() },
-            onCancelClick = { viewModel.updateRejectSettings() },
-            onNextClick = {
-                viewModel.updateRejectSettings()
-                navController.navigate("CalMetalDetectorConveyorSystemChecklist")
-            },
-            isNextEnabled = isNextStepEnabled,
-            isFirstStep = false, // Indicates this is the first step and disables the Previous button
-            navController = navController,
-            viewModel = viewModel,
-            onSaveAndExitClick = {
-                viewModel.updateRejectSettings()
-            },
-        )
         CalibrationHeader("Reject Settings")
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
-                .verticalScroll(scrollState) // Add scrolling to the whole column
+                .verticalScroll(scrollState)
+                .imePadding()
         ) {
+
             LabeledTriStateSwitchAndTextInputWithHelp(
                 label = "Synchronisation",
                 currentState = rejectSynchronisationSetting,
-                onStateChange = { newState -> viewModel.setRejectSynchronisationSetting(newState) },
-                helpText = "Select if there is a method of reject synchronisation",
+                onStateChange = viewModel::setRejectSynchronisationSetting,
+                helpText = "Select if there is a method of reject synchronisation.",
                 inputLabel = "Detail",
                 inputValue = rejectSynchronisationDetail,
-                onInputValueChange = { newValue -> viewModel.setRejectSynchronisationDetail(newValue) },
-                //inputKeyboardType = KeyboardType.Number
+                onInputValueChange = viewModel::setRejectSynchronisationDetail
             )
-
-
 
             LabeledDropdownWithTextInput(
                 label = "Reject Duration",
                 dropdownLabel = "Units",
                 options = rejectTimerUnitOptions,
                 selectedOption = rejectDurationUnits,
-                onOptionChange = { newValue -> viewModel.setRejectDurationUnits(newValue) },
-                helpText = "Select the units for the reject duration",
+                onOptionChange = viewModel::setRejectDurationUnits,
+                helpText = "Select the units for the reject duration.",
                 inputLabel = "Duration",
                 inputValue = rejectDurationSetting,
-                onInputValueChange = { newValue -> viewModel.setRejectDurationSetting(newValue) },
+                onInputValueChange = viewModel::setRejectDurationSetting,
                 inputKeyboardType = KeyboardType.Number
             )
 
@@ -135,11 +104,11 @@ fun CalMetalDetectorConveyorRejectSettings(
                 dropdownLabel = "Units",
                 options = rejectTimerUnitOptions,
                 selectedOption = rejectDelayUnits,
-                onOptionChange = { newValue -> viewModel.setRejectDelayUnits(newValue) },
-                helpText = "Select the units for the reject delay",
+                onOptionChange = viewModel::setRejectDelayUnits,
+                helpText = "Select the units for the reject delay.",
                 inputLabel = "Delay",
                 inputValue = rejectDelaySetting,
-                onInputValueChange = { newValue -> viewModel.setRejectDelaySetting(newValue) },
+                onInputValueChange = viewModel::setRejectDelaySetting,
                 inputKeyboardType = KeyboardType.Number
             )
 
@@ -148,27 +117,25 @@ fun CalMetalDetectorConveyorRejectSettings(
                 dropdownLabel = "Units",
                 options = rejectTimerUnitOptions,
                 selectedOption = rejectConfirmWindowUnits,
-                onOptionChange = { newValue -> viewModel.setRejectConfirmWindowUnits(newValue) },
-                helpText = "Select the units for the reject confirm",
+                onOptionChange = viewModel::setRejectConfirmWindowUnits,
+                helpText = "Select the units for the reject confirm window.",
                 inputLabel = "Conf. Window",
                 inputValue = rejectConfirmWindowSetting,
-                onInputValueChange = { newValue -> viewModel.setRejectConfirmWindowSetting(newValue) },
+                onInputValueChange = viewModel::setRejectConfirmWindowSetting,
                 inputKeyboardType = KeyboardType.Number
             )
-
-
 
             Spacer(modifier = Modifier.height(16.dp))
 
             LabeledTextFieldWithHelp(
                 label = "Engineer Notes",
                 value = rejectSettingsEngineerNotes,
-                onValueChange = { newValue -> viewModel.setRejectSettingsEngineerNotes(newValue) },
-                helpText = "Enter any notes relevant to this section",
+                onValueChange = viewModel::setRejectSettingsEngineerNotes,
+                helpText = "Enter any notes relevant to this section.",
                 isNAToggleEnabled = false
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(60.dp))
         }
     }
 }

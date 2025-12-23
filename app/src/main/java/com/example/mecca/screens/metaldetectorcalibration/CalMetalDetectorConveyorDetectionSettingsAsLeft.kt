@@ -1,33 +1,27 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.sharp.CopyAll
+import androidx.compose.material.icons.outlined.ContentPasteGo
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
+import com.example.mecca.formModules.AnimatedActionPill
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 
@@ -35,155 +29,98 @@ import com.example.mecca.formModules.LabeledTextFieldWithHelp
 @Composable
 fun CalMetalDetectorConveyorDetectionSettingsAsLeft(
     navController: NavHostController,
-    viewModel: CalibrationMetalDetectorConveyorViewModel = viewModel()
+    viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    LaunchedEffect(Unit) { viewModel.finishNavigation() }
-
-    val progress = viewModel.progress
     val scrollState = rememberScrollState()
 
-    val detectionSettingAsLeft1 by viewModel.detectionSettingAsLeft1
-    val detectionSettingAsLeft2 by viewModel.detectionSettingAsLeft2
-    val detectionSettingAsLeft3 by viewModel.detectionSettingAsLeft3
-    val detectionSettingAsLeft4 by viewModel.detectionSettingAsLeft4
-    val detectionSettingAsLeft5 by viewModel.detectionSettingAsLeft5
-    val detectionSettingAsLeft6 by viewModel.detectionSettingAsLeft6
-    val detectionSettingAsLeft7 by viewModel.detectionSettingAsLeft7
-    val detectionSettingAsLeft8 by viewModel.detectionSettingAsLeft8
-    val detectionSettingAsLeftEngineerNotes by viewModel.detectionSettingAsLeftEngineerNotes
-    val detectionSetting1label by viewModel.detectionSetting1label
-    val detectionSetting2label by viewModel.detectionSetting2label
-    val detectionSetting3label by viewModel.detectionSetting3label
-    val detectionSetting4label by viewModel.detectionSetting4label
-    val detectionSetting5label by viewModel.detectionSetting5label
-    val detectionSetting6label by viewModel.detectionSetting6label
-    val detectionSetting7label by viewModel.detectionSetting7label
-    val detectionSetting8label by viewModel.detectionSetting8label
+    val asLeftValues = listOf(
+        viewModel.detectionSettingAsLeft1,
+        viewModel.detectionSettingAsLeft2,
+        viewModel.detectionSettingAsLeft3,
+        viewModel.detectionSettingAsLeft4,
+        viewModel.detectionSettingAsLeft5,
+        viewModel.detectionSettingAsLeft6,
+        viewModel.detectionSettingAsLeft7,
+        viewModel.detectionSettingAsLeft8
+    ).map { it.value }
 
-    val isNextStepEnabled =
-        detectionSettingAsLeft1.isNotBlank() &&
-                detectionSettingAsLeft2.isNotBlank() &&
-                detectionSettingAsLeft3.isNotBlank() &&
-                detectionSettingAsLeft4.isNotBlank() &&
-                detectionSettingAsLeft5.isNotBlank() &&
-                detectionSettingAsLeft6.isNotBlank() &&
-                detectionSettingAsLeft7.isNotBlank() &&
-                detectionSettingAsLeft8.isNotBlank()
+    val labels = listOf(
+        viewModel.detectionSetting1label,
+        viewModel.detectionSetting2label,
+        viewModel.detectionSetting3label,
+        viewModel.detectionSetting4label,
+        viewModel.detectionSetting5label,
+        viewModel.detectionSetting6label,
+        viewModel.detectionSetting7label,
+        viewModel.detectionSetting8label
+    ).map { it.value }
 
-    Column(modifier = Modifier.fillMaxSize()) { // OUTER COLUMN
-        CalibrationBanner(progress = progress, viewModel = viewModel)
+    val engineerNotes by viewModel.detectionSettingAsLeftEngineerNotes
 
-        CalibrationNavigationButtons(
-            onPreviousClick = { viewModel.updateDetectionSettingAsLeft() },
-            onCancelClick = { viewModel.updateDetectionSettingAsLeft() },
-            onNextClick = {
-                viewModel.updateDetectionSettingAsLeft()
-                navController.navigate("CalMetalDetectorConveyorRejectSettings")
-            },
-            isNextEnabled = isNextStepEnabled,
-            isFirstStep = false,
-            navController = navController,
-            viewModel = viewModel,
-            onSaveAndExitClick = { viewModel.updateDetectionSettingAsLeft() },
-        )
+    // Validation
+    val isNextStepEnabled = asLeftValues.all { it.isNotBlank() }
+
+    LaunchedEffect(isNextStepEnabled) {
+        viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
+    }
+
+    Column(Modifier.fillMaxSize()) {
 
         CalibrationHeader("Detection Settings (As Left)")
 
-        Column( // INNER SCROLL COLUMN
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
                 .verticalScroll(scrollState)
+                .imePadding()
         ) {
+
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
             ) {
-                IconButton(
-                    onClick = { copyAsFoundToAsLeft(viewModel) },
-                    modifier = Modifier.weight(0.5f)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Sharp.CopyAll,
-                            contentDescription = "Copy 'As Found' settings to 'As Left'"
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "Copy from 'As Found'",
-                            style = MaterialTheme.typography.labelLarge
-                        )
-                    }
-                }
+                AnimatedActionPill(
+                    text = "Copy from ‘As Found’",
+                    icon = Icons.Outlined.ContentPasteGo,
+                    onClick = { copyAsFoundToAsLeft(viewModel) }
+                )
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(Modifier.height(20.dp))
 
-            LabeledTextFieldWithHelp(
-                label = detectionSetting1label,
-                value = detectionSettingAsLeft1,
-                onValueChange = viewModel::setDetectionSettingAsLeft1,
-                helpText = ""
-            )
-            LabeledTextFieldWithHelp(
-                label = detectionSetting2label,
-                value = detectionSettingAsLeft2,
-                onValueChange = viewModel::setDetectionSettingAsLeft2,
-                helpText = ""
-            )
-            LabeledTextFieldWithHelp(
-                label = detectionSetting3label,
-                value = detectionSettingAsLeft3,
-                onValueChange = viewModel::setDetectionSettingAsLeft3,
-                helpText = ""
-            )
-            LabeledTextFieldWithHelp(
-                label = detectionSetting4label,
-                value = detectionSettingAsLeft4,
-                onValueChange = viewModel::setDetectionSettingAsLeft4,
-                helpText = ""
-            )
-            LabeledTextFieldWithHelp(
-                label = detectionSetting5label,
-                value = detectionSettingAsLeft5,
-                onValueChange = viewModel::setDetectionSettingAsLeft5,
-                helpText = ""
-            )
-            LabeledTextFieldWithHelp(
-                label = detectionSetting6label,
-                value = detectionSettingAsLeft6,
-                onValueChange = viewModel::setDetectionSettingAsLeft6,
-                helpText = ""
-            )
-            LabeledTextFieldWithHelp(
-                label = detectionSetting7label,
-                value = detectionSettingAsLeft7,
-                onValueChange = viewModel::setDetectionSettingAsLeft7,
-                helpText = ""
-            )
-            LabeledTextFieldWithHelp(
-                label = detectionSetting8label,
-                value = detectionSettingAsLeft8,
-                onValueChange = viewModel::setDetectionSettingAsLeft8,
-                helpText = ""
-            )
+            // Detection setting fields
+            labels.zip(asLeftValues).forEachIndexed { index, (label, value) ->
+                LabeledTextFieldWithHelp(
+                    label = label,
+                    value = value,
+                    onValueChange = { newValue ->
+                        when (index) {
+                            0 -> viewModel.setDetectionSettingAsLeft1(newValue)
+                            1 -> viewModel.setDetectionSettingAsLeft2(newValue)
+                            2 -> viewModel.setDetectionSettingAsLeft3(newValue)
+                            3 -> viewModel.setDetectionSettingAsLeft4(newValue)
+                            4 -> viewModel.setDetectionSettingAsLeft5(newValue)
+                            5 -> viewModel.setDetectionSettingAsLeft6(newValue)
+                            6 -> viewModel.setDetectionSettingAsLeft7(newValue)
+                            7 -> viewModel.setDetectionSettingAsLeft8(newValue)
+                        }
+                    },
+                    helpText = ""
+                )
+            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(16.dp))
 
             LabeledTextFieldWithHelp(
                 label = "Engineer Notes",
-                value = detectionSettingAsLeftEngineerNotes,
+                value = engineerNotes,
                 onValueChange = viewModel::setDetectionSettingAsLeftEngineerNotes,
                 helpText = "Enter any notes relevant to this section",
                 isNAToggleEnabled = false
             )
 
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(Modifier.height(60.dp))
         }
     }
 }

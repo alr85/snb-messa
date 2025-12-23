@@ -18,9 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledDropdownWithHelp
 import com.example.mecca.formModules.LabeledMultiSelectDropdownWithHelp
@@ -41,7 +39,7 @@ fun CalMetalDetectorConveyorAirPressureSensor(
         viewModel.finishNavigation()
     }
 
-    val progress = viewModel.progress
+    //val progress = viewModel.progress
     val scrollState = rememberScrollState() // Scroll state to control the scroll behavior
 
     // Get and update data in the ViewModel
@@ -89,30 +87,30 @@ fun CalMetalDetectorConveyorAirPressureSensor(
         else -> false // Default to false for safety
     }
     Column(modifier = Modifier.fillMaxSize()) {
-        CalibrationBanner(
-            progress = progress,
-            viewModel = viewModel
-        )
+//        CalibrationBanner(
+//            progress = progress,
+//            viewModel = viewModel
+//        )
 
         // Navigation Buttons
-        CalibrationNavigationButtons(
-            onPreviousClick = { viewModel.updateAirPressureSensor() },
-            onCancelClick = {
-                viewModel.updateAirPressureSensor()
-            },
-            onNextClick = {
-                viewModel.updateAirPressureSensor()
-                navController.navigate("CalMetalDetectorConveyorPackCheckSensor")
-            },
-            isNextEnabled = isNextStepEnabled,
-            isFirstStep = false,
-            navController = navController,
-            viewModel = viewModel,
-            onSaveAndExitClick = {
-                viewModel.updateAirPressureSensor()
-            },
-
-            )
+//        CalibrationNavigationButtons(
+//            onPreviousClick = { viewModel.updateAirPressureSensor() },
+//            onCancelClick = {
+//                viewModel.updateAirPressureSensor()
+//            },
+//            onNextClick = {
+//                viewModel.updateAirPressureSensor()
+//                navController.navigate("CalMetalDetectorConveyorPackCheckSensor")
+//            },
+//            isNextEnabled = isNextStepEnabled,
+//            isFirstStep = false,
+//            navController = navController,
+//            viewModel = viewModel,
+//            onSaveAndExitClick = {
+//                viewModel.updateAirPressureSensor()
+//            },
+//
+//            )
 
         CalibrationHeader("Compliance Checks - Air Pressure")
         Column(

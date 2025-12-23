@@ -16,9 +16,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
@@ -36,7 +34,7 @@ fun CalMetalDetectorConveyorSmeDetails(
         viewModel.finishNavigation()
     }
 
-    val progress = viewModel.progress
+    //val progress = viewModel.progress
     val scrollState = rememberScrollState() // Scroll state to control the scroll behavior
 
     // Get and update data in the ViewModel
@@ -81,26 +79,26 @@ fun CalMetalDetectorConveyorSmeDetails(
             .padding(16.dp)
             .verticalScroll(scrollState)
     ) {
-        CalibrationBanner(
-            progress = progress,
-            viewModel = viewModel
-        )
+//        CalibrationBanner(
+//            progress = progress,
+//            viewModel = viewModel
+//        )
 
         // Navigation Buttons
-        CalibrationNavigationButtons(
-            onPreviousClick = { viewModel.updateOperatorTest() },
-            onCancelClick = { viewModel.updateOperatorTest() },
-            onNextClick = {
-                viewModel.updateOperatorTest()
-                navController.navigate("CalMetalDetectorConveyorComplianceConfirmation") },
-            isNextEnabled = true,
-            isFirstStep = false,
-            navController = navController,
-            viewModel = viewModel,
-            onSaveAndExitClick = {
-                viewModel.updateOperatorTest()
-            },
-        )
+//        CalibrationNavigationButtons(
+//            onPreviousClick = { viewModel.updateOperatorTest() },
+//            onCancelClick = { viewModel.updateOperatorTest() },
+//            onNextClick = {
+//                viewModel.updateOperatorTest()
+//                navController.navigate("CalMetalDetectorConveyorComplianceConfirmation") },
+//            isNextEnabled = true,
+//            isFirstStep = false,
+//            navController = navController,
+//            viewModel = viewModel,
+//            onSaveAndExitClick = {
+//                viewModel.updateOperatorTest()
+//            },
+//        )
 
         Spacer(modifier = Modifier.height(16.dp))
 

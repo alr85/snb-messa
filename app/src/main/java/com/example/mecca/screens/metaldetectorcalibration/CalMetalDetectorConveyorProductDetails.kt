@@ -20,9 +20,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 
@@ -37,7 +35,7 @@ fun CalMetalDetectorConveyorProductDetails(
         viewModel.finishNavigation()
     }
 
-    val progress = viewModel.progress
+    //val progress = viewModel.progress
     val scrollState = rememberScrollState()
     val sensitivityData = viewModel.sensitivityData.value
 
@@ -66,25 +64,25 @@ fun CalMetalDetectorConveyorProductDetails(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        CalibrationBanner(
-            progress = progress,
-            viewModel = viewModel
-        )
+//        CalibrationBanner(
+//            progress = progress,
+//            viewModel = viewModel
+//        )
 
-        CalibrationNavigationButtons(
-            onPreviousClick = { viewModel.updateProductDetails() },
-            onCancelClick = { viewModel.updateProductDetails() },
-            onNextClick = {
-                viewModel.updateProductDetails()
-                navController.navigate("CalMetalDetectorConveyorConveyorDetails")
-            },
-            isNextEnabled = isNextStepEnabled,
-            isFirstStep = false, // Indicates this is the first step and disables the Previous button
-            navController = navController,
-            viewModel = viewModel,
-            onSaveAndExitClick = {
-                //viewModel.saveCalibrationData() // Custom save logic here
-            })
+//        CalibrationNavigationButtons(
+//            onPreviousClick = { viewModel.updateProductDetails() },
+//            onCancelClick = { viewModel.updateProductDetails() },
+//            onNextClick = {
+//                viewModel.updateProductDetails()
+//                navController.navigate("CalMetalDetectorConveyorConveyorDetails")
+//            },
+//            isNextEnabled = isNextStepEnabled,
+//            isFirstStep = false, // Indicates this is the first step and disables the Previous button
+//            navController = navController,
+//            viewModel = viewModel,
+//            onSaveAndExitClick = {
+//                //viewModel.saveCalibrationData() // Custom save logic here
+//            })
 
         CalibrationHeader("Product Details")
 

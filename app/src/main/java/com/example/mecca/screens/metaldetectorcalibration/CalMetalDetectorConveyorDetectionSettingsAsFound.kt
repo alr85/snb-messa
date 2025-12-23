@@ -14,95 +14,84 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateDetectionSettingPvResult
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
+import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelpEdit
-import com.example.mecca.formModules.LabeledThreeOptionRadioWithHelp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalMetalDetectorConveyorDetectionSettingsAsFound(
     navController: NavHostController,
-    viewModel: CalibrationMetalDetectorConveyorViewModel = viewModel()
+    viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    // Stops the next button from being pressed until the screen is rendered
-    LaunchedEffect(Unit) {
-        viewModel.finishNavigation()
-    }
-
-    val progress = viewModel.progress
     val scrollState = rememberScrollState()
 
-// Get and update data in the ViewModel
-    val detectionSettingAsFound1 by viewModel.detectionSettingAsFound1
-    val detectionSettingAsFound2 by viewModel.detectionSettingAsFound2
-    val detectionSettingAsFound3 by viewModel.detectionSettingAsFound3
-    val detectionSettingAsFound4 by viewModel.detectionSettingAsFound4
-    val detectionSettingAsFound5 by viewModel.detectionSettingAsFound5
-    val detectionSettingAsFound6 by viewModel.detectionSettingAsFound6
-    val detectionSettingAsFound7 by viewModel.detectionSettingAsFound7
-    val detectionSettingAsFound8 by viewModel.detectionSettingAsFound8
+    // Pull state from ViewModel
     val sensitivityAccessRestriction by viewModel.sensitivityAccessRestriction
-    val detectionSetting1label by viewModel.detectionSetting1label
-    val detectionSetting2label by viewModel.detectionSetting2label
-    val detectionSetting3label by viewModel.detectionSetting3label
-    val detectionSetting4label by viewModel.detectionSetting4label
-    val detectionSetting5label by viewModel.detectionSetting5label
-    val detectionSetting6label by viewModel.detectionSetting6label
-    val detectionSetting7label by viewModel.detectionSetting7label
-    val detectionSetting8label by viewModel.detectionSetting8label
+    val pvRequired by viewModel.pvRequired
+    val pvResult by viewModel.detectionSettingPvResult
 
+    // Labels and values (1–8)
+    val labels = listOf(
+        viewModel.detectionSetting1label,
+        viewModel.detectionSetting2label,
+        viewModel.detectionSetting3label,
+        viewModel.detectionSetting4label,
+        viewModel.detectionSetting5label,
+        viewModel.detectionSetting6label,
+        viewModel.detectionSetting7label,
+        viewModel.detectionSetting8label
+    )
 
-    //Determine if "Next Step" button should be enabled
+    val values = listOf(
+        viewModel.detectionSettingAsFound1,
+        viewModel.detectionSettingAsFound2,
+        viewModel.detectionSettingAsFound3,
+        viewModel.detectionSettingAsFound4,
+        viewModel.detectionSettingAsFound5,
+        viewModel.detectionSettingAsFound6,
+        viewModel.detectionSettingAsFound7,
+        viewModel.detectionSettingAsFound8
+    )
+
+    val labelSetters = listOf(
+        viewModel::setDetectionSetting1Label,
+        viewModel::setDetectionSetting2Label,
+        viewModel::setDetectionSetting3Label,
+        viewModel::setDetectionSetting4Label,
+        viewModel::setDetectionSetting5Label,
+        viewModel::setDetectionSetting6Label,
+        viewModel::setDetectionSetting7Label,
+        viewModel::setDetectionSetting8Label
+    )
+
+    val valueSetters = listOf(
+        viewModel::setDetectionSettingAsFound1,
+        viewModel::setDetectionSettingAsFound2,
+        viewModel::setDetectionSettingAsFound3,
+        viewModel::setDetectionSettingAsFound4,
+        viewModel::setDetectionSettingAsFound5,
+        viewModel::setDetectionSettingAsFound6,
+        viewModel::setDetectionSettingAsFound7,
+        viewModel::setDetectionSettingAsFound8
+    )
+
+    // Validation
     val isNextStepEnabled =
-        detectionSettingAsFound1.isNotBlank() &&
-                detectionSettingAsFound2.isNotBlank() &&
-                detectionSettingAsFound3.isNotBlank() &&
-                detectionSettingAsFound4.isNotBlank() &&
-                detectionSettingAsFound5.isNotBlank() &&
-                detectionSettingAsFound6.isNotBlank() &&
-                detectionSettingAsFound7.isNotBlank() &&
-                detectionSettingAsFound8.isNotBlank() &&
-                detectionSetting1label.isNotBlank() &&
-                detectionSetting2label.isNotBlank() &&
-                detectionSetting3label.isNotBlank() &&
-                detectionSetting4label.isNotBlank() &&
-                detectionSetting5label.isNotBlank() &&
-                detectionSetting6label.isNotBlank() &&
-                detectionSetting7label.isNotBlank() &&
-                detectionSetting8label.isNotBlank() &&
+        labels.all { it.value.isNotBlank() } &&
+                values.all { it.value.isNotBlank() } &&
                 sensitivityAccessRestriction.isNotBlank()
 
+    // Tell wrapper when this screen allows Next
+    LaunchedEffect(isNextStepEnabled) {
+        viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
-
-        CalibrationBanner(
-            progress = progress,
-            viewModel = viewModel
-        )
-
-        CalibrationNavigationButtons(
-            onPreviousClick = { viewModel.updateDetectionSettingsAsFound()
-                viewModel.updateDetectionSettingLabels()},
-            onCancelClick = { viewModel.updateDetectionSettingsAsFound()
-                viewModel.updateDetectionSettingLabels()},
-            onNextClick = {
-                viewModel.updateDetectionSettingLabels()
-                viewModel.updateDetectionSettingsAsFound()
-                navController.navigate("CalMetalDetectorConveyorSensitivityAsFound")},
-            isNextEnabled = isNextStepEnabled,
-            isFirstStep = false, // Indicates this is the first step and disables the Previous button
-            navController = navController,
-            viewModel = viewModel,
-            onSaveAndExitClick = {
-                //viewModel.saveCalibrationData() // Custom save logic here
-            },
-        )
 
         CalibrationHeader("Detection Settings (As Found)")
 
@@ -114,116 +103,55 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
                 .imePadding()
         ) {
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(Modifier.height(6.dp))
 
+            // Render settings 1–8 dynamically
+            labels.indices.forEach { index ->
+                val labelState = labels[index]
+                val valueState = values[index]
 
-            LabeledTextFieldWithHelpEdit(
-                label = detectionSetting1label,
-                onLabelChange = { newLabel -> viewModel.setDetectionSetting1Label(newLabel) },
-                value = detectionSettingAsFound1,
-                onValueChange = { newValue -> viewModel.setDetectionSettingAsFound1(newValue) },
-                helpText = "Enter the value of this detection setting. To change the label, click on the label text."
-            )
-
-            LabeledTextFieldWithHelpEdit(
-                label = detectionSetting2label,
-                onLabelChange = { newLabel -> viewModel.setDetectionSetting2Label(newLabel) },
-                value = detectionSettingAsFound2,
-                onValueChange = { newValue -> viewModel.setDetectionSettingAsFound2(newValue) },
-                helpText = "Enter the value of this detection setting. To change the label, click on the label text."
-            )
-
-            LabeledTextFieldWithHelpEdit(
-                label = detectionSetting3label,
-                onLabelChange = { newLabel -> viewModel.setDetectionSetting3Label(newLabel) },
-                value = detectionSettingAsFound3,
-                onValueChange = { newValue -> viewModel.setDetectionSettingAsFound3(newValue) },
-                helpText = "Enter the value of this detection setting. To change the label, click on the label text."
-            )
-
-            LabeledTextFieldWithHelpEdit(
-                label = detectionSetting4label,
-                onLabelChange = { newLabel -> viewModel.setDetectionSetting4Label(newLabel) },
-                value = detectionSettingAsFound4,
-                onValueChange = { newValue -> viewModel.setDetectionSettingAsFound4(newValue) },
-                helpText = "Enter the value of this detection setting. To change the label, click on the label text."
-            )
-
-            LabeledTextFieldWithHelpEdit(
-                label = detectionSetting5label,
-                onLabelChange = { newLabel -> viewModel.setDetectionSetting5Label(newLabel) },
-                value = detectionSettingAsFound5,
-                onValueChange = { newValue -> viewModel.setDetectionSettingAsFound5(newValue) },
-                helpText = "Enter the value of this detection setting. To change the label, click on the label text."
-            )
-
-            LabeledTextFieldWithHelpEdit(
-                label = detectionSetting6label,
-                onLabelChange = { newLabel -> viewModel.setDetectionSetting6Label(newLabel) },
-                value = detectionSettingAsFound6,
-                onValueChange = { newValue -> viewModel.setDetectionSettingAsFound6(newValue) },
-                helpText = "Enter the value of this detection setting. To change the label, click on the label text."
-            )
-
-            LabeledTextFieldWithHelpEdit(
-                label = detectionSetting7label,
-                onLabelChange = { newLabel -> viewModel.setDetectionSetting7Label(newLabel) },
-                value = detectionSettingAsFound7,
-                onValueChange = { newValue -> viewModel.setDetectionSettingAsFound7(newValue) },
-                helpText = "Enter the value of this detection setting. To change the label, click on the label text."
-            )
-
-            LabeledTextFieldWithHelpEdit(
-                label = detectionSetting8label,
-                onLabelChange = { newLabel -> viewModel.setDetectionSetting8Label(newLabel) },
-                value = detectionSettingAsFound8,
-                onValueChange = { newValue -> viewModel.setDetectionSettingAsFound8(newValue) },
-                helpText = "Enter the value of this detection setting. To change the label, click on the label text."
-            )
-
+                LabeledTextFieldWithHelpEdit(
+                    label = labelState.value,
+                    onLabelChange = { labelSetters[index](it) },
+                    value = valueState.value,
+                    onValueChange = { valueSetters[index](it) },
+                    helpText = "Enter the detection setting value. Tap the label to rename."
+                )
+            }
 
             LabeledTextFieldWithHelp(
                 label = "Access Restriction:",
                 value = sensitivityAccessRestriction,
-                onValueChange = { newValue -> viewModel.setSensitivityAccessRestriction(newValue)
-                                viewModel.autoUpdateDetectionSettingPvResult()},
-                helpText = "Enter details about how the sensitivity settings are restricted e.g. 'Password Protected'",
+                onValueChange = {
+                    viewModel.setSensitivityAccessRestriction(it)
+                    viewModel.autoUpdateDetectionSettingPvResult()
+                },
+                helpText = "Eg: 'Password protected', 'Key switch', etc."
             )
 
-            if (viewModel.pvRequired.value) {
-                LabeledThreeOptionRadioWithHelp(
+            if (pvRequired) {
+                LabeledFourOptionRadioWithHelp(
                     label = "P.V. Result",
-                    value = viewModel.detectionSettingPvResult.value,
+                    value = pvResult,
                     onValueChange = { viewModel.setDetectionSettingPvResult(it) },
                     helpText = """
-                        If there is a value entered in 'Access Restriction', 'P.V. Result' will automatically set to 'Pass'.
-                        
-                        If there is no value entered in 'Access Restriction', 'P.V. Result' will automatically set to 'Fail'
-                        
-                        If 'Access Restriction' is set to 'N/A', 'P.V. Result' will automatically set to 'N/A'.
-                        
-                        You can manually select Pass, Fail, or N/A as appropriate.
-                        
-                        """.trimIndent()
+                        If Access Restriction has a value, P.V. automatically becomes Pass.
+                        If Access Restriction is blank, P.V. automatically becomes Fail.
+                        If Access Restriction is 'N/A', P.V. becomes N/A.
+                        You may override manually if required.
+                    """.trimIndent()
                 )
-
             }
-
 
             LabeledTextFieldWithHelp(
                 label = "Engineer Notes",
                 value = viewModel.detectionSettingAsFoundEngineerNotes.value,
-                onValueChange = { newValue -> viewModel.setDetectionSettingAsFoundEngineerNotes(newValue) },
-                helpText = "Enter any notes relevant to this section",
+                onValueChange = viewModel::setDetectionSettingAsFoundEngineerNotes,
+                helpText = "Enter any notes relevant to this section.",
                 isNAToggleEnabled = false
             )
 
-            Spacer(modifier = Modifier.height(60.dp))
-
-
+            Spacer(Modifier.height(60.dp))
         }
-
-
     }
-
 }

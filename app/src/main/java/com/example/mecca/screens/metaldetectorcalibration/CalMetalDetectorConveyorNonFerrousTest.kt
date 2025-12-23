@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -14,164 +15,181 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.mecca.CalibrationBanner
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateNonFerrousPvResult
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
+import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchAndTextInputWithHelp
+import com.example.mecca.formModules.LabeledTwoTextInputsWithHelp
 import com.example.mecca.formModules.YesNoState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalMetalDetectorConveyorNonFerrousTest(
     navController: NavHostController,
-    viewModel: CalibrationMetalDetectorConveyorViewModel = viewModel()
+    viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    // Stops the next button from being pressed until the screen is rendered
-    LaunchedEffect(Unit) {
-        viewModel.finishNavigation()
+    val scrollState = rememberScrollState()
+
+    // VM state
+    val sensitivity by viewModel.sensitivityAsLeftNonFerrous
+    val sampleCert by viewModel.sampleCertificateNumberNonFerrous
+
+    val peakLeading by viewModel.peakSignalNonFerrousLeading
+    val peakMiddle by viewModel.peakSignalNonFerrousMiddle
+    val peakTrailing by viewModel.peakSignalNonFerrousTrailing
+
+    val detectLeading by viewModel.detectRejectNonFerrousLeading
+    val detectMiddle by viewModel.detectRejectNonFerrousMiddle
+    val detectTrailing by viewModel.detectRejectNonFerrousTrailing
+
+    val notes by viewModel.nonFerrousTestEngineerNotes
+
+    // Next validation (same pattern as your other tests)
+    val isNextStepEnabled =
+        sensitivity.isNotBlank() &&
+                sampleCert.isNotBlank() &&
+                (detectLeading != YesNoState.YES || peakLeading.isNotBlank()) &&
+                (detectMiddle != YesNoState.YES || peakMiddle.isNotBlank()) &&
+                (detectTrailing != YesNoState.YES || peakTrailing.isNotBlank())
+
+    LaunchedEffect(isNextStepEnabled) {
+        viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
-    val progress = viewModel.progress
-    val scrollState = rememberScrollState() // Scroll state to control the scroll behavior
-
-// Get and update data in the ViewModel
-    val sensitivityAsLeftNonFerrous by viewModel.sensitivityAsLeftNonFerrous
-    val peakSignalNonFerrousLeading by viewModel.peakSignalNonFerrousLeading
-    val peakSignalNonFerrousMiddle by viewModel.peakSignalNonFerrousMiddle
-    val peakSignalNonFerrousTrailing by viewModel.peakSignalNonFerrousTrailing
-
-    val detectRejectNonFerrousLeading by viewModel.detectRejectNonFerrousLeading
-    val detectRejectNonFerrousMiddle by viewModel.detectRejectNonFerrousMiddle
-    val detectRejectNonFerrousTrailing by viewModel.detectRejectNonFerrousTrailing
-
-    val sampleCertificateNumberNonFerrous by viewModel.sampleCertificateNumberNonFerrous
-
-    val nonFerrousTestEngineerNotes by viewModel.nonFerrousTestEngineerNotes
-
-
-    //Determine if "Next Step" button should be enabled
-    val isNextStepEnabled =
-        sensitivityAsLeftNonFerrous.isNotBlank() &&
-                sampleCertificateNumberNonFerrous.isNotBlank() &&
-                (
-                        detectRejectNonFerrousLeading != YesNoState.YES || peakSignalNonFerrousLeading.isNotBlank()
-                        ) &&
-                (
-                        detectRejectNonFerrousMiddle != YesNoState.YES || peakSignalNonFerrousMiddle.isNotBlank()
-                        ) &&
-                (
-                        detectRejectNonFerrousTrailing != YesNoState.YES || peakSignalNonFerrousTrailing.isNotBlank()
-                        )
-
-    Column(modifier = Modifier.fillMaxSize()) {
-
-        CalibrationBanner(
-            progress = progress,
-            viewModel = viewModel
-
-        )
-
-        // Navigation Buttons
-        CalibrationNavigationButtons(
-            onPreviousClick = { viewModel.updateNonFerrousResult() },
-            onCancelClick = { viewModel.updateNonFerrousResult() },
-            onNextClick = {
-                navController.navigate("CalMetalDetectorConveyorStainlessTest")
-                viewModel.updateNonFerrousResult()
-            },
-            isNextEnabled = isNextStepEnabled,
-            isFirstStep = false, // Indicates this is the first step and disables the Previous button
-            navController = navController,
-            viewModel = viewModel,
-            onSaveAndExitClick = {
-                viewModel.updateNonFerrousResult()
-            },
-        )
-
+    Column(Modifier.fillMaxSize()) {
 
         CalibrationHeader("Non-Ferrous Sensitivity (As Left)")
 
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .weight(1f)
                 .padding(16.dp)
-                .verticalScroll(scrollState) // Add scrolling to the whole column
+                .verticalScroll(scrollState)
+                .imePadding()
         ) {
 
-            LabeledTextFieldWithHelp(
-                label = "Achieved Sensitivity (mm)",
-                value = sensitivityAsLeftNonFerrous,
-                onValueChange = { newValue -> viewModel.setSensitivityAsLeftNonFerrous(newValue) },
-                helpText = "Enter the achieved Non-Ferrous sensitivity e.g '2.0'",
-                keyboardType = KeyboardType.Number
-            )
+            // ⭐ Combined row (Achieved + Cert)
+            LabeledTwoTextInputsWithHelp(
+                label = "Achieved Sensitivity & Certificate",
+                firstInputLabel = "Sensitivity",
+                firstInputValue = sensitivity,
+                onFirstInputValueChange = {
+                    viewModel.setSensitivityAsLeftNonFerrous(it)
+                    if (it == "N/A") {
+                        viewModel.disableNonFerrousTest()
+                    }
+                    else {
+                        viewModel.enableNonFerrousTest()
+                    }
+                    viewModel.autoUpdateNonFerrousPvResult()
 
-            LabeledTextFieldWithHelp(
-                label = "Sample Certificate No.",
-                value = sampleCertificateNumberNonFerrous,
-                onValueChange = { newValue ->
-                    viewModel.setSampleCertificateNumberNonFerrous(
-                        newValue
-                    )
                 },
-                helpText = "Enter the metal test sample certificate number, usually located on the test piece",
-            )
-
-            LabeledTriStateSwitchAndTextInputWithHelp(
-                label = "D&R (Leading)",
-                currentState = detectRejectNonFerrousLeading,
-                onStateChange = { newState -> viewModel.setDetectRejectNonFerrousLeading(newState) },
-                helpText = "Select if there was satisfactory Detection and Rejection of the pack with the metal sample placed in the leading edge. Note down the peak signal.",
-                inputLabel = "Produced Signal",
-                inputValue = peakSignalNonFerrousLeading,
-                onInputValueChange = { newValue -> viewModel.setPeakSignalNonFerrousLeading(newValue) },
-                //inputKeyboardType = KeyboardType.Number
-            )
-
-            LabeledTriStateSwitchAndTextInputWithHelp(
-                label = "D&R (Middle)",
-                currentState = detectRejectNonFerrousMiddle,
-                onStateChange = { newState -> viewModel.setDetectRejectNonFerrousMiddle(newState) },
-                helpText = "Select if there was satisfactory Detection and Dejection of the pack with the metal sample placed in the middle. Note down the peak signal.",
-                inputLabel = "Produced Signal",
-                inputValue = peakSignalNonFerrousMiddle,
-                onInputValueChange = { newValue -> viewModel.setPeakSignalNonFerrousMiddle(newValue) },
-                //inputKeyboardType = KeyboardType.Number
-            )
-
-            LabeledTriStateSwitchAndTextInputWithHelp(
-                label = "D&R (Trailing)",
-                currentState = detectRejectNonFerrousTrailing,
-                onStateChange = { newState -> viewModel.setDetectRejectNonFerrousTrailing(newState) },
-                helpText = "Select if there was satisfactory Detection and Rejection of the pack with the metal sample placed in the trailing edge. Note down the peak signal.",
-                inputLabel = "Produced Signal",
-                inputValue = peakSignalNonFerrousTrailing,
-                onInputValueChange = { newValue ->
-                    viewModel.setPeakSignalNonFerrousTrailing(
-                        newValue
-                    )
+                secondInputLabel = "Cert No.",
+                secondInputValue = sampleCert,
+                onSecondInputValueChange = {
+                    viewModel.setSampleCertificateNumberNonFerrous(it)
+                    viewModel.autoUpdateNonFerrousPvResult()
                 },
-                //inputKeyboardType = KeyboardType.Number
+                helpText = """
+                    Enter the achieved Non-Ferrous sensitivity and the certificate number.
+                    
+                    M&S Target: ${viewModel.sensitivityData.value?.NonFerrousTargetMM}mm  
+                    Max Allowed: ${viewModel.sensitivityData.value?.NonFerrousMaxMM}mm
+                """.trimIndent(),
+                firstInputKeyboardType = KeyboardType.Number,
+                secondInputKeyboardType = KeyboardType.Text,
+                isNAToggleEnabled = true
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // Skip the D&R tests if N/A
+            if (sensitivity != "N/A") {
+
+                LabeledTriStateSwitchAndTextInputWithHelp(
+                    label = "Detected & Rejected (Leading)",
+                    currentState = detectLeading,
+                    onStateChange = {
+                        viewModel.setDetectRejectNonFerrousLeading(it)
+                        viewModel.autoUpdateNonFerrousPvResult()
+                    },
+                    helpText = "Leading-edge test result & peak signal.",
+                    inputLabel = "Produced Signal",
+                    inputValue = peakLeading,
+                    onInputValueChange = {
+                        viewModel.setPeakSignalNonFerrousLeading(it)
+                        viewModel.autoUpdateNonFerrousPvResult()
+                    }
+                )
+
+                LabeledTriStateSwitchAndTextInputWithHelp(
+                    label = "Detected & Rejected (Middle)",
+                    currentState = detectMiddle,
+                    onStateChange = {
+                        viewModel.setDetectRejectNonFerrousMiddle(it)
+                        viewModel.autoUpdateNonFerrousPvResult()
+                    },
+                    helpText = "Middle test result & peak signal.",
+                    inputLabel = "Produced Signal",
+                    inputValue = peakMiddle,
+                    onInputValueChange = {
+                        viewModel.setPeakSignalNonFerrousMiddle(it)
+                        viewModel.autoUpdateNonFerrousPvResult()
+                    }
+                )
+
+                LabeledTriStateSwitchAndTextInputWithHelp(
+                    label = "Detected & Rejected (Trailing)",
+                    currentState = detectTrailing,
+                    onStateChange = {
+                        viewModel.setDetectRejectNonFerrousTrailing(it)
+                        viewModel.autoUpdateNonFerrousPvResult()
+                    },
+                    helpText = "Trailing test result & peak signal.",
+                    inputLabel = "Produced Signal",
+                    inputValue = peakTrailing,
+                    onInputValueChange = {
+                        viewModel.setPeakSignalNonFerrousTrailing(it)
+                        viewModel.autoUpdateNonFerrousPvResult()
+                    }
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            // ⭐ PV Result (only when required)
+            if (viewModel.pvRequired.value) {
+                LabeledFourOptionRadioWithHelp(
+                    label = "P.V. Result",
+                    value = viewModel.nonFerrousTestPvResult.value,
+                    onValueChange = viewModel::setNonFerrousTestPvResult,
+                    helpText = """
+                        Auto-Pass rules:
+                          • Achieved Sensitivity ≤ M&S Max
+                          • Certificate number entered
+                          • All three D&R = Yes
+                          • All peak signals entered
+
+                        Otherwise auto-fail.
+                        You may override manually.
+                    """.trimIndent(),
+                    showNotFittedOption = true,
+                    notFittedEnabled = false
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
 
             LabeledTextFieldWithHelp(
                 label = "Engineer Notes",
-                value = nonFerrousTestEngineerNotes,
-                onValueChange = { newValue -> viewModel.setNonFerrousTestEngineerNotes(newValue) },
+                value = notes,
+                onValueChange = viewModel::setNonFerrousTestEngineerNotes,
                 helpText = "Enter any notes relevant to this section",
                 isNAToggleEnabled = false
             )
 
-
-
-            Spacer(modifier = Modifier.height(16.dp))
-
+            Spacer(Modifier.height(60.dp))
         }
     }
 }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -14,99 +15,130 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
+import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
+import com.example.mecca.formModules.YesNoState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalMetalDetectorConveyorLargeMetalTest(
     navController: NavHostController,
-    viewModel: CalibrationMetalDetectorConveyorViewModel = viewModel()
+    viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    // Stops the next button from being pressed until the screen is rendered
-    LaunchedEffect(Unit) {
-        viewModel.finishNavigation()
-    }
-
-    val progress = viewModel.progress
     val scrollState = rememberScrollState()
 
-    // Get and update data in the ViewModel
+    val dr by viewModel.detectRejectLargeMetal
+    val certNo by viewModel.sampleCertificateNumberLargeMetal
+    val notes by viewModel.largeMetalTestEngineerNotes
+    val pvRequired by viewModel.pvRequired
 
-    val detectRejectLargeMetal by viewModel.detectRejectLargeMetal
-    val sampleCertificateNumberLargeMetal by viewModel.sampleCertificateNumberLargeMetal
-    val largeMetalTestEngineerNotes by viewModel.largeMetalTestEngineerNotes
+    // Next enabled rules:
+    // - If N/A: allow Next
+    // - If YES or NO: require cert number
+    val isNextStepEnabled = when (dr) {
+        YesNoState.NA -> true
+        YesNoState.YES, YesNoState.NO -> certNo.isNotBlank()
+        else -> false
+    }
 
-    //Determine if "Next Step" button should be enabled
-    val isNextStepEnabled =
-        sampleCertificateNumberLargeMetal.isNotBlank()
+    LaunchedEffect(isNextStepEnabled) {
+        viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
+    }
+
+    // Auto-update PV whenever relevant fields change (cleaner than sprinkling calls everywhere)
+    LaunchedEffect(pvRequired, dr, certNo) {
+        if (!pvRequired) {
+            viewModel.setLargeMetalTestPvResult("N/A")
+            return@LaunchedEffect
+        }
+
+        // PV rules (adjust if your spec differs)
+        when (dr) {
+            YesNoState.NA -> viewModel.setLargeMetalTestPvResult("N/A")
+            YesNoState.YES ->
+                viewModel.setLargeMetalTestPvResult(if (certNo.isNotBlank()) "Pass" else "Fail")
+            YesNoState.NO ->
+                viewModel.setLargeMetalTestPvResult("Fail")
+            else ->
+                viewModel.setLargeMetalTestPvResult("Fail")
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        CalibrationBanner(
-            progress = progress,
-            viewModel = viewModel
-        )
 
-        // Navigation Buttons
-        CalibrationNavigationButtons(
-            onPreviousClick = { viewModel.updateLargeMetalResult() },
-            onCancelClick = { viewModel.updateLargeMetalResult() },
-            onNextClick = {
-                viewModel.updateLargeMetalResult()
-                navController.navigate("CalMetalDetectorConveyorInfeedPEC")
-            },
-            isNextEnabled = isNextStepEnabled,
-            isFirstStep = false,
-            navController = navController,
-            viewModel = viewModel,
-            onSaveAndExitClick = { viewModel.updateLargeMetalResult() },
-        )
-
-        CalibrationHeader("Large Metal (20mm Fe) Test Result")
-
+        CalibrationHeader("Failsafe Tests - Large Metal")
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
                 .verticalScroll(scrollState)
+                .imePadding()
         ) {
 
-
             LabeledTriStateSwitchWithHelp(
-                label = "D&R OK",
-                currentState = detectRejectLargeMetal,
-                onStateChange = { newState -> viewModel.setDetectRejectLargeMetal(newState) },
+                label = "Det. & Rej. OK",
+                currentState = dr,
+                onStateChange = { newState ->
+                    viewModel.setDetectRejectLargeMetal(newState)
+
+                    // Optional but sensible: auto-fill fields for N/A
+                    if (newState == YesNoState.NA) {
+                        viewModel.setSampleCertificateNumberLargeMetal("N/A")
+                    } else if (certNo == "N/A") {
+                        viewModel.setSampleCertificateNumberLargeMetal("")
+                    }
+                },
                 helpText = "Select if there was satisfactory Detection and Rejection of the metal sample: Yes, No, or N/A."
             )
 
             LabeledTextFieldWithHelp(
                 label = "Sample Certificate No.",
-                value = sampleCertificateNumberLargeMetal,
-                onValueChange = { newValue ->
-                    viewModel.setSampleCertificateNumberLargeMetal(
-                        newValue
-                    )
-                },
-                helpText = "Enter the signal generated by the test pack with the metal sample at the trailing edge of the pack",
+                value = certNo,
+                onValueChange = viewModel::setSampleCertificateNumberLargeMetal,
+                helpText = "Enter the metal test sample certificate number (usually on the test piece).",
+                isNAToggleEnabled = false
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // -----------------------------------------------------
+            // PV RESULT (only when required)
+            // -----------------------------------------------------
+            if (pvRequired) {
+                LabeledFourOptionRadioWithHelp(
+                    label = "P.V. Result",
+                    value = viewModel.largeMetalTestPvResult.value,
+                    onValueChange = viewModel::setLargeMetalTestPvResult,
+                    helpText = """
+                        Auto-Pass rules:
+                          • Det. & Rej. OK = Yes
+                          • Certificate number entered
+
+                        If D&R OK = No → auto-fail.
+                        If D&R OK = N/A → PV = N/A.
+                        You may override manually.
+                    """.trimIndent(),
+                    showNotFittedOption = true,
+                    notFittedEnabled = false
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
             LabeledTextFieldWithHelp(
                 label = "Engineer Notes",
-                value = largeMetalTestEngineerNotes,
-                onValueChange = { newValue -> viewModel.setLargeMetalTestEngineerNotes(newValue) },
-                helpText = "Enter any notes relevant to this section",
+                value = notes,
+                onValueChange = viewModel::setLargeMetalTestEngineerNotes,
+                helpText = "Enter any notes relevant to this section.",
                 isNAToggleEnabled = false
             )
 
+            Spacer(modifier = Modifier.height(60.dp))
         }
     }
 }

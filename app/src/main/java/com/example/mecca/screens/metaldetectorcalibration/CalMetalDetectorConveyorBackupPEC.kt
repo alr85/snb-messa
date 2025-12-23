@@ -18,9 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledDropdownWithHelp
 import com.example.mecca.formModules.LabeledMultiSelectDropdownWithHelp
@@ -40,7 +38,7 @@ fun CalMetalDetectorConveyorBackupPEC(
         viewModel.finishNavigation()
     }
 
-    val progress = viewModel.progress
+    //val progress = viewModel.progress
     val scrollState = rememberScrollState() // Scroll state to control the scroll behavior
 
     // Get and update data in the ViewModel
@@ -90,29 +88,29 @@ fun CalMetalDetectorConveyorBackupPEC(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        CalibrationBanner(
-            progress = progress,
-            viewModel = viewModel
-        )
+//        CalibrationBanner(
+//            progress = progress,
+//            viewModel = viewModel
+//        )
 
         // Navigation Buttons
-        CalibrationNavigationButtons(
-            onPreviousClick = { viewModel.updateBackupSensor() },
-            onCancelClick = {
-                viewModel.updateBackupSensor()
-            },
-            onNextClick = {
-                viewModel.updateBackupSensor()
-                navController.navigate("CalMetalDetectorConveyorAirPressureSensor")
-            },
-            isNextEnabled = isNextStepEnabled,
-            isFirstStep = false,
-            navController = navController,
-            viewModel = viewModel,
-            onSaveAndExitClick = {
-                viewModel.updateBackupSensor()
-            },
-        )
+//        CalibrationNavigationButtons(
+//            onPreviousClick = { viewModel.updateBackupSensor() },
+//            onCancelClick = {
+//                viewModel.updateBackupSensor()
+//            },
+//            onNextClick = {
+//                viewModel.updateBackupSensor()
+//                navController.navigate("CalMetalDetectorConveyorAirPressureSensor")
+//            },
+//            isNextEnabled = isNextStepEnabled,
+//            isFirstStep = false,
+//            navController = navController,
+//            viewModel = viewModel,
+//            onSaveAndExitClick = {
+//                viewModel.updateBackupSensor()
+//            },
+//        )
 
         CalibrationHeader("Compliance Checks - Backup")
         Column(

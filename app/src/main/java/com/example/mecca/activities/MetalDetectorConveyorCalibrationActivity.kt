@@ -14,7 +14,7 @@ import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorV
 import com.example.mecca.repositories.MetalDetectorConveyorCalibrationRepository
 import com.example.mecca.repositories.MetalDetectorSystemsRepository
 import com.example.mecca.repositories.RetailerSensitivitiesRepository
-import com.example.mecca.ui.theme.MetalDetectorConveyorCalibrationNavGraph
+import com.example.mecca.screens.metaldetectorcalibration.MetalDetectorConveyorCalibrationScreenWrapper
 import com.example.mecca.ui.theme.MyAppTheme
 
 
@@ -150,9 +150,9 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
                 val navController = rememberNavController()
 
                 // Calibration-specific navigation graph
-                MetalDetectorConveyorCalibrationNavGraph(
+                MetalDetectorConveyorCalibrationScreenWrapper(
                     navController = navController,
-                    calibrationViewModel = calibrationViewModel,
+                    viewModel = calibrationViewModel,
                     calibrationId = calibrationId,
                     apiService = apiService
                 )

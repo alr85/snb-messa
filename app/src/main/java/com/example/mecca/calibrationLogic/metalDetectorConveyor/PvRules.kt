@@ -59,63 +59,185 @@ fun CalibrationMetalDetectorConveyorViewModel.autoUpdateDetectionSettingPvResult
     }
 }
 
+
 // ---------------------------------------------------------
-// Ferrous PV Logic
+// Sensitivity PV Logic
 // ---------------------------------------------------------
+
 fun CalibrationMetalDetectorConveyorViewModel.autoUpdateFerrousPvResult() {
-    val leading = detectRejectFerrousLeading.value
-    val middle = detectRejectFerrousMiddle.value
-    val trailing = detectRejectFerrousTrailing.value
 
-    val leadingPeak = peakSignalFerrousLeading.value
-    val middlePeak = peakSignalFerrousMiddle.value
-    val trailingPeak = peakSignalFerrousTrailing.value
+    val result = evaluatePvResult(
+        achievedSensitivityString = sensitivityAsLeftFerrous.value.trim(),
+        maxSensitivity = sensitivityData.value?.FerrousMaxMM,
+        leadingState = detectRejectFerrousLeading.value,
+        middleState = detectRejectFerrousMiddle.value,
+        trailingState = detectRejectFerrousTrailing.value,
+        leadingPeak = peakSignalFerrousLeading.value,
+        middlePeak = peakSignalFerrousMiddle.value,
+        trailingPeak = peakSignalFerrousTrailing.value,
+        certificate = sampleCertificateNumberFerrous.value.trim()
+    )
 
-    val sampleCertificate = sampleCertificateNumberFerrous.value.trim()
+    setFerrousTestPvResult(result)
+}
 
-    val achievedSensitivityString = sensitivityAsLeftFerrous.value.trim()
-    val achievedSensitivity = achievedSensitivityString.toDoubleOrNull()
-    val maxSensitivity = sensitivityData.value?.FerrousMaxMM ?: 0.0
 
-    val retailerSensitivityAchieved =
-        achievedSensitivity?.let { it <= maxSensitivity } ?: false
+fun CalibrationMetalDetectorConveyorViewModel.autoUpdateNonFerrousPvResult() {
 
-    // Handle "N/A"
-    if (achievedSensitivityString.equals("N/A", ignoreCase = true)) {
-        setFerrousTestPvResult("N/A")
+    val result = evaluatePvResult(
+        achievedSensitivityString = sensitivityAsLeftNonFerrous.value.trim(),
+        maxSensitivity = sensitivityData.value?.NonFerrousMaxMM,
+        leadingState = detectRejectNonFerrousLeading.value,
+        middleState = detectRejectNonFerrousMiddle.value,
+        trailingState = detectRejectNonFerrousTrailing.value,
+        leadingPeak = peakSignalNonFerrousLeading.value,
+        middlePeak = peakSignalNonFerrousMiddle.value,
+        trailingPeak = peakSignalNonFerrousTrailing.value,
+        certificate = sampleCertificateNumberNonFerrous.value.trim()
+    )
+
+    setNonFerrousTestPvResult(result)
+}
+
+fun CalibrationMetalDetectorConveyorViewModel.autoUpdateStainlessPvResult() {
+
+    val result = evaluatePvResult(
+        achievedSensitivityString = sensitivityAsLeftStainless.value.trim(),
+        maxSensitivity = sensitivityData.value?.Stainless316MaxMM,
+        leadingState = detectRejectStainlessLeading.value,
+        middleState = detectRejectStainlessMiddle.value,
+        trailingState = detectRejectStainlessTrailing.value,
+        leadingPeak = peakSignalStainlessLeading.value,
+        middlePeak = peakSignalStainlessMiddle.value,
+        trailingPeak = peakSignalStainlessTrailing.value,
+        certificate = sampleCertificateNumberStainless.value.trim()
+    )
+
+    setStainlessTestPvResult(result)
+}
+
+fun CalibrationMetalDetectorConveyorViewModel.autoUpdateInfeedSensorPvResult() {
+
+    if (!pvRequired.value) {
+        setInfeedSensorTestPvResult("N/A")
         return
     }
 
+    if (infeedSensorFitted.value == YesNoState.NO) {
+        setInfeedSensorTestPvResult("Not Fitted")
+        return
+    }
+
+    if (infeedSensorFitted.value == YesNoState.NA) {
+        setInfeedSensorTestPvResult("N/A")
+        return
+    }
+
+    val passes =
+        infeedSensorDetail.value.isNotBlank() &&
+                infeedSensorTestMethod.value.isNotBlank() &&
+                infeedSensorTestResult.value.isNotEmpty() &&
+                "No Result" !in infeedSensorTestResult.value &&
+                infeedSensorLatched.value == YesNoState.YES &&
+                infeedSensorCR.value == YesNoState.YES &&
+                (infeedSensorTestMethod.value != "Other" ||
+                        infeedSensorTestMethodOther.value.isNotBlank())
+
+    setInfeedSensorTestPvResult(
+        if (passes) "Pass" else "Fail"
+    )
+
+
+}
+
+fun CalibrationMetalDetectorConveyorViewModel.autoUpdateRejectConfirmSensorPvResult() {
+
+    // If PV isn't required for this calibration, make it N/A and stop.
+    if (!pvRequired.value) {
+        setRejectConfirmSensorPvResult("N/A")
+        return
+    }
+
+    if (rejectConfirmSensorFitted.value == YesNoState.NO) {
+        setRejectConfirmSensorPvResult("Not Fitted")
+        return
+    }
+
+    if (rejectConfirmSensorFitted.value == YesNoState.NA) {
+        setRejectConfirmSensorPvResult("N/A")
+        return
+    }
+
+
+    val passes =
+        rejectConfirmSensorDetail.value.isNotBlank() &&
+                rejectConfirmSensorTestMethod.value.isNotBlank() &&
+                rejectConfirmSensorTestResult.value.isNotEmpty() &&
+                "No Result" !in rejectConfirmSensorTestResult.value &&
+                rejectConfirmSensorLatched.value != YesNoState.NA &&
+                rejectConfirmSensorLatched.value != YesNoState.NO &&
+                rejectConfirmSensorCR.value != YesNoState.NA &&
+                rejectConfirmSensorCR.value != YesNoState.NO &&
+                rejectConfirmSensorStopPosition.value.isNotBlank() &&
+                rejectConfirmSensorStopPosition.value != "Out-feed Belt (Uncontrolled)" &&
+                (rejectConfirmSensorTestMethod.value != "Other" ||
+                        rejectConfirmSensorTestMethodOther.value.isNotBlank())
+
+    setRejectConfirmSensorPvResult(
+        if (passes) "Pass" else "Fail"
+    )
+}
+fun evaluatePvResult(
+    achievedSensitivityString: String,
+    maxSensitivity: Double?,
+    leadingState: YesNoState,
+    middleState: YesNoState,
+    trailingState: YesNoState,
+    leadingPeak: String,
+    middlePeak: String,
+    trailingPeak: String,
+    certificate: String
+): String {
+
+    // Handle "N/A" early
+    if (achievedSensitivityString.equals("N/A", ignoreCase = true)) {
+        return "N/A"
+    }
+
+    val achievedDouble = achievedSensitivityString.toDoubleOrNull()
+        ?: return "Fail"   // invalid number means fail
+
+    val retailerSensitivityAchieved =
+        maxSensitivity?.let { achievedDouble <= it } ?: false
+
+    // Passed?
     val allPassed =
-        leading == YesNoState.YES &&
-                middle == YesNoState.YES &&
-                trailing == YesNoState.YES &&
+        leadingState == YesNoState.YES &&
+                middleState == YesNoState.YES &&
+                trailingState == YesNoState.YES &&
                 leadingPeak.isNotBlank() &&
                 middlePeak.isNotBlank() &&
                 trailingPeak.isNotBlank() &&
-                sampleCertificate.isNotBlank() &&
+                certificate.isNotBlank() &&
                 retailerSensitivityAchieved
 
+    // Any failures?
     val anyFailed =
-        leading == YesNoState.NO ||
-                leading == YesNoState.NA ||
-                middle == YesNoState.NO ||
-                middle == YesNoState.NA ||
-                trailing == YesNoState.NO ||
-                trailing == YesNoState.NA ||
-                (leading == YesNoState.YES && leadingPeak.isBlank()) ||
-                (middle == YesNoState.YES && middlePeak.isBlank()) ||
-                (trailing == YesNoState.YES && trailingPeak.isBlank()) ||
-                sampleCertificate.isBlank() ||
+        leadingState == YesNoState.NO || leadingState == YesNoState.NA ||
+                middleState == YesNoState.NO || middleState == YesNoState.NA ||
+                trailingState == YesNoState.NO || trailingState == YesNoState.NA ||
+                (leadingState == YesNoState.YES && leadingPeak.isBlank()) ||
+                (middleState == YesNoState.YES && middlePeak.isBlank()) ||
+                (trailingState == YesNoState.YES && trailingPeak.isBlank()) ||
+                certificate.isBlank() ||
                 !retailerSensitivityAchieved
 
-    when {
-        allPassed -> setFerrousTestPvResult("Pass")
-        anyFailed -> setFerrousTestPvResult("Fail")
-        else -> { /* no auto change */ }
+    return when {
+        allPassed -> "Pass"
+        anyFailed -> "Fail"
+        else -> "Fail"  // fallback
     }
 }
-
 
 // ---------------------------------------------------------
 // Set all PV results to N/A

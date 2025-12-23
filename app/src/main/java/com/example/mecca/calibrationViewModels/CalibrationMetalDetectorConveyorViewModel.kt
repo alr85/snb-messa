@@ -497,6 +497,18 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
 
+    private val _step = MutableStateFlow(0)
+    val step: StateFlow<Int> = _step
+
+
+    private val _currentScreenNextEnabled = MutableStateFlow(true)
+    val currentScreenNextEnabled = _currentScreenNextEnabled
+
+    fun setCurrentScreenNextEnabled(enabled: Boolean) {
+        _currentScreenNextEnabled.value = enabled
+    }
+
+
 
 
     // -----------------------------------------------------------------------------
@@ -515,23 +527,9 @@ class CalibrationMetalDetectorConveyorViewModel(
     private val _isNavigating = MutableStateFlow(false)
     val isNavigating: StateFlow<Boolean> get() = _isNavigating
 
-    private var _currentStep = mutableIntStateOf(1) // Start from step 1
-    //val currentStep: State<Int> = _currentStep
 
-    val progress: Float
-        get() = _currentStep.intValue / 26f // Calculate progress as a fraction of 26
 
-    fun incrementStep() {
-        if (_currentStep.intValue < 26) {
-            _currentStep.intValue += 1
-        }
-    }
 
-    fun decrementStep() {
-        if (_currentStep.intValue > 1) {
-            _currentStep.intValue -= 1
-        }
-    }
 
     fun startNavigation() {
         _isNavigating.value = true
@@ -566,6 +564,53 @@ class CalibrationMetalDetectorConveyorViewModel(
         _peakSignalFerrousTrailing.value = ""
         _ferrousTestPvResult.value = ""
     }
+
+    fun disableNonFerrousTest(){
+        _sampleCertificateNumberNonFerrous.value = "N/A"
+        _detectRejectNonFerrousLeading.value = YesNoState.NA
+        _detectRejectNonFerrousMiddle.value = YesNoState.NA
+        _detectRejectNonFerrousTrailing.value = YesNoState.NA
+        _peakSignalNonFerrousLeading.value = "N/A"
+        _peakSignalNonFerrousMiddle.value = "N/A"
+        _peakSignalNonFerrousTrailing.value = "N/A"
+        _nonFerrousTestPvResult.value = "N/A"
+    }
+
+    fun enableNonFerrousTest(){
+        _sampleCertificateNumberNonFerrous.value = ""
+        _detectRejectNonFerrousLeading.value = YesNoState.NO
+        _detectRejectNonFerrousMiddle.value = YesNoState.NO
+        _detectRejectNonFerrousTrailing.value = YesNoState.NO
+        _peakSignalNonFerrousLeading.value = ""
+        _peakSignalNonFerrousMiddle.value = ""
+        _peakSignalNonFerrousTrailing.value = ""
+        _nonFerrousTestPvResult.value = ""
+    }
+
+    fun disableStainlessTest(){
+        _sampleCertificateNumberStainless.value = "N/A"
+        _detectRejectStainlessLeading.value = YesNoState.NA
+        _detectRejectStainlessMiddle.value = YesNoState.NA
+        _detectRejectStainlessTrailing.value = YesNoState.NA
+        _peakSignalStainlessLeading.value = "N/A"
+        _peakSignalStainlessMiddle.value = "N/A"
+        _peakSignalStainlessTrailing.value = "N/A"
+        _stainlessTestPvResult.value = "N/A"
+
+    }
+
+    fun enableStainlessTest(){
+        _sampleCertificateNumberStainless.value = ""
+        _detectRejectStainlessLeading.value = YesNoState.NO
+        _detectRejectStainlessMiddle.value = YesNoState.NO
+        _detectRejectStainlessTrailing.value = YesNoState.NO
+        _peakSignalStainlessLeading.value = ""
+        _peakSignalStainlessMiddle.value = ""
+        _peakSignalStainlessTrailing.value = ""
+        _stainlessTestPvResult.value = ""
+
+    }
+
 
 
 
@@ -603,6 +648,99 @@ class CalibrationMetalDetectorConveyorViewModel(
             calibrationRepository.insertNewCalibration(insert)
         }
     }
+
+    fun shouldSkipToSummary(): Boolean {
+        return !canPerformCalibration.value &&
+                reasonForNotCalibrating.value.isNotBlank()
+    }
+
+
+    fun persistCurrentScreen(route: String) {
+        when (route.removeSuffix("/{calibrationId}")) {
+
+            "MetalDetectorConveyorCalibrationStart" ->
+                updateCalibrationStart()
+
+            "CalMetalDetectorConveyorSensitivityRequirements" ->
+                updateSensitivityRequirements()
+
+            "CalMetalDetectorConveyorProductDetails" ->
+                updateProductDetails()
+
+            "CalMetalDetectorConveyorDetectionSettingsAsFound" ->
+                updateDetectionSettingsAsFound()
+
+            "CalMetalDetectorConveyorSensitivityAsFound" ->
+                updateSensitivitiesAsFound()
+
+            "CalMetalDetectorConveyorFerrousTest" ->
+                updateFerrousResult()
+
+            "CalMetalDetectorConveyorNonFerrousTest" ->
+                updateNonFerrousResult()
+
+            "CalMetalDetectorConveyorStainlessTest" ->
+                updateStainlessResult()
+
+            "CalMetalDetectorConveyorLargeMetalTest" ->
+                updateLargeMetalResult()
+
+            "CalMetalDetectorConveyorDetectionSettingsAsLeft" ->
+                updateDetectionSettingAsLeft()
+
+            "CalMetalDetectorConveyorRejectSettings" ->
+                updateRejectSettings()
+
+            "CalMetalDetectorConveyorSystemChecklist" ->
+                updateSystemChecklist()
+
+            "CalMetalDetectorConveyorConveyorDetails" ->
+                updateConveyorDetails()
+
+            "CalMetalDetectorConveyorIndicators" ->
+                updateIndicators()
+
+            "CalMetalDetectorConveyorInfeedPEC" ->
+                updateInfeedSensor()
+
+            "CalMetalDetectorConveyorRejectConfirmPEC" ->
+                updateRejectConfirmSensor()
+
+            "CalMetalDetectorConveyorBinFullPEC" ->
+                updateBinFullSensor()
+
+            "CalMetalDetectorConveyorBackupPEC" ->
+                updateBackupSensor()
+
+            "CalMetalDetectorConveyorAirPressureSensor" ->
+                updateAirPressureSensor()
+
+            "CalMetalDetectorConveyorPackCheckSensor" ->
+                updatePackCheckSensor()
+
+            "CalMetalDetectorConveyorSpeedSensor" ->
+                updateSpeedSensor()
+
+            "CalMetalDetectorConveyorDetectNotification" ->
+                updateDetectNotification()
+
+            "CalMetalDetectorConveyorBinDoorMonitor" ->
+                updateBinDoorMonitor()
+
+            "CalMetalDetectorConveyorSmeDetails" ->
+                updateOperatorTest()
+
+            "CalMetalDetectorConveyorComplianceConfirmation" ->
+                updateComplianceConfirmation()
+
+            else -> {
+                // Do nothing for routes we don’t recognise
+            }
+        }
+    }
+
+
+
 
     fun updateCalibrationStart() {
         if (!pvRequired.value) {
@@ -1448,6 +1586,14 @@ class CalibrationMetalDetectorConveyorViewModel(
         _nonFerrousTestEngineerNotes.value = newValue
     }
 
+    private val _nonFerrousTestPvResult = mutableStateOf("")
+    val nonFerrousTestPvResult: State<String> = _nonFerrousTestPvResult
+
+
+    fun setNonFerrousTestPvResult(newValue: String) {
+        _nonFerrousTestPvResult.value = newValue
+    }
+
     //-----------------------------------------------------------------Stainless Sensitivity Result
 
     private val _sensitivityAsLeftStainless = mutableStateOf("")
@@ -1534,6 +1680,15 @@ class CalibrationMetalDetectorConveyorViewModel(
         _stainlessTestEngineerNotes.value = newValue
     }
 
+    private val _stainlessTestPvResult = mutableStateOf("")
+    val stainlessTestPvResult: State<String> = _stainlessTestPvResult
+
+    fun setStainlessTestPvResult(newValue: String) {
+        _stainlessTestPvResult.value = newValue
+    }
+
+
+
     //----------------------------------------------------------------Large Metal Sensitivity Result
 
     private val _detectRejectLargeMetal = mutableStateOf(YesNoState.NO)
@@ -1561,6 +1716,14 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun setLargeMetalTestEngineerNotes(newValue: String) {
         _largeMetalTestEngineerNotes.value = newValue
     }
+
+    private val _largeMetalTestPvResult = mutableStateOf("")
+    val largeMetalTestPvResult: State<String> = _largeMetalTestPvResult
+
+    fun setLargeMetalTestPvResult(newValue: String) {
+        _largeMetalTestPvResult.value = newValue
+    }
+
 
     //------------------------------------------------------------------Detection Settings 'As Left'
 
@@ -2058,6 +2221,13 @@ class CalibrationMetalDetectorConveyorViewModel(
         _infeedSensorCR.value = newValue
     }
 
+    private val _infeedSensorTestPvResult = mutableStateOf("")
+    val infeedSensorTestPvResult: State<String> = _infeedSensorTestPvResult
+
+    fun setInfeedSensorTestPvResult(newValue: String) {
+        _infeedSensorTestPvResult.value = newValue
+    }
+
 
     //--------------------------------------------------------------------Reject Confirm sensor Test
     private val _rejectConfirmSensorFitted = mutableStateOf(YesNoState.NO)
@@ -2125,6 +2295,13 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setRejectConfirmSensorStopPosition(newValue: String) {
         _rejectConfirmSensorStopPosition.value = newValue
+    }
+
+    private val _rejectConfirmSensorPvResult = mutableStateOf("")
+    val rejectConfirmSensorPvResult: State<String> = _rejectConfirmSensorPvResult
+
+    fun setRejectConfirmSensorPvResult(newValue: String) {
+        _rejectConfirmSensorPvResult.value = newValue
     }
 
     //-------------------------------------------------------------------------Bin Full sensor Test

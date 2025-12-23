@@ -77,7 +77,8 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.compose.ui)
-    implementation(libs.ui)        // Kotlin extensions
+    implementation(libs.ui)
+    implementation(libs.androidx.compose.foundation.layout)        // Kotlin extensions
     ksp(libs.androidx.room.compiler)              // ✅ use KSP for code generation
     implementation(libs.androidx.room.compiler)
     implementation(libs.androidx.runtime.livedata)
@@ -108,6 +109,8 @@ dependencies {
     implementation(libs.kotlinxCoroutinesCore)
 
     implementation(libs.accompanistInsets)
+
+    implementation(libs.accompanist.flowlayout)
 
     configurations.all {
         exclude(group = "com.intellij", module = "annotations")

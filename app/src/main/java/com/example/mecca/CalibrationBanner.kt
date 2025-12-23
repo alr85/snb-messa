@@ -1,5 +1,6 @@
 package com.example.mecca
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -33,17 +34,17 @@ import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConveyorSummaryDetails
 
+
 @Composable
 fun CalibrationBanner(
-
-    progress: Float, // Progress between 0.0 and 1.0
-    viewModel: CalibrationMetalDetectorConveyorViewModel // Pass the view model to access details for the dialog
+    progress: Float,                     // now comes from NavController state
+    viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
     var showDetailsDialog by remember { mutableStateOf(false) }
     var showBackDisabledDialog by remember { mutableStateOf(false) }
 
-    // Disable the system back button while in calibration
-    androidx.activity.compose.BackHandler(enabled = true) {
+    // Disable system back
+    BackHandler(enabled = true) {
         showBackDisabledDialog = true
     }
 
@@ -53,110 +54,92 @@ fun CalibrationBanner(
             .background(Color.White)
             .padding(10.dp)
     ) {
-        // Banner content
+
         Spacer(modifier = Modifier.height(20.dp))
+
+        // ---------------- Banner Row ----------------
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Company logo on the left with original colors
+
+            // Logo
             Box(
                 modifier = Modifier
-                    .width(150.dp) // Fixed width for the logo
-                    .padding(start = 2.dp) // Add left padding
+                    .width(150.dp)
+                    .padding(start = 2.dp)
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.logo_electronics),
-                    contentScale = ContentScale.Fit, // Ensures the image fits within the bounds
+                    contentScale = ContentScale.Fit,
                     contentDescription = "Company Logo"
                 )
             }
 
-            Spacer(modifier = Modifier.width(2.dp)) // Add some space between logo and text
+            Spacer(modifier = Modifier.width(2.dp))
 
-            // Centered text in the remaining space
+            // Title and Calibration ID
             Box(
                 modifier = Modifier
-                    .weight(1f) // Allocate the remaining space
-                    .fillMaxWidth(), // Ensure it uses all the space allocated
-                contentAlignment = Alignment.Center // Center content in the Box
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
             ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ){
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Metal Detector Calibration",
-                            style = MaterialTheme.typography.headlineMedium
-                        )
-                    }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+                    Text(
+                        text = "Metal Detector Calibration",
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+
                     Spacer(modifier = Modifier.height(2.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Calibration ID: ${viewModel.calibrationId.value}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.Gray, // Use a predefined grey color
-                            //modifier = Modifier.align(Alignment.CenterHorizontally)
-                        )
-                    }
+
+                    Text(
+                        text = "Calibration ID: ${viewModel.calibrationId.value}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.Gray
+                    )
                 }
-
-
-
             }
         }
 
-
-
         Spacer(modifier = Modifier.height(12.dp))
 
-
-
+        // Model / Serial
         Text(
-            text = "${viewModel.modelDescription.value} ( ${viewModel.serialNumber.value} ) ",
+            text = "${viewModel.modelDescription.value} ( ${viewModel.serialNumber.value} )",
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
 
         Spacer(modifier = Modifier.height(6.dp))
 
-
-        // Progress Bar - Clickable to show details
+        // ---------------- Progress Bar ----------------
         LinearProgressIndicator(
-            progress = { progress },
+            progress = { progress },        // progress now comes from the wrapper
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { showDetailsDialog = true }, // Make the progress bar clickable to open the dialog
+                .clickable { showDetailsDialog = true }
         )
     }
 
-    // Dialog to display calibration details
+    // ---------------- Details Dialog ----------------
     if (showDetailsDialog) {
         AlertDialog(
             onDismissRequest = { showDetailsDialog = false },
-
             text = {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(max = 600.dp) // Limit height to prevent the dialog from taking up the full screen
-                        .verticalScroll(rememberScrollState()) // Enable scrolling if content exceeds the limit
+                        .heightIn(max = 600.dp)
+                        .verticalScroll(rememberScrollState())
                         .padding(16.dp)
                 ) {
                     CalMetalDetectorConveyorSummaryDetails(viewModel = viewModel)
                 }
             },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        showDetailsDialog = false // Close dialog when confirmed
-                    }
-                ) {
+                TextButton(onClick = { showDetailsDialog = false }) {
                     Text("Close")
                 }
             },
@@ -164,7 +147,7 @@ fun CalibrationBanner(
         )
     }
 
-    // Back button disabled dialog
+    // ---------------- Back Disabled Dialog ----------------
     if (showBackDisabledDialog) {
         AlertDialog(
             onDismissRequest = { showBackDisabledDialog = false },
@@ -174,7 +157,12 @@ fun CalibrationBanner(
                 }
             },
             title = { Text("Action Disabled") },
-            text = { Text("To prevent data loss - the normal back button is disabled during calibration. Please use the navigation buttons at the top of the screen") },
+            text = {
+                Text(
+                    "To prevent data loss, the normal back button is disabled during calibration. " +
+                            "Please use the navigation buttons at the bottom of the screen."
+                )
+            },
             containerColor = Color.White
         )
     }

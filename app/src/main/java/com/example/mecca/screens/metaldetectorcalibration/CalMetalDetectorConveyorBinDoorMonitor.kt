@@ -16,9 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledDropdownWithHelp
 import com.example.mecca.formModules.LabeledMultiSelectDropdownWithHelp
@@ -39,7 +37,7 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
         viewModel.finishNavigation()
     }
 
-    val progress = viewModel.progress
+    //val progress = viewModel.progress
     val scrollState = rememberScrollState() // Scroll state to control the scroll behavior
 
     // Get and update data in the ViewModel
@@ -99,29 +97,29 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
     )
 
     Column(modifier = Modifier.fillMaxSize()) {
-        CalibrationBanner(
-            progress = progress,
-            viewModel = viewModel
-        )
+//        CalibrationBanner(
+//            progress = progress,
+//            viewModel = viewModel
+//        )
 
         // Navigation Buttons
-        CalibrationNavigationButtons(
-            onPreviousClick = { viewModel.updateBinDoorMonitor() },
-            onCancelClick = {
-                viewModel.updateBinDoorMonitor()
-            },
-            onNextClick = {
-                viewModel.updateBinDoorMonitor()
-                navController.navigate("CalMetalDetectorConveyorSmeDetails")
-            },
-            isNextEnabled = isNextStepEnabled,
-            isFirstStep = false,
-            navController = navController,
-            viewModel = viewModel,
-            onSaveAndExitClick = {
-                viewModel.updateBinDoorMonitor()
-            },
-        )
+//        CalibrationNavigationButtons(
+//            onPreviousClick = { viewModel.updateBinDoorMonitor() },
+//            onCancelClick = {
+//                viewModel.updateBinDoorMonitor()
+//            },
+//            onNextClick = {
+//                viewModel.updateBinDoorMonitor()
+//                navController.navigate("CalMetalDetectorConveyorSmeDetails")
+//            },
+//            isNextEnabled = isNextStepEnabled,
+//            isFirstStep = false,
+//            navController = navController,
+//            viewModel = viewModel,
+//            onSaveAndExitClick = {
+//                viewModel.updateBinDoorMonitor()
+//            },
+//        )
 
         CalibrationHeader("Compliance Checks - Bin Door Monitor")
         Column(

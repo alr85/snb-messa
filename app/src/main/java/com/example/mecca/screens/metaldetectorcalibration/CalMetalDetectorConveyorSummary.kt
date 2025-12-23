@@ -1,5 +1,6 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
+//import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -40,9 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.mecca.ApiService
-import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.util.InAppLogger
 import kotlinx.coroutines.launch
 
@@ -56,7 +55,7 @@ fun CalMetalDetectorConveyorSummary(
     // Prevent premature navigation
     LaunchedEffect(Unit) { viewModel.finishNavigation() }
 
-    val progress = viewModel.progress
+    //val progress = viewModel.progress
     val activity = LocalActivity.current
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -77,28 +76,28 @@ fun CalMetalDetectorConveyorSummary(
             contentPadding = PaddingValues(bottom = 80.dp)
         ) {
             // Banner
-            item {
-                CalibrationBanner(progress = progress, viewModel = viewModel)
-            }
+//            item {
+//                CalibrationBanner(progress = progress, viewModel = viewModel)
+//            }
 
             // Nav buttons
-            item {
-                CalibrationNavigationButtons(
-                    onPreviousClick = { viewModel.updateComplianceConfirmation() },
-                    onCancelClick = {
-                        viewModel.clearCalibrationData()
-                        navController.navigate("serviceHome") {
-                            popUpTo("serviceHome") { inclusive = true }
-                        }
-                    },
-                    onNextClick = { },
-                    isNextEnabled = false,
-                    isFirstStep = false,
-                    navController = navController,
-                    viewModel = viewModel,
-                    onSaveAndExitClick = { /* custom save logic */ }
-                )
-            }
+//            item {
+//                CalibrationNavigationButtons(
+//                    onPreviousClick = { viewModel.updateComplianceConfirmation() },
+//                    onCancelClick = {
+//                        viewModel.clearCalibrationData()
+//                        navController.navigate("serviceHome") {
+//                            popUpTo("serviceHome") { inclusive = true }
+//                        }
+//                    },
+//                    onNextClick = { },
+//                    isNextEnabled = false,
+//                    isFirstStep = false,
+//                    navController = navController,
+//                    viewModel = viewModel,
+//                    onSaveAndExitClick = { /* custom save logic */ }
+//                )
+//            }
 
             // Summary info
             item {

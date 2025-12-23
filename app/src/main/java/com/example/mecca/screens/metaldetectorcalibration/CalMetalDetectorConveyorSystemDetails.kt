@@ -1,6 +1,5 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
-import com.example.mecca.CalibrationBanner
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.LabeledDropdownWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchAndTextInputWithHelp
@@ -33,7 +31,7 @@ fun CalMetalDetectorConveyorSystemDetails(
     navController: NavHostController,
     viewModel: CalibrationMetalDetectorConveyorViewModel = viewModel()
 ) {
-    val progress = viewModel.progress
+    //val progress = viewModel.progress
     val scrollState = rememberScrollState() // Scroll state to control the scroll behavior
 
 // Get and update data in the ViewModel
@@ -56,11 +54,11 @@ fun CalMetalDetectorConveyorSystemDetails(
             .padding(16.dp)
             .verticalScroll(scrollState) // Add scrolling to the whole column
     ) {
-        CalibrationBanner(
-            progress = progress,
-            viewModel = viewModel
-
-        )
+//        CalibrationBanner(
+//            progress = progress,
+//            viewModel = viewModel
+//
+//        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -139,26 +137,26 @@ fun CalMetalDetectorConveyorSystemDetails(
 
         Spacer(modifier = Modifier.height(16.dp))
         // Navigation Buttons
-        CalibrationNavigationButtons(
-            onPreviousClick = { /* Disable or hide the Previous button */ },
-            onCancelClick = {
-                // Clear the ViewModel's data
-                viewModel.clearCalibrationData()
-                // Navigate to Home Screen
-                navController.navigate("serviceHome") {
-                    popUpTo("serviceHome") {
-                        inclusive = true
-                    } // Remove the current screen from the backstack
-                }
-            },
-            onNextClick = { navController.navigate("CalMetalDetectorConveyorStainlessTest") },
-            isNextEnabled = isNextStepEnabled,
-            isFirstStep = false, // Indicates this is the first step and disables the Previous button
-            navController = navController,
-            viewModel = viewModel,
-            onSaveAndExitClick = {
-                //viewModel.saveCalibrationData() // Custom save logic here
-            },
-        )
+//        CalibrationNavigationButtons(
+//            onPreviousClick = { /* Disable or hide the Previous button */ },
+//            onCancelClick = {
+//                // Clear the ViewModel's data
+//                viewModel.clearCalibrationData()
+//                // Navigate to Home Screen
+//                navController.navigate("serviceHome") {
+//                    popUpTo("serviceHome") {
+//                        inclusive = true
+//                    } // Remove the current screen from the backstack
+//                }
+//            },
+//            onNextClick = { navController.navigate("CalMetalDetectorConveyorStainlessTest") },
+//            isNextEnabled = isNextStepEnabled,
+//            isFirstStep = false, // Indicates this is the first step and disables the Previous button
+//            navController = navController,
+//            viewModel = viewModel,
+//            onSaveAndExitClick = {
+//                //viewModel.saveCalibrationData() // Custom save logic here
+//            },
+//        )
     }
 }

@@ -14,9 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.calibrationViewModels.CalibrationNavigationButtons
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledDropdownWithTextInput
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
@@ -32,7 +30,7 @@ fun CalMetalDetectorConveyorIndicators(
         viewModel.finishNavigation()
     }
 
-    val progress = viewModel.progress
+    //val progress = viewModel.progress
     val scrollState = rememberScrollState() // Scroll state to control the scroll behavior
 
 // Get and update data in the ViewModel
@@ -68,28 +66,28 @@ fun CalMetalDetectorConveyorIndicators(
                 indicator1label.isNotBlank()
 
     Column(modifier = Modifier.fillMaxSize()) {
-        CalibrationBanner(
-            progress = progress,
-            viewModel = viewModel
-
-        )
+//        CalibrationBanner(
+//            progress = progress,
+//            viewModel = viewModel
+//
+//        )
 
         // Navigation Buttons
-        CalibrationNavigationButtons(
-            onPreviousClick = { viewModel.updateIndicators() },
-            onCancelClick = { viewModel.updateIndicators() },
-            onNextClick = {
-                viewModel.updateIndicators()
-                navController.navigate("CalMetalDetectorConveyorLargeMetalTest")
-            },
-            isNextEnabled = isNextStepEnabled,
-            isFirstStep = false, // Indicates this is the first step and disables the Previous button
-            navController = navController,
-            viewModel = viewModel,
-            onSaveAndExitClick = {
-                viewModel.updateIndicators()
-            },
-        )
+//        CalibrationNavigationButtons(
+//            onPreviousClick = { viewModel.updateIndicators() },
+//            onCancelClick = { viewModel.updateIndicators() },
+//            onNextClick = {
+//                viewModel.updateIndicators()
+//                navController.navigate("CalMetalDetectorConveyorLargeMetalTest")
+//            },
+//            isNextEnabled = isNextStepEnabled,
+//            isFirstStep = false, // Indicates this is the first step and disables the Previous button
+//            navController = navController,
+//            viewModel = viewModel,
+//            onSaveAndExitClick = {
+//                viewModel.updateIndicators()
+//            },
+//        )
         CalibrationHeader("Indicators")
 
 
