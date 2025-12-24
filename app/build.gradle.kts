@@ -78,7 +78,9 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.compose.ui)
     implementation(libs.ui)
-    implementation(libs.androidx.compose.foundation.layout)        // Kotlin extensions
+    implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.compose.runtime.annotation)
+    implementation(libs.androidx.compose.foundation)        // Kotlin extensions
     ksp(libs.androidx.room.compiler)              // ✅ use KSP for code generation
     implementation(libs.androidx.room.compiler)
     implementation(libs.androidx.runtime.livedata)

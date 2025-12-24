@@ -20,45 +20,47 @@ fun LabeledTextFieldWithHelp(
     onValueChange: (String) -> Unit,
     helpText: String,
     keyboardType: KeyboardType = KeyboardType.Text,
-    isNAToggleEnabled: Boolean = true
+    isNAToggleEnabled: Boolean = true,
+    rowDisabled: Boolean = false // optional: only use if you truly want to lock the whole row
 ) {
     var showHelpDialog by remember { mutableStateOf(false) }
 
-    // Derive disabled from model value. No stale locals.
-    var isDisabled by remember { mutableStateOf(value == "N/A") }
-    LaunchedEffect(value) { isDisabled = value == "N/A" }
+    val isNa = value == "N/A"
+    val inputDisabled = rowDisabled || isNa
 
     FormRowWrapper(
         label = label,
-        naButtonText = if (isDisabled) "Edit" else "N/A",
-        isDisabled = isDisabled,
+        naButtonText = if (isNa) "Edit" else "N/A",
+        // IMPORTANT: don't disable the wrapper just because it's N/A
+        isDisabled = rowDisabled,
         onNaClick = if (isNAToggleEnabled) {
             {
-                val next = !isDisabled
-                isDisabled = next
-                onValueChange(if (next) "N/A" else "")
+                // Toggle N/A regardless of inputDisabled, as long as the row isn't locked
+                if (!rowDisabled) {
+                    onValueChange(if (isNa) "" else "N/A")
+                }
             }
         } else null,
         onHelpClick = { showHelpDialog = true }
-    ) { disabled ->
+    ) { _ ->
         SimpleTextInput(
             value = value,
             onValueChange = { raw ->
-                if (!disabled) {
-                    var cleaned = raw
-                    if (keyboardType == KeyboardType.Text) {
-                        cleaned = cleaned.replaceFirstChar {
-                            if (it.isLowerCase()) it.titlecase() else it.toString()
-                        }
-                    }
+                if (!inputDisabled) {
+                    val cleaned =
+                        if (keyboardType == KeyboardType.Text) {
+                            raw.replaceFirstChar {
+                                if (it.isLowerCase()) it.titlecase() else it.toString()
+                            }
+                        } else raw
+
                     onValueChange(cleaned)
                 }
             },
             label = label,
             keyboardType = keyboardType,
-            isDisabled = disabled
+            isDisabled = inputDisabled
         )
-
     }
 
     if (showHelpDialog) {

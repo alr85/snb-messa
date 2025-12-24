@@ -3,6 +3,7 @@ package com.example.mecca
 import android.content.Context
 import android.util.Log
 import androidx.core.content.edit
+import com.example.mecca.util.InAppLogger
 
 object PreferencesHelper {
     private const val PREFS_NAME = "user_prefs"
@@ -33,12 +34,14 @@ object PreferencesHelper {
         val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         sharedPreferences.edit {
 
-            Log.d("LoginDebug", "Before Clearing: ${sharedPreferences.all}")
+            InAppLogger.d("Credentials before clearing: ${sharedPreferences.all}")
+
+
 
             clear()
         } // Clears all stored preferences synchronously
 
-        Log.d("LoginDebug", "After Clearing: ${sharedPreferences.all}")
+        InAppLogger.d("Credentials after clearing: ${sharedPreferences.all}")
     }
 }
 

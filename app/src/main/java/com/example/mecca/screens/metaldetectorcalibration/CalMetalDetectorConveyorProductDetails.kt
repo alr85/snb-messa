@@ -24,167 +24,104 @@ import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorV
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalMetalDetectorConveyorProductDetails(
     navController: NavHostController,
-    viewModel: CalibrationMetalDetectorConveyorViewModel = viewModel()
+    viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    // Stops the next button from being pressed until the screen is rendered
-    LaunchedEffect(Unit) {
-        viewModel.finishNavigation()
+    val scrollState = rememberScrollState()
+
+    val description by viewModel.productDescription
+    val libraryRef by viewModel.productLibraryReference
+    val libraryNumber by viewModel.productLibraryNumber
+    val length by viewModel.productLength
+    val width by viewModel.productWidth
+    val height by viewModel.productHeight
+    val notes by viewModel.productDetailsEngineerNotes
+
+    val isNextStepEnabled =
+        description.isNotBlank() &&
+                libraryRef.isNotBlank() &&
+                libraryNumber.isNotBlank() &&
+                length.isNotBlank() &&
+                width.isNotBlank() &&
+                height.isNotBlank()
+
+    LaunchedEffect(isNextStepEnabled) {
+        viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
-    //val progress = viewModel.progress
-    val scrollState = rememberScrollState()
-    val sensitivityData = viewModel.sensitivityData.value
-
-// Get and update data in the ViewModel
-    val productDescription by viewModel.productDescription
-    val productLibraryReference by viewModel.productLibraryReference
-    val productLibraryNumber by viewModel.productLibraryNumber
-    val productLength by viewModel.productLength
-    val productWidth by viewModel.productWidth
-    val productHeight by viewModel.productHeight
-    val productDetailsEngineerNotes by viewModel.productDetailsEngineerNotes
-
-    // State to control the visibility of the expandable section
-    var expanded by remember { mutableStateOf(false) }
-
-    //Determine if "Next Step" button should be enabled
-    val isNextStepEnabled =
-        productDescription.isNotBlank() &&
-                productLibraryReference.isNotBlank() &&
-                productLibraryNumber.isNotBlank() &&
-                productLength.isNotBlank() &&
-                productLength.isNotBlank() &&
-                productWidth.isNotBlank() &&
-                productHeight.isNotBlank()
-
-
     Column(modifier = Modifier.fillMaxSize()) {
-
-//        CalibrationBanner(
-//            progress = progress,
-//            viewModel = viewModel
-//        )
-
-//        CalibrationNavigationButtons(
-//            onPreviousClick = { viewModel.updateProductDetails() },
-//            onCancelClick = { viewModel.updateProductDetails() },
-//            onNextClick = {
-//                viewModel.updateProductDetails()
-//                navController.navigate("CalMetalDetectorConveyorConveyorDetails")
-//            },
-//            isNextEnabled = isNextStepEnabled,
-//            isFirstStep = false, // Indicates this is the first step and disables the Previous button
-//            navController = navController,
-//            viewModel = viewModel,
-//            onSaveAndExitClick = {
-//                //viewModel.saveCalibrationData() // Custom save logic here
-//            })
 
         CalibrationHeader("Product Details")
 
         Column(
             modifier = Modifier
-                .weight(1f)
+                .fillMaxSize()
                 .padding(16.dp)
                 .verticalScroll(scrollState)
                 .imePadding()
         ) {
 
-
-            // Product Description Row
             LabeledTextFieldWithHelp(
                 label = "Product Description",
-                value = productDescription,
-                onValueChange = { newValue -> viewModel.setProductDescription(newValue) },
-                helpText = "Enter the details of the product (e.g., 'GOLD BARS')"
+                value = description,
+                onValueChange = viewModel::setProductDescription,
+                helpText = "Enter the details of the product (e.g., 'GOLD BARS')."
             )
 
             LabeledTextFieldWithHelp(
                 label = "Product Library Reference",
-                value = productLibraryReference,
-                onValueChange = { newValue -> viewModel.setProductLibraryReference(newValue) },
-                helpText = "There is usually a 'Product Name' in the metal detector library. Enter this here"
+                value = libraryRef,
+                onValueChange = viewModel::setProductLibraryReference,
+                helpText = "There is usually a 'Product Name' in the metal detector library. Enter it here."
             )
 
             LabeledTextFieldWithHelp(
                 label = "Product Library Number",
-                value = productLibraryNumber,
-                onValueChange = { newValue -> viewModel.setProductLibraryNumber(newValue) },
-                helpText = "There is usually a number in reference to the running product in the metal detector library. Enter this here"
+                value = libraryNumber,
+                onValueChange = viewModel::setProductLibraryNumber,
+                helpText = "Enter the library number / program number used on the metal detector."
             )
 
             LabeledTextFieldWithHelp(
                 label = "Product Length (mm)",
-                value = productLength,
-                onValueChange = { newValue -> viewModel.setProductLength(newValue) },
-                helpText = "Enter the length of the product in mm",
+                value = length,
+                onValueChange = viewModel::setProductLength,
+                helpText = "Enter the length of the product in mm.",
                 keyboardType = KeyboardType.Number
             )
 
             LabeledTextFieldWithHelp(
                 label = "Product Width (mm)",
-                value = productWidth,
-                onValueChange = { newValue -> viewModel.setProductWidth(newValue) },
-                helpText = "Enter the width of the product in mm",
+                value = width,
+                onValueChange = viewModel::setProductWidth,
+                helpText = "Enter the width of the product in mm.",
                 keyboardType = KeyboardType.Number
             )
+
             LabeledTextFieldWithHelp(
                 label = "Product Height (mm)",
-                value = productHeight,
-                onValueChange = { newValue -> viewModel.setProductHeight(newValue) },
-                helpText = "Enter the height of the product in mm. This is required for PV calibration",
+                value = height,
+                onValueChange = viewModel::setProductHeight,
+                helpText = "Enter the height of the product in mm. Required for PV calibration.",
                 keyboardType = KeyboardType.Number,
-                isNAToggleEnabled = viewModel.pvRequired.value != true
-
+                // PV required => height is mandatory => do NOT allow N/A toggle
+                isNAToggleEnabled = !viewModel.pvRequired.value
             )
-
-//            Spacer(modifier = Modifier.height(16.dp))
-//
-//            // Expandable Section for Sensitivity Data
-//            if (sensitivityData != null) {
-//                IconButton(
-//                    onClick = { expanded = !expanded },
-//                    modifier = Modifier.padding(top = 8.dp)
-//                ) {
-//                    Icon(
-//                        imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-//                        contentDescription = if (expanded) "Hide Sensitivities" else "Show Sensitivities"
-//                    )
-//                }
-//
-//                AnimatedVisibility(visible = expanded) {
-//                    Column(modifier = Modifier.padding(top = 8.dp)) {
-//                        Text("Ferrous Target: ${sensitivityData.FerrousTargetMM} mm")
-//                        Text("Ferrous Max: ${sensitivityData.FerrousMaxMM} mm")
-//                        Text("Non-Ferrous Target: ${sensitivityData.NonFerrousTargetMM} mm")
-//                        Text("Non-Ferrous Max: ${sensitivityData.NonFerrousMaxMM} mm")
-//                        Text("Stainless 316 Target: ${sensitivityData.Stainless316TargetMM} mm")
-//                        Text("Stainless 316 Max: ${sensitivityData.Stainless316MaxMM} mm")
-//                        Text("X-ray Stainless 316 Max: ${sensitivityData.XrayStainless316MaxMM} mm")
-//                    }
-//                }
-//            } else {
-//                Text("Enter a product height to view M&S Target Sensitivities")
-//            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             LabeledTextFieldWithHelp(
                 label = "Engineer Comments",
-                value = productDetailsEngineerNotes,
-                onValueChange = { newValue -> viewModel.setProductDetailsEngineerNotes(newValue) },
-                helpText = "Enter any notes relevant to this section",
+                value = notes,
+                onValueChange = viewModel::setProductDetailsEngineerNotes,
+                helpText = "Enter any notes relevant to this section.",
                 isNAToggleEnabled = false
             )
 
-
+            Spacer(modifier = Modifier.height(60.dp))
         }
-
     }
-
 }
 

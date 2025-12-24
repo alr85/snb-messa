@@ -23,19 +23,19 @@ object MasterPasswordGenerator {
         val daysBetween = ChronoUnit.DAYS.between(adjustedStart, currentDate)
         val weekOfYear = (daysBetween / 7 + 1).toInt()
 
-        println("Week of Year: $weekOfYear")
+        //println("Week of Year: $weekOfYear")
 
         // Get the current year
         val currentYear = currentDate.year
-        println("Current Year: $currentYear")
+        //println("Current Year: $currentYear")
 
         // Calculate the multiplier
         val multiplier = (weekOfYear + SECRET_SAUCE) % 17 + 3
-        println("Multiplier: $multiplier")
+        //println("Multiplier: $multiplier")
 
         // Calculate the raw value
         val rawValue = (weekOfYear * SECRET_SAUCE * multiplier) / (currentYear % 100)
-        println("Raw Value: $rawValue")
+        //println("Raw Value: $rawValue")
 
         Log.d("MESSA-DEBUG", "Password generated: $rawValue")
 

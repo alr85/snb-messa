@@ -1,5 +1,6 @@
 
 import androidx.activity.compose.LocalActivity
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
+import com.example.mecca.ui.theme.FormBackground
 
 @Composable
 fun CalibrationNavigationButtons(
@@ -46,6 +48,7 @@ fun CalibrationNavigationButtons(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .background(FormBackground)
             .navigationBarsPadding()
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,

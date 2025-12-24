@@ -33,6 +33,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConveyorSummaryDetails
+import com.example.mecca.ui.theme.FormBackground
 
 
 @Composable
@@ -51,7 +52,7 @@ fun CalibrationBanner(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White)
+            .background(FormBackground)
             .padding(10.dp)
     ) {
 

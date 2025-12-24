@@ -87,6 +87,8 @@ fun CalMetalDetectorConveyorConveyorDetails(
                 keyboardType = KeyboardType.Number
             )
 
+            Spacer(Modifier.height(16.dp))
+
             LabeledTextFieldWithHelp(
                 label = "Out-feed Belt Height (mm)",
                 value = outfeedBeltHeight,
@@ -94,6 +96,8 @@ fun CalMetalDetectorConveyorConveyorDetails(
                 helpText = "Distance from floor to belt on outfeed end.",
                 keyboardType = KeyboardType.Number
             )
+
+            Spacer(Modifier.height(16.dp))
 
             LabeledTextFieldWithHelp(
                 label = "Conveyor Length (mm)",
@@ -103,6 +107,8 @@ fun CalMetalDetectorConveyorConveyorDetails(
                 keyboardType = KeyboardType.Number
             )
 
+            Spacer(Modifier.height(16.dp))
+
             LabeledTextFieldWithHelp(
                 label = "Belt Speed (m/m)",
                 value = beltSpeed,
@@ -110,6 +116,8 @@ fun CalMetalDetectorConveyorConveyorDetails(
                 helpText = "Measured using a tachometer.",
                 keyboardType = KeyboardType.Number
             )
+
+            Spacer(Modifier.height(16.dp))
 
             LabeledDropdownWithHelp(
                 label = "Conveyor Handing",
@@ -119,6 +127,8 @@ fun CalMetalDetectorConveyorConveyorDetails(
                 helpText = "Select left-to-right or right-to-left orientation."
             )
 
+            Spacer(Modifier.height(16.dp))
+
             LabeledDropdownWithHelp(
                 label = "Reject System",
                 options = rejectOptions,
@@ -126,6 +136,8 @@ fun CalMetalDetectorConveyorConveyorDetails(
                 onSelectionChange = viewModel::setRejectDevice,
                 helpText = "Select the reject device type."
             )
+
+            Spacer(Modifier.height(16.dp))
 
             if (rejectDevice == "Other") {
                 LabeledTextFieldWithHelp(

@@ -73,7 +73,7 @@ fun CalMetalDetectorConveyorSmeDetails(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        CalibrationHeader("Compliance Checks - Operator Test")
+        CalibrationHeader("Operator Test")
 
         Column(
             modifier = Modifier

@@ -1,19 +1,48 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
@@ -22,13 +51,24 @@ import com.example.mecca.formModules.ConditionState
 import com.example.mecca.formModules.LabeledTextFieldWithConditionToggle
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 
+@Immutable
+private data class ChecklistCardModel(
+    val key: String,
+    val title: String,
+    val hint: String,
+    val helpText: String,
+    val condition: ConditionState,
+    val onConditionChange: (ConditionState) -> Unit,
+    val comments: String,
+    val onCommentsChange: (String) -> Unit
+)
+
 @Composable
 fun CalMetalDetectorConveyorSystemChecklist(
     navController: NavHostController,
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    val scrollState = rememberScrollState()
-
+    // Bind ViewModel state
     val beltCondition by viewModel.beltCondition
     val beltConditionComments by viewModel.beltConditionComments
 
@@ -49,138 +89,299 @@ fun CalMetalDetectorConveyorSystemChecklist(
 
     val systemChecklistEngineerNotes by viewModel.systemChecklistEngineerNotes
 
-    // Next enabled
-    val isNextStepEnabled =
-        beltCondition != ConditionState.UNSPECIFIED &&
-                guardCondition != ConditionState.UNSPECIFIED &&
-                safetyCircuitCondition != ConditionState.UNSPECIFIED &&
-                linerCondition != ConditionState.UNSPECIFIED &&
-                cablesCondition != ConditionState.UNSPECIFIED &&
-                screwsCondition != ConditionState.UNSPECIFIED
+    // Build UI models (easy to add/remove items without 500 lines of copy/paste)
+    val items = remember(
+        beltCondition, beltConditionComments,
+        guardCondition, guardConditionComments,
+        safetyCircuitCondition, safetyCircuitConditionComments,
+        linerCondition, linerConditionComments,
+        cablesCondition, cablesConditionComments,
+        screwsCondition, screwsConditionComments
+    ) {
+        listOf(
+            ChecklistCardModel(
+                key = "belt",
+                title = "Conveyor Belt",
+                hint = "Clean, intact, tracking correctly",
+                helpText = "Enter the condition and any extra comments regarding the Conveyor Belt. Comments should include belt type and any defects that need to be fixed.",
+                condition = beltCondition,
+                onConditionChange = viewModel::setBeltCondition,
+                comments = beltConditionComments,
+                onCommentsChange = viewModel::setBeltConditionComments
+            ),
+            ChecklistCardModel(
+                key = "guarding",
+                title = "Guarding",
+                hint = "Intact, covers risk areas, hatches interlocked",
+                helpText = "Enter the condition and any extra comments regarding the Guarding. Comments should include guarding type and any defects that need to be fixed.",
+                condition = guardCondition,
+                onConditionChange = viewModel::setGuardCondition,
+                comments = guardConditionComments,
+                onCommentsChange = viewModel::setGuardConditionComments
+            ),
+            ChecklistCardModel(
+                key = "safety",
+                title = "Safety Circuit",
+                hint = "E-stops, interlocks, safety devices operate correctly",
+                helpText = "Enter the condition and any extra comments regarding the Safety Circuit. Include any defects that need to be fixed.",
+                condition = safetyCircuitCondition,
+                onConditionChange = viewModel::setSafetyCircuitCondition,
+                comments = safetyCircuitConditionComments,
+                onCommentsChange = viewModel::setSafetyCircuitConditionComments
+            ),
+            ChecklistCardModel(
+                key = "liner",
+                title = "Detector Liner, Gaskets & Seals",
+                hint = "No wear, damage or missing seals",
+                helpText = "Enter the condition and any extra comments regarding the Detector Liner, Gaskets and Seals. Include any defects that need to be fixed.",
+                condition = linerCondition,
+                onConditionChange = viewModel::setLinerCondition,
+                comments = linerConditionComments,
+                onCommentsChange = viewModel::setLinerConditionComments
+            ),
+            ChecklistCardModel(
+                key = "cables",
+                title = "Cable Fittings",
+                hint = "No damaged cables, glands secure, strain relief OK",
+                helpText = "Enter the condition and any extra comments regarding Cable Fittings. Include any defects that need to be fixed.",
+                condition = cablesCondition,
+                onConditionChange = viewModel::setCablesCondition,
+                comments = cablesConditionComments,
+                onCommentsChange = viewModel::setCablesConditionComments
+            ),
+            ChecklistCardModel(
+                key = "screws",
+                title = "Screws & Fittings",
+                hint = "Secure, tight, nothing missing",
+                helpText = "Enter the condition and any extra comments regarding Screws and Fittings. Include any defects that need to be fixed.",
+                condition = screwsCondition,
+                onConditionChange = viewModel::setScrewsCondition,
+                comments = screwsConditionComments,
+                onCommentsChange = viewModel::setScrewsConditionComments
+            )
+        )
+    }
 
-    // Tell wrapper
+    // “Next” logic (modern apps enforce rules instead of hoping humans behave)
+    // Rule: all conditions must be selected (not UNSPECIFIED)
+    // Optional rule: if condition is POOR then comments are required
+    val isNextStepEnabled = items.all { model ->
+        val conditionSelected = model.condition != ConditionState.UNSPECIFIED
+        val poorNeedsComment =
+            model.condition == ConditionState.POOR && model.comments.trim().isEmpty()
+
+        conditionSelected && !poorNeedsComment
+    }
+
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-
         CalibrationHeader("System Checklist")
 
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(scrollState)
-                .imePadding()
+                .padding(horizontal = 16.dp)
+                .imePadding(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            item { Spacer(Modifier.height(8.dp)) }
 
-            LabeledTextFieldWithConditionToggle(
-                title = "Conveyor Belt",
-                label = "Comments",
-                value = beltConditionComments,
-                onValueChange = viewModel::setBeltConditionComments,
-                helpText = "Enter the condition and any extra comments regarding the Conveyor Belt. Comments should include belt type and any defects that need to be fixed.",
-                conditionLabel = "Condition",
-                currentCondition = beltCondition,
-                onConditionChange = viewModel::setBeltCondition,
-                keyboardType = KeyboardType.Text,
-                isNAToggleEnabled = true,
-                helper = "Conveyor belts should be clean and free from tears or missing sections. Check correct tracking alignment."
-            )
+            items(items, key = { it.key }) { model ->
+                ModernChecklistCard(model = model)
+            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            item {
+                EngineerNotesCard(
+                    value = systemChecklistEngineerNotes,
+                    onValueChange = viewModel::setSystemChecklistEngineerNotes
+                )
+            }
 
-            LabeledTextFieldWithConditionToggle(
-                title = "Guarding",
-                label = "Comments",
-                value = guardConditionComments,
-                onValueChange = viewModel::setGuardConditionComments,
-                helpText = "Enter the condition and any extra comments regarding the Guarding. Comments should include guarding type and any defects that need to be fixed.",
-                conditionLabel = "Condition",
-                currentCondition = guardCondition,
-                onConditionChange = viewModel::setGuardCondition,
-                keyboardType = KeyboardType.Text,
-                isNAToggleEnabled = true,
-                helper = "Guarding should be intact and cover from the search head to the end of the belt as a minimum. Access hatches should be interlocked as part of the safety circuit."
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LabeledTextFieldWithConditionToggle(
-                title = "Safety Circuit",
-                label = "Comments",
-                value = safetyCircuitConditionComments,
-                onValueChange = viewModel::setSafetyCircuitConditionComments,
-                helpText = "Enter the condition and any extra comments regarding the Safety Circuit. Include any defects that need to be fixed.",
-                conditionLabel = "Condition",
-                currentCondition = safetyCircuitCondition,
-                onConditionChange = viewModel::setSafetyCircuitCondition,
-                keyboardType = KeyboardType.Text,
-                isNAToggleEnabled = true,
-                helper = "Check all emergency stops, guard interlocks etc for correct operation."
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LabeledTextFieldWithConditionToggle(
-                title = "Detector Liner, Gaskets and Seals",
-                label = "Comments",
-                value = linerConditionComments,
-                onValueChange = viewModel::setLinerConditionComments,
-                helpText = "Enter the condition and any extra comments regarding the Detector Liner, Gaskets and Seals. Include any defects that need to be fixed.",
-                conditionLabel = "Condition",
-                currentCondition = linerCondition,
-                onConditionChange = viewModel::setLinerCondition,
-                keyboardType = KeyboardType.Text,
-                isNAToggleEnabled = true,
-                helper = "Check the search head liner (chute) for damage and wear. Check gaskets/seals on control panels and electrical enclosures."
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LabeledTextFieldWithConditionToggle(
-                title = "Cable Fittings",
-                label = "Comments",
-                value = cablesConditionComments,
-                onValueChange = viewModel::setCablesConditionComments,
-                helpText = "Enter the condition and any extra comments regarding Cable Fittings. Include any defects that need to be fixed.",
-                conditionLabel = "Condition",
-                currentCondition = cablesCondition,
-                onConditionChange = viewModel::setCablesCondition,
-                keyboardType = KeyboardType.Text,
-                isNAToggleEnabled = true,
-                helper = "Check all cables and fittings for damage and wear."
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LabeledTextFieldWithConditionToggle(
-                title = "Screws and Fittings",
-                label = "Comments",
-                value = screwsConditionComments,
-                onValueChange = viewModel::setScrewsConditionComments,
-                helpText = "Enter the condition and any extra comments regarding Screws and Fittings. Include any defects that need to be fixed.",
-                conditionLabel = "Condition",
-                currentCondition = screwsCondition,
-                onConditionChange = viewModel::setScrewsCondition,
-                keyboardType = KeyboardType.Text,
-                isNAToggleEnabled = true,
-                helper = "Check all screws and fittings for damage and wear. Screws must be tight."
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LabeledTextFieldWithHelp(
-                label = "Engineer Notes",
-                value = systemChecklistEngineerNotes,
-                onValueChange = viewModel::setSystemChecklistEngineerNotes,
-                helpText = "Enter any notes relevant to this section",
-                isNAToggleEnabled = false
-            )
-
-            Spacer(modifier = Modifier.height(60.dp))
+            //item { Spacer(Modifier.height(90.dp)) }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ModernChecklistCard(
+    model: ChecklistCardModel
+) {
+    var showHelp by remember { mutableStateOf(false) }
+
+    // NEW: local expansion state so "Add comment" actually does something
+    var commentsExpanded by remember { mutableStateOf(false) }
+
+    val commentsRequired = model.condition == ConditionState.POOR
+
+    // Show comments if required, if user expanded, or if there is existing text
+    val showComments = commentsRequired || commentsExpanded || model.comments.isNotBlank()
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = androidx.compose.material3.CardDefaults.cardColors(
+            containerColor = androidx.compose.ui.graphics.Color.White
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = model.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = model.hint,
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                IconButton(onClick = { showHelp = true }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Info,
+                        contentDescription = "Help"
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            ConditionSegmented(
+                value = model.condition,
+                onValueChange = { newState ->
+                    model.onConditionChange(newState)
+
+                    // Optional: collapse comments when switching away from POOR
+                    // (keeps UI tidy, doesn't delete text)
+                    if (newState != ConditionState.POOR && model.comments.isBlank()) {
+                        commentsExpanded = false
+                    }
+                }
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            AnimatedVisibility(visible = showComments) {
+                Column {
+                    OutlinedTextField(
+                        value = model.comments,
+                        onValueChange = model.onCommentsChange,
+                        modifier = Modifier.fillMaxWidth(),
+                        label = {
+                            Text(if (commentsRequired) "Comments (required)" else "Comments")
+                        },
+                        minLines = 2,
+                        supportingText = {
+                            if (commentsRequired && model.comments.trim().isEmpty()) {
+                                Text("Please add a brief note describing the defect/action required.")
+                            }
+                        },
+                        isError = commentsRequired && model.comments.trim().isEmpty()
+                    )
+
+                    // Optional: allow user to hide comments again when not required
+                    if (!commentsRequired) {
+                        Spacer(Modifier.height(6.dp))
+                        TextButton(onClick = { commentsExpanded = false }) {
+                            Text("Hide comment")
+                        }
+                    }
+                }
+            }
+
+            // Show Add Comment only when comments are hidden and not required
+            if (!showComments && !commentsRequired) {
+                TextButton(onClick = { commentsExpanded = true }) {
+                    Text("Add comment")
+                }
+            }
+        }
+    }
+
+    if (showHelp) {
+        ModalBottomSheet(onDismissRequest = { showHelp = false }) {
+            Column(Modifier.padding(16.dp)) {
+                Text(text = model.title, style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(8.dp))
+                Text(text = model.helpText, style = MaterialTheme.typography.bodyMedium)
+                Spacer(Modifier.height(24.dp))
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun EngineerNotesCard(
+    value: String,
+    onValueChange: (String) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text("Engineer Notes", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(10.dp))
+            OutlinedTextField(
+                value = value,
+                onValueChange = onValueChange,
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 3,
+                label = { Text("Notes") }
+            )
+        }
+    }
+}
+
+@Composable
+private fun ConditionSegmented(
+    value: ConditionState,
+    onValueChange: (ConditionState) -> Unit
+) {
+    // Adjust these labels and states to match your enum exactly
+    // Common setup: UNSPECIFIED / GOOD / POOR / NA
+    val options: List<Pair<ConditionState, String>> = listOf(
+        ConditionState.GOOD to "Good",
+        ConditionState.POOR to "Poor",
+        ConditionState.NA to "N/A"
+    )
+
+    Column {
+        Text(
+            text = "Condition",
+            style = MaterialTheme.typography.labelMedium
+        )
+        Spacer(Modifier.height(6.dp))
+
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            options.forEachIndexed { index, (state, label) ->
+                SegmentedButton(
+                    selected = value == state,
+                    onClick = { onValueChange(state) },
+                    shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size)
+                ) {
+                    Text(label)
+                }
+            }
+        }
+
+        if (value == ConditionState.UNSPECIFIED) {
+            Spacer(Modifier.height(6.dp))
+            Text(
+                text = "Select a condition to continue.",
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+    }
+}
