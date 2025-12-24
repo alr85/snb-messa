@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -12,16 +13,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateSpeedSensorPvResult
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledDropdownWithHelp
+import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
 import com.example.mecca.formModules.LabeledMultiSelectDropdownWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchAndTextInputWithHelp
@@ -32,109 +32,82 @@ import com.example.mecca.formModules.YesNoState
 @Composable
 fun CalMetalDetectorConveyorSpeedSensor(
     navController: NavHostController,
-    viewModel: CalibrationMetalDetectorConveyorViewModel = viewModel()
+    viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    // Stops the next button from being pressed until the screen is rendered
-    LaunchedEffect(Unit) {
-        viewModel.finishNavigation()
+    val scrollState = rememberScrollState()
+
+    val fitted by viewModel.speedSensorFitted
+    val detail by viewModel.speedSensorDetail
+    val testMethod by viewModel.speedSensorTestMethod
+    val testMethodOther by viewModel.speedSensorTestMethodOther
+    val testResult by viewModel.speedSensorTestResult.collectAsState()
+    val notes by viewModel.speedSensorEngineerNotes
+    val latched by viewModel.speedSensorLatched
+    val controlledRestart by viewModel.speedSensorCR
+
+    // Options: remember so Compose doesn’t rebuild them constantly
+    val testMethodOptions = remember {
+        listOf("Stop Belt After Detection", "Other")
+    }
+    val testResultOptions = remember {
+        listOf(
+            "No Result",
+            "Audible Notification",
+            "Visual Notification",
+            "On-Screen Notification",
+            "Belt Stops",
+            "In-feed Belt Stops",
+            "Out-feed Belt Stops",
+            "Test Pack Rejects OK",
+            "Other"
+        )
     }
 
-   // val progress = viewModel.progress
-    val scrollState = rememberScrollState() // Scroll state to control the scroll behavior
-
-    // Get and update data in the ViewModel
-    val speedSensorFitted by viewModel.speedSensorFitted
-    val speedSensorDetail by viewModel.speedSensorDetail
-    val speedSensorTestMethod by viewModel.speedSensorTestMethod
-    val speedSensorTestMethodOther by viewModel.speedSensorTestMethodOther
-    val speedSensorTestResult by viewModel.speedSensorTestResult.collectAsState()
-    val speedSensorEngineerNotes by viewModel.speedSensorEngineerNotes
-    val speedSensorLatched by viewModel.speedSensorLatched
-    val speedSensorCR by viewModel.speedSensorCR
-
-    // Test options
-    val speedSensorTestOptions = listOf(
-        "Stop Belt After Detection",
-        "Other"
-    )
-
-    val speedSensorTestResults = listOf(
-        "No Result",
-        "Audible Notification",
-        "Visual Notification",
-        "On-Screen Notification",
-        "Belt Stops",
-        "In-feed Belt Stops",
-        "Out-feed Belt Stops",
-        "Test Pack Rejects OK",
-        "Other"
-    )
-
-    var selectedOptions by remember { mutableStateOf(listOf<String>()) }
-
-    //Determine if "Next Step" button should be enabled
-    val isNextStepEnabled = when (speedSensorFitted) {
-        YesNoState.NO, YesNoState.NA -> true // Button enabled for NO or NA
+    // Next enabled
+    val isNextStepEnabled = when (fitted) {
+        YesNoState.NO, YesNoState.NA -> true
         YesNoState.YES -> {
-            // Button enabled only if all other fields are valid
-            speedSensorDetail.isNotBlank() &&
-                    speedSensorTestMethod.isNotBlank() &&
-                    speedSensorTestResult.isNotEmpty() &&
-                    speedSensorLatched != YesNoState.NA &&
-                    speedSensorCR != YesNoState.NA
+            detail.isNotBlank() &&
+                    testMethod.isNotBlank() &&
+                    testResult.isNotEmpty() &&
+                    latched != YesNoState.NA &&
+                    controlledRestart != YesNoState.NA &&
+                    (testMethod != "Other" || testMethodOther.isNotBlank())
         }
+        else -> false
+    }
 
-        else -> false // Default to false for safety
+    // Tell wrapper
+    LaunchedEffect(isNextStepEnabled) {
+        viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-//        CalibrationBanner(
-//            progress = progress,
-//            viewModel = viewModel
-//        )
 
-        // Navigation Buttons
-//        CalibrationNavigationButtons(
-//            onPreviousClick = { viewModel.updateSpeedSensor() },
-//            onCancelClick = { viewModel.updateSpeedSensor() },
-//            onNextClick = {
-//                viewModel.updateSpeedSensor()
-//                navController.navigate("CalMetalDetectorConveyorDetectNotification")
-//            },
-//            isNextEnabled = isNextStepEnabled,
-//            isFirstStep = false,
-//            navController = navController,
-//            viewModel = viewModel,
-//            onSaveAndExitClick = {
-//                viewModel.updateSpeedSensor()
-//            },
-//        )
-        CalibrationHeader("Compliance Checks - Speed Sensor")
+        CalibrationHeader("Failsafe Tests - Speed Sensor")
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
                 .verticalScroll(scrollState)
+                .imePadding()
         ) {
 
-
             LabeledTriStateSwitchAndTextInputWithHelp(
-                label = "Speed Sensor Fitted?",
-                currentState = speedSensorFitted,
+                label = "Sensor fitted?",
+                currentState = fitted,
                 onStateChange = { newState ->
                     viewModel.setSpeedSensorFitted(newState)
+
                     if (newState == YesNoState.NA || newState == YesNoState.NO) {
-                        // Set all relevant fields to N/A
                         viewModel.setSpeedSensorDetail("N/A")
                         viewModel.setSpeedSensorTestMethod("N/A")
                         viewModel.setSpeedSensorTestMethodOther("N/A")
                         viewModel.setSpeedSensorTestResult(emptyList())
                         viewModel.setSpeedSensorLatched(YesNoState.NA)
                         viewModel.setSpeedSensorCR(YesNoState.NA)
-                        selectedOptions = listOf("N/A")
                     } else if (newState == YesNoState.YES) {
-                        // Clear N/A from selected options when switching back to YES
-                        selectedOptions = emptyList() // Clear any selected options
                         viewModel.setSpeedSensorDetail("")
                         viewModel.setSpeedSensorTestMethod("")
                         viewModel.setSpeedSensorTestMethodOther("")
@@ -142,52 +115,64 @@ fun CalMetalDetectorConveyorSpeedSensor(
                         viewModel.setSpeedSensorLatched(YesNoState.NO)
                         viewModel.setSpeedSensorCR(YesNoState.NO)
                     }
+
+                    viewModel.autoUpdateSpeedSensorPvResult()
                 },
-                helpText = "Select if there is a reject confirm sensor fitted",
+                helpText = "Select if a speed sensor is fitted and used for belt speed monitoring / failsafe operation.",
                 inputLabel = "Detail",
-                inputValue = speedSensorDetail,
-                onInputValueChange = { newValue -> viewModel.setSpeedSensorDetail(newValue) }
+                inputValue = detail,
+                onInputValueChange = {
+                    viewModel.setSpeedSensorDetail(it)
+                    viewModel.autoUpdateSpeedSensorPvResult()
+                }
             )
 
+            if (fitted == YesNoState.YES) {
 
-            // Conditionally display remaining fields if "Yes" is selected for In-feed sensor fitted
-            if (speedSensorFitted == YesNoState.YES) {
                 LabeledDropdownWithHelp(
                     label = "Test Method",
-                    options = speedSensorTestOptions,
-                    selectedOption = speedSensorTestMethod,
-                    onSelectionChange = { newSelection ->
-                        viewModel.setSpeedSensorTestMethod(newSelection)
+                    options = testMethodOptions,
+                    selectedOption = testMethod,
+                    onSelectionChange = {
+                        viewModel.setSpeedSensorTestMethod(it)
+                        viewModel.autoUpdateSpeedSensorPvResult()
                     },
                     helpText = "Select one option from the dropdown.",
                     isNAToggleEnabled = false
                 )
 
-                if (speedSensorTestMethod == "Other") {
+                if (testMethod == "Other") {
                     LabeledTextFieldWithHelp(
                         label = "Other Test Method",
-                        value = speedSensorTestMethodOther,
-                        onValueChange = { newValue ->
-                            viewModel.setSpeedSensorTestMethodOther(
-                                newValue
-                            )
+                        value = testMethodOther,
+                        onValueChange = {
+                            viewModel.setSpeedSensorTestMethodOther(it)
+                            viewModel.autoUpdateSpeedSensorPvResult()
                         },
-                        helpText = "Enter the custom test method",
+                        helpText = "Enter the custom test method.",
                         isNAToggleEnabled = false
                     )
                 }
 
-                val selectedOptions by viewModel.speedSensorTestResult.collectAsState()
-
                 LabeledMultiSelectDropdownWithHelp(
                     label = "Test Result",
-                    options = speedSensorTestResults,
-                    selectedOptions = selectedOptions,
-                    value = selectedOptions.joinToString(", "),
-                    onSelectionChange = { newSelectedOptions ->
-                        viewModel.setSpeedSensorTestResult(
-                            newSelectedOptions
-                        )
+                    value = testResult.joinToString(", "),
+                    options = testResultOptions,
+                    selectedOptions = testResult,
+                    onSelectionChange = { newSelection ->
+
+                        val cleaned = when {
+                            "No Result" in newSelection -> listOf("No Result")
+                            else -> newSelection.filterNot { it == "No Result" }
+                        }
+                        viewModel.setSpeedSensorTestResult(cleaned)
+
+                        if (cleaned == listOf("No Result")) {
+                            viewModel.setSpeedSensorLatched(YesNoState.NO)
+                            viewModel.setSpeedSensorCR(YesNoState.NO)
+                        }
+
+                        viewModel.autoUpdateSpeedSensorPvResult()
                     },
                     helpText = "Select one or more items from the dropdown.",
                     isNAToggleEnabled = false
@@ -195,18 +180,50 @@ fun CalMetalDetectorConveyorSpeedSensor(
 
                 LabeledTriStateSwitchWithHelp(
                     label = "Fault Latched?",
-                    currentState = speedSensorLatched,
-                    onStateChange = { newState -> viewModel.setSpeedSensorLatched(newState) },
+                    currentState = latched,
+                    onStateChange = {
+                        viewModel.setSpeedSensorLatched(it)
+                        viewModel.autoUpdateSpeedSensorPvResult()
+                    },
                     helpText = "Is the fault output latched, or does it clear automatically?",
                     isNAToggleEnabled = false
                 )
 
                 LabeledTriStateSwitchWithHelp(
-                    label = "Fault Controlled Restart?",
-                    currentState = speedSensorCR,
-                    onStateChange = { newState -> viewModel.setSpeedSensorCR(newState) },
-                    helpText = "Is the fault output latched, or does it clear automatically?",
+                    label = "Controlled Restart?",
+                    currentState = controlledRestart,
+                    onStateChange = {
+                        viewModel.setSpeedSensorCR(it)
+                        viewModel.autoUpdateSpeedSensorPvResult()
+                    },
+                    helpText = "Is a controlled restart required after a fault?",
                     isNAToggleEnabled = false
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            //-----------------------------------------------------
+            // ⭐ PV RESULT (only when required)
+            //-----------------------------------------------------
+            if (viewModel.pvRequired.value) {
+                LabeledFourOptionRadioWithHelp(
+                    label = "P.V. Result",
+                    value = viewModel.speedSensorTestPvResult.value,
+                    onValueChange = viewModel::setSpeedSensorTestPvResult,
+                    helpText = """
+                        Auto-Pass rules (when PV required):
+                          • Sensor fitted = Yes
+                          • Detail entered
+                          • Test method selected (and 'Other' described if chosen)
+                          • At least one test result selected (and not "No Result")
+                          • Fault Latched = Yes
+                          • Controlled Restart = Yes
+
+                        If sensor is No → PV = N/F.
+                        If sensor is N/A → PV = N/A.
+                        Otherwise auto-fail. You may override manually.
+                    """.trimIndent()
                 )
             }
 
@@ -214,13 +231,13 @@ fun CalMetalDetectorConveyorSpeedSensor(
 
             LabeledTextFieldWithHelp(
                 label = "Engineer Comments",
-                value = speedSensorEngineerNotes,
-                onValueChange = { newValue -> viewModel.setSpeedSensorEngineerNotes(newValue) },
-                helpText = "Enter any notes relevant to this section",
+                value = notes,
+                onValueChange = viewModel::setSpeedSensorEngineerNotes,
+                helpText = "Enter any notes relevant to this section.",
                 isNAToggleEnabled = false
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(60.dp))
         }
     }
 }

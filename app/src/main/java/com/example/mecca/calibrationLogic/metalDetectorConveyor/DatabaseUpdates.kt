@@ -301,6 +301,7 @@ data class NonFerrousResultUpdate(
     val detectRejectNonFerrousTrailing: String,
     val detectRejectNonFerrousTrailingPeakSignal: String,
     val nonFerrousTestEngineerNotes: String,
+    val nonFerrousTestPvResult: String,
     val calibrationId: String
 )
 
@@ -315,6 +316,7 @@ fun CalibrationMetalDetectorConveyorViewModel.toNonFerrousResultUpdate(): NonFer
         detectRejectNonFerrousTrailing = detectRejectNonFerrousTrailing.value.toString(),
         detectRejectNonFerrousTrailingPeakSignal = peakSignalNonFerrousTrailing.value,
         nonFerrousTestEngineerNotes = nonFerrousTestEngineerNotes.value,
+        nonFerrousTestPvResult = nonFerrousTestPvResult.value,
         calibrationId = calibrationId.value
     )
 }
@@ -329,6 +331,7 @@ data class StainlessResultUpdate(
     val detectRejectStainlessTrailing: String,
     val detectRejectStainlessTrailingPeakSignal: String,
     val stainlessTestEngineerNotes: String,
+    val stainlessTestPvResult: String,
     val calibrationId: String
 )
 
@@ -343,6 +346,7 @@ fun CalibrationMetalDetectorConveyorViewModel.toStainlessResultUpdate(): Stainle
         detectRejectStainlessTrailing = detectRejectStainlessTrailing.value.toString(),
         detectRejectStainlessTrailingPeakSignal = peakSignalStainlessTrailing.value,
         stainlessTestEngineerNotes = stainlessTestEngineerNotes.value,
+        stainlessTestPvResult = stainlessTestPvResult.value,
         calibrationId = calibrationId.value
     )
 }
@@ -351,6 +355,7 @@ data class LargeMetalResultUpdate(
     val detectRejectLargeMetal: String,
     val sampleCertificateNumberLargeMetal: String,
     val largeMetalTestEngineerNotes: String,
+    val largeMetalTestPvResult: String,
     val calibrationId: String
 )
 
@@ -359,6 +364,7 @@ fun CalibrationMetalDetectorConveyorViewModel.toLargeMetalResultUpdate(): LargeM
         detectRejectLargeMetal = detectRejectLargeMetal.value.toString(),
         sampleCertificateNumberLargeMetal = sampleCertificateNumberLargeMetal.value,
         largeMetalTestEngineerNotes = largeMetalTestEngineerNotes.value,
+        largeMetalTestPvResult = largeMetalTestPvResult.value,
         calibrationId = calibrationId.value
     )
 }
@@ -528,6 +534,7 @@ data class InfeedSensorUpdate(
     val infeedSensorEngineerNotes: String,
     val infeedSensorLatched: String,
     val infeedSensorCR: String,
+    val infeedSensorTestPvResult: String,
     val calibrationId: String
 )
 
@@ -541,6 +548,7 @@ fun CalibrationMetalDetectorConveyorViewModel.toInfeedSensorUpdate(): InfeedSens
         infeedSensorEngineerNotes = infeedSensorEngineerNotes.value,
         infeedSensorLatched = infeedSensorLatched.value.toString(),
         infeedSensorCR = infeedSensorCR.value.toString(),
+        infeedSensorTestPvResult = infeedSensorTestPvResult.value,
         calibrationId = calibrationId.value
     )
 }
@@ -555,6 +563,7 @@ data class RejectConfirmSensorUpdate(
     val rejectConfirmSensorLatched: String,
     val rejectConfirmSensorCR: String,
     val rejectConfirmSensorStopPosition: String,
+    val rejectConfirmSensorTestPvResult: String,
     val calibrationId: String
 )
 
@@ -571,6 +580,7 @@ fun CalibrationMetalDetectorConveyorViewModel.toRejectConfirmSensorUpdate()
         rejectConfirmSensorLatched = rejectConfirmSensorLatched.value.toString(),
         rejectConfirmSensorCR = rejectConfirmSensorCR.value.toString(),
         rejectConfirmSensorStopPosition = rejectConfirmSensorStopPosition.value,
+        rejectConfirmSensorTestPvResult = rejectConfirmSensorTestPvResult.value,
         calibrationId = calibrationId.value
     )
 }
@@ -584,6 +594,7 @@ data class BinFullSensorUpdate(
     val binFullSensorEngineerNotes: String,
     val binFullSensorLatched: String,
     val binFullSensorCR: String,
+    val binFullSensorTestPvResult: String,
     val calibrationId: String
 )
 
@@ -597,6 +608,7 @@ fun CalibrationMetalDetectorConveyorViewModel.toBinFullSensorUpdate(): BinFullSe
         binFullSensorEngineerNotes = binFullSensorEngineerNotes.value,
         binFullSensorLatched = binFullSensorLatched.value.toString(),
         binFullSensorCR = binFullSensorCR.value.toString(),
+        binFullSensorTestPvResult = binFullSensorTestPvResult.value,
         calibrationId = calibrationId.value
     )
 }
@@ -610,6 +622,7 @@ data class BackupSensorUpdate(
     val backupSensorEngineerNotes: String,
     val backupSensorLatched: String,
     val backupSensorCR: String,
+    val backupSensorTestPvResult: String,
     val calibrationId: String
 )
 
@@ -623,6 +636,7 @@ fun CalibrationMetalDetectorConveyorViewModel.toBackupSensorUpdate(): BackupSens
         backupSensorEngineerNotes = backupSensorEngineerNotes.value,
         backupSensorLatched = backupSensorLatched.value.toString(),
         backupSensorCR = backupSensorCR.value.toString(),
+        backupSensorTestPvResult = backupSensorTestPvResult.value,
         calibrationId = calibrationId.value
     )
 }
@@ -636,6 +650,7 @@ data class AirPressureSensorUpdate(
     val airPressureSensorEngineerNotes: String,
     val airPressureSensorLatched: String,
     val airPressureSensorCR: String,
+    val airPressureSensorTestPvResult: String,
     val calibrationId: String
 )
 
@@ -649,6 +664,7 @@ fun CalibrationMetalDetectorConveyorViewModel.toAirPressureSensorUpdate(): AirPr
         airPressureSensorEngineerNotes = airPressureSensorEngineerNotes.value,
         airPressureSensorLatched = airPressureSensorLatched.value.toString(),
         airPressureSensorCR = airPressureSensorCR.value.toString(),
+        airPressureSensorTestPvResult = airPressureSensorTestPvResult.value,
         calibrationId = calibrationId.value
     )
 }
@@ -662,6 +678,7 @@ data class PackCheckSensorUpdate(
     val packCheckSensorEngineerNotes: String,
     val packCheckSensorLatched: String,
     val packCheckSensorCR: String,
+    val packCheckSensorTestPvResult: String,
     val calibrationId: String
 )
 
@@ -675,6 +692,7 @@ fun CalibrationMetalDetectorConveyorViewModel.toPackCheckSensorUpdate(): PackChe
         packCheckSensorEngineerNotes = packCheckSensorEngineerNotes.value,
         packCheckSensorLatched = packCheckSensorLatched.value.toString(),
         packCheckSensorCR = packCheckSensorCR.value.toString(),
+        packCheckSensorTestPvResult = packCheckSensorTestPvResult.value,
         calibrationId = calibrationId.value
     )
 }
@@ -688,6 +706,7 @@ data class SpeedSensorUpdate(
     val speedSensorEngineerNotes: String,
     val speedSensorLatched: String,
     val speedSensorCR: String,
+    val speedSensorTestPvResult: String,
     val calibrationId: String
 )
 
@@ -701,6 +720,7 @@ fun CalibrationMetalDetectorConveyorViewModel.toSpeedSensorUpdate(): SpeedSensor
         speedSensorEngineerNotes = speedSensorEngineerNotes.value,
         speedSensorLatched = speedSensorLatched.value.toString(),
         speedSensorCR = speedSensorCR.value.toString(),
+        speedSensorTestPvResult = speedSensorTestPvResult.value,
         calibrationId = calibrationId.value
     )
 }
@@ -730,6 +750,7 @@ data class BinDoorMonitorUpdate(
     val binDoorLatched: String,
     val binDoorCR: String,
     val binDoorEngineerNotes: String,
+    val binDoorMonitorTestPvResult: String,
     val calibrationId: String
 )
 
@@ -745,6 +766,7 @@ fun CalibrationMetalDetectorConveyorViewModel.toBinDoorMonitorUpdate(): BinDoorM
         binDoorLatched = binDoorLatched.value.toString(),
         binDoorCR = binDoorCR.value.toString(),
         binDoorEngineerNotes = binDoorEngineerNotes.value,
+        binDoorMonitorTestPvResult = binDoorMonitorTestPvResult.value,
         calibrationId = calibrationId.value
     )
 }
@@ -762,6 +784,7 @@ data class OperatorTestUpdate(
     val operatorTestResultCertNumberLargeMetal: String,
     val smeName: String,
     val smeEngineerNotes: String,
+    val smeTestPvResult: String,
     val calibrationId: String
 )
 
@@ -779,33 +802,34 @@ fun CalibrationMetalDetectorConveyorViewModel.toOperatorTestUpdate(): OperatorTe
         operatorTestResultCertNumberLargeMetal = operatorTestResultCertNumberLargeMetal.value,
         smeName = smeName.value,
         smeEngineerNotes = smeEngineerNotes.value,
+        smeTestPvResult = smeTestPvResult.value,
         calibrationId = calibrationId.value
     )
 }
 
-data class ComplianceConfirmationUpdate(
-    val sensitivityCompliance: String,
-    val essentialRequirementCompliance: String,
-    val failsafeCompliance: String,
-    val bestSensitivityCompliance: String,
-    val sensitivityRecommendations: String,
-    val performanceValidationIssued: String,
-    val calibrationId: String
-)
+//data class ComplianceConfirmationUpdate(
+//    val sensitivityCompliance: String,
+//    val essentialRequirementCompliance: String,
+//    val failsafeCompliance: String,
+//    val bestSensitivityCompliance: String,
+//    val sensitivityRecommendations: String,
+//    val performanceValidationIssued: String,
+//    val calibrationId: String
+//)
 
-fun CalibrationMetalDetectorConveyorViewModel.toComplianceConfirmationUpdate()
-        : ComplianceConfirmationUpdate {
-
-    return ComplianceConfirmationUpdate(
-        sensitivityCompliance = sensitivityCompliance.value.toString(),
-        essentialRequirementCompliance = essentialRequirementCompliance.value.toString(),
-        failsafeCompliance = failsafeCompliance.value.toString(),
-        bestSensitivityCompliance = bestSensitivityCompliance.value.toString(),
-        sensitivityRecommendations = sensitivityRecommendations.value,
-        performanceValidationIssued = performanceValidationIssued.value.toString(),
-        calibrationId = calibrationId.value
-    )
-}
+//fun CalibrationMetalDetectorConveyorViewModel.toComplianceConfirmationUpdate()
+//        : ComplianceConfirmationUpdate {
+//
+//    return ComplianceConfirmationUpdate(
+//        sensitivityCompliance = sensitivityCompliance.value.toString(),
+//        essentialRequirementCompliance = essentialRequirementCompliance.value.toString(),
+//        failsafeCompliance = failsafeCompliance.value.toString(),
+//        bestSensitivityCompliance = bestSensitivityCompliance.value.toString(),
+//        sensitivityRecommendations = sensitivityRecommendations.value,
+//        performanceValidationIssued = performanceValidationIssued.value.toString(),
+//        calibrationId = calibrationId.value
+//    )
+//}
 
 data class DetectionSettingLabelsUpdate(
     val detectionSetting1label: String,

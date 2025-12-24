@@ -116,77 +116,6 @@ fun CalibrationMetalDetectorConveyorViewModel.autoUpdateStainlessPvResult() {
     setStainlessTestPvResult(result)
 }
 
-fun CalibrationMetalDetectorConveyorViewModel.autoUpdateInfeedSensorPvResult() {
-
-    if (!pvRequired.value) {
-        setInfeedSensorTestPvResult("N/A")
-        return
-    }
-
-    if (infeedSensorFitted.value == YesNoState.NO) {
-        setInfeedSensorTestPvResult("Not Fitted")
-        return
-    }
-
-    if (infeedSensorFitted.value == YesNoState.NA) {
-        setInfeedSensorTestPvResult("N/A")
-        return
-    }
-
-    val passes =
-        infeedSensorDetail.value.isNotBlank() &&
-                infeedSensorTestMethod.value.isNotBlank() &&
-                infeedSensorTestResult.value.isNotEmpty() &&
-                "No Result" !in infeedSensorTestResult.value &&
-                infeedSensorLatched.value == YesNoState.YES &&
-                infeedSensorCR.value == YesNoState.YES &&
-                (infeedSensorTestMethod.value != "Other" ||
-                        infeedSensorTestMethodOther.value.isNotBlank())
-
-    setInfeedSensorTestPvResult(
-        if (passes) "Pass" else "Fail"
-    )
-
-
-}
-
-fun CalibrationMetalDetectorConveyorViewModel.autoUpdateRejectConfirmSensorPvResult() {
-
-    // If PV isn't required for this calibration, make it N/A and stop.
-    if (!pvRequired.value) {
-        setRejectConfirmSensorPvResult("N/A")
-        return
-    }
-
-    if (rejectConfirmSensorFitted.value == YesNoState.NO) {
-        setRejectConfirmSensorPvResult("Not Fitted")
-        return
-    }
-
-    if (rejectConfirmSensorFitted.value == YesNoState.NA) {
-        setRejectConfirmSensorPvResult("N/A")
-        return
-    }
-
-
-    val passes =
-        rejectConfirmSensorDetail.value.isNotBlank() &&
-                rejectConfirmSensorTestMethod.value.isNotBlank() &&
-                rejectConfirmSensorTestResult.value.isNotEmpty() &&
-                "No Result" !in rejectConfirmSensorTestResult.value &&
-                rejectConfirmSensorLatched.value != YesNoState.NA &&
-                rejectConfirmSensorLatched.value != YesNoState.NO &&
-                rejectConfirmSensorCR.value != YesNoState.NA &&
-                rejectConfirmSensorCR.value != YesNoState.NO &&
-                rejectConfirmSensorStopPosition.value.isNotBlank() &&
-                rejectConfirmSensorStopPosition.value != "Out-feed Belt (Uncontrolled)" &&
-                (rejectConfirmSensorTestMethod.value != "Other" ||
-                        rejectConfirmSensorTestMethodOther.value.isNotBlank())
-
-    setRejectConfirmSensorPvResult(
-        if (passes) "Pass" else "Fail"
-    )
-}
 fun evaluatePvResult(
     achievedSensitivityString: String,
     maxSensitivity: Double?,
@@ -238,6 +167,385 @@ fun evaluatePvResult(
         else -> "Fail"  // fallback
     }
 }
+
+// ---------------------------------------------------------
+// Infeed Sensor PV Logic
+// ---------------------------------------------------------
+
+fun CalibrationMetalDetectorConveyorViewModel.autoUpdateInfeedSensorPvResult() {
+
+    if (!pvRequired.value) {
+        setInfeedSensorTestPvResult("N/A")
+        return
+    }
+
+    if (infeedSensorFitted.value == YesNoState.NO) {
+        setInfeedSensorTestPvResult("Not Fitted")
+        return
+    }
+
+    if (infeedSensorFitted.value == YesNoState.NA) {
+        setInfeedSensorTestPvResult("N/A")
+        return
+    }
+
+    val passes =
+        infeedSensorDetail.value.isNotBlank() &&
+                infeedSensorTestMethod.value.isNotBlank() &&
+                infeedSensorTestResult.value.isNotEmpty() &&
+                "No Result" !in infeedSensorTestResult.value &&
+                infeedSensorLatched.value == YesNoState.YES &&
+                infeedSensorCR.value == YesNoState.YES &&
+                (infeedSensorTestMethod.value != "Other" ||
+                        infeedSensorTestMethodOther.value.isNotBlank())
+
+    setInfeedSensorTestPvResult(
+        if (passes) "Pass" else "Fail"
+    )
+
+
+}
+
+// ---------------------------------------------------------
+// Reject Confirm PV Logic
+// ---------------------------------------------------------
+
+fun CalibrationMetalDetectorConveyorViewModel.autoUpdateRejectConfirmSensorPvResult() {
+
+    // If PV isn't required for this calibration, make it N/A and stop.
+    if (!pvRequired.value) {
+        setRejectConfirmSensorTestPvResult("N/A")
+        return
+    }
+
+    if (rejectConfirmSensorFitted.value == YesNoState.NO) {
+        setRejectConfirmSensorTestPvResult("Not Fitted")
+        return
+    }
+
+    if (rejectConfirmSensorFitted.value == YesNoState.NA) {
+        setRejectConfirmSensorTestPvResult("N/A")
+        return
+    }
+
+
+    val passes =
+        rejectConfirmSensorDetail.value.isNotBlank() &&
+                rejectConfirmSensorTestMethod.value.isNotBlank() &&
+                rejectConfirmSensorTestResult.value.isNotEmpty() &&
+                "No Result" !in rejectConfirmSensorTestResult.value &&
+                rejectConfirmSensorLatched.value != YesNoState.NA &&
+                rejectConfirmSensorLatched.value != YesNoState.NO &&
+                rejectConfirmSensorCR.value != YesNoState.NA &&
+                rejectConfirmSensorCR.value != YesNoState.NO &&
+                rejectConfirmSensorStopPosition.value.isNotBlank() &&
+                rejectConfirmSensorStopPosition.value != "Out-feed Belt (Uncontrolled)" &&
+                (rejectConfirmSensorTestMethod.value != "Other" ||
+                        rejectConfirmSensorTestMethodOther.value.isNotBlank())
+
+    setRejectConfirmSensorTestPvResult(
+        if (passes) "Pass" else "Fail"
+    )
+}
+
+// ---------------------------------------------------------
+// Bin Full Sensor PV Logic
+// ---------------------------------------------------------
+
+fun CalibrationMetalDetectorConveyorViewModel.autoUpdateBinFullSensorPvResult() {
+
+    // If PV isn't required for this calibration, make it N/A and stop.
+    if (!pvRequired.value) {
+        setBinFullSensorTestPvResult("N/A")
+        return
+    }
+
+    // If the sensor isn't fitted, PV result should be N/F
+    if (binFullSensorFitted.value == YesNoState.NO) {
+        setBinFullSensorTestPvResult("Not Fitted")
+        return
+    }
+
+    // If it’s not applicable, PV result should be N/A
+    if (binFullSensorFitted.value == YesNoState.NA) {
+        setBinFullSensorTestPvResult("N/A")
+        return
+    }
+
+    val passes =
+        binFullSensorDetail.value.isNotBlank() &&
+                binFullSensorTestMethod.value.isNotBlank() &&
+                binFullSensorTestResult.value.isNotEmpty() &&
+                "No Result" !in binFullSensorTestResult.value &&
+                binFullSensorLatched.value == YesNoState.YES &&
+                binFullSensorCR.value == YesNoState.YES &&
+                (binFullSensorTestMethod.value != "Other" ||
+                        binFullSensorTestMethodOther.value.isNotBlank())
+
+    setBinFullSensorTestPvResult(
+        if (passes) "Pass" else "Fail"
+    )
+}
+
+// ---------------------------------------------------------
+// Bin Full Sensor PV Logic
+// ---------------------------------------------------------
+
+fun CalibrationMetalDetectorConveyorViewModel.autoUpdateBackupSensorPvResult() {
+
+    // If PV isn't required for this calibration, make it N/A and stop.
+    if (!pvRequired.value) {
+        setBackupSensorTestPvResult("N/A")
+        return
+    }
+
+    // If the sensor isn't fitted, PV result should be N/F
+    if (backupSensorFitted.value == YesNoState.NO) {
+        setBackupSensorTestPvResult("Not Fitted")
+        return
+    }
+
+    // If it’s not applicable, PV result should be N/A
+    if (backupSensorFitted.value == YesNoState.NA) {
+        setBackupSensorTestPvResult("N/A")
+        return
+    }
+
+    val passes =
+        backupSensorDetail.value.isNotBlank() &&
+                backupSensorTestMethod.value.isNotBlank() &&
+                backupSensorTestResult.value.isNotEmpty() &&
+                "No Result" !in backupSensorTestResult.value &&
+                backupSensorLatched.value == YesNoState.YES &&
+                backupSensorCR.value == YesNoState.YES &&
+                (backupSensorTestMethod.value != "Other" ||
+                        backupSensorTestMethodOther.value.isNotBlank())
+
+    setBackupSensorTestPvResult(
+        if (passes) "Pass" else "Fail"
+    )
+}
+
+// ---------------------------------------------------------
+// Air Pressure Sensor PV Logic
+// ---------------------------------------------------------
+
+
+fun CalibrationMetalDetectorConveyorViewModel.autoUpdateAirPressureSensorPvResult() {
+
+    // If PV isn't required for this calibration, make it N/A and stop.
+    if (!pvRequired.value) {
+        setAirPressureSensorTestPvResult("N/A")
+        return
+    }
+
+    // If the sensor isn't fitted, PV result should be N/F
+    if (airPressureSensorFitted.value == YesNoState.NO) {
+        setAirPressureSensorTestPvResult("Not Fitted")
+        return
+    }
+
+    // If it’s not applicable, PV result should be N/A
+    if (airPressureSensorFitted.value == YesNoState.NA) {
+        setAirPressureSensorTestPvResult("N/A")
+        return
+    }
+
+    val passes =
+        airPressureSensorDetail.value.isNotBlank() &&
+                airPressureSensorTestMethod.value.isNotBlank() &&
+                airPressureSensorTestResult.value.isNotEmpty() &&
+                "No Result" !in airPressureSensorTestResult.value &&
+                airPressureSensorLatched.value == YesNoState.YES &&
+                airPressureSensorCR.value == YesNoState.YES &&
+                (airPressureSensorTestMethod.value != "Other" ||
+                        airPressureSensorTestMethodOther.value.isNotBlank())
+
+    setAirPressureSensorTestPvResult(
+        if (passes) "Pass" else "Fail"
+    )
+}
+
+// ---------------------------------------------------------
+// Air Pressure Sensor PV Logic
+// ---------------------------------------------------------
+
+fun CalibrationMetalDetectorConveyorViewModel.autoUpdatePackCheckSensorPvResult() {
+
+    // If PV isn't required for this calibration, make it N/A and stop.
+    if (!pvRequired.value) {
+        setPackCheckSensorTestPvResult("N/A")
+        return
+    }
+
+    // If the sensor isn't fitted, PV result should be N/F
+    if (packCheckSensorFitted.value == YesNoState.NO) {
+        setPackCheckSensorTestPvResult("Not Fitted")
+        return
+    }
+
+    // If it’s not applicable, PV result should be N/A
+    if (packCheckSensorFitted.value == YesNoState.NA) {
+        setPackCheckSensorTestPvResult("N/A")
+        return
+    }
+
+    val passes =
+        packCheckSensorDetail.value.isNotBlank() &&
+                packCheckSensorTestMethod.value.isNotBlank() &&
+                packCheckSensorTestResult.value.isNotEmpty() &&
+                "No Result" !in packCheckSensorTestResult.value &&
+                packCheckSensorLatched.value == YesNoState.YES &&
+                packCheckSensorCR.value == YesNoState.YES &&
+                (packCheckSensorTestMethod.value != "Other" ||
+                        packCheckSensorTestMethodOther.value.isNotBlank())
+
+    setPackCheckSensorTestPvResult(
+        if (passes) "Pass" else "Fail"
+    )
+}
+
+// ---------------------------------------------------------
+// Air Pressure Sensor PV Logic
+// ---------------------------------------------------------
+
+
+fun CalibrationMetalDetectorConveyorViewModel.autoUpdateSpeedSensorPvResult() {
+
+    // If PV isn't required for this calibration, make it N/A and stop.
+    if (!pvRequired.value) {
+        setSpeedSensorTestPvResult("N/A")
+        return
+    }
+
+    // Not fitted
+    if (speedSensorFitted.value == YesNoState.NO) {
+        setSpeedSensorTestPvResult("Not Fitted")
+        return
+    }
+
+    // Not applicable
+    if (speedSensorFitted.value == YesNoState.NA) {
+        setSpeedSensorTestPvResult("N/A")
+        return
+    }
+
+    val passes =
+        speedSensorDetail.value.isNotBlank() &&
+                speedSensorTestMethod.value.isNotBlank() &&
+                speedSensorTestResult.value.isNotEmpty() &&
+                "No Result" !in speedSensorTestResult.value &&
+                speedSensorLatched.value == YesNoState.YES &&
+                speedSensorCR.value == YesNoState.YES &&
+                (speedSensorTestMethod.value != "Other" ||
+                        speedSensorTestMethodOther.value.isNotBlank())
+
+    setSpeedSensorTestPvResult(
+        if (passes) "Pass" else "Fail"
+    )
+}
+
+// ---------------------------------------------------------
+// Air Pressure Sensor PV Logic
+// ---------------------------------------------------------
+
+
+
+fun CalibrationMetalDetectorConveyorViewModel.autoUpdateBinDoorMonitorPvResult() {
+
+    if (!pvRequired.value) {
+        setBinDoorMonitorTestPvResult("N/A")
+        return
+    }
+
+    when (binDoorMonitorFitted.value) {
+        YesNoState.NO -> {
+            setBinDoorMonitorTestPvResult("Not Fitted")
+            return
+        }
+        YesNoState.NA -> {
+            setBinDoorMonitorTestPvResult("N/A")
+            return
+        }
+        YesNoState.YES -> { /* continue */ }
+        else -> {
+            setBinDoorMonitorTestPvResult("Fail")
+            return
+        }
+    }
+
+    val passes =
+        binDoorMonitorDetail.value.isNotBlank() &&
+                binDoorStatusAsFound.value.isNotBlank() &&
+                binDoorUnlockedIndication.value.isNotEmpty() &&
+                "No Result" !in binDoorUnlockedIndication.value &&
+                binDoorOpenIndication.value.isNotEmpty() &&
+                "No Result" !in binDoorOpenIndication.value &&
+                binDoorTimeoutTimer.value.isNotBlank() &&
+                binDoorTimeoutResult.value.isNotEmpty() &&
+                "No Result" !in binDoorTimeoutResult.value &&
+                binDoorLatched.value == YesNoState.YES &&
+                binDoorCR.value == YesNoState.YES
+
+    setBinDoorMonitorTestPvResult(if (passes) "Pass" else "Fail")
+}
+
+private fun String.normalisedSize(): String =
+    trim().replace(",", ".") // so "2,5" == "2.5"
+
+fun CalibrationMetalDetectorConveyorViewModel.autoUpdateSmePvResult() {
+
+    if (!pvRequired.value) {
+        setSmeTestPvResult("N/A")
+        return
+    }
+
+    when (operatorTestWitnessed.value) {
+        YesNoState.NA -> {
+            setSmeTestPvResult("N/A")
+            return
+        }
+        YesNoState.YES -> { /* continue */ }
+        else -> {
+            setSmeTestPvResult("Fail")
+            return
+        }
+    }
+
+    // --- Engineer sizes (swap these to your actual fields) ---
+    val engFerrous = sensitivityAsLeftFerrous.value.normalisedSize()       // OR sensitivityAsLeftFerrous.value
+    val engNonFerrous = sensitivityAsLeftNonFerrous.value.normalisedSize() // OR sensitivityAsLeftNonFerrous.value
+    val engStainless = sensitivityAsLeftStainless.value.normalisedSize()   // OR sensitivityAsLeftStainless.value
+
+
+    // --- Operator sizes ---
+    val opFerrous = operatorTestResultFerrous.value.normalisedSize()
+    val opNonFerrous = operatorTestResultNonFerrous.value.normalisedSize()
+    val opStainless = operatorTestResultStainless.value.normalisedSize()
+
+
+    val allFieldsPresent =
+        operatorName.value.isNotBlank() &&
+                smeName.value.isNotBlank() &&
+                operatorTestResultFerrous.value.isNotBlank() &&
+                operatorTestResultNonFerrous.value.isNotBlank() &&
+                operatorTestResultStainless.value.isNotBlank() &&
+                operatorTestResultLargeMetal.value.isNotBlank() &&
+                operatorTestResultCertNumberFerrous.value.isNotBlank() &&
+                operatorTestResultCertNumberNonFerrous.value.isNotBlank() &&
+                operatorTestResultCertNumberStainless.value.isNotBlank() &&
+                operatorTestResultCertNumberLargeMetal.value.isNotBlank()
+
+    val sizesMatch =
+        opFerrous >= engFerrous &&
+                opNonFerrous >= engNonFerrous &&
+                opStainless >= engStainless
+
+    setSmeTestPvResult(if (allFieldsPresent && sizesMatch) "Pass" else "Fail")
+}
+
+
+
 
 // ---------------------------------------------------------
 // Set all PV results to N/A

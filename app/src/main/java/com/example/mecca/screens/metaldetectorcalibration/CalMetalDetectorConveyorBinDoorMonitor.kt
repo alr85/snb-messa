@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -12,13 +13,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateBinDoorMonitorPvResult
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledDropdownWithHelp
+import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
 import com.example.mecca.formModules.LabeledMultiSelectDropdownWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchAndTextInputWithHelp
@@ -29,113 +33,93 @@ import com.example.mecca.formModules.YesNoState
 @Composable
 fun CalMetalDetectorConveyorBinDoorMonitor(
     navController: NavHostController,
-    viewModel: CalibrationMetalDetectorConveyorViewModel = viewModel()
+    viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
+    val scrollState = rememberScrollState()
 
-    // Stops the next button from being pressed until the screen is rendered
-    LaunchedEffect(Unit) {
-        viewModel.finishNavigation()
+    val fitted by viewModel.binDoorMonitorFitted
+    val detail by viewModel.binDoorMonitorDetail
+    val statusAsFound by viewModel.binDoorStatusAsFound
+    val unlockedIndication by viewModel.binDoorUnlockedIndication.collectAsState()
+    val openIndication by viewModel.binDoorOpenIndication.collectAsState()
+    val timeoutTimer by viewModel.binDoorTimeoutTimer
+    val timeoutResult by viewModel.binDoorTimeoutResult.collectAsState()
+    val latched by viewModel.binDoorLatched
+    val controlledRestart by viewModel.binDoorCR
+    val notes by viewModel.binDoorEngineerNotes
+
+    // Options: remember so Compose doesn’t rebuild them constantly
+    val asFoundOptions = remember {
+        listOf(
+            "Open and Unlocked",
+            "Open and Locked",
+            "Closed and Unlocked",
+            "Closed and Locked"
+        )
     }
 
-    //val progress = viewModel.progress
-    val scrollState = rememberScrollState() // Scroll state to control the scroll behavior
+    val indicationOptions = remember {
+        listOf(
+            "No Result",
+            "Audible Notification",
+            "Visual Notification",
+            "On-Screen Notification",
+        )
+    }
 
-    // Get and update data in the ViewModel
-    val binDoorMonitorFitted by viewModel.binDoorMonitorFitted
-    val binDoorMonitorDetail by viewModel.binDoorMonitorDetail
-    val binDoorStatusAsFound by viewModel.binDoorStatusAsFound
-    val binDoorUnlockedIndication by viewModel.binDoorUnlockedIndication.collectAsState()
-    val binDoorOpenIndication by viewModel.binDoorOpenIndication.collectAsState()
-    val binDoorTimeoutTimer by viewModel.binDoorTimeoutTimer
-    val binDoorTimeoutResult by viewModel.binDoorTimeoutResult.collectAsState()
-    val binDoorLatched by viewModel.binDoorLatched
-    val binDoorCR by viewModel.binDoorCR
-    val binDoorEngineerNotes by viewModel.binDoorEngineerNotes
+    val timeoutResultOptions = remember {
+        listOf(
+            "No Result",
+            "Audible Notification",
+            "Visual Notification",
+            "On-Screen Notification",
+            "Belt Stops",
+            "In-feed Belt Stops",
+            "Out-feed Belt Stops",
+            "Other"
+        )
+    }
 
-    //Determine if "Next Step" button should be enabled
-    val isNextStepEnabled = when (binDoorMonitorFitted) {
-        YesNoState.NO, YesNoState.NA -> true // Button enabled for NO or NA
+    // Next enabled
+    val isNextStepEnabled = when (fitted) {
+        YesNoState.NO, YesNoState.NA -> true
         YesNoState.YES -> {
-            // Button enabled only if all other fields are valid
-            binDoorMonitorDetail.isNotBlank() &&
-                    binDoorStatusAsFound.isNotBlank() &&
-                    binDoorUnlockedIndication.isNotEmpty() &&
-                    binDoorOpenIndication.isNotEmpty() &&
-                    binDoorTimeoutTimer.isNotBlank() &&
-                    binDoorTimeoutResult.isNotEmpty() &&
-                    binDoorLatched != YesNoState.NA &&
-                    binDoorCR != YesNoState.NA
+            detail.isNotBlank() &&
+                    statusAsFound.isNotBlank() &&
+                    unlockedIndication.isNotEmpty() &&
+                    openIndication.isNotEmpty() &&
+                    timeoutTimer.isNotBlank() &&
+                    timeoutResult.isNotEmpty() &&
+                    latched != YesNoState.NA &&
+                    controlledRestart != YesNoState.NA
         }
-
-        else -> false // Default to false for safety
+        else -> false
     }
 
-    // Test options
-    val binDoorAsFoundOptions = listOf(
-        "Open and Unlocked",
-        "Open and Locked",
-        "Closed and Unlocked",
-        "Closed and Locked"
-    )
-
-    val binDoorTimeoutResults = listOf(
-        "No Result",
-        "Audible Notification",
-        "Visual Notification",
-        "On-Screen Notification",
-        "Belt Stops",
-        "In-feed Belt Stops",
-        "Out-feed Belt Stops",
-        "Other"
-    )
-
-    val binDoorIndications = listOf(
-        "No Result",
-        "Audible Notification",
-        "Visual Notification",
-        "On-Screen Notification",
-    )
+    // Tell wrapper
+    LaunchedEffect(isNextStepEnabled) {
+        viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
-//        CalibrationBanner(
-//            progress = progress,
-//            viewModel = viewModel
-//        )
 
-        // Navigation Buttons
-//        CalibrationNavigationButtons(
-//            onPreviousClick = { viewModel.updateBinDoorMonitor() },
-//            onCancelClick = {
-//                viewModel.updateBinDoorMonitor()
-//            },
-//            onNextClick = {
-//                viewModel.updateBinDoorMonitor()
-//                navController.navigate("CalMetalDetectorConveyorSmeDetails")
-//            },
-//            isNextEnabled = isNextStepEnabled,
-//            isFirstStep = false,
-//            navController = navController,
-//            viewModel = viewModel,
-//            onSaveAndExitClick = {
-//                viewModel.updateBinDoorMonitor()
-//            },
-//        )
+        CalibrationHeader("Failsafe Tests - Bin Door Monitor")
 
-        CalibrationHeader("Compliance Checks - Bin Door Monitor")
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
                 .verticalScroll(scrollState)
+                .imePadding()
         ) {
 
             LabeledTriStateSwitchAndTextInputWithHelp(
-                label = "Bin Door Monitor Fitted?",
-                currentState = binDoorMonitorFitted,
+                label = "Bin Door Monitor fitted?",
+                currentState = fitted,
                 onStateChange = { newState ->
                     viewModel.setBinDoorMonitorFitted(newState)
+
                     if (newState == YesNoState.NA || newState == YesNoState.NO) {
-                        // Set all relevant fields to N/A
                         viewModel.setBinDoorMonitorDetail("N/A")
                         viewModel.setBinDoorStatusAsFound("N/A")
                         viewModel.setBinDoorOpenIndication(emptyList())
@@ -145,7 +129,6 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                         viewModel.setBinDoorLatched(YesNoState.NA)
                         viewModel.setBinDoorCR(YesNoState.NA)
                     } else if (newState == YesNoState.YES) {
-                        // Clear N/A from selected options when switching back to YES
                         viewModel.setBinDoorMonitorDetail("")
                         viewModel.setBinDoorStatusAsFound("")
                         viewModel.setBinDoorOpenIndication(emptyList())
@@ -154,117 +137,178 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                         viewModel.setBinDoorTimeoutResult(emptyList())
                         viewModel.setBinDoorLatched(YesNoState.NO)
                         viewModel.setBinDoorCR(YesNoState.NO)
-
                     }
+
+                    viewModel.autoUpdateBinDoorMonitorPvResult()
                 },
-                helpText = "Select if there is a Bin Door Monitor fitted",
+                helpText = "Select if a bin door monitor is fitted.",
                 inputLabel = "Detail",
-                inputValue = binDoorMonitorDetail,
-                onInputValueChange = { newValue -> viewModel.setBinDoorMonitorDetail(newValue) }
+                inputValue = detail,
+                onInputValueChange = {
+                    viewModel.setBinDoorMonitorDetail(it)
+                    viewModel.autoUpdateBinDoorMonitorPvResult()
+                }
             )
 
+            if (fitted == YesNoState.YES) {
 
-            // Conditionally display remaining fields if "Yes" is selected for In-feed sensor fitted
-            if (binDoorMonitorFitted == YesNoState.YES) {
                 LabeledDropdownWithHelp(
                     label = "Bin Door Status As Found",
-                    options = binDoorAsFoundOptions,
-                    selectedOption = binDoorStatusAsFound,
-                    onSelectionChange = { newSelection ->
-                        viewModel.setBinDoorStatusAsFound(newSelection)
+                    options = asFoundOptions,
+                    selectedOption = statusAsFound,
+                    onSelectionChange = {
+                        viewModel.setBinDoorStatusAsFound(it)
+                        viewModel.autoUpdateBinDoorMonitorPvResult()
                     },
                     helpText = "Select one option from the dropdown.",
                     isNAToggleEnabled = false
                 )
 
-                val selectedOptionsOpenIndication by viewModel.binDoorOpenIndication.collectAsState()
-
                 LabeledMultiSelectDropdownWithHelp(
                     label = "Bin Door Open Indication",
-                    options = binDoorIndications,
-                    value = selectedOptionsOpenIndication.joinToString(" + "),
-                    selectedOptions = selectedOptionsOpenIndication,
-                    onSelectionChange = { newSelectedOptions ->
-                        viewModel.setBinDoorOpenIndication(
-                            newSelectedOptions
-                        )
+                    options = indicationOptions,
+                    value = openIndication.joinToString(" + "),
+                    selectedOptions = openIndication,
+                    onSelectionChange = { newSelection ->
+                        val cleaned = when {
+                            "No Result" in newSelection -> listOf("No Result")
+                            else -> newSelection.filterNot { it == "No Result" }
+                        }
+                        viewModel.setBinDoorOpenIndication(cleaned)
+
+                        if (cleaned == listOf("No Result")) {
+                            viewModel.setBinDoorLatched(YesNoState.NO)
+                            viewModel.setBinDoorCR(YesNoState.NO)
+                        }
+
+                        viewModel.autoUpdateBinDoorMonitorPvResult()
                     },
-                    helpText = "Select one or more items from the dropdown.",
+                    helpText = "What indication is shown when the bin door is OPEN?",
                     isNAToggleEnabled = false
                 )
 
-                val selectedOptionsUnlockedIndication by viewModel.binDoorUnlockedIndication.collectAsState()
-
                 LabeledMultiSelectDropdownWithHelp(
                     label = "Bin Door Unlocked Indication",
-                    options = binDoorIndications,
-                    value = selectedOptionsUnlockedIndication.joinToString(" + "),
-                    selectedOptions = selectedOptionsUnlockedIndication,
-                    onSelectionChange = { newSelectedOptions ->
-                        viewModel.setBinDoorUnlockedIndication(
-                            newSelectedOptions
-                        )
+                    options = indicationOptions,
+                    value = unlockedIndication.joinToString(" + "),
+                    selectedOptions = unlockedIndication,
+                    onSelectionChange = { newSelection ->
+                        val cleaned = when {
+                            "No Result" in newSelection -> listOf("No Result")
+                            else -> newSelection.filterNot { it == "No Result" }
+                        }
+                        viewModel.setBinDoorUnlockedIndication(cleaned)
+
+                        if (cleaned == listOf("No Result")) {
+                            viewModel.setBinDoorLatched(YesNoState.NO)
+                            viewModel.setBinDoorCR(YesNoState.NO)
+                        }
+
+                        viewModel.autoUpdateBinDoorMonitorPvResult()
                     },
-                    helpText = "Select one or more items from the dropdown.",
+                    helpText = "What indication is shown when the bin door is UNLOCKED?",
                     isNAToggleEnabled = false
                 )
 
                 LabeledTextFieldWithHelp(
-                    label = "Bin Door Timeout",
-                    value = binDoorTimeoutTimer,
-                    onValueChange = { newValue -> viewModel.setBinDoorTimeoutTimer(newValue) },
-                    helpText = "How many seconds until the system acknowledges the bin door has been left open/unlocked",
-                    isNAToggleEnabled = false
+                    label = "Bin Door Timeout (secs)",
+                    value = timeoutTimer,
+                    onValueChange = {
+                        viewModel.setBinDoorTimeoutTimer(it)
+                        viewModel.autoUpdateBinDoorMonitorPvResult()
+                    },
+                    helpText = "How many seconds until the system acknowledges the bin door has been left open/unlocked?",
+                    isNAToggleEnabled = false,
+                    keyboardType = KeyboardType.Number
                 )
-
-                val selectedOptionsTimeOutResult by viewModel.binDoorTimeoutResult.collectAsState()
 
                 LabeledMultiSelectDropdownWithHelp(
                     label = "Bin Door Timeout Result",
-                    options = binDoorTimeoutResults,
-                    value = selectedOptionsTimeOutResult.joinToString(" + "),
-                    selectedOptions = selectedOptionsTimeOutResult,
-                    onSelectionChange = { newSelectedOptions ->
-                        viewModel.setBinDoorTimeoutResult(
-                            newSelectedOptions
-                        )
+                    options = timeoutResultOptions,
+                    value = timeoutResult.joinToString(" + "),
+                    selectedOptions = timeoutResult,
+                    onSelectionChange = { newSelection ->
+
+                        val cleaned = when {
+                            "No Result" in newSelection -> listOf("No Result")
+                            else -> newSelection.filterNot { it == "No Result" }
+                        }
+                        viewModel.setBinDoorTimeoutResult(cleaned)
+
+                        if (cleaned == listOf("No Result")) {
+                            viewModel.setBinDoorLatched(YesNoState.NO)
+                            viewModel.setBinDoorCR(YesNoState.NO)
+                        }
+
+                        viewModel.autoUpdateBinDoorMonitorPvResult()
                     },
-                    helpText = "What happens after the Bin Door timer elapses? Select one or more items from the dropdown.",
+                    helpText = "What happens after the bin door timer elapses?",
                     isNAToggleEnabled = false
                 )
-
-
 
                 LabeledTriStateSwitchWithHelp(
                     label = "Fault Latched?",
-                    currentState = binDoorLatched,
-                    onStateChange = { newState -> viewModel.setBinDoorLatched(newState) },
+                    currentState = latched,
+                    onStateChange = {
+                        viewModel.setBinDoorLatched(it)
+                        viewModel.autoUpdateBinDoorMonitorPvResult()
+                    },
                     helpText = "Is the fault output latched, or does it clear automatically?",
                     isNAToggleEnabled = false
                 )
 
                 LabeledTriStateSwitchWithHelp(
-                    label = "Fault Controlled Restart?",
-                    currentState = binDoorCR,
-                    onStateChange = { newState -> viewModel.setBinDoorCR(newState) },
-                    helpText = "Is the fault output latched, or does it clear automatically?",
+                    label = "Controlled Restart?",
+                    currentState = controlledRestart,
+                    onStateChange = {
+                        viewModel.setBinDoorCR(it)
+                        viewModel.autoUpdateBinDoorMonitorPvResult()
+                    },
+                    helpText = "Is a controlled restart required after a fault?",
                     isNAToggleEnabled = false
                 )
+            }
 
+            Spacer(modifier = Modifier.height(16.dp))
 
+            //-----------------------------------------------------
+            // ⭐ PV RESULT (only when required)
+            //-----------------------------------------------------
+            if (viewModel.pvRequired.value) {
+                LabeledFourOptionRadioWithHelp(
+                    label = "P.V. Result",
+                    value = viewModel.binDoorMonitorTestPvResult.value,
+                    onValueChange = viewModel::setBinDoorMonitorTestPvResult,
+                    helpText = """
+                        Auto-Pass rules (when PV required):
+                          • Monitor fitted = Yes
+                          • Detail entered
+                          • Status-as-found selected
+                          • Open indication selected (not "No Result")
+                          • Unlocked indication selected (not "No Result")
+                          • Timeout value entered
+                          • Timeout result selected (not "No Result")
+                          • Fault Latched = Yes
+                          • Controlled Restart = Yes
+
+                        If monitor is No → PV = N/F.
+                        If monitor is N/A → PV = N/A.
+                        Otherwise auto-fail. You may override manually.
+                    """.trimIndent()
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             LabeledTextFieldWithHelp(
                 label = "Engineer Comments",
-                value = binDoorEngineerNotes,
-                onValueChange = { newValue -> viewModel.setBinDoorEngineerNotes(newValue) },
-                helpText = "Enter any notes relevant to this section",
+                value = notes,
+                onValueChange = viewModel::setBinDoorEngineerNotes,
+                helpText = "Enter any notes relevant to this section.",
                 isNAToggleEnabled = false
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(60.dp))
         }
     }
 }

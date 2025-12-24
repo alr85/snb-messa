@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -43,6 +44,7 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
             "MetalDetectorConveyorCalibrationStart/{calibrationId}",
             "CalMetalDetectorConveyorConveyorDetails",
             "CalMetalDetectorConveyorSystemChecklist",
+            "CalMetalDetectorConveyorIndicators",
             "CalMetalDetectorConveyorProductDetails",
             "CalMetalDetectorConveyorSensitivityRequirements",
             "CalMetalDetectorConveyorDetectionSettingsAsFound",
@@ -50,6 +52,7 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
             "CalMetalDetectorConveyorFerrousTest",
             "CalMetalDetectorConveyorNonFerrousTest",
             "CalMetalDetectorConveyorStainlessTest",
+            "CalMetalDetectorConveyorSmeDetails",
             "CalMetalDetectorConveyorDetectionSettingsAsLeft",
             "CalMetalDetectorConveyorRejectSettings",
             "CalMetalDetectorConveyorInfeedPEC",
@@ -60,11 +63,8 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
             "CalMetalDetectorConveyorAirPressureSensor",
             "CalMetalDetectorConveyorPackCheckSensor",
             "CalMetalDetectorConveyorSpeedSensor",
-            "CalMetalDetectorConveyorDetectNotification",
             "CalMetalDetectorConveyorBinDoorMonitor",
-            "CalMetalDetectorConveyorIndicators",
-            "CalMetalDetectorConveyorSmeDetails",
-            "CalMetalDetectorConveyorComplianceConfirmation",
+            "CalMetalDetectorConveyorDetectNotification",
             "CalMetalDetectorConveyorSummary"
         )
     }
@@ -92,7 +92,7 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
 
     // For swipe debouncing & accumulation
     var swipeHandled by remember { mutableStateOf(false) }
-    var accumulatedDragX by remember { mutableStateOf(0f) }
+    var accumulatedDragX by remember { mutableFloatStateOf(0f) }
 
     // Reset swipe state when screen changes
     LaunchedEffect(currentScreen) {

@@ -30,8 +30,6 @@ fun LabeledFourOptionRadioWithHelp(
     onValueChange: (String) -> Unit,
     helpText: String,
     isDisabled: Boolean = false,
-
-    // NEW:
     showNotFittedOption: Boolean = true,
     notFittedEnabled: Boolean = true
 ) {

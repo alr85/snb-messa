@@ -41,7 +41,7 @@ import com.example.mecca.calibrationLogic.metalDetectorConveyor.BinDoorMonitorUp
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.BinFullSensorUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.CalibrationEndUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.CalibrationStartUpdate
-import com.example.mecca.calibrationLogic.metalDetectorConveyor.ComplianceConfirmationUpdate
+//import com.example.mecca.calibrationLogic.metalDetectorConveyor.ComplianceConfirmationUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.ConveyorDetailsUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.DetectNotificationUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.DetectionSettingAsLeftUpdate
@@ -188,6 +188,7 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
             detectRejectNonFerrousTrailing = update.detectRejectNonFerrousTrailing,
             detectRejectNonFerrousTrailingPeakSignal = update.detectRejectNonFerrousTrailingPeakSignal,
             nonFerrousTestEngineerNotes = update.nonFerrousTestEngineerNotes,
+            nonFerrousTestPvResult = update.nonFerrousTestPvResult,
             calibrationId = update.calibrationId
         )
     }
@@ -203,6 +204,7 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
             detectRejectStainlessTrailing = update.detectRejectStainlessTrailing,
             detectRejectStainlessTrailingPeakSignal = update.detectRejectStainlessTrailingPeakSignal,
             stainlessTestEngineerNotes = update.stainlessTestEngineerNotes,
+            stainlessTestPvResult = update.stainlessTestPvResult,
             calibrationId = update.calibrationId
         )
     }
@@ -212,6 +214,7 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
             detectRejectLargeMetal = update.detectRejectLargeMetal,
             sampleCertificateNumberLargeMetal = update.sampleCertificateNumberLargeMetal,
             largeMetalTestEngineerNotes = update.largeMetalTestEngineerNotes,
+            largeMetalTestPvResult = update.largeMetalTestPvResult,
             calibrationId = update.calibrationId
         )
     }
@@ -308,6 +311,7 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
             infeedSensorEngineerNotes = update.infeedSensorEngineerNotes,
             infeedSensorLatched = update.infeedSensorLatched,
             infeedSensorCR = update.infeedSensorCR,
+            infeedSensorTestPvResult = update.infeedSensorTestPvResult,
             calibrationId = update.calibrationId
         )
     }
@@ -323,6 +327,7 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
             rejectConfirmSensorLatched = update.rejectConfirmSensorLatched,
             rejectConfirmSensorCR = update.rejectConfirmSensorCR,
             rejectConfirmSensorStopPosition = update.rejectConfirmSensorStopPosition,
+            rejectConfirmSensorTestPvResult = update.rejectConfirmSensorTestPvResult,
             calibrationId = update.calibrationId
         )
     }
@@ -337,6 +342,7 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
             binFullSensorEngineerNotes = update.binFullSensorEngineerNotes,
             binFullSensorLatched = update.binFullSensorLatched,
             binFullSensorCR = update.binFullSensorCR,
+            binFullSensorTestPvResult = update.binFullSensorTestPvResult,
             calibrationId = update.calibrationId
         )
     }
@@ -351,6 +357,7 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
             backupSensorEngineerNotes = update.backupSensorEngineerNotes,
             backupSensorLatched = update.backupSensorLatched,
             backupSensorCR = update.backupSensorCR,
+            backupSensorTestPvResult = update.backupSensorTestPvResult,
             calibrationId = update.calibrationId
         )
     }
@@ -365,6 +372,7 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
             airPressureSensorEngineerNotes = update.airPressureSensorEngineerNotes,
             airPressureSensorLatched = update.airPressureSensorLatched,
             airPressureSensorCR = update.airPressureSensorCR,
+            airPressureSensorTestPvResult = update.airPressureSensorTestPvResult,
             calibrationId = update.calibrationId
         )
     }
@@ -379,6 +387,7 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
             packCheckSensorEngineerNotes = update.packCheckSensorEngineerNotes,
             packCheckSensorLatched = update.packCheckSensorLatched,
             packCheckSensorCR = update.packCheckSensorCR,
+            packCheckSensorTestPvResult = update.packCheckSensorTestPvResult,
             calibrationId = update.calibrationId
         )
     }
@@ -393,6 +402,7 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
             speedSensorEngineerNotes = update.speedSensorEngineerNotes,
             speedSensorLatched = update.speedSensorLatched,
             speedSensorCR = update.speedSensorCR,
+            speedSensorTestPvResult = update.speedSensorTestPvResult,
             calibrationId = update.calibrationId
         )
     }
@@ -417,6 +427,7 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
             binDoorLatched = update.binDoorLatched,
             binDoorCR = update.binDoorCR,
             binDoorEngineerNotes = update.binDoorEngineerNotes,
+            binDoorMonitorTestPvResult = update.binDoorMonitorTestPvResult,
             calibrationId = update.calibrationId
         )
     }
@@ -435,21 +446,22 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
             operatorTestResultCertNumberLargeMetal = update.operatorTestResultCertNumberLargeMetal,
             smeName = update.smeName,
             smeEngineerNotes = update.smeEngineerNotes,
+            smeTestPvResult = update.smeTestPvResult,
             calibrationId = update.calibrationId
         )
     }
 
-    suspend fun updateComplianceConfirmation(update: ComplianceConfirmationUpdate) {
-        calibrationDao.updateComplianceConfirmation(
-            sensitivityCompliance = update.sensitivityCompliance,
-            essentialRequirementCompliance = update.essentialRequirementCompliance,
-            failsafeCompliance = update.failsafeCompliance,
-            bestSensitivityCompliance = update.bestSensitivityCompliance,
-            sensitivityRecommendations = update.sensitivityRecommendations,
-            performanceValidationIssued = update.performanceValidationIssued,
-            calibrationId = update.calibrationId
-        )
-    }
+//    suspend fun updateComplianceConfirmation(update: ComplianceConfirmationUpdate) {
+//        calibrationDao.updateComplianceConfirmation(
+//            sensitivityCompliance = update.sensitivityCompliance,
+//            essentialRequirementCompliance = update.essentialRequirementCompliance,
+//            failsafeCompliance = update.failsafeCompliance,
+//            bestSensitivityCompliance = update.bestSensitivityCompliance,
+//            sensitivityRecommendations = update.sensitivityRecommendations,
+//            performanceValidationIssued = update.performanceValidationIssued,
+//            calibrationId = update.calibrationId
+//        )
+//    }
 
     suspend fun updateDetectionSettingLabels(update: DetectionSettingLabelsUpdate) {
         calibrationDao.updateDetectionSettingLabels(

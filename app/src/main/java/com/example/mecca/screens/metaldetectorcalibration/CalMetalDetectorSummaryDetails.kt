@@ -605,33 +605,33 @@ fun CalMetalDetectorConveyorSummaryDetails(
         SummaryItem(label = "Engineer Notes", value = viewModel.smeEngineerNotes.value)
     }
 
-    Section(title = "Retailer Compliance Confirmation") {
-        SummaryItem(
-            label = "Sensitivity Compliance",
-            value = viewModel.sensitivityCompliance.value.toString()
-        )
-        SummaryItem(
-            label = "Essential Compliance",
-            value = viewModel.essentialRequirementCompliance.value.toString()
-        )
-        SummaryItem(
-            label = "Failsafe Compliance",
-            value = viewModel.failsafeCompliance.value.toString()
-        )
-        SummaryItem(
-            label = "Best Sensitivity Report",
-            value = viewModel.bestSensitivityCompliance.value.toString()
-        )
-        SummaryItem(
-            label = "Sensitivity Recommendations",
-            value = viewModel.sensitivityRecommendations.value
-        )
-        SummaryItem(
-            label = "Performance Validation",
-            value = viewModel.performanceValidationIssued.value.toString()
-        )
-
-    }
+//    Section(title = "Retailer Compliance Confirmation") {
+//        SummaryItem(
+//            label = "Sensitivity Compliance",
+//            value = viewModel.sensitivityCompliance.value.toString()
+//        )
+//        SummaryItem(
+//            label = "Essential Compliance",
+//            value = viewModel.essentialRequirementCompliance.value.toString()
+//        )
+//        SummaryItem(
+//            label = "Failsafe Compliance",
+//            value = viewModel.failsafeCompliance.value.toString()
+//        )
+//        SummaryItem(
+//            label = "Best Sensitivity Report",
+//            value = viewModel.bestSensitivityCompliance.value.toString()
+//        )
+//        SummaryItem(
+//            label = "Sensitivity Recommendations",
+//            value = viewModel.sensitivityRecommendations.value
+//        )
+//        SummaryItem(
+//            label = "Performance Validation",
+//            value = viewModel.performanceValidationIssued.value.toString()
+//        )
+//
+//    }
 
         Spacer(modifier = Modifier.weight(22f))
 

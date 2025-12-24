@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -14,10 +15,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateSmePvResult
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.formModules.CalibrationHeader
+import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
 import com.example.mecca.formModules.LabeledTwoTextInputsWithHelp
@@ -27,206 +29,239 @@ import com.example.mecca.formModules.YesNoState
 @Composable
 fun CalMetalDetectorConveyorSmeDetails(
     navController: NavHostController,
-    viewModel: CalibrationMetalDetectorConveyorViewModel = viewModel()
+    viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    // Stops the next button from being pressed until the screen is rendered
-    LaunchedEffect(Unit) {
-        viewModel.finishNavigation()
-    }
+    val scrollState = rememberScrollState()
 
-    //val progress = viewModel.progress
-    val scrollState = rememberScrollState() // Scroll state to control the scroll behavior
-
-    // Get and update data in the ViewModel
-    val operatorName by viewModel.operatorName
     val operatorTestWitnessed by viewModel.operatorTestWitnessed
-    val operatorTestResultFerrous by viewModel.operatorTestResultFerrous
-    val operatorTestResultNonFerrous by viewModel.operatorTestResultNonFerrous
-    val operatorTestResultStainless by viewModel.operatorTestResultStainless
-    val operatorTestResultLargeMetal by viewModel.operatorTestResultLargeMetal
-    val operatorTestResultCertNumberFerrous by viewModel.operatorTestResultCertNumberFerrous
-    val operatorTestResultCertNumberNonFerrous by viewModel.operatorTestResultCertNumberNonFerrous
-    val operatorTestResultCertNumberStainless by viewModel.operatorTestResultCertNumberStainless
-    val operatorTestResultCertNumberLargeMetal by viewModel.operatorTestResultCertNumberLargeMetal
+    val operatorName by viewModel.operatorName
+
+    val ferrousSize by viewModel.operatorTestResultFerrous
+    val nonFerrousSize by viewModel.operatorTestResultNonFerrous
+    val stainlessSize by viewModel.operatorTestResultStainless
+    val largeMetalSize by viewModel.operatorTestResultLargeMetal
+
+    val ferrousCert by viewModel.operatorTestResultCertNumberFerrous
+    val nonFerrousCert by viewModel.operatorTestResultCertNumberNonFerrous
+    val stainlessCert by viewModel.operatorTestResultCertNumberStainless
+    val largeMetalCert by viewModel.operatorTestResultCertNumberLargeMetal
+
     val smeName by viewModel.smeName
-    val smeEngineerNotes by viewModel.smeEngineerNotes
+    val notes by viewModel.smeEngineerNotes
 
-    //Determine if "Next Step" button should be enabled
+    // Next enabled
     val isNextStepEnabled = when (operatorTestWitnessed) {
-        YesNoState.NO, YesNoState.NA -> true // Button enabled for NO or NA
+        YesNoState.NO, YesNoState.NA -> true
         YesNoState.YES -> {
-            // Button enabled only if all other fields are valid
             operatorName.isNotBlank() &&
-                    operatorTestResultFerrous.isNotBlank() &&
-                    operatorTestResultNonFerrous.isNotBlank() &&
-                    operatorTestResultStainless.isNotBlank() &&
-                    operatorTestResultLargeMetal.isNotBlank() &&
-                    operatorTestResultCertNumberFerrous.isNotBlank() &&
-                    operatorTestResultCertNumberNonFerrous.isNotBlank() &&
-                    operatorTestResultCertNumberStainless.isNotBlank() &&
-                    operatorTestResultCertNumberLargeMetal.isNotBlank() &&
+                    ferrousSize.isNotBlank() &&
+                    nonFerrousSize.isNotBlank() &&
+                    stainlessSize.isNotBlank() &&
+                    largeMetalSize.isNotBlank() &&
+                    ferrousCert.isNotBlank() &&
+                    nonFerrousCert.isNotBlank() &&
+                    stainlessCert.isNotBlank() &&
+                    largeMetalCert.isNotBlank() &&
                     smeName.isNotBlank()
-
         }
-        else -> false // Default to false for safety
+        else -> false
     }
 
+    LaunchedEffect(isNextStepEnabled) {
+        viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
+    }
 
-    // Column layout
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(scrollState)
-    ) {
-//        CalibrationBanner(
-//            progress = progress,
-//            viewModel = viewModel
-//        )
-
-        // Navigation Buttons
-//        CalibrationNavigationButtons(
-//            onPreviousClick = { viewModel.updateOperatorTest() },
-//            onCancelClick = { viewModel.updateOperatorTest() },
-//            onNextClick = {
-//                viewModel.updateOperatorTest()
-//                navController.navigate("CalMetalDetectorConveyorComplianceConfirmation") },
-//            isNextEnabled = true,
-//            isFirstStep = false,
-//            navController = navController,
-//            viewModel = viewModel,
-//            onSaveAndExitClick = {
-//                viewModel.updateOperatorTest()
-//            },
-//        )
-
-        Spacer(modifier = Modifier.height(16.dp))
+    Column(modifier = Modifier.fillMaxSize()) {
 
         CalibrationHeader("Compliance Checks - Operator Test")
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(scrollState)
+                .imePadding()
+        ) {
 
-        LabeledTriStateSwitchWithHelp(
-            label = "Operator Test Witnessed?",
-            currentState = operatorTestWitnessed,
-            onStateChange = { newState ->
-                viewModel.setOperatorTestWitnessed(newState)
-                if (newState == YesNoState.NA || newState == YesNoState.NO) {
-                    // Set all relevant fields to N/A
-                    viewModel.setOperatorName("N/A")
-                    viewModel.setOperatorTestResultFerrous("N/A")
-                    viewModel.setOperatorTestResultNonFerrous("N/A")
-                    viewModel.setOperatorTestResultStainless("N/A")
-                    viewModel.setOperatorTestResultLargeMetal("N/A")
-                    viewModel.setOperatorTestResultCertNumberFerrous("N/A")
-                    viewModel.setOperatorTestResultCertNumberNonFerrous("N/A")
-                    viewModel.setOperatorTestResultCertNumberStainless("N/A")
-                    viewModel.setOperatorTestResultCertNumberLargeMetal("N/A")
-                    viewModel.setSmeName("N/A")
-                } else if (newState == YesNoState.YES) {
-                    // Set all relevant fields to 
-                    viewModel.setOperatorName("")
-                    viewModel.setOperatorTestResultFerrous("")
-                    viewModel.setOperatorTestResultNonFerrous("")
-                    viewModel.setOperatorTestResultStainless("")
-                    viewModel.setOperatorTestResultLargeMetal("")
-                    viewModel.setOperatorTestResultCertNumberFerrous("")
-                    viewModel.setOperatorTestResultCertNumberNonFerrous("")
-                    viewModel.setOperatorTestResultCertNumberStainless("")
-                    viewModel.setOperatorTestResultCertNumberLargeMetal("")
-                    viewModel.setSmeName("")
+            LabeledTriStateSwitchWithHelp(
+                label = "Operator Test Witnessed?",
+                currentState = operatorTestWitnessed,
+                onStateChange = { newState ->
+                    viewModel.setOperatorTestWitnessed(newState)
 
-                }
-            },
-            helpText = "If you have witnessed an operator do a successful sensitivity check, select Yes. Otherwise, select No."
-        )
+                    if (newState == YesNoState.NA || newState == YesNoState.NO) {
+                        viewModel.setOperatorName("N/A")
+                        viewModel.setOperatorTestResultFerrous("N/A")
+                        viewModel.setOperatorTestResultNonFerrous("N/A")
+                        viewModel.setOperatorTestResultStainless("N/A")
+                        viewModel.setOperatorTestResultLargeMetal("N/A")
+                        viewModel.setOperatorTestResultCertNumberFerrous("N/A")
+                        viewModel.setOperatorTestResultCertNumberNonFerrous("N/A")
+                        viewModel.setOperatorTestResultCertNumberStainless("N/A")
+                        viewModel.setOperatorTestResultCertNumberLargeMetal("N/A")
+                        viewModel.setSmeName("N/A")
+                    } else if (newState == YesNoState.YES) {
+                        viewModel.setOperatorName("")
+                        viewModel.setOperatorTestResultFerrous("")
+                        viewModel.setOperatorTestResultNonFerrous("")
+                        viewModel.setOperatorTestResultStainless("")
+                        viewModel.setOperatorTestResultLargeMetal("")
+                        viewModel.setOperatorTestResultCertNumberFerrous("")
+                        viewModel.setOperatorTestResultCertNumberNonFerrous("")
+                        viewModel.setOperatorTestResultCertNumberStainless("")
+                        viewModel.setOperatorTestResultCertNumberLargeMetal("")
+                        viewModel.setSmeName("")
+                    }
 
-        if(operatorTestWitnessed == YesNoState.YES) {
+                    viewModel.autoUpdateSmePvResult()
+                },
+                helpText = "If you witnessed an operator perform a successful sensitivity check, select Yes. Otherwise select No or N/A."
+            )
+
+            if (operatorTestWitnessed == YesNoState.YES) {
+
+                LabeledTextFieldWithHelp(
+                    label = "Operator Name",
+                    value = operatorName,
+                    onValueChange = {
+                        viewModel.setOperatorName(it)
+                        viewModel.autoUpdateSmePvResult()
+                    },
+                    helpText = "Enter the name of the operator in charge of this system",
+                    isNAToggleEnabled = true
+                )
+
+                LabeledTwoTextInputsWithHelp(
+                    label = "Ferrous Test",
+                    firstInputLabel = "Size",
+                    firstInputValue = ferrousSize,
+                    onFirstInputValueChange = {
+                        viewModel.setOperatorTestResultFerrous(it)
+                        viewModel.autoUpdateSmePvResult()
+                    },
+                    secondInputLabel = "Certificate No.",
+                    secondInputValue = ferrousCert,
+                    onSecondInputValueChange = {
+                        viewModel.setOperatorTestResultCertNumberFerrous(it)
+                        viewModel.autoUpdateSmePvResult()
+                    },
+                    helpText = "Enter the operator test size and certificate number for Ferrous.",
+                    firstInputKeyboardType = KeyboardType.Number,
+                    secondInputKeyboardType = KeyboardType.Text,
+                    isNAToggleEnabled = true
+                )
+
+                LabeledTwoTextInputsWithHelp(
+                    label = "Non Ferrous Test",
+                    firstInputLabel = "Size",
+                    firstInputValue = nonFerrousSize,
+                    onFirstInputValueChange = {
+                        viewModel.setOperatorTestResultNonFerrous(it)
+                        viewModel.autoUpdateSmePvResult()
+                    },
+                    secondInputLabel = "Certificate No.",
+                    secondInputValue = nonFerrousCert,
+                    onSecondInputValueChange = {
+                        viewModel.setOperatorTestResultCertNumberNonFerrous(it)
+                        viewModel.autoUpdateSmePvResult()
+                    },
+                    helpText = "Enter the operator test size and certificate number for Non-Ferrous.",
+                    firstInputKeyboardType = KeyboardType.Number,
+                    secondInputKeyboardType = KeyboardType.Text,
+                    isNAToggleEnabled = true
+                )
+
+                LabeledTwoTextInputsWithHelp(
+                    label = "Stainless Test",
+                    firstInputLabel = "Size",
+                    firstInputValue = stainlessSize,
+                    onFirstInputValueChange = {
+                        viewModel.setOperatorTestResultStainless(it)
+                        viewModel.autoUpdateSmePvResult()
+                    },
+                    secondInputLabel = "Certificate No.",
+                    secondInputValue = stainlessCert,
+                    onSecondInputValueChange = {
+                        viewModel.setOperatorTestResultCertNumberStainless(it)
+                        viewModel.autoUpdateSmePvResult()
+                    },
+                    helpText = "Enter the operator test size and certificate number for Stainless.",
+                    firstInputKeyboardType = KeyboardType.Number,
+                    secondInputKeyboardType = KeyboardType.Text,
+                    isNAToggleEnabled = true
+                )
+
+                LabeledTwoTextInputsWithHelp(
+                    label = "Large Metal",
+                    firstInputLabel = "Size",
+                    firstInputValue = largeMetalSize,
+                    onFirstInputValueChange = {
+                        viewModel.setOperatorTestResultLargeMetal(it)
+                        viewModel.autoUpdateSmePvResult()
+                    },
+                    secondInputLabel = "Certificate No.",
+                    secondInputValue = largeMetalCert,
+                    onSecondInputValueChange = {
+                        viewModel.setOperatorTestResultCertNumberLargeMetal(it)
+                        viewModel.autoUpdateSmePvResult()
+                    },
+                    helpText = "Enter the operator test size and certificate number for Large Metal.",
+                    firstInputKeyboardType = KeyboardType.Number,
+                    secondInputKeyboardType = KeyboardType.Text,
+                    isNAToggleEnabled = true
+                )
+
+                LabeledTextFieldWithHelp(
+                    label = "On Site SME Name",
+                    value = smeName,
+                    onValueChange = {
+                        viewModel.setSmeName(it)
+                        viewModel.autoUpdateSmePvResult()
+                    },
+                    helpText = "Enter the name of the SME currently on site",
+                    isNAToggleEnabled = true
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // -----------------------------------------------------
+            // ⭐ PV RESULT (only when required)
+            // -----------------------------------------------------
+            if (viewModel.pvRequired.value) {
+                LabeledFourOptionRadioWithHelp(
+                    label = "P.V. Result",
+                    value = viewModel.smeTestPvResult.value,
+                    onValueChange = viewModel::setSmeTestPvResult,
+                    helpText = """
+                        Auto-Pass rules (when PV required):
+                          • Operator Test Witnessed = Yes
+                          • Operator name entered
+                          • SME name entered
+                          • All four operator test sizes entered (Fe/NFe/SS/Large)
+                          • All four certificate numbers entered
+                          • Operator test sizes match engineer test sizes
+
+                        If Witnessed = No / N/A → PV = N/A.
+                        Otherwise auto-fail. You may override manually.
+                    """.trimIndent(),
+                    showNotFittedOption = true,
+                    notFittedEnabled = false
+
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             LabeledTextFieldWithHelp(
-                label = "Operator Name",
-                value = operatorName,
-                onValueChange = { newValue -> viewModel.setOperatorName(newValue) },
-                helpText = "Enter the name of the operator in charge of this system",
-                isNAToggleEnabled = true
+                label = "Engineer Comments",
+                value = notes,
+                onValueChange = viewModel::setSmeEngineerNotes,
+                helpText = "Enter any notes relevant to this section",
+                isNAToggleEnabled = false
             )
 
-            LabeledTwoTextInputsWithHelp(
-                label = "Ferrous Test",
-                firstInputLabel = "Size",
-                firstInputValue = operatorTestResultFerrous,
-                onFirstInputValueChange = { newValue -> viewModel.setOperatorTestResultFerrous(newValue) },
-                secondInputLabel = "Certificate No.",
-                secondInputValue = operatorTestResultCertNumberFerrous,
-                onSecondInputValueChange = { newValue -> viewModel.setOperatorTestResultCertNumberFerrous(newValue) },
-                helpText = "Enter the details of the Operator Test for ferrous metal",
-                firstInputKeyboardType = KeyboardType.Number, // Change if different type of input is required
-                secondInputKeyboardType = KeyboardType.Text, // Change if different type of input is required
-                isNAToggleEnabled = true // You can set this to false if the N/A toggle isn't required
-            )
-
-            LabeledTwoTextInputsWithHelp(
-                label = "Non Ferrous Test",
-                firstInputLabel = "Size",
-                firstInputValue = operatorTestResultNonFerrous,
-                onFirstInputValueChange = { newValue -> viewModel.setOperatorTestResultNonFerrous(newValue) },
-                secondInputLabel = "Certificate No.",
-                secondInputValue = operatorTestResultCertNumberNonFerrous,
-                onSecondInputValueChange = { newValue -> viewModel.setOperatorTestResultCertNumberNonFerrous(newValue) },
-                helpText = "Enter the details of the Operator Test for non-ferrous metal",
-                firstInputKeyboardType = KeyboardType.Number, // Change if different type of input is required
-                secondInputKeyboardType = KeyboardType.Text, // Change if different type of input is required
-                isNAToggleEnabled = true // You can set this to false if the N/A toggle isn't required
-            )
-
-            LabeledTwoTextInputsWithHelp(
-                label = "Stainless Test",
-                firstInputLabel = "Size",
-                firstInputValue = operatorTestResultStainless,
-                onFirstInputValueChange = { newValue -> viewModel.setOperatorTestResultStainless(newValue) },
-                secondInputLabel = "Certificate No.",
-                secondInputValue = operatorTestResultCertNumberStainless,
-                onSecondInputValueChange = { newValue -> viewModel.setOperatorTestResultCertNumberStainless(newValue) },
-                helpText = "Enter the details of the Operator Test for stainless metal",
-                firstInputKeyboardType = KeyboardType.Number, // Change if different type of input is required
-                secondInputKeyboardType = KeyboardType.Text, // Change if different type of input is required
-                isNAToggleEnabled = true // You can set this to false if the N/A toggle isn't required
-            )
-
-            LabeledTwoTextInputsWithHelp(
-                label = "Large Metal",
-                firstInputLabel = "Size",
-                firstInputValue = operatorTestResultLargeMetal,
-                onFirstInputValueChange = { newValue -> viewModel.setOperatorTestResultLargeMetal(newValue) },
-                secondInputLabel = "Certificate No.",
-                secondInputValue = operatorTestResultCertNumberLargeMetal,
-                onSecondInputValueChange = { newValue -> viewModel.setOperatorTestResultCertNumberLargeMetal(newValue) },
-                helpText = "Enter the details of the Operator Test for large metal",
-                firstInputKeyboardType = KeyboardType.Number, // Change if different type of input is required
-                secondInputKeyboardType = KeyboardType.Text, // Change if different type of input is required
-                isNAToggleEnabled = true // You can set this to false if the N/A toggle isn't required
-            )
-
-            LabeledTextFieldWithHelp(
-                label = "On Site SME Name",
-                value = smeName,
-                onValueChange = { newValue -> viewModel.setSmeName(newValue) },
-                helpText = "Enter the name of the SME currently on site",
-                isNAToggleEnabled = true
-            )
+            Spacer(modifier = Modifier.height(60.dp))
         }
-
-
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        LabeledTextFieldWithHelp(
-            label = "Engineer Comments",
-            value = smeEngineerNotes,
-            onValueChange = { newValue -> viewModel.setSmeEngineerNotes(newValue) },
-            helpText = "Enter any notes relevant to this section",
-            isNAToggleEnabled = false
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
     }
 }

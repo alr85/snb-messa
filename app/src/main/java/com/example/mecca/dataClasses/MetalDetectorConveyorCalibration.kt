@@ -76,7 +76,7 @@ data class MetalDetectorConveyorCalibrationLocal(
     var sensitivityAsFoundStainlessPeakSignal: String = "",
     var productPeakSignalAsFound: String = "",
     var sensitivityAsFoundEngineerNotes: String = "",
-    var ferrousTestPvResult: String = "",
+
 
     //--------------------------------------------------------------------------------Ferrous Result
 
@@ -89,6 +89,7 @@ data class MetalDetectorConveyorCalibrationLocal(
     var detectRejectFerrousTrailing: String = "",
     var detectRejectFerrousTrailingPeakSignal: String = "",
     var ferrousTestEngineerNotes: String = "",
+    var ferrousTestPvResult: String = "",
 
     //----------------------------------------------------------------------------Non-Ferrous Result
 
@@ -101,6 +102,7 @@ data class MetalDetectorConveyorCalibrationLocal(
     var detectRejectNonFerrousTrailing: String = "",
     var detectRejectNonFerrousTrailingPeakSignal: String = "",
     var nonFerrousTestEngineerNotes: String = "",
+    var nonFerrousTestPvResult: String = "",
 
 
     //------------------------------------------------------------------------------Stainless Result
@@ -114,12 +116,16 @@ data class MetalDetectorConveyorCalibrationLocal(
     var detectRejectStainlessTrailing: String = "",
     var detectRejectStainlessTrailingPeakSignal: String = "",
     var stainlessTestEngineerNotes: String = "",
+    var stainlessTestPvResult: String = "",
 
     //----------------------------------------------------------------------------Large Metal Result
 
     var detectRejectLargeMetal: String = "",
     var sampleCertificateNumberLargeMetal: String = "",
     var largeMetalTestEngineerNotes: String = "",
+    var largeMetalTestPvResult: String = "",
+
+
 
 
     //--------------------------------------------------------------------Detection Settings As Left
@@ -199,6 +205,8 @@ data class MetalDetectorConveyorCalibrationLocal(
     var infeedSensorEngineerNotes: String = "",
     var infeedSensorLatched: String = "",
     var infeedSensorCR: String = "",
+    var infeedSensorTestPvResult: String = "",
+
 
     //-------------------------------------------------------------------------Reject Confirm sensor
 
@@ -211,6 +219,7 @@ data class MetalDetectorConveyorCalibrationLocal(
     var rejectConfirmSensorLatched: String = "",
     var rejectConfirmSensorCR: String = "",
     var rejectConfirmSensorStopPosition: String = "",
+    var rejectConfirmSensorTestPvResult: String = "",
 
     //-------------------------------------------------------------------------------Bin Full sensor
 
@@ -222,6 +231,8 @@ data class MetalDetectorConveyorCalibrationLocal(
     var binFullSensorEngineerNotes: String = "",
     var binFullSensorLatched: String = "",
     var binFullSensorCR: String = "",
+    var binFullSensorTestPvResult: String = "",
+
 
     //---------------------------------------------------------------------------------Backup sensor
 
@@ -233,6 +244,8 @@ data class MetalDetectorConveyorCalibrationLocal(
     var backupSensorEngineerNotes: String = "",
     var backupSensorLatched: String = "",
     var backupSensorCR: String = "",
+    var backupSensorTestPvResult: String = "",
+
 
 
 //--------------------------------------------------------------------------Air Pressure sensor Test
@@ -245,6 +258,9 @@ data class MetalDetectorConveyorCalibrationLocal(
     var airPressureSensorEngineerNotes: String = "",
     var airPressureSensorLatched: String = "",
     var airPressureSensorCR: String = "",
+    var airPressureSensorTestPvResult: String = "",
+
+
 
     //------------------------------------------------------------------------Pack Check sensor Test
 
@@ -256,6 +272,9 @@ data class MetalDetectorConveyorCalibrationLocal(
     var packCheckSensorEngineerNotes: String = "",
     var packCheckSensorLatched: String = "",
     var packCheckSensorCR: String = "",
+    var packCheckSensorTestPvResult: String = "",
+
+
 
     //-----------------------------------------------------------------------------Speed sensor Test
 
@@ -267,6 +286,9 @@ data class MetalDetectorConveyorCalibrationLocal(
     var speedSensorEngineerNotes: String = "",
     var speedSensorLatched: String = "",
     var speedSensorCR: String = "",
+    var speedSensorTestPvResult: String = "",
+
+
 
     //-----------------------------------------------------------------------------Speed sensor Test
 
@@ -285,6 +307,9 @@ data class MetalDetectorConveyorCalibrationLocal(
     var binDoorLatched: String = "",
     var binDoorCR: String = "",
     var binDoorEngineerNotes: String = "",
+    var binDoorMonitorTestPvResult: String = "",
+
+
 
     //---------------------------------------------------------------------------------SME
 
@@ -300,15 +325,16 @@ data class MetalDetectorConveyorCalibrationLocal(
     var operatorTestResultCertNumberLargeMetal: String = "",
     var smeName: String = "",
     var smeEngineerNotes: String = "",
+    var smeTestPvResult: String = "",
 
     //-----------------------------------------------------------------------Compliance Confirmation
 
-    var sensitivityCompliance: String = "",
-    var essentialRequirementCompliance: String = "",
-    var failsafeCompliance: String = "",
-    var bestSensitivityCompliance: String = "",
-    var sensitivityRecommendations: String = "",
-    var performanceValidationIssued: String = "",
+//    var sensitivityCompliance: String = "",
+//    var essentialRequirementCompliance: String = "",
+//    var failsafeCompliance: String = "",
+//    var bestSensitivityCompliance: String = "",
+//    var sensitivityRecommendations: String = "",
+//    var performanceValidationIssued: String = "",
 
 
     //----------------------------------------------------------------------Detection Setting Labels

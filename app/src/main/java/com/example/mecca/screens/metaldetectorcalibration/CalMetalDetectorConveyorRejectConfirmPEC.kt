@@ -15,7 +15,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateRejectConfirmSensorPvResult
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.formModules.CalibrationHeader
@@ -29,7 +28,6 @@ import com.example.mecca.formModules.YesNoState
 
 @Composable
 fun CalMetalDetectorConveyorRejectConfirmPEC(
-    navController: NavHostController,
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
     val scrollState = rememberScrollState()
@@ -92,7 +90,7 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        CalibrationHeader("Failsafe Tests - Reject Confirm")
+        CalibrationHeader("Failsafe Tests - Reject Confirm Sensor")
 
         Column(
             modifier = Modifier
@@ -176,11 +174,16 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                         val cleaned = when {
                             // If "No Result" is selected, it becomes the ONLY selection
                             "No Result" in newSelection -> listOf("No Result")
-
-                            // Otherwise, ensure "No Result" isn't hanging around
                             else -> newSelection.filterNot { it == "No Result" }
                         }
                         viewModel.setRejectConfirmSensorTestResult(cleaned)
+
+
+                        if (cleaned == listOf("No Result")) {
+                            viewModel.setRejectConfirmSensorLatched(YesNoState.NO)
+                            viewModel.setRejectConfirmSensorCR(YesNoState.NO)
+                        }
+
                         viewModel.autoUpdateRejectConfirmSensorPvResult()
                     },
                     helpText = "Select one or more items from the dropdown.",
@@ -230,8 +233,8 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
             if (viewModel.pvRequired.value) {
                 LabeledFourOptionRadioWithHelp(
                     label = "P.V. Result",
-                    value = viewModel.rejectConfirmSensorPvResult.value,
-                    onValueChange = viewModel::setRejectConfirmSensorPvResult,
+                    value = viewModel.rejectConfirmSensorTestPvResult.value,
+                    onValueChange = viewModel::setRejectConfirmSensorTestPvResult,
                     helpText = """
                     Auto-Pass rules (when PV required):
                       • Sensor fitted = Yes

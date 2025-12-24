@@ -18,7 +18,7 @@ import com.example.mecca.calibrationLogic.metalDetectorConveyor.toBinDoorMonitor
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toBinFullSensorUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toCalibrationEndUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toCalibrationStartUpdate
-import com.example.mecca.calibrationLogic.metalDetectorConveyor.toComplianceConfirmationUpdate
+//import com.example.mecca.calibrationLogic.metalDetectorConveyor.toComplianceConfirmationUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toConveyorDetailsUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toDetectNotificationUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toDetectionSettingAsLeftUpdate
@@ -136,11 +136,11 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _pvRequired.value = existingCalibration.pvRequired
 
 
-                _desiredCop.value = existingCalibration.desiredCop
-                    .removeSurrounding("[", "]")
-                    .split(",")
-                    .map { it.trim() }
-                    .filter { it.isNotBlank() }
+//                _desiredCop.value = existingCalibration.desiredCop
+//                    .removeSurrounding("[", "]")
+//                    .split(",")
+//                    .map { it.trim() }
+//                    .filter { it.isNotBlank() }
                 _startCalibrationNotes.value = existingCalibration.startCalibrationNotes
 
                 _sensitivityRequirementFerrous.value =
@@ -198,6 +198,7 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _sensitivityAsFoundEngineerNotes.value =
                     existingCalibration.sensitivityAsFoundEngineerNotes
 
+
                 _sensitivityAsLeftFerrous.value = existingCalibration.sensitivityAsLeftFerrous
                 _sampleCertificateNumberFerrous.value =
                     existingCalibration.sampleCertificateNumberFerrous
@@ -213,7 +214,13 @@ class CalibrationMetalDetectorConveyorViewModel(
                     existingCalibration.detectRejectFerrousTrailing.toYesNoState()
                 _peakSignalFerrousTrailing.value =
                     existingCalibration.detectRejectFerrousTrailingPeakSignal
-                _ferrousTestEngineerNotes.value = existingCalibration.ferrousTestEngineerNotes
+                _ferrousTestEngineerNotes.value =
+                    existingCalibration.ferrousTestEngineerNotes
+                _ferrousTestPvResult.value =
+                    existingCalibration.ferrousTestPvResult
+
+
+
 
                 _sensitivityAsLeftNonFerrous.value = existingCalibration.sensitivityAsLeftNonFerrous
                 _sampleCertificateNumberNonFerrous.value =
@@ -230,7 +237,14 @@ class CalibrationMetalDetectorConveyorViewModel(
                     existingCalibration.detectRejectNonFerrousTrailing.toYesNoState()
                 _peakSignalNonFerrousTrailing.value =
                     existingCalibration.detectRejectNonFerrousTrailingPeakSignal
-                _nonFerrousTestEngineerNotes.value = existingCalibration.nonFerrousTestEngineerNotes
+                _nonFerrousTestEngineerNotes.value =
+                    existingCalibration.nonFerrousTestEngineerNotes
+                _nonFerrousTestPvResult.value =
+                    existingCalibration.nonFerrousTestPvResult
+
+
+
+
 
                 _sensitivityAsLeftStainless.value = existingCalibration.sensitivityAsLeftStainless
                 _sampleCertificateNumberStainless.value =
@@ -247,13 +261,19 @@ class CalibrationMetalDetectorConveyorViewModel(
                     existingCalibration.detectRejectStainlessTrailing.toYesNoState()
                 _peakSignalStainlessTrailing.value =
                     existingCalibration.detectRejectStainlessTrailingPeakSignal
-                _stainlessTestEngineerNotes.value = existingCalibration.stainlessTestEngineerNotes
+                _stainlessTestEngineerNotes.value =
+                    existingCalibration.stainlessTestEngineerNotes
+                _stainlessTestPvResult.value =
+                    existingCalibration.stainlessTestPvResult
+
 
                 _detectRejectLargeMetal.value =
                     existingCalibration.detectRejectLargeMetal.toYesNoState()
                 _sampleCertificateNumberLargeMetal.value =
                     existingCalibration.sampleCertificateNumberLargeMetal
                 _largeMetalTestEngineerNotes.value = existingCalibration.largeMetalTestEngineerNotes
+                _largeMetalTestPvResult.value = existingCalibration.largeMetalTestPvResult
+
 
                 _detectionSettingAsLeft1.value = existingCalibration.detectionSettingAsLeft1
                 _detectionSettingAsLeft2.value = existingCalibration.detectionSettingAsLeft2
@@ -329,6 +349,11 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _infeedSensorLatched.value = existingCalibration.infeedSensorLatched.toYesNoState()
                 _infeedSensorCR.value = existingCalibration.infeedSensorCR.toYesNoState()
                 _infeedSensorEngineerNotes.value = existingCalibration.infeedSensorEngineerNotes
+                _infeedSensorTestPvResult.value = existingCalibration.infeedSensorTestPvResult
+
+
+
+
 
                 _rejectConfirmSensorFitted.value =
                     existingCalibration.rejectConfirmSensorFitted.toYesNoState()
@@ -347,6 +372,9 @@ class CalibrationMetalDetectorConveyorViewModel(
                     existingCalibration.rejectConfirmSensorCR.toYesNoState()
                 _rejectConfirmSensorEngineerNotes.value =
                     existingCalibration.rejectConfirmSensorEngineerNotes
+                _rejectConfirmSensorTestPvResult.value =
+                    existingCalibration.rejectConfirmSensorTestPvResult
+
 
                 _binFullSensorFitted.value = existingCalibration.binFullSensorFitted.toYesNoState()
                 _binFullSensorDetail.value = existingCalibration.binFullSensorDetail
@@ -360,6 +388,10 @@ class CalibrationMetalDetectorConveyorViewModel(
                     existingCalibration.binFullSensorLatched.toYesNoState()
                 _binFullSensorCR.value = existingCalibration.binFullSensorCR.toYesNoState()
                 _binFullSensorEngineerNotes.value = existingCalibration.binFullSensorEngineerNotes
+                _binFullSensorTestPvResult.value =
+                    existingCalibration.binFullSensorTestPvResult
+
+
 
                 _backupSensorFitted.value = existingCalibration.backupSensorFitted.toYesNoState()
                 _backupSensorDetail.value = existingCalibration.backupSensorDetail
@@ -372,21 +404,32 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _backupSensorLatched.value = existingCalibration.backupSensorLatched.toYesNoState()
                 _backupSensorCR.value = existingCalibration.backupSensorCR.toYesNoState()
                 _backupSensorEngineerNotes.value = existingCalibration.backupSensorEngineerNotes
+                _backupSensorTestPvResult.value = existingCalibration.backupSensorTestPvResult
+
+
 
                 _airPressureSensorFitted.value =
                     existingCalibration.airPressureSensorFitted.toYesNoState()
-                _airPressureSensorDetail.value = existingCalibration.airPressureSensorDetail
-                _airPressureSensorTestMethod.value = existingCalibration.airPressureSensorTestMethod
-                _airPressureSensorTestResult.value = existingCalibration.airPressureSensorTestResult
+                _airPressureSensorDetail.value =
+                    existingCalibration.airPressureSensorDetail
+                _airPressureSensorTestMethod.value =
+                    existingCalibration.airPressureSensorTestMethod
+                _airPressureSensorTestResult.value =
+                    existingCalibration.airPressureSensorTestResult
                     .removeSurrounding("[", "]")
                     .split(",")
                     .map { it.trim() }
                     .filter { it.isNotBlank() }
                 _airPressureSensorLatched.value =
                     existingCalibration.airPressureSensorLatched.toYesNoState()
-                _airPressureSensorCR.value = existingCalibration.airPressureSensorCR.toYesNoState()
+                _airPressureSensorCR.value =
+                    existingCalibration.airPressureSensorCR.toYesNoState()
                 _airPressureSensorEngineerNotes.value =
                     existingCalibration.airPressureSensorEngineerNotes
+                _airPressureSensorTestPvResult.value =
+                    existingCalibration.airPressureSensorTestPvResult
+
+
 
                 _packCheckSensorFitted.value =
                     existingCalibration.packCheckSensorFitted.toYesNoState()
@@ -402,6 +445,10 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _packCheckSensorCR.value = existingCalibration.packCheckSensorCR.toYesNoState()
                 _packCheckSensorEngineerNotes.value =
                     existingCalibration.packCheckSensorEngineerNotes
+                _packCheckSensorTestPvResult.value =
+                    existingCalibration.packCheckSensorTestPvResult
+
+
 
                 _speedSensorFitted.value = existingCalibration.speedSensorFitted.toYesNoState()
                 _speedSensorDetail.value = existingCalibration.speedSensorDetail
@@ -414,6 +461,9 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _speedSensorLatched.value = existingCalibration.speedSensorLatched.toYesNoState()
                 _speedSensorCR.value = existingCalibration.speedSensorCR.toYesNoState()
                 _speedSensorEngineerNotes.value = existingCalibration.speedSensorEngineerNotes
+                _speedSensorTestPvResult.value = existingCalibration.speedSensorTestPvResult
+
+
 
                 _detectNotificationResult.value = existingCalibration.detectNotificationResult
                     .removeSurrounding("[", "]")
@@ -446,6 +496,8 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _binDoorLatched.value = existingCalibration.binDoorLatched.toYesNoState()
                 _binDoorCR.value = existingCalibration.binDoorCR.toYesNoState()
                 _binDoorEngineerNotes.value = existingCalibration.binDoorEngineerNotes
+                _binDoorMonitorTestPvResult.value = existingCalibration.binDoorMonitorTestPvResult
+
 
                 _operatorTestWitnessed.value =
                     existingCalibration.operatorTestWitnessed.toYesNoState()
@@ -466,17 +518,20 @@ class CalibrationMetalDetectorConveyorViewModel(
                     existingCalibration.operatorTestResultCertNumberLargeMetal
                 _smeName.value = existingCalibration.smeName
                 _smeEngineerNotes.value = existingCalibration.smeEngineerNotes
+                _smeTestPvResult.value = existingCalibration.smeTestPvResult
 
-                _sensitivityCompliance.value =
-                    existingCalibration.sensitivityCompliance.toYesNoState()
-                _essentialRequirementCompliance.value =
-                    existingCalibration.essentialRequirementCompliance.toYesNoState()
-                _failsafeCompliance.value = existingCalibration.failsafeCompliance.toYesNoState()
-                _bestSensitivityCompliance.value =
-                    existingCalibration.bestSensitivityCompliance.toYesNoState()
-                _sensitivityRecommendations.value = existingCalibration.sensitivityRecommendations
-                _performanceValidationIssued.value =
-                    existingCalibration.performanceValidationIssued.toYesNoState()
+
+
+//                _sensitivityCompliance.value =
+//                    existingCalibration.sensitivityCompliance.toYesNoState()
+//                _essentialRequirementCompliance.value =
+//                    existingCalibration.essentialRequirementCompliance.toYesNoState()
+//                _failsafeCompliance.value = existingCalibration.failsafeCompliance.toYesNoState()
+//                _bestSensitivityCompliance.value =
+//                    existingCalibration.bestSensitivityCompliance.toYesNoState()
+//                _sensitivityRecommendations.value = existingCalibration.sensitivityRecommendations
+//                _performanceValidationIssued.value =
+//                    existingCalibration.performanceValidationIssued.toYesNoState()
                 _detectionSetting1label.value = existingCalibration.detectionSetting1label
                 _detectionSetting2label.value = existingCalibration.detectionSetting2label
                 _detectionSetting3label.value = existingCalibration.detectionSetting3label
@@ -730,8 +785,8 @@ class CalibrationMetalDetectorConveyorViewModel(
             "CalMetalDetectorConveyorSmeDetails" ->
                 updateOperatorTest()
 
-            "CalMetalDetectorConveyorComplianceConfirmation" ->
-                updateComplianceConfirmation()
+//            "CalMetalDetectorConveyorComplianceConfirmation" ->
+//                updateComplianceConfirmation()
 
             else -> {
                 // Do nothing for routes we don’t recognise
@@ -915,10 +970,10 @@ class CalibrationMetalDetectorConveyorViewModel(
         viewModelScope.launch { calibrationRepository.updateOperatorTest(update) }
     }
 
-    fun updateComplianceConfirmation() {
-        val update = toComplianceConfirmationUpdate()
-        viewModelScope.launch { calibrationRepository.updateComplianceConfirmation(update) }
-    }
+//    fun updateComplianceConfirmation() {
+//        val update = toComplianceConfirmationUpdate()
+//        viewModelScope.launch { calibrationRepository.updateComplianceConfirmation(update) }
+//    }
 
     fun updateDetectionSettingLabels() {
         val update = toDetectionSettingLabelsUpdate()
@@ -1120,9 +1175,9 @@ class CalibrationMetalDetectorConveyorViewModel(
     private val _desiredCop = MutableStateFlow<List<String>>(emptyList())
     val desiredCop: StateFlow<List<String>> get() = _desiredCop
 
-    fun setDesiredCop(newSelection: List<String>) {
-        _desiredCop.value = newSelection
-    }
+//    fun setDesiredCop(newSelection: List<String>) {
+//        _desiredCop.value = newSelection
+//    }
 
     private val _startCalibrationNotes = mutableStateOf("")
     val startCalibrationNotes: State<String> = _startCalibrationNotes
@@ -1588,7 +1643,6 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     private val _nonFerrousTestPvResult = mutableStateOf("")
     val nonFerrousTestPvResult: State<String> = _nonFerrousTestPvResult
-
 
     fun setNonFerrousTestPvResult(newValue: String) {
         _nonFerrousTestPvResult.value = newValue
@@ -2297,11 +2351,11 @@ class CalibrationMetalDetectorConveyorViewModel(
         _rejectConfirmSensorStopPosition.value = newValue
     }
 
-    private val _rejectConfirmSensorPvResult = mutableStateOf("")
-    val rejectConfirmSensorPvResult: State<String> = _rejectConfirmSensorPvResult
+    private val _rejectConfirmSensorTestPvResult = mutableStateOf("")
+    val rejectConfirmSensorTestPvResult: State<String> = _rejectConfirmSensorTestPvResult
 
-    fun setRejectConfirmSensorPvResult(newValue: String) {
-        _rejectConfirmSensorPvResult.value = newValue
+    fun setRejectConfirmSensorTestPvResult(newValue: String) {
+        _rejectConfirmSensorTestPvResult.value = newValue
     }
 
     //-------------------------------------------------------------------------Bin Full sensor Test
@@ -2366,6 +2420,13 @@ class CalibrationMetalDetectorConveyorViewModel(
         _binFullSensorCR.value = newValue
     }
 
+    private val _binFullSensorTestPvResult = mutableStateOf("")
+    val binFullSensorTestPvResult: State<String> = _binFullSensorTestPvResult
+
+    fun setBinFullSensorTestPvResult(newValue: String) {
+        _binFullSensorTestPvResult.value = newValue
+    }
+
     //----------------------------------------------------------------------------Backup sensor Test
     private val _backupSensorFitted = mutableStateOf(YesNoState.NO)
     val backupSensorFitted: State<YesNoState> = _backupSensorFitted
@@ -2426,6 +2487,13 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBackupSensorCR(newValue: YesNoState) {
         _backupSensorCR.value = newValue
+    }
+
+    private val _backupSensorTestPvResult = mutableStateOf("")
+    val backupSensorTestPvResult: State<String> = _backupSensorTestPvResult
+
+    fun setBackupSensorTestPvResult(newValue: String) {
+        _backupSensorTestPvResult.value = newValue
     }
 
     //----------------------------------------------------------------------Air Pressure sensor Test
@@ -2490,6 +2558,13 @@ class CalibrationMetalDetectorConveyorViewModel(
         _airPressureSensorCR.value = newValue
     }
 
+    private val _airPressureSensorTestPvResult = mutableStateOf("")
+    val airPressureSensorTestPvResult: State<String> = _airPressureSensorTestPvResult
+
+    fun setAirPressureSensorTestPvResult(newValue: String) {
+        _airPressureSensorTestPvResult.value = newValue
+    }
+
     //------------------------------------------------------------------------Pack Check sensor Test
     private val _packCheckSensorFitted = mutableStateOf(YesNoState.NO)
     val packCheckSensorFitted: State<YesNoState> = _packCheckSensorFitted
@@ -2550,6 +2625,13 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setPackCheckSensorCR(newValue: YesNoState) {
         _packCheckSensorCR.value = newValue
+    }
+
+    private val _packCheckSensorTestPvResult = mutableStateOf("")
+    val packCheckSensorTestPvResult: State<String> = _packCheckSensorTestPvResult
+
+    fun setPackCheckSensorTestPvResult(newValue: String) {
+        _packCheckSensorTestPvResult.value = newValue
     }
 
     //-----------------------------------------------------------------------------Speed sensor Test
@@ -2613,6 +2695,13 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setSpeedSensorCR(newValue: YesNoState) {
         _speedSensorCR.value = newValue
+    }
+
+    private val _speedSensorTestPvResult = mutableStateOf("")
+    val speedSensorTestPvResult: State<String> = _speedSensorTestPvResult
+
+    fun setSpeedSensorTestPvResult(newValue: String) {
+        _speedSensorTestPvResult.value = newValue
     }
 
     //-----------------------------------------------------------------------------Detect Notify Test
@@ -2712,6 +2801,13 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBinDoorEngineerNotes(newValue: String) {
         _binDoorEngineerNotes.value = newValue
+    }
+
+    private val _binDoorMonitorTestPvResult = mutableStateOf("")
+    val binDoorMonitorTestPvResult: State<String> = _binDoorMonitorTestPvResult
+
+    fun setBinDoorMonitorTestPvResult(newValue: String) {
+        _binDoorMonitorTestPvResult.value = newValue
     }
 
     //---------------------------------------------------------------------------------SME
@@ -2816,51 +2912,58 @@ class CalibrationMetalDetectorConveyorViewModel(
         _smeEngineerNotes.value = newValue
     }
 
+    private val _smeTestPvResult = mutableStateOf("")
+    val smeTestPvResult: State<String> = _smeTestPvResult
+
+    fun setSmeTestPvResult(newValue: String) {
+        _smeTestPvResult.value = newValue
+    }
+
     //-----------------------------------------------------------------------Compliance Confirmation
 
 
-    private val _sensitivityCompliance = mutableStateOf(YesNoState.NO)
-    val sensitivityCompliance: State<YesNoState> = _sensitivityCompliance
-
-    fun setSensitivityCompliance(newValue: YesNoState) {
-        _sensitivityCompliance.value = newValue
-    }
-
-    private val _essentialRequirementCompliance = mutableStateOf(YesNoState.NO)
-    val essentialRequirementCompliance: State<YesNoState> = _essentialRequirementCompliance
-
-    fun setEssentialRequirementCompliance(newValue: YesNoState) {
-        _essentialRequirementCompliance.value = newValue
-    }
-
-    private val _failsafeCompliance = mutableStateOf(YesNoState.NO)
-    val failsafeCompliance: State<YesNoState> = _failsafeCompliance
-
-    fun setFailsafeCompliance(newValue: YesNoState) {
-        _failsafeCompliance.value = newValue
-    }
-
-    private val _bestSensitivityCompliance = mutableStateOf(YesNoState.NO)
-    val bestSensitivityCompliance: State<YesNoState> = _bestSensitivityCompliance
-
-    fun setBestSensitivityCompliance(newValue: YesNoState) {
-        _bestSensitivityCompliance.value = newValue
-    }
-
-    private val _sensitivityRecommendations = mutableStateOf("")
-    val sensitivityRecommendations: State<(String)> = _sensitivityRecommendations
-
-
-    fun setSensitivityRecommendations(newValue: String) {
-        _sensitivityRecommendations.value = newValue
-    }
-
-    private val _performanceValidationIssued = mutableStateOf(YesNoState.NO)
-    val performanceValidationIssued: State<YesNoState> = _performanceValidationIssued
-
-    fun setPerformanceValidationIssued(newValue: YesNoState) {
-        _performanceValidationIssued.value = newValue
-    }
+//    private val _sensitivityCompliance = mutableStateOf(YesNoState.NO)
+//    val sensitivityCompliance: State<YesNoState> = _sensitivityCompliance
+//
+//    fun setSensitivityCompliance(newValue: YesNoState) {
+//        _sensitivityCompliance.value = newValue
+//    }
+//
+//    private val _essentialRequirementCompliance = mutableStateOf(YesNoState.NO)
+//    val essentialRequirementCompliance: State<YesNoState> = _essentialRequirementCompliance
+//
+//    fun setEssentialRequirementCompliance(newValue: YesNoState) {
+//        _essentialRequirementCompliance.value = newValue
+//    }
+//
+//    private val _failsafeCompliance = mutableStateOf(YesNoState.NO)
+//    val failsafeCompliance: State<YesNoState> = _failsafeCompliance
+//
+//    fun setFailsafeCompliance(newValue: YesNoState) {
+//        _failsafeCompliance.value = newValue
+//    }
+//
+//    private val _bestSensitivityCompliance = mutableStateOf(YesNoState.NO)
+//    val bestSensitivityCompliance: State<YesNoState> = _bestSensitivityCompliance
+//
+//    fun setBestSensitivityCompliance(newValue: YesNoState) {
+//        _bestSensitivityCompliance.value = newValue
+//    }
+//
+//    private val _sensitivityRecommendations = mutableStateOf("")
+//    val sensitivityRecommendations: State<(String)> = _sensitivityRecommendations
+//
+//
+//    fun setSensitivityRecommendations(newValue: String) {
+//        _sensitivityRecommendations.value = newValue
+//    }
+//
+//    private val _performanceValidationIssued = mutableStateOf(YesNoState.NO)
+//    val performanceValidationIssued: State<YesNoState> = _performanceValidationIssued
+//
+//    fun setPerformanceValidationIssued(newValue: YesNoState) {
+//        _performanceValidationIssued.value = newValue
+//    }
 
     //endregion
 
@@ -3122,12 +3225,12 @@ class CalibrationMetalDetectorConveyorViewModel(
                     row.operatorTestResultCertNumberLargeMetal,
                     row.smeName,
                     row.smeEngineerNotes,
-                    row.sensitivityCompliance,
-                    row.essentialRequirementCompliance,
-                    row.failsafeCompliance,
-                    row.bestSensitivityCompliance,
-                    row.sensitivityRecommendations,
-                    row.performanceValidationIssued,
+//                    row.sensitivityCompliance,
+//                    row.essentialRequirementCompliance,
+//                    row.failsafeCompliance,
+//                    row.bestSensitivityCompliance,
+//                    row.sensitivityRecommendations,
+//                    row.performanceValidationIssued,
                     row.detectionSetting1label,
                     row.detectionSetting2label,
                     row.detectionSetting3label,

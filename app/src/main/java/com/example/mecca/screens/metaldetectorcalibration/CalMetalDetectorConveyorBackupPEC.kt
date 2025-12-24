@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -11,129 +12,98 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateBackupSensorPvResult
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledDropdownWithHelp
+import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
 import com.example.mecca.formModules.LabeledMultiSelectDropdownWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
 import com.example.mecca.formModules.YesNoState
 
-//@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalMetalDetectorConveyorBackupPEC(
     navController: NavHostController,
-    viewModel: CalibrationMetalDetectorConveyorViewModel = viewModel()
+    viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    // Stops the next button from being pressed until the screen is rendered
-    LaunchedEffect(Unit) {
-        viewModel.finishNavigation()
+    val scrollState = rememberScrollState()
+
+    val fitted by viewModel.backupSensorFitted
+    val detail by viewModel.backupSensorDetail
+    val testMethod by viewModel.backupSensorTestMethod
+    val testMethodOther by viewModel.backupSensorTestMethodOther
+    val testResult by viewModel.backupSensorTestResult.collectAsState()
+    val notes by viewModel.backupSensorEngineerNotes
+    val latched by viewModel.backupSensorLatched
+    val controlledRestart by viewModel.backupSensorCR
+
+    // Options: remember so Compose doesn’t rebuild them constantly
+    val testMethodOptions = remember {
+        listOf("Reject Override Switch", "Product Removal", "Other")
+    }
+    val testResultOptions = remember {
+        listOf(
+            "No Result",
+            "Audible Notification",
+            "Visual Notification",
+            "On-Screen Notification",
+            "Belt Stops",
+            "In-feed Belt Stops",
+            "Out-feed Belt Stops",
+            "Other"
+        )
     }
 
-    //val progress = viewModel.progress
-    val scrollState = rememberScrollState() // Scroll state to control the scroll behavior
-
-    // Get and update data in the ViewModel
-    val backupSensorFitted by viewModel.backupSensorFitted
-    val backupSensorDetail by viewModel.backupSensorDetail
-    val backupSensorTestMethod by viewModel.backupSensorTestMethod
-    val backupSensorTestMethodOther by viewModel.backupSensorTestMethodOther
-    val backupSensorTestResult by viewModel.backupSensorTestResult.collectAsState()
-    val backupSensorEngineerNotes by viewModel.backupSensorEngineerNotes
-    val backupSensorLatched by viewModel.backupSensorLatched
-    val backupSensorCR by viewModel.backupSensorCR
-
-    // Test options
-    val backupSensorTestOptions = listOf(
-        "Reject Override Switch",
-        "Product Removal",
-        "Other"
-    )
-
-    val backupSensorTestResults = listOf(
-        "No Result",
-        "Audible Notification",
-        "Visual Notification",
-        "On-Screen Notification",
-        "Belt Stops",
-        "In-feed Belt Stops",
-        "Out-feed Belt Stops",
-        "Other"
-    )
-
-    var selectedOptions by remember { mutableStateOf(listOf<String>()) }
-
-    //Determine if "Next Step" button should be enabled
-    val isNextStepEnabled = when (backupSensorFitted) {
-        YesNoState.NO, YesNoState.NA -> true // Button enabled for NO or NA
+    // Next enabled
+    val isNextStepEnabled = when (fitted) {
+        YesNoState.NO, YesNoState.NA -> true
         YesNoState.YES -> {
-            // Button enabled only if all other fields are valid
-            backupSensorDetail.isNotBlank() &&
-                    backupSensorTestMethod.isNotBlank() &&
-                    backupSensorTestResult.isNotEmpty() &&
-                    backupSensorLatched != YesNoState.NA &&
-                    backupSensorCR != YesNoState.NA
+            detail.isNotBlank() &&
+                    testMethod.isNotBlank() &&
+                    testResult.isNotEmpty() &&
+                    latched != YesNoState.NA &&
+                    controlledRestart != YesNoState.NA &&
+                    (testMethod != "Other" || testMethodOther.isNotBlank())
         }
+        else -> false
+    }
 
-        else -> false // Default to false for safety
+    // Tell wrapper
+    LaunchedEffect(isNextStepEnabled) {
+        viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-//        CalibrationBanner(
-//            progress = progress,
-//            viewModel = viewModel
-//        )
+        CalibrationHeader("Failsafe Tests - Backup Sensor")
 
-        // Navigation Buttons
-//        CalibrationNavigationButtons(
-//            onPreviousClick = { viewModel.updateBackupSensor() },
-//            onCancelClick = {
-//                viewModel.updateBackupSensor()
-//            },
-//            onNextClick = {
-//                viewModel.updateBackupSensor()
-//                navController.navigate("CalMetalDetectorConveyorAirPressureSensor")
-//            },
-//            isNextEnabled = isNextStepEnabled,
-//            isFirstStep = false,
-//            navController = navController,
-//            viewModel = viewModel,
-//            onSaveAndExitClick = {
-//                viewModel.updateBackupSensor()
-//            },
-//        )
-
-        CalibrationHeader("Compliance Checks - Backup")
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
                 .verticalScroll(scrollState)
+                .imePadding()
         ) {
 
             LabeledTriStateSwitchAndTextInputWithHelp(
                 label = "Back-up sensor fitted?",
-                currentState = backupSensorFitted,
+                currentState = fitted,
                 onStateChange = { newState ->
                     viewModel.setBackupSensorFitted(newState)
+
                     if (newState == YesNoState.NA || newState == YesNoState.NO) {
-                        // Set all relevant fields to N/A
                         viewModel.setBackupSensorDetail("N/A")
                         viewModel.setBackupSensorTestMethod("N/A")
                         viewModel.setBackupSensorTestMethodOther("N/A")
                         viewModel.setBackupSensorTestResult(emptyList())
                         viewModel.setBackupSensorLatched(YesNoState.NA)
                         viewModel.setBackupSensorCR(YesNoState.NA)
-                        selectedOptions = listOf("N/A")
                     } else if (newState == YesNoState.YES) {
                         viewModel.setBackupSensorDetail("")
                         viewModel.setBackupSensorTestMethod("")
@@ -141,55 +111,68 @@ fun CalMetalDetectorConveyorBackupPEC(
                         viewModel.setBackupSensorTestResult(emptyList())
                         viewModel.setBackupSensorLatched(YesNoState.NO)
                         viewModel.setBackupSensorCR(YesNoState.NO)
-                        selectedOptions = emptyList() // Clear any selected options
-
                     }
+
+                    viewModel.autoUpdateBackupSensorPvResult()
                 },
-                helpText = "Select if there is a reject confirm sensor fitted",
+                helpText = "Select if there is a back-up sensor fitted.",
                 inputLabel = "Detail",
-                inputValue = backupSensorDetail,
-                onInputValueChange = { newValue -> viewModel.setBackupSensorDetail(newValue) }
+                inputValue = detail,
+                onInputValueChange = {
+                    viewModel.setBackupSensorDetail(it)
+                    viewModel.autoUpdateBackupSensorPvResult()
+                }
             )
 
+            if (fitted == YesNoState.YES) {
 
-            // Conditionally display remaining fields if "Yes" is selected for In-feed sensor fitted
-            if (backupSensorFitted == YesNoState.YES) {
                 LabeledDropdownWithHelp(
                     label = "Test Method",
-                    options = backupSensorTestOptions,
-                    selectedOption = backupSensorTestMethod,
-                    onSelectionChange = { newSelection ->
-                        viewModel.setBackupSensorTestMethod(newSelection)
+                    options = testMethodOptions,
+                    selectedOption = testMethod,
+                    onSelectionChange = {
+                        viewModel.setBackupSensorTestMethod(it)
+                        viewModel.autoUpdateBackupSensorPvResult()
                     },
                     helpText = "Select one option from the dropdown.",
                     isNAToggleEnabled = false
                 )
 
-                if (backupSensorTestMethod == "Other") {
+                if (testMethod == "Other") {
                     LabeledTextFieldWithHelp(
                         label = "Other Test Method",
-                        value = backupSensorTestMethodOther,
-                        onValueChange = { newValue ->
-                            viewModel.setBackupSensorTestMethodOther(
-                                newValue
-                            )
+                        value = testMethodOther,
+                        onValueChange = {
+                            viewModel.setBackupSensorTestMethodOther(it)
+                            viewModel.autoUpdateBackupSensorPvResult()
                         },
-                        helpText = "Enter the custom test method",
+                        helpText = "Enter the custom test method.",
                         isNAToggleEnabled = false
                     )
                 }
 
-                val selectedOptions by viewModel.backupSensorTestResult.collectAsState()
-
                 LabeledMultiSelectDropdownWithHelp(
                     label = "Test Result",
-                    options = backupSensorTestResults,
-                    value = selectedOptions.joinToString(", "),
-                    selectedOptions = selectedOptions,
-                    onSelectionChange = { newSelectedOptions ->
-                        viewModel.setBackupSensorTestResult(
-                            newSelectedOptions
-                        )
+                    value = testResult.joinToString(", "),
+                    options = testResultOptions,
+                    selectedOptions = testResult,
+                    onSelectionChange = { newSelection ->
+
+                        // If "No Result" is selected, it becomes the ONLY selection.
+                        val cleaned = when {
+                            "No Result" in newSelection -> listOf("No Result")
+                            else -> newSelection.filterNot { it == "No Result" }
+                        }
+
+                        viewModel.setBackupSensorTestResult(cleaned)
+
+                        // If there is "No Result", force these to NO (same pattern as your others)
+                        if (cleaned == listOf("No Result")) {
+                            viewModel.setBackupSensorLatched(YesNoState.NO)
+                            viewModel.setBackupSensorCR(YesNoState.NO)
+                        }
+
+                        viewModel.autoUpdateBackupSensorPvResult()
                     },
                     helpText = "Select one or more items from the dropdown.",
                     isNAToggleEnabled = false
@@ -197,18 +180,50 @@ fun CalMetalDetectorConveyorBackupPEC(
 
                 LabeledTriStateSwitchWithHelp(
                     label = "Fault Latched?",
-                    currentState = backupSensorLatched,
-                    onStateChange = { newState -> viewModel.setBackupSensorLatched(newState) },
+                    currentState = latched,
+                    onStateChange = {
+                        viewModel.setBackupSensorLatched(it)
+                        viewModel.autoUpdateBackupSensorPvResult()
+                    },
                     helpText = "Is the fault output latched, or does it clear automatically?",
                     isNAToggleEnabled = false
                 )
 
                 LabeledTriStateSwitchWithHelp(
                     label = "Fault Controlled Restart?",
-                    currentState = backupSensorCR,
-                    onStateChange = { newState -> viewModel.setBackupSensorCR(newState) },
-                    helpText = "Is the fault output latched, or does it clear automatically?",
+                    currentState = controlledRestart,
+                    onStateChange = {
+                        viewModel.setBackupSensorCR(it)
+                        viewModel.autoUpdateBackupSensorPvResult()
+                    },
+                    helpText = "Is a controlled restart required after a fault?",
                     isNAToggleEnabled = false
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            //-----------------------------------------------------
+            // ⭐ PV RESULT (only when required)
+            //-----------------------------------------------------
+            if (viewModel.pvRequired.value) {
+                LabeledFourOptionRadioWithHelp(
+                    label = "P.V. Result",
+                    value = viewModel.backupSensorTestPvResult.value,
+                    onValueChange = viewModel::setBackupSensorTestPvResult,
+                    helpText = """
+                        Auto-Pass rules (when PV required):
+                          • Sensor fitted = Yes
+                          • Detail entered
+                          • Test method selected (and 'Other' described if chosen)
+                          • At least one test result selected (and not "No Result")
+                          • Fault Latched = Yes
+                          • Controlled Restart = Yes
+
+                        If sensor is No → PV = N/F.
+                        If sensor is N/A → PV = N/A.
+                        Otherwise auto-fail. You may override manually.
+                    """.trimIndent()
                 )
             }
 
@@ -216,13 +231,13 @@ fun CalMetalDetectorConveyorBackupPEC(
 
             LabeledTextFieldWithHelp(
                 label = "Engineer Comments",
-                value = backupSensorEngineerNotes,
-                onValueChange = { newValue -> viewModel.setBackupSensorEngineerNotes(newValue) },
-                helpText = "Enter any notes relevant to this section",
+                value = notes,
+                onValueChange = viewModel::setBackupSensorEngineerNotes,
+                helpText = "Enter any notes relevant to this section.",
                 isNAToggleEnabled = false
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(60.dp))
         }
     }
 }

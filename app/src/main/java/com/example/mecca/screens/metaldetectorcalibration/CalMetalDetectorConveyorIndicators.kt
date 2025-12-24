@@ -4,37 +4,31 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledDropdownWithTextInput
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
+import com.example.mecca.util.capitaliseFirstChar
 
-////@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalMetalDetectorConveyorIndicators(
     navController: NavHostController,
-    viewModel: CalibrationMetalDetectorConveyorViewModel = viewModel()
+    viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    // Stops the next button from being pressed until the screen is rendered
-    LaunchedEffect(Unit) {
-        viewModel.finishNavigation()
-    }
+    val scrollState = rememberScrollState()
 
-    //val progress = viewModel.progress
-    val scrollState = rememberScrollState() // Scroll state to control the scroll behavior
-
-// Get and update data in the ViewModel
-
+    // --- ViewModel state ---
     val indicator6colour by viewModel.indicator6colour
     val indicator5colour by viewModel.indicator5colour
     val indicator4colour by viewModel.indicator4colour
@@ -49,8 +43,23 @@ fun CalMetalDetectorConveyorIndicators(
     val indicator2label by viewModel.indicator2label
     val indicator1label by viewModel.indicator1label
 
-    val indicatorsEngineerNotes by viewModel.indicatorsEngineerNotes
+    val notes by viewModel.indicatorsEngineerNotes
 
+    // Options: remember so Compose doesn’t rebuild them constantly
+    val colourOptions = remember {
+        listOf(
+            "Red",
+            "Yellow",
+            "Green",
+            "Blue",
+            "Amber",
+            "White",
+            "Sounder",
+            "Other"
+        )
+    }
+
+    // Next enabled rules
     val isNextStepEnabled =
         indicator6colour.isNotBlank() &&
                 indicator5colour.isNotBlank() &&
@@ -65,141 +74,103 @@ fun CalMetalDetectorConveyorIndicators(
                 indicator2label.isNotBlank() &&
                 indicator1label.isNotBlank()
 
+    LaunchedEffect(isNextStepEnabled) {
+        viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
-//        CalibrationBanner(
-//            progress = progress,
-//            viewModel = viewModel
-//
-//        )
 
-        // Navigation Buttons
-//        CalibrationNavigationButtons(
-//            onPreviousClick = { viewModel.updateIndicators() },
-//            onCancelClick = { viewModel.updateIndicators() },
-//            onNextClick = {
-//                viewModel.updateIndicators()
-//                navController.navigate("CalMetalDetectorConveyorLargeMetalTest")
-//            },
-//            isNextEnabled = isNextStepEnabled,
-//            isFirstStep = false, // Indicates this is the first step and disables the Previous button
-//            navController = navController,
-//            viewModel = viewModel,
-//            onSaveAndExitClick = {
-//                viewModel.updateIndicators()
-//            },
-//        )
         CalibrationHeader("Indicators")
-
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
-                .verticalScroll(scrollState) // Add scrolling to the whole column
+                .verticalScroll(scrollState)
+                .imePadding()
         ) {
 
-            val colourOptions =
-                listOf(
-                    "Red",
-                    "Yellow",
-                    "Green",
-                    "White",
-                    "Green",
-                    "Blue",
-                    "Amber",
-                    "Sounder",
-                    "Other"
+            @Composable
+            fun indicatorRow(
+                number: Int,
+                colour: String,
+                label: String,
+                onColourChange: (String) -> Unit,
+                onLabelChange: (String) -> Unit
+            ) {
+                LabeledDropdownWithTextInput(
+                    label = "Indicator $number",
+                    dropdownLabel = "Colour",
+                    options = colourOptions,
+                    selectedOption = colour,
+                    onOptionChange = onColourChange,
+                    helpText = "Select a colour. If 'Other' is selected, describe it in the label.",
+                    inputLabel = "Label",
+                    inputValue = label,
+                    onInputValueChange = onLabelChange,
+                    isNAToggleEnabled = true
                 )
+            }
 
-            LabeledDropdownWithTextInput(
-                label = "Indicator 6",
-                dropdownLabel = "Colour",
-                options = colourOptions,
-                selectedOption = indicator6colour,
-                onOptionChange = { viewModel.setIndicator6colour(it) },
-                helpText = "Please select an option from the dropdown. If 'Other' is selected, provide more details.",
-                inputLabel = "Label",
-                inputValue = indicator6label,
-                onInputValueChange = { viewModel.setIndicator6label(it) },
-                isNAToggleEnabled = true
+            indicatorRow(
+                number = 6,
+                colour = indicator6colour,
+                label = indicator6label,
+                onColourChange = viewModel::setIndicator6colour,
+                onLabelChange = { viewModel.setIndicator6label(capitaliseFirstChar(it)) }
             )
 
-
-            LabeledDropdownWithTextInput(
-                label = "Indicator 5",
-                dropdownLabel = "Colour",
-                options = colourOptions,
-                selectedOption = indicator5colour,
-                onOptionChange = { viewModel.setIndicator5colour(it) },
-                helpText = "Please select an option from the dropdown. If 'Other' is selected, provide more details.",
-                inputLabel = "Label",
-                inputValue = indicator5label,
-                onInputValueChange = { viewModel.setIndicator5label(it) },
-                isNAToggleEnabled = true
+            indicatorRow(
+                number = 5,
+                colour = indicator5colour,
+                label = indicator5label,
+                onColourChange = viewModel::setIndicator5colour,
+                onLabelChange = { viewModel.setIndicator5label(capitaliseFirstChar(it)) }
             )
 
-            LabeledDropdownWithTextInput(
-                label = "Indicator 4",
-                dropdownLabel = "Colour",
-                options = colourOptions,
-                selectedOption = indicator4colour,
-                onOptionChange = { viewModel.setIndicator4colour(it) },
-                helpText = "Please select an option from the dropdown. If 'Other' is selected, provide more details.",
-                inputLabel = "Label",
-                inputValue = indicator4label,
-                onInputValueChange = { viewModel.setIndicator4label(it) },
-                isNAToggleEnabled = true
+            indicatorRow(
+                number = 4,
+                colour = indicator4colour,
+                label = indicator4label,
+                onColourChange = viewModel::setIndicator4colour,
+                onLabelChange = { viewModel.setIndicator4label(capitaliseFirstChar(it)) }
             )
 
-
-            LabeledDropdownWithTextInput(
-                label = "Indicator 3",
-                dropdownLabel = "Colour",
-                options = colourOptions,
-                selectedOption = indicator3colour,
-                onOptionChange = { viewModel.setIndicator3colour(it) },
-                helpText = "Please select an option from the dropdown. If 'Other' is selected, provide more details.",
-                inputLabel = "Label",
-                inputValue = indicator3label,
-                onInputValueChange = { viewModel.setIndicator3label(it) },
-                isNAToggleEnabled = true
+            indicatorRow(
+                number = 3,
+                colour = indicator3colour,
+                label = indicator3label,
+                onColourChange = viewModel::setIndicator3colour,
+                onLabelChange = { viewModel.setIndicator3label(capitaliseFirstChar(it)) }
             )
 
-            LabeledDropdownWithTextInput(
-                label = "Indicator 2",
-                dropdownLabel = "Colour",
-                options = colourOptions,
-                selectedOption = indicator2colour,
-                onOptionChange = { viewModel.setIndicator2colour(it) },
-                helpText = "Please select an option from the dropdown. If 'Other' is selected, provide more details.",
-                inputLabel = "Label",
-                inputValue = indicator2label,
-                onInputValueChange = { viewModel.setIndicator2label(it) },
-                isNAToggleEnabled = true
+            indicatorRow(
+                number = 2,
+                colour = indicator2colour,
+                label = indicator2label,
+                onColourChange = viewModel::setIndicator2colour,
+                onLabelChange = { viewModel.setIndicator2label(capitaliseFirstChar(it)) }
             )
 
-            LabeledDropdownWithTextInput(
-                label = "Indicator 1",
-                dropdownLabel = "Colour",
-                options = colourOptions,
-                selectedOption = indicator1colour,
-                onOptionChange = { viewModel.setIndicator1colour(it) },
-                helpText = "Please select an option from the dropdown. If 'Other' is selected, provide more details.",
-                inputLabel = "Label",
-                inputValue = indicator1label,
-                onInputValueChange = { viewModel.setIndicator1label(it) },
-                isNAToggleEnabled = true
+            indicatorRow(
+                number = 1,
+                colour = indicator1colour,
+                label = indicator1label,
+                onColourChange = viewModel::setIndicator1colour,
+                onLabelChange = { viewModel.setIndicator1label(capitaliseFirstChar(it)) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             LabeledTextFieldWithHelp(
                 label = "Engineer Notes",
-                value = indicatorsEngineerNotes,
-                onValueChange = { newValue -> viewModel.setIndicatorsEngineerNotes(newValue) },
-                helpText = "Enter any notes relevant to this section",
+                value = notes,
+                onValueChange = viewModel::setIndicatorsEngineerNotes,
+                helpText = "Enter any notes relevant to this section.",
                 isNAToggleEnabled = false
             )
+
+            Spacer(modifier = Modifier.height(60.dp))
         }
     }
 }

@@ -212,7 +212,8 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "detectRejectStainlessMiddlePeakSignal = :detectRejectStainlessMiddlePeakSignal, " +
                 "detectRejectStainlessTrailing = :detectRejectStainlessTrailing," +
                 "detectRejectStainlessTrailingPeakSignal = :detectRejectStainlessTrailingPeakSignal," +
-                "stainlessTestEngineerNotes = :stainlessTestEngineerNotes " +
+                "stainlessTestEngineerNotes = :stainlessTestEngineerNotes, " +
+                "stainlessTestPvResult = :stainlessTestPvResult " +
                 "WHERE calibrationId = :calibrationId"
     )
     suspend fun updateStainlessResult(
@@ -225,6 +226,7 @@ interface MetalDetectorConveyorCalibrationDAO {
         detectRejectStainlessTrailing: String,
         detectRejectStainlessTrailingPeakSignal: String,
         stainlessTestEngineerNotes: String,
+        stainlessTestPvResult: String,
         calibrationId: String
     )
 
@@ -239,7 +241,8 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "detectRejectNonFerrousMiddlePeakSignal = :detectRejectNonFerrousMiddlePeakSignal, " +
                 "detectRejectNonFerrousTrailing = :detectRejectNonFerrousTrailing," +
                 "detectRejectNonFerrousTrailingPeakSignal = :detectRejectNonFerrousTrailingPeakSignal," +
-                "nonFerrousTestEngineerNotes = :nonFerrousTestEngineerNotes " +
+                "nonFerrousTestEngineerNotes = :nonFerrousTestEngineerNotes, " +
+                "nonFerrousTestPvResult = :nonFerrousTestPvResult " +
                 "WHERE calibrationId = :calibrationId"
     )
     suspend fun updateNonFerrousResult(
@@ -252,6 +255,7 @@ interface MetalDetectorConveyorCalibrationDAO {
         detectRejectNonFerrousTrailing: String,
         detectRejectNonFerrousTrailingPeakSignal: String,
         nonFerrousTestEngineerNotes: String,
+        nonFerrousTestPvResult: String,
         calibrationId: String
     )
 
@@ -289,13 +293,15 @@ interface MetalDetectorConveyorCalibrationDAO {
         "UPDATE MetalDetectorConveyorCalibrations " +
                 "SET detectRejectLargeMetal = :detectRejectLargeMetal, " +
                 "sampleCertificateNumberLargeMetal = :sampleCertificateNumberLargeMetal, " +
-                "largeMetalTestEngineerNotes = :largeMetalTestEngineerNotes " +
+                "largeMetalTestEngineerNotes = :largeMetalTestEngineerNotes, " +
+                "largeMetalTestPvResult = :largeMetalTestPvResult " +
                 "WHERE calibrationId = :calibrationId"
     )
     suspend fun updateLargeMetalResult(
         detectRejectLargeMetal: String,
         sampleCertificateNumberLargeMetal: String,
         largeMetalTestEngineerNotes: String,
+        largeMetalTestPvResult: String,
         calibrationId: String
     )
 
@@ -431,7 +437,8 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "infeedSensorTestResult = :infeedSensorTestResult," +
                 "infeedSensorEngineerNotes = :infeedSensorEngineerNotes, " +
                 "infeedSensorLatched = :infeedSensorLatched," +
-                "infeedSensorCR = :infeedSensorCR " +
+                "infeedSensorCR = :infeedSensorCR, " +
+                "infeedSensorTestPvResult = :infeedSensorTestPvResult " +
                 "WHERE calibrationId = :calibrationId"
     )
     suspend fun updateInfeedSensor(
@@ -443,6 +450,7 @@ interface MetalDetectorConveyorCalibrationDAO {
         infeedSensorEngineerNotes: String,
         infeedSensorLatched: String,
         infeedSensorCR: String,
+        infeedSensorTestPvResult: String,
         calibrationId: String
     )
 
@@ -457,7 +465,8 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "rejectConfirmSensorEngineerNotes = :rejectConfirmSensorEngineerNotes, " +
                 "rejectConfirmSensorLatched = :rejectConfirmSensorLatched," +
                 "rejectConfirmSensorCR = :rejectConfirmSensorCR," +
-                "rejectConfirmSensorStopPosition = :rejectConfirmSensorStopPosition " +
+                "rejectConfirmSensorStopPosition = :rejectConfirmSensorStopPosition, " +
+                "rejectConfirmSensorTestPvResult = :rejectConfirmSensorTestPvResult " +
                 "WHERE calibrationId = :calibrationId"
     )
     suspend fun updateRejectConfirmSensor(
@@ -470,6 +479,7 @@ interface MetalDetectorConveyorCalibrationDAO {
         rejectConfirmSensorLatched: String,
         rejectConfirmSensorCR: String,
         rejectConfirmSensorStopPosition: String,
+        rejectConfirmSensorTestPvResult: String,
         calibrationId: String
     )
 
@@ -483,7 +493,8 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "binFullSensorTestResult = :binFullSensorTestResult," +
                 "binFullSensorEngineerNotes = :binFullSensorEngineerNotes, " +
                 "binFullSensorLatched = :binFullSensorLatched," +
-                "binFullSensorCR = :binFullSensorCR " +
+                "binFullSensorCR = :binFullSensorCR, " +
+                "binFullSensorTestPvResult = :binFullSensorTestPvResult " +
                 "WHERE calibrationId = :calibrationId"
     )
     suspend fun updateBinFullSensor(
@@ -495,6 +506,7 @@ interface MetalDetectorConveyorCalibrationDAO {
         binFullSensorEngineerNotes: String,
         binFullSensorLatched: String,
         binFullSensorCR: String,
+        binFullSensorTestPvResult: String,
         calibrationId: String
     )
     // Save BU Sensor to database
@@ -507,7 +519,8 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "backupSensorTestResult = :backupSensorTestResult," +
                 "backupSensorEngineerNotes = :backupSensorEngineerNotes, " +
                 "backupSensorLatched = :backupSensorLatched," +
-                "backupSensorCR = :backupSensorCR " +
+                "backupSensorCR = :backupSensorCR, " +
+                "backupSensorTestPvResult = :backupSensorTestPvResult " +
                 "WHERE calibrationId = :calibrationId"
     )
     suspend fun updateBackupSensor(
@@ -519,6 +532,7 @@ interface MetalDetectorConveyorCalibrationDAO {
         backupSensorEngineerNotes: String,
         backupSensorLatched: String,
         backupSensorCR: String,
+        backupSensorTestPvResult: String,
         calibrationId: String
     )
 
@@ -532,7 +546,8 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "airPressureSensorTestResult = :airPressureSensorTestResult," +
                 "airPressureSensorEngineerNotes = :airPressureSensorEngineerNotes, " +
                 "airPressureSensorLatched = :airPressureSensorLatched," +
-                "airPressureSensorCR = :airPressureSensorCR " +
+                "airPressureSensorCR = :airPressureSensorCR, " +
+                "airPressureSensorTestPvResult = :airPressureSensorTestPvResult " +
                 "WHERE calibrationId = :calibrationId"
     )
     suspend fun updateAirPressureSensor(
@@ -544,6 +559,7 @@ interface MetalDetectorConveyorCalibrationDAO {
         airPressureSensorEngineerNotes: String,
         airPressureSensorLatched: String,
         airPressureSensorCR: String,
+        airPressureSensorTestPvResult: String,
         calibrationId: String
     )
 
@@ -557,7 +573,8 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "packCheckSensorTestResult = :packCheckSensorTestResult," +
                 "packCheckSensorEngineerNotes = :packCheckSensorEngineerNotes, " +
                 "packCheckSensorLatched = :packCheckSensorLatched," +
-                "packCheckSensorCR = :packCheckSensorCR " +
+                "packCheckSensorCR = :packCheckSensorCR, " +
+                "packCheckSensorTestPvResult = :packCheckSensorTestPvResult " +
                 "WHERE calibrationId = :calibrationId"
     )
     suspend fun updatePackCheckSensor(
@@ -569,6 +586,7 @@ interface MetalDetectorConveyorCalibrationDAO {
         packCheckSensorEngineerNotes: String,
         packCheckSensorLatched: String,
         packCheckSensorCR: String,
+        packCheckSensorTestPvResult: String,
         calibrationId: String
     )
 
@@ -582,7 +600,8 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "speedSensorTestResult = :speedSensorTestResult," +
                 "speedSensorEngineerNotes = :speedSensorEngineerNotes, " +
                 "speedSensorLatched = :speedSensorLatched," +
-                "speedSensorCR = :speedSensorCR " +
+                "speedSensorCR = :speedSensorCR, " +
+                "speedSensorTestPvResult = :speedSensorTestPvResult " +
                 "WHERE calibrationId = :calibrationId"
     )
     suspend fun updateSpeedSensor(
@@ -594,6 +613,7 @@ interface MetalDetectorConveyorCalibrationDAO {
         speedSensorEngineerNotes: String,
         speedSensorLatched: String,
         speedSensorCR: String,
+        speedSensorTestPvResult: String,
         calibrationId: String
     )
 
@@ -622,7 +642,8 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "binDoorTimeoutResult = :binDoorTimeoutResult," +
                 "binDoorLatched = :binDoorLatched," +
                 "binDoorCR = :binDoorCR," +
-                "binDoorEngineerNotes = :binDoorEngineerNotes " +
+                "binDoorEngineerNotes = :binDoorEngineerNotes, " +
+                "binDoorMonitorTestPvResult = :binDoorMonitorTestPvResult " +
                 "WHERE calibrationId = :calibrationId"
     )
     suspend fun updateBinDoorMonitor(
@@ -636,6 +657,7 @@ interface MetalDetectorConveyorCalibrationDAO {
         binDoorLatched: String,
         binDoorCR: String,
         binDoorEngineerNotes: String,
+        binDoorMonitorTestPvResult: String,
         calibrationId: String
     )
 
@@ -653,7 +675,8 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "operatorTestResultCertNumberStainless = :operatorTestResultCertNumberStainless," +
                 "operatorTestResultCertNumberLargeMetal = :operatorTestResultCertNumberLargeMetal, " +
                 "smeName =:smeName, " +
-                "smeEngineerNotes = :smeEngineerNotes " +
+                "smeEngineerNotes = :smeEngineerNotes, " +
+                "smeTestPvResult = :smeTestPvResult " +
                 "WHERE calibrationId = :calibrationId"
     )
     suspend fun updateOperatorTest(
@@ -669,29 +692,30 @@ interface MetalDetectorConveyorCalibrationDAO {
         operatorTestResultCertNumberLargeMetal: String,
         smeName: String,
         smeEngineerNotes: String,
+        smeTestPvResult: String,
         calibrationId: String
     )
 
     // Save Retailer Compliance to database
-    @Query(
-        "UPDATE MetalDetectorConveyorCalibrations " +
-                "SET sensitivityCompliance = :sensitivityCompliance, " +
-                "essentialRequirementCompliance = :essentialRequirementCompliance, " +
-                "failsafeCompliance = :failsafeCompliance," +
-                "bestSensitivityCompliance = :bestSensitivityCompliance," +
-                "sensitivityRecommendations = :sensitivityRecommendations, " +
-                "performanceValidationIssued = :performanceValidationIssued " +
-                "WHERE calibrationId = :calibrationId"
-    )
-    suspend fun updateComplianceConfirmation(
-        sensitivityCompliance: String,
-        essentialRequirementCompliance: String,
-        failsafeCompliance: String,
-        bestSensitivityCompliance: String,
-        sensitivityRecommendations: String,
-        performanceValidationIssued: String,
-        calibrationId: String
-    )
+//    @Query(
+//        "UPDATE MetalDetectorConveyorCalibrations " +
+//                "SET sensitivityCompliance = :sensitivityCompliance, " +
+//                "essentialRequirementCompliance = :essentialRequirementCompliance, " +
+//                "failsafeCompliance = :failsafeCompliance," +
+//                "bestSensitivityCompliance = :bestSensitivityCompliance," +
+//                "sensitivityRecommendations = :sensitivityRecommendations, " +
+//                "performanceValidationIssued = :performanceValidationIssued " +
+//                "WHERE calibrationId = :calibrationId"
+//    )
+//    suspend fun updateComplianceConfirmation(
+//        sensitivityCompliance: String,
+//        essentialRequirementCompliance: String,
+//        failsafeCompliance: String,
+//        bestSensitivityCompliance: String,
+//        sensitivityRecommendations: String,
+//        performanceValidationIssued: String,
+//        calibrationId: String
+//    )
 
     // Save Detection Setting labels to database
     @Query(

@@ -13,7 +13,7 @@ import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConvey
 import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConveyorBinDoorMonitor
 import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConveyorBinFullPEC
 import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConveyorCalibrationStart
-import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConveyorComplianceConfirmation
+//import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConveyorComplianceConfirmation
 import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConveyorConveyorDetails
 import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConveyorDetectNotification
 import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConveyorDetectionSettingsAsFound
@@ -22,6 +22,7 @@ import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConvey
 import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConveyorIndicators
 import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConveyorInfeedPEC
 import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConveyorLargeMetalTest
+import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConveyorNonFerrousTest
 import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConveyorPackCheckSensor
 import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConveyorProductDetails
 import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConveyorRejectConfirmPEC
@@ -33,7 +34,6 @@ import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConvey
 import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConveyorStainlessTest
 import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConveyorSummary
 import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConveyorSystemChecklist
-import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConveyorNonFerrousTest
 
 @Composable
 fun MetalDetectorConveyorCalibrationNavGraphContent(
@@ -154,7 +154,7 @@ fun MetalDetectorConveyorCalibrationNavGraphContent(
 
         composable("CalMetalDetectorConveyorRejectConfirmPEC") {
             onScreenChanged {
-                CalMetalDetectorConveyorRejectConfirmPEC(navController, viewModel)
+                CalMetalDetectorConveyorRejectConfirmPEC(viewModel)
             }
         }
 
@@ -207,12 +207,12 @@ fun MetalDetectorConveyorCalibrationNavGraphContent(
             }
         }
 
-        // -------------------- COMPLIANCE CONFIRMATION --------------------
-        composable("CalMetalDetectorConveyorComplianceConfirmation") {
-            onScreenChanged {
-                CalMetalDetectorConveyorComplianceConfirmation(navController, viewModel)
-            }
-        }
+//        // -------------------- COMPLIANCE CONFIRMATION --------------------
+//        composable("CalMetalDetectorConveyorComplianceConfirmation") {
+//            onScreenChanged {
+//                CalMetalDetectorConveyorComplianceConfirmation(navController, viewModel)
+//            }
+//        }
 
         // -------------------- SUMMARY --------------------
         composable("CalMetalDetectorConveyorSummary") {
