@@ -1,6 +1,7 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -21,6 +22,7 @@ import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelpEdit
+import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,8 +30,6 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
     navController: NavHostController,
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    val scrollState = rememberScrollState()
-
     // Pull state from ViewModel
     val sensitivityAccessRestriction by viewModel.sensitivityAccessRestriction
     val pvRequired by viewModel.pvRequired
@@ -86,7 +86,6 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
                 values.all { it.value.isNotBlank() } &&
                 sensitivityAccessRestriction.isNotBlank()
 
-    // Tell wrapper when this screen allows Next
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
@@ -95,63 +94,70 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
 
         CalibrationHeader("Detection Settings (As Found)")
 
-        Column(
+        ScrollableWithScrollbar(
             modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(scrollState)
-                .imePadding()
+                .fillMaxSize(),
+            contentPadding = PaddingValues(horizontal = 16.dp),
         ) {
+            Column {
 
-            Spacer(Modifier.height(6.dp))
+                Spacer(Modifier.height(6.dp))
 
-            // Render settings 1–8 dynamically
-            labels.indices.forEach { index ->
-                val labelState = labels[index]
-                val valueState = values[index]
+                // Render settings 1–8 dynamically
+                labels.indices.forEach { index ->
+                    val labelState = labels[index]
+                    val valueState = values[index]
 
-                LabeledTextFieldWithHelpEdit(
-                    label = labelState.value,
-                    onLabelChange = { labelSetters[index](it) },
-                    value = valueState.value,
-                    onValueChange = { valueSetters[index](it) },
-                    helpText = "Enter the detection setting value. Tap the label to rename."
+                    LabeledTextFieldWithHelpEdit(
+                        label = labelState.value,
+                        onLabelChange = { labelSetters[index](it) },
+                        value = valueState.value,
+                        onValueChange = { valueSetters[index](it) },
+                        helpText = "Enter the detection setting value. Tap the label to rename."
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+                }
+
+                LabeledTextFieldWithHelp(
+                    label = "Access Restriction:",
+                    value = sensitivityAccessRestriction,
+                    onValueChange = {
+                        viewModel.setSensitivityAccessRestriction(it)
+                        viewModel.autoUpdateDetectionSettingPvResult()
+                    },
+                    helpText = "Eg: 'Password protected', 'Key switch', etc."
                 )
-            }
 
-            LabeledTextFieldWithHelp(
-                label = "Access Restriction:",
-                value = sensitivityAccessRestriction,
-                onValueChange = {
-                    viewModel.setSensitivityAccessRestriction(it)
-                    viewModel.autoUpdateDetectionSettingPvResult()
-                },
-                helpText = "Eg: 'Password protected', 'Key switch', etc."
-            )
+                Spacer(Modifier.height(16.dp))
 
-            if (pvRequired) {
-                LabeledFourOptionRadioWithHelp(
-                    label = "P.V. Result",
-                    value = pvResult,
-                    onValueChange = { viewModel.setDetectionSettingPvResult(it) },
-                    helpText = """
-                        If Access Restriction has a value, P.V. automatically becomes Pass.
-                        If Access Restriction is blank, P.V. automatically becomes Fail.
-                        If Access Restriction is 'N/A', P.V. becomes N/A.
-                        You may override manually if required.
-                    """.trimIndent()
+                if (pvRequired) {
+                    LabeledFourOptionRadioWithHelp(
+                        label = "P.V. Result",
+                        showNotFittedOption = false,
+                        value = pvResult,
+                        onValueChange = { viewModel.setDetectionSettingPvResult(it) },
+                        helpText = """
+                            If Access Restriction has a value, P.V. automatically becomes Pass.
+                            If Access Restriction is blank, P.V. automatically becomes Fail.
+                            If Access Restriction is 'N/A', P.V. becomes N/A.
+                            You may override manually if required.
+                        """.trimIndent()
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+                }
+
+                LabeledTextFieldWithHelp(
+                    label = "Engineer Notes",
+                    value = viewModel.detectionSettingAsFoundEngineerNotes.value,
+                    onValueChange = viewModel::setDetectionSettingAsFoundEngineerNotes,
+                    helpText = "Enter any notes relevant to this section.",
+                    isNAToggleEnabled = false
                 )
+
+                Spacer(Modifier.height(60.dp))
             }
-
-            LabeledTextFieldWithHelp(
-                label = "Engineer Notes",
-                value = viewModel.detectionSettingAsFoundEngineerNotes.value,
-                onValueChange = viewModel::setDetectionSettingAsFoundEngineerNotes,
-                helpText = "Enter any notes relevant to this section.",
-                isNAToggleEnabled = false
-            )
-
-            Spacer(Modifier.height(60.dp))
         }
     }
 }

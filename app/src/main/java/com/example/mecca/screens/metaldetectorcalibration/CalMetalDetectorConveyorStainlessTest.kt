@@ -2,6 +2,7 @@ package com.example.mecca.screens.metaldetectorcalibration
 
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -24,7 +25,9 @@ import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.LabeledTwoTextInputsWithHelp
+import com.example.mecca.formModules.LabeledYesNoSegmentedSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.YesNoState
+import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,8 +35,6 @@ fun CalMetalDetectorConveyorStainlessTest(
     navController: NavHostController,
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    val scrollState = rememberScrollState()
-
     val sensitivity by viewModel.sensitivityAsLeftStainless
     val sampleCert by viewModel.sampleCertificateNumberStainless
 
@@ -63,141 +64,146 @@ fun CalMetalDetectorConveyorStainlessTest(
 
         CalibrationHeader("Stainless Sensitivity (As Left)")
 
-        Column(
+        ScrollableWithScrollbar(
             modifier = Modifier
-                .weight(1f)
-                .padding(16.dp)
-                .verticalScroll(scrollState)
-                .imePadding()
+                .fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
         ) {
+            Column {
 
-            //-----------------------------------------------------
-            // Combined: Achieved Sensitivity + Certificate
-            //-----------------------------------------------------
-            LabeledTwoTextInputsWithHelp(
-                label = "Achieved Sensitivity & Certificate",
-                firstInputLabel = "Sensitivity",
-                firstInputValue = sensitivity,
-                onFirstInputValueChange = {
-                    viewModel.setSensitivityAsLeftStainless(it)
+                //-----------------------------------------------------
+                // Combined: Achieved Sensitivity + Certificate
+                //-----------------------------------------------------
+                LabeledTwoTextInputsWithHelp(
+                    label = "Achieved Sensitivity & Certificate",
+                    firstInputLabel = "Size",
+                    firstInputValue = sensitivity,
+                    onFirstInputValueChange = {
+                        viewModel.setSensitivityAsLeftStainless(it)
 
-                    if (it == "N/A") {
-                        viewModel.disableStainlessTest()
-                    }
-                    else {
-                        viewModel.enableStainlessTest()
-                    }
-                    viewModel.autoUpdateStainlessPvResult()
-                },
-                secondInputLabel = "Cert No.",
-                secondInputValue = sampleCert,
-                onSecondInputValueChange = {
-                    viewModel.setSampleCertificateNumberStainless(it)
-                    viewModel.autoUpdateStainlessPvResult()
-                },
-                helpText = """
-                    Enter the achieved Stainless Steel sensitivity and the certificate number.
-                    
-                    M&S Target: ${viewModel.sensitivityData.value?.Stainless316TargetMM}mm
-                    Max Allowed: ${viewModel.sensitivityData.value?.Stainless316MaxMM}mm
-                """.trimIndent(),
-                firstInputKeyboardType = KeyboardType.Number,
-                secondInputKeyboardType = KeyboardType.Text,
-                isNAToggleEnabled = true
-            )
-
-            //-----------------------------------------------------
-            // Skip detection tests entirely if N/A
-            //-----------------------------------------------------
-            if (sensitivity != "N/A") {
-
-                LabeledTriStateSwitchAndTextInputWithHelp(
-                    label = "Detected & Rejected (Leading)",
-                    currentState = detectLeading,
-                    onStateChange = {
-                        viewModel.setDetectRejectStainlessLeading(it)
+                        if (it == "N/A") {
+                            viewModel.disableStainlessTest()
+                        } else {
+                            viewModel.enableStainlessTest()
+                        }
                         viewModel.autoUpdateStainlessPvResult()
                     },
-                    helpText = "Leading-edge test result & peak signal.",
-                    inputLabel = "Produced Signal",
-                    inputValue = peakLeading,
-                    onInputValueChange = {
-                        viewModel.setPeakSignalStainlessLeading(it)
-                        viewModel.autoUpdateStainlessPvResult()
-                    }
-                )
-
-                LabeledTriStateSwitchAndTextInputWithHelp(
-                    label = "Detected & Rejected (Middle)",
-                    currentState = detectMiddle,
-                    onStateChange = {
-                        viewModel.setDetectRejectStainlessMiddle(it)
+                    secondInputLabel = "Cert No.",
+                    secondInputValue = sampleCert,
+                    onSecondInputValueChange = {
+                        viewModel.setSampleCertificateNumberStainless(it)
                         viewModel.autoUpdateStainlessPvResult()
                     },
-                    helpText = "Middle test result & peak signal.",
-                    inputLabel = "Produced Signal",
-                    inputValue = peakMiddle,
-                    onInputValueChange = {
-                        viewModel.setPeakSignalStainlessMiddle(it)
-                        viewModel.autoUpdateStainlessPvResult()
-                    }
-                )
-
-                LabeledTriStateSwitchAndTextInputWithHelp(
-                    label = "Detected & Rejected (Trailing)",
-                    currentState = detectTrailing,
-                    onStateChange = {
-                        viewModel.setDetectRejectStainlessTrailing(it)
-                        viewModel.autoUpdateStainlessPvResult()
-                    },
-                    helpText = "Trailing test result & peak signal.",
-                    inputLabel = "Produced Signal",
-                    inputValue = peakTrailing,
-                    onInputValueChange = {
-                        viewModel.setPeakSignalStainlessTrailing(it)
-                        viewModel.autoUpdateStainlessPvResult()
-                    }
-                )
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            //-----------------------------------------------------
-            // ⭐ PV RESULT (only when required)
-            //-----------------------------------------------------
-            if (viewModel.pvRequired.value) {
-                LabeledFourOptionRadioWithHelp(
-                    label = "P.V. Result",
-                    value = viewModel.stainlessTestPvResult.value,
-                    onValueChange = viewModel::setStainlessTestPvResult,
                     helpText = """
-                        Auto-Pass rules:
-                          • Achieved Sensitivity ≤ M&S Max
-                          • Certificate number entered
-                          • All three D&R = Yes
-                          • All peak signals entered
-
-                        Otherwise auto-fail. You may override manually.
+                        Enter the achieved Stainless Steel sensitivity and the certificate number.
+                        
+                        M&S Target: ${viewModel.sensitivityData.value?.Stainless316TargetMM}mm
+                        Max Allowed: ${viewModel.sensitivityData.value?.Stainless316MaxMM}mm
                     """.trimIndent(),
-                    showNotFittedOption = true,
-                    notFittedEnabled = false
+                    firstInputKeyboardType = KeyboardType.Number,
+                    secondInputKeyboardType = KeyboardType.Text,
+                    isNAToggleEnabled = true
                 )
+
+                Spacer(Modifier.height(16.dp))
+
+                //-----------------------------------------------------
+                // Skip detection tests entirely if N/A
+                //-----------------------------------------------------
+                if (sensitivity != "N/A") {
+
+                    LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
+                        label = "Detected & Rejected (Leading)",
+                        currentState = detectLeading,
+                        onStateChange = {
+                            viewModel.setDetectRejectStainlessLeading(it)
+                            viewModel.autoUpdateStainlessPvResult()
+                        },
+                        helpText = "Leading-edge test result & peak signal.",
+                        inputLabel = "Produced Signal",
+                        inputValue = peakLeading,
+                        onInputValueChange = {
+                            viewModel.setPeakSignalStainlessLeading(it)
+                            viewModel.autoUpdateStainlessPvResult()
+                        }
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+
+                    LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
+                        label = "Detected & Rejected (Middle)",
+                        currentState = detectMiddle,
+                        onStateChange = {
+                            viewModel.setDetectRejectStainlessMiddle(it)
+                            viewModel.autoUpdateStainlessPvResult()
+                        },
+                        helpText = "Middle test result & peak signal.",
+                        inputLabel = "Produced Signal",
+                        inputValue = peakMiddle,
+                        onInputValueChange = {
+                            viewModel.setPeakSignalStainlessMiddle(it)
+                            viewModel.autoUpdateStainlessPvResult()
+                        }
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+
+                    LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
+                        label = "Detected & Rejected (Trailing)",
+                        currentState = detectTrailing,
+                        onStateChange = {
+                            viewModel.setDetectRejectStainlessTrailing(it)
+                            viewModel.autoUpdateStainlessPvResult()
+                        },
+                        helpText = "Trailing test result & peak signal.",
+                        inputLabel = "Produced Signal",
+                        inputValue = peakTrailing,
+                        onInputValueChange = {
+                            viewModel.setPeakSignalStainlessTrailing(it)
+                            viewModel.autoUpdateStainlessPvResult()
+                        }
+                    )
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                //-----------------------------------------------------
+                // PV RESULT (only when required)
+                //-----------------------------------------------------
+                if (viewModel.pvRequired.value) {
+                    LabeledFourOptionRadioWithHelp(
+                        label = "P.V. Result",
+                        value = viewModel.stainlessTestPvResult.value,
+                        onValueChange = viewModel::setStainlessTestPvResult,
+                        helpText = """
+                            Auto-Pass rules:
+                              • Achieved Sensitivity ≤ M&S Max
+                              • Certificate number entered
+                              • All three D&R = Yes
+                              • All peak signals entered
+
+                            Otherwise auto-fail. You may override manually.
+                        """.trimIndent(),
+                        showNotFittedOption = false,
+                        notFittedEnabled = false
+                    )
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                //-----------------------------------------------------
+                // Notes
+                //-----------------------------------------------------
+                LabeledTextFieldWithHelp(
+                    label = "Engineer Notes",
+                    value = notes,
+                    onValueChange = viewModel::setStainlessTestEngineerNotes,
+                    helpText = "Enter any notes relevant to this section",
+                    isNAToggleEnabled = false
+                )
+
+                Spacer(Modifier.height(60.dp))
             }
-
-            Spacer(Modifier.height(16.dp))
-
-            //-----------------------------------------------------
-            // Notes
-            //-----------------------------------------------------
-            LabeledTextFieldWithHelp(
-                label = "Engineer Notes",
-                value = notes,
-                onValueChange = viewModel::setStainlessTestEngineerNotes,
-                helpText = "Enter any notes relevant to this section",
-                isNAToggleEnabled = false
-            )
-
-            Spacer(Modifier.height(60.dp))
         }
     }
 }

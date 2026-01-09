@@ -1,6 +1,7 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -25,14 +26,15 @@ import com.example.mecca.formModules.LabeledMultiSelectDropdownWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
+import com.example.mecca.formModules.LabeledYesNoSegmentedSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.YesNoState
+import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @Composable
 fun CalMetalDetectorConveyorPackCheckSensor(
     navController: NavHostController,
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    val scrollState = rememberScrollState()
 
     val fitted by viewModel.packCheckSensorFitted
     val detail by viewModel.packCheckSensorDetail
@@ -71,6 +73,7 @@ fun CalMetalDetectorConveyorPackCheckSensor(
                     controlledRestart != YesNoState.NA &&
                     (testMethod != "Other" || testMethodOther.isNotBlank())
         }
+
         else -> false
     }
 
@@ -83,132 +86,142 @@ fun CalMetalDetectorConveyorPackCheckSensor(
 
         CalibrationHeader("Failsafe Tests - Pack Check Sensor")
 
-        Column(
+        ScrollableWithScrollbar(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(scrollState)
-                .imePadding()
+                .imePadding(),
+            contentPadding = PaddingValues(16.dp),
         ) {
 
-            LabeledTriStateSwitchAndTextInputWithHelp(
-                label = "Sensor fitted?",
-                currentState = fitted,
-                onStateChange = { newState ->
-                    viewModel.setPackCheckSensorFitted(newState)
+            Column {
 
-                    if (newState == YesNoState.NA || newState == YesNoState.NO) {
-                        viewModel.setPackCheckSensorDetail("N/A")
-                        viewModel.setPackCheckSensorTestMethod("N/A")
-                        viewModel.setPackCheckSensorTestMethodOther("N/A")
-                        viewModel.setPackCheckSensorTestResult(emptyList())
-                        viewModel.setPackCheckSensorLatched(YesNoState.NA)
-                        viewModel.setPackCheckSensorCR(YesNoState.NA)
-                    } else if (newState == YesNoState.YES) {
-                        viewModel.setPackCheckSensorDetail("")
-                        viewModel.setPackCheckSensorTestMethod("")
-                        viewModel.setPackCheckSensorTestMethodOther("")
-                        viewModel.setPackCheckSensorTestResult(emptyList())
-                        viewModel.setPackCheckSensorLatched(YesNoState.NO)
-                        viewModel.setPackCheckSensorCR(YesNoState.NO)
-                    }
+                LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
+                    label = "Sensor fitted?",
+                    currentState = fitted,
+                    onStateChange = { newState ->
+                        viewModel.setPackCheckSensorFitted(newState)
 
-                    viewModel.autoUpdatePackCheckSensorPvResult()
-                },
-                helpText = "Select if a pack check sensor is fitted and used to detect missing product/packs.",
-                inputLabel = "Detail",
-                inputValue = detail,
-                onInputValueChange = {
-                    viewModel.setPackCheckSensorDetail(it)
-                    viewModel.autoUpdatePackCheckSensorPvResult()
-                }
-            )
-
-            if (fitted == YesNoState.YES) {
-
-                LabeledDropdownWithHelp(
-                    label = "Test Method",
-                    options = testMethodOptions,
-                    selectedOption = testMethod,
-                    onSelectionChange = {
-                        viewModel.setPackCheckSensorTestMethod(it)
-                        viewModel.autoUpdatePackCheckSensorPvResult()
-                    },
-                    helpText = "Select one option from the dropdown.",
-                    isNAToggleEnabled = false
-                )
-
-                if (testMethod == "Other") {
-                    LabeledTextFieldWithHelp(
-                        label = "Other Test Method",
-                        value = testMethodOther,
-                        onValueChange = {
-                            viewModel.setPackCheckSensorTestMethodOther(it)
-                            viewModel.autoUpdatePackCheckSensorPvResult()
-                        },
-                        helpText = "Enter the custom test method.",
-                        isNAToggleEnabled = false
-                    )
-                }
-
-                LabeledMultiSelectDropdownWithHelp(
-                    label = "Test Result",
-                    value = testResult.joinToString(", "),
-                    options = testResultOptions,
-                    selectedOptions = testResult,
-                    onSelectionChange = { newSelection ->
-
-                        val cleaned = when {
-                            "No Result" in newSelection -> listOf("No Result")
-                            else -> newSelection.filterNot { it == "No Result" }
-                        }
-                        viewModel.setPackCheckSensorTestResult(cleaned)
-
-                        if (cleaned == listOf("No Result")) {
+                        if (newState == YesNoState.NA || newState == YesNoState.NO) {
+                            viewModel.setPackCheckSensorDetail("N/A")
+                            viewModel.setPackCheckSensorTestMethod("N/A")
+                            viewModel.setPackCheckSensorTestMethodOther("N/A")
+                            viewModel.setPackCheckSensorTestResult(emptyList())
+                            viewModel.setPackCheckSensorLatched(YesNoState.NA)
+                            viewModel.setPackCheckSensorCR(YesNoState.NA)
+                        } else if (newState == YesNoState.YES) {
+                            viewModel.setPackCheckSensorDetail("")
+                            viewModel.setPackCheckSensorTestMethod("")
+                            viewModel.setPackCheckSensorTestMethodOther("")
+                            viewModel.setPackCheckSensorTestResult(emptyList())
                             viewModel.setPackCheckSensorLatched(YesNoState.NO)
                             viewModel.setPackCheckSensorCR(YesNoState.NO)
                         }
 
                         viewModel.autoUpdatePackCheckSensorPvResult()
                     },
-                    helpText = "Select one or more items from the dropdown.",
-                    isNAToggleEnabled = false
-                )
-
-                LabeledTriStateSwitchWithHelp(
-                    label = "Fault Latched?",
-                    currentState = latched,
-                    onStateChange = {
-                        viewModel.setPackCheckSensorLatched(it)
+                    helpText = "Select if a pack check sensor is fitted and used to detect missing product/packs.",
+                    inputLabel = "Detail",
+                    inputValue = detail,
+                    onInputValueChange = {
+                        viewModel.setPackCheckSensorDetail(it)
                         viewModel.autoUpdatePackCheckSensorPvResult()
-                    },
-                    helpText = "Is the fault output latched, or does it clear automatically?",
-                    isNAToggleEnabled = false
+                    }
                 )
 
-                LabeledTriStateSwitchWithHelp(
-                    label = "Controlled Restart?",
-                    currentState = controlledRestart,
-                    onStateChange = {
-                        viewModel.setPackCheckSensorCR(it)
-                        viewModel.autoUpdatePackCheckSensorPvResult()
-                    },
-                    helpText = "Does the fault require a controlled restart after reset?",
-                    isNAToggleEnabled = false
-                )
-            }
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
+                if (fitted == YesNoState.YES) {
 
-            //-----------------------------------------------------
-            // ⭐ PV RESULT (only when required)
-            //-----------------------------------------------------
-            if (viewModel.pvRequired.value) {
-                LabeledFourOptionRadioWithHelp(
-                    label = "P.V. Result",
-                    value = viewModel.packCheckSensorTestPvResult.value,
-                    onValueChange = viewModel::setPackCheckSensorTestPvResult,
-                    helpText = """
+                    LabeledDropdownWithHelp(
+                        label = "Test Method",
+                        options = testMethodOptions,
+                        selectedOption = testMethod,
+                        onSelectionChange = {
+                            viewModel.setPackCheckSensorTestMethod(it)
+                            viewModel.autoUpdatePackCheckSensorPvResult()
+                        },
+                        helpText = "Select one option from the dropdown.",
+                        isNAToggleEnabled = false
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    if (testMethod == "Other") {
+                        LabeledTextFieldWithHelp(
+                            label = "Other Test Method",
+                            value = testMethodOther,
+                            onValueChange = {
+                                viewModel.setPackCheckSensorTestMethodOther(it)
+                                viewModel.autoUpdatePackCheckSensorPvResult()
+                            },
+                            helpText = "Enter the custom test method.",
+                            isNAToggleEnabled = false
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    LabeledMultiSelectDropdownWithHelp(
+                        label = "Test Result",
+                        value = testResult.joinToString(", "),
+                        options = testResultOptions,
+                        selectedOptions = testResult,
+                        onSelectionChange = { newSelection ->
+
+                            val cleaned = when {
+                                "No Result" in newSelection -> listOf("No Result")
+                                else -> newSelection.filterNot { it == "No Result" }
+                            }
+                            viewModel.setPackCheckSensorTestResult(cleaned)
+
+                            if (cleaned == listOf("No Result")) {
+                                viewModel.setPackCheckSensorLatched(YesNoState.NO)
+                                viewModel.setPackCheckSensorCR(YesNoState.NO)
+                            }
+
+                            viewModel.autoUpdatePackCheckSensorPvResult()
+                        },
+                        helpText = "Select one or more items from the dropdown.",
+                        isNAToggleEnabled = false
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    LabeledTriStateSwitchWithHelp(
+                        label = "Fault Latched?",
+                        currentState = latched,
+                        onStateChange = {
+                            viewModel.setPackCheckSensorLatched(it)
+                            viewModel.autoUpdatePackCheckSensorPvResult()
+                        },
+                        helpText = "Is the fault output latched, or does it clear automatically?",
+                        isNAToggleEnabled = false
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    LabeledTriStateSwitchWithHelp(
+                        label = "Controlled Restart?",
+                        currentState = controlledRestart,
+                        onStateChange = {
+                            viewModel.setPackCheckSensorCR(it)
+                            viewModel.autoUpdatePackCheckSensorPvResult()
+                        },
+                        helpText = "Does the fault require a controlled restart after reset?",
+                        isNAToggleEnabled = false
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                //-----------------------------------------------------
+                // ⭐ PV RESULT (only when required)
+                //-----------------------------------------------------
+                if (viewModel.pvRequired.value) {
+                    LabeledFourOptionRadioWithHelp(
+                        label = "P.V. Result",
+                        value = viewModel.packCheckSensorTestPvResult.value,
+                        onValueChange = viewModel::setPackCheckSensorTestPvResult,
+                        helpText = """
                         Auto-Pass rules (when PV required):
                           • Sensor fitted = Yes
                           • Detail entered
@@ -221,20 +234,21 @@ fun CalMetalDetectorConveyorPackCheckSensor(
                         If sensor is N/A → PV = N/A.
                         Otherwise auto-fail. You may override manually.
                     """.trimIndent()
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                LabeledTextFieldWithHelp(
+                    label = "Engineer Comments",
+                    value = notes,
+                    onValueChange = viewModel::setPackCheckSensorEngineerNotes,
+                    helpText = "Enter any notes relevant to this section.",
+                    isNAToggleEnabled = false
                 )
+
+                Spacer(modifier = Modifier.height(60.dp))
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LabeledTextFieldWithHelp(
-                label = "Engineer Comments",
-                value = notes,
-                onValueChange = viewModel::setPackCheckSensorEngineerNotes,
-                helpText = "Enter any notes relevant to this section.",
-                isNAToggleEnabled = false
-            )
-
-            Spacer(modifier = Modifier.height(60.dp))
         }
     }
 }

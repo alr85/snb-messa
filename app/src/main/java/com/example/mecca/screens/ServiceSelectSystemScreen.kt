@@ -28,23 +28,33 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.CloudSync
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Navigation
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -72,245 +82,163 @@ import kotlinx.coroutines.launch
 @Composable
 fun ServiceSelectSystemScreen(
     navController: NavHostController,
-    db: AppDatabase,
+    db: AppDatabase, // <- unused currently (warning). Remove if you don’t need it.
     repository: MetalDetectorSystemsRepository,
     customerID: Int,
     customerName: String,
     customerPostcode: String
 ) {
-
     val context = LocalContext.current
-    var selectedSystem by remember { mutableStateOf<MetalDetectorWithFullDetails?>(null) }
-    val metalDetectorsCalibrationsList = remember { mutableStateOf<List<MetalDetectorWithFullDetails>>(emptyList()) }
+
+    val metalDetectorsCalibrationsList =
+        remember { mutableStateOf<List<MetalDetectorWithFullDetails>>(emptyList()) }
 
     val coroutineScope = rememberCoroutineScope()
-
-    var isMenuExpanded by remember { mutableStateOf(false) } // Tracks menu visibility
-
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Load the relevant machines from the Room database when the screen loads
-    LaunchedEffect(Unit) {
-        coroutineScope.launch {
-            val machines = getMetalDetectors(repository, customerID)
-            metalDetectorsCalibrationsList.value = machines
-        }
-    }
+    // Bottom sheet menu state
+    var showMenu by rememberSaveable { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    LaunchedEffect(selectedSystem) {
-        selectedSystem?.let {
-            navController.navigate("MetalDetectorConveyorSystemScreen/${it.id}")
-        }
+    // Load machines when screen loads
+    LaunchedEffect(customerID) {
+        metalDetectorsCalibrationsList.value = getMetalDetectors(repository, customerID)
     }
 
     val scrollState = rememberScrollState()
 
     Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = "$customerName – $customerPostcode",
+                        maxLines = 1
+                    )
+                },
+                actions = {
+
+
+                    FilledTonalButton(onClick = { showMenu = true }) {
+                        Icon(Icons.Default.Tune, contentDescription = null)
+                        Text("Actions", modifier = Modifier.padding(start = 6.dp))
+                    }
+
+                }
+            )
+        },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
 
-        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+
+        // Modern menu bottom sheet
+        if (showMenu) {
+            ModalBottomSheet(
+                onDismissRequest = { showMenu = false },
+                sheetState = sheetState
+            ) {
+                // Menu items
+                ListItem(
+                    headlineContent = { Text("New Metal Detector") },
+                    leadingContent = {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                    },
+                    supportingContent = { Text("Add a new metal detector for this customer") },
+                    modifier = Modifier.clickable {
+                        showMenu = false
+                        navController.navigate("AddNewMetalDetectorScreen/$customerID/$customerName")
+                    }
+                )
+
+                ListItem(
+                    headlineContent = { Text("New Checkweigher") },
+                    leadingContent = {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                    },
+                    supportingContent = { Text("Coming soon") },
+                    // Disabled look + no click
+                )
+
+                ListItem(
+                    headlineContent = { Text("New Static Scale") },
+                    leadingContent = {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                    },
+                    supportingContent = { Text("Coming soon") },
+                )
+
+                ListItem(
+                    headlineContent = { Text("New X-Ray") },
+                    leadingContent = {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                    },
+                    supportingContent = { Text("Coming soon") },
+                )
+
+                Divider()
+
+                ListItem(
+                    headlineContent = { Text("Navigate to Site") },
+                    leadingContent = {
+                        Icon(imageVector = Icons.Default.Navigation, contentDescription = null)
+                    },
+                    supportingContent = { Text(customerPostcode) },
+                    modifier = Modifier.clickable {
+                        showMenu = false
+                        try {
+                            val gmmIntentUri =
+                                "google.navigation:q=${Uri.encode(customerPostcode)}".toUri()
+                            val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
+                                setPackage("com.google.android.apps.maps")
+                            }
+                            context.startActivity(mapIntent)
+                        } catch (e: Exception) {
+                            Log.e("NavigationIntent", "Failed to launch navigation", e)
+                            Toast.makeText(context, "Unable to open Google Maps.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                )
+
+                ListItem(
+                    headlineContent = { Text("Refresh Database") },
+                    leadingContent = {
+                        Icon(imageVector = Icons.Default.CloudSync, contentDescription = null)
+                    },
+                    supportingContent = { Text("Sync local and cloud systems") },
+                    modifier = Modifier.clickable {
+                        showMenu = false
+                        coroutineScope.launch {
+                            val ok = syncMetalDetectors(repository)
+                            if (ok) {
+                                metalDetectorsCalibrationsList.value =
+                                    getMetalDetectors(repository, customerID)
+                            } else {
+                                snackbarHostState.showSnackbar("Sync failed. Please try again.")
+                            }
+                        }
+                    }
+                )
+
+                // Bottom padding so it doesn’t feel cramped
+                Box(modifier = Modifier.height(24.dp))
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp)
                     .verticalScroll(scrollState)
             ) {
-                // Top Row with Refresh Button
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "$customerName - $customerPostcode",
-                        style = TextStyle(fontSize = 24.sp, textAlign = TextAlign.Center)
-                    )
 
-                    // Box to ensure proper alignment of Menu Button and Dropdown Menu
-                    Box(
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    ) {
-                        IconButton(onClick = { isMenuExpanded = !isMenuExpanded }) {
-                            Icon(
-                                imageVector = Icons.Default.MoreVert,
-                                contentDescription = "Customer Systems Menu"
-                            )
-                        }
-                        DropdownMenu(
-                            expanded = isMenuExpanded,
-                            onDismissRequest = { isMenuExpanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.padding(8.dp) // Adjust padding as needed
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Add,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(20.dp) // Adjust icon size
-                                        )
-                                        Text(
-                                            text = "New Metal Detector",
-                                            fontSize = 18.sp,
-                                            modifier = Modifier.padding(start = 8.dp) // Space between icon and text
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    isMenuExpanded = false
-                                    navController.navigate("AddNewMetalDetectorScreen/${customerID}/${customerName}")
-                                },
-                                enabled = true
-                            )
-                            DropdownMenuItem(
-                                text = {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.padding(8.dp) // Adjust padding as needed
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Add, // Example icon
-                                            contentDescription = null,
-                                            modifier = Modifier.size(20.dp) // Adjust icon size
-                                        )
-                                        Text(
-                                            text = "New Checkweigher",
-                                            fontSize = 18.sp, // Customize text size
-                                            modifier = Modifier.padding(start = 8.dp) // Space between icon and text
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    isMenuExpanded = false
-                                },
-                                enabled = false
-                            )
-                            DropdownMenuItem(
-                                text = {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.padding(8.dp) // Adjust padding as needed
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Add, // Example icon
-                                            contentDescription = null,
-                                            modifier = Modifier.size(20.dp) // Adjust icon size
-                                        )
-                                        Text(
-                                            text = "New Static Scale",
-                                            fontSize = 18.sp, // Customize text size
-                                            modifier = Modifier.padding(start = 8.dp) // Space between icon and text
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    isMenuExpanded = false
-                                },
-                                enabled = false
-                            )
 
-                            DropdownMenuItem(
-                                text = {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.padding(8.dp) // Adjust padding as needed
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Add, // Example icon
-                                            contentDescription = null,
-                                            modifier = Modifier.size(20.dp) // Adjust icon size
-                                        )
-                                        Text(
-                                            text = "New X-Ray",
-                                            fontSize = 18.sp, // Customize text size
-                                            modifier = Modifier.padding(start = 8.dp)
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    isMenuExpanded = false
-                                },
-                                enabled = false
-                            )
-
-                            DropdownMenuItem(
-                                text = {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.padding(8.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Navigation,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                        Text(
-                                            text = "Navigate to Site",
-                                            fontSize = 18.sp,
-                                            modifier = Modifier.padding(start = 8.dp)
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    isMenuExpanded = false
-                                    try {
-                                        val gmmIntentUri =
-                                            "google.navigation:q=${Uri.encode(customerPostcode)}".toUri()
-                                        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
-                                            setPackage("com.google.android.apps.maps")
-                                        }
-                                        context.startActivity(mapIntent)
-                                    } catch (e: Exception) {
-                                        Log.e("NavigationIntent", "Failed to launch navigation", e)
-                                        Toast.makeText(context, "Unable to open Google Maps.", Toast.LENGTH_SHORT).show()
-                                    }
-                                },
-                                enabled = true
-                            )
-
-                            DropdownMenuItem(
-                                text = {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.padding(8.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.CloudSync,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                        Text(
-                                            text = "Refresh Database",
-                                            fontSize = 18.sp,
-                                            modifier = Modifier.padding(start = 8.dp)
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    isMenuExpanded = false
-                                    coroutineScope.launch {
-                                        if (syncMetalDetectors(repository)) {
-                                            metalDetectorsCalibrationsList.value = getMetalDetectors(repository, customerID)
-                                        } else {
-                                            // Show a snackbar when the sync fails
-                                            snackbarHostState.showSnackbar("Sync failed. Please try again.")
-                                        }
-                                    }
-                                }
-                            )
-                        }
-                    }
-                }
-
-                // Filtered and sorted systems list
                 val filteredSystems = metalDetectorsCalibrationsList.value.sortedBy { it.serialNumber }
-                InAppLogger.d("Filtered Systems: $filteredSystems")
-                Log.d("DEBUG", "UNFiltered Systems: $metalDetectorsCalibrationsList")
+                Log.d("DEBUG", "UNFiltered Systems: ${metalDetectorsCalibrationsList.value}")
                 Log.d("DEBUG", "Filtered Systems: $filteredSystems")
 
                 LazyRow(
@@ -322,7 +250,10 @@ fun ServiceSelectSystemScreen(
                         Column(
                             modifier = Modifier
                                 .padding(8.dp)
-                                .clickable { selectedSystem = mdSystem }
+                                .clickable {
+                                    // Navigate directly, no selectedSystem trap
+                                    navController.navigate("MetalDetectorConveyorSystemScreen/${mdSystem.id}")
+                                }
                                 .border(
                                     BorderStroke(1.dp, Color.Gray),
                                     shape = RoundedCornerShape(8.dp)
@@ -330,7 +261,6 @@ fun ServiceSelectSystemScreen(
                                 .clip(RoundedCornerShape(8.dp))
                                 .width(180.dp)
                         ) {
-                            // Top row containing the system serial number and the sync status circle
                             Box(modifier = Modifier.fillMaxWidth()) {
                                 Text(
                                     text = mdSystem.serialNumber,
@@ -341,7 +271,6 @@ fun ServiceSelectSystemScreen(
                                     fontSize = 16.sp
                                 )
 
-                                // Sync status icon in the top right corner
                                 Icon(
                                     imageVector = if (mdSystem.isSynced) Icons.Default.CloudDone else Icons.Default.CloudOff,
                                     contentDescription = if (mdSystem.isSynced) "Synced to cloud" else "Not synced to cloud",
@@ -353,7 +282,6 @@ fun ServiceSelectSystemScreen(
                                 )
                             }
 
-                            // Image section
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -362,8 +290,7 @@ fun ServiceSelectSystemScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Image(
-                                    painter =
-                                    when(mdSystem.systemTypeId){
+                                    painter = when (mdSystem.systemTypeId) {
                                         1 -> painterResource(id = R.drawable.belt_straight)
                                         2 -> painterResource(id = R.drawable.pipe_straight)
                                         3 -> painterResource(id = R.drawable.drop_straight)
@@ -378,7 +305,6 @@ fun ServiceSelectSystemScreen(
                                 )
                             }
 
-                            // Model description
                             Text(
                                 text = mdSystem.modelDescription,
                                 modifier = Modifier
@@ -388,7 +314,6 @@ fun ServiceSelectSystemScreen(
                                 fontSize = 14.sp
                             )
 
-                            // Location description
                             Text(
                                 text = mdSystem.lastLocation,
                                 modifier = Modifier

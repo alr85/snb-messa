@@ -1,10 +1,18 @@
 package com.example.mecca.formModules
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -19,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LabeledTriStateSwitchWithHelp(
     label: String,
@@ -29,16 +38,14 @@ fun LabeledTriStateSwitchWithHelp(
 ) {
     var showHelpDialog by remember { mutableStateOf(false) }
 
-    // Local mirror of state so the UI is responsive immediately
+    // Local mirror so UI responds instantly
     var localState by remember {
         mutableStateOf(
             if (currentState == YesNoState.UNSPECIFIED) YesNoState.NO else currentState
         )
     }
-    // Local disabled flag, just like your dropdown+text component
     var isDisabled by remember { mutableStateOf(currentState == YesNoState.NA) }
 
-    // Keep locals in sync if parent changes state externally (restore, validation, etc.)
     LaunchedEffect(currentState) {
         isDisabled = currentState == YesNoState.NA
         localState = if (currentState == YesNoState.UNSPECIFIED) YesNoState.NO else currentState
@@ -50,7 +57,6 @@ fun LabeledTriStateSwitchWithHelp(
         isDisabled = isDisabled,
         onNaClick = if (isNAToggleEnabled) {
             {
-                // Toggle NA <-> NO exactly like your other module toggles "N/A" <-> ""
                 isDisabled = !isDisabled
                 val newState = if (isDisabled) YesNoState.NA else YesNoState.NO
                 localState = newState
@@ -60,34 +66,65 @@ fun LabeledTriStateSwitchWithHelp(
         onHelpClick = { showHelpDialog = true }
     ) { disabledFromWrapper ->
 
-        // Binary switch: YES/NO only. Disabled when NA.
-        Row(
+        val enabled = !disabledFromWrapper
+
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Switch(
-                checked = localState == YesNoState.YES,
-                onCheckedChange = { checked ->
-                    if (!disabledFromWrapper) {
-                        val newState = if (checked) YesNoState.YES else YesNoState.NO
-                        localState = newState
-                        onStateChange(newState)
-                    }
-                },
-                enabled = !disabledFromWrapper
+            Text(
+                text = "Result",
+                style = MaterialTheme.typography.labelMedium
             )
 
-            Text(
-                text = when (localState) {
-                    YesNoState.YES -> "Yes"
-                    YesNoState.NO -> "No"
-                    YesNoState.NA -> "N/A"
-                    YesNoState.UNSPECIFIED -> "Unspecified"
-                },
-                color = if (disabledFromWrapper) Color.Gray else Color.Black,
-                style = MaterialTheme.typography.bodyMedium
-            )
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                val options = listOf(
+                    "Yes" to YesNoState.YES,
+                    "No" to YesNoState.NO
+                )
+
+                options.forEachIndexed { index, (text, state) ->
+                    val selected = localState == state
+
+                    SegmentedButton(
+                        selected = selected,
+                        onClick = {
+                            if (enabled) {
+                                localState = state
+                                onStateChange(state)
+                            }
+                        },
+                        enabled = enabled,
+                        shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
+                        icon = {
+                            if (selected) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Check,
+                                    contentDescription = null
+                                )
+                            }
+                        },
+                        colors = SegmentedButtonDefaults.colors(
+                            inactiveContainerColor = Color.White,
+                            activeContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            inactiveContentColor = MaterialTheme.colorScheme.onSurface,
+                            activeContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledInactiveContainerColor = Color.White,
+                            disabledActiveContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Text(text)
+                    }
+                }
+            }
+
+            // Optional little state line (keeps behaviour similar to your old "Yes/No" text)
+            if (localState == YesNoState.NA) {
+                Text(
+                    text = "N/A",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
     }
 
@@ -96,8 +133,9 @@ fun LabeledTriStateSwitchWithHelp(
             onDismissRequest = { showHelpDialog = false },
             title = { Text(label) },
             text = { Text(helpText) },
-            confirmButton = { TextButton(onClick = { showHelpDialog = false }) { Text("OK") } }
+            confirmButton = {
+                TextButton(onClick = { showHelpDialog = false }) { Text("OK") }
+            }
         )
     }
 }
-

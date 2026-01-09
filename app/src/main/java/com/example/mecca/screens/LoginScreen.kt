@@ -71,7 +71,7 @@ fun LoginScreen(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(5.dp))
+        Spacer(modifier = Modifier.height(75.dp))
 
         Image(
             painter = painterResource(id = R.drawable.logo_electronics),

@@ -10,6 +10,9 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -20,13 +23,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LabeledFourOptionRadioWithHelp(
     label: String,
-    value: String?,                     // "Pass", "Fail", "N/A", "N/F"
+    value: String?,                     // "Pass", "Fail", "N/A", "Not Fitted"
     onValueChange: (String) -> Unit,
     helpText: String,
     isDisabled: Boolean = false,
@@ -47,48 +51,42 @@ fun LabeledFourOptionRadioWithHelp(
         onHelpClick = { showHelpDialog = true }
     ) { disabled ->
 
-        // 2x2 grid for four, or just 3 options if N/F hidden
         Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            options.chunked(2).forEach { rowOptions ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    rowOptions.forEach { option ->
+            Text(
+                text = "Result",
+                style = MaterialTheme.typography.labelMedium
+            )
 
-                        val optionEnabled =
-                            !disabled &&
-                                    (option != "Not Fitted" || notFittedEnabled)
+            SingleChoiceSegmentedButtonRow(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                options.forEachIndexed { index, option ->
 
-                        Row(
-                            modifier = Modifier.weight(1f),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(
-                                selected = value == option,
-                                onClick = { if (optionEnabled) onValueChange(option) },
-                                enabled = optionEnabled
-                            )
+                    val optionEnabled =
+                        !disabled && (option != "Not Fitted" || notFittedEnabled)
 
-                            val textColor =
-                                if (optionEnabled) Color.Unspecified else Color.Gray
-
-                            Text(
-                                text = option,
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(start = 4.dp),
-                                color = textColor
-                            )
-                        }
-                    }
-
-                    // keep layout stable if odd count (3 options)
-                    if (rowOptions.size == 1) {
-                        Spacer(modifier = Modifier.weight(1f))
+                    SegmentedButton(
+                        selected = value == option,
+                        onClick = { if (optionEnabled) onValueChange(option) },
+                        enabled = optionEnabled,
+                        shape = SegmentedButtonDefaults.itemShape(
+                            index = index,
+                            count = options.size
+                        ),
+                        colors = SegmentedButtonDefaults.colors(
+                            // match your new rule: unselected = white
+                            inactiveContainerColor = Color.White,
+                            activeContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            inactiveContentColor = MaterialTheme.colorScheme.onSurface,
+                            activeContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledInactiveContainerColor = Color.White,
+                            disabledActiveContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Text(option, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 }
             }
@@ -106,4 +104,5 @@ fun LabeledFourOptionRadioWithHelp(
         )
     }
 }
+
 

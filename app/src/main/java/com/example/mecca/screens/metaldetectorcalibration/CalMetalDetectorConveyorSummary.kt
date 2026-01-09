@@ -75,29 +75,7 @@ fun CalMetalDetectorConveyorSummary(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(bottom = 80.dp)
         ) {
-            // Banner
-//            item {
-//                CalibrationBanner(progress = progress, viewModel = viewModel)
-//            }
 
-            // Nav buttons
-//            item {
-//                CalibrationNavigationButtons(
-//                    onPreviousClick = { viewModel.updateComplianceConfirmation() },
-//                    onCancelClick = {
-//                        viewModel.clearCalibrationData()
-//                        navController.navigate("serviceHome") {
-//                            popUpTo("serviceHome") { inclusive = true }
-//                        }
-//                    },
-//                    onNextClick = { },
-//                    isNextEnabled = false,
-//                    isFirstStep = false,
-//                    navController = navController,
-//                    viewModel = viewModel,
-//                    onSaveAndExitClick = { /* custom save logic */ }
-//                )
-//            }
 
             // Summary info
             item {

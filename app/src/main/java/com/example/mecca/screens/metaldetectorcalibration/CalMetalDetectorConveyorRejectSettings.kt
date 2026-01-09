@@ -1,6 +1,7 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -21,14 +22,15 @@ import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledDropdownWithTextInput
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchAndTextInputWithHelp
+import com.example.mecca.formModules.LabeledYesNoSegmentedSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.YesNoState
+import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @Composable
 fun CalMetalDetectorConveyorRejectSettings(
     navController: NavHostController,
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    val scrollState = rememberScrollState()
 
     val rejectSynchronisationSetting by viewModel.rejectSynchronisationSetting
     val rejectSynchronisationDetail by viewModel.rejectSynchronisationDetail
@@ -68,74 +70,81 @@ fun CalMetalDetectorConveyorRejectSettings(
 
         CalibrationHeader("Reject Settings")
 
-        Column(
+        ScrollableWithScrollbar(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(scrollState)
-                .imePadding()
+                .fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
         ) {
 
-            LabeledTriStateSwitchAndTextInputWithHelp(
-                label = "Synchronisation",
-                currentState = rejectSynchronisationSetting,
-                onStateChange = viewModel::setRejectSynchronisationSetting,
-                helpText = "Select if there is a method of reject synchronisation.",
-                inputLabel = "Detail",
-                inputValue = rejectSynchronisationDetail,
-                onInputValueChange = viewModel::setRejectSynchronisationDetail
-            )
+            Column {
 
-            LabeledDropdownWithTextInput(
-                label = "Reject Duration",
-                dropdownLabel = "Units",
-                options = rejectTimerUnitOptions,
-                selectedOption = rejectDurationUnits,
-                onOptionChange = viewModel::setRejectDurationUnits,
-                helpText = "Select the units for the reject duration.",
-                inputLabel = "Duration",
-                inputValue = rejectDurationSetting,
-                onInputValueChange = viewModel::setRejectDurationSetting,
-                inputKeyboardType = KeyboardType.Number
-            )
+                LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
+                    label = "Synchronisation",
+                    currentState = rejectSynchronisationSetting,
+                    onStateChange = viewModel::setRejectSynchronisationSetting,
+                    helpText = "Select if there is a method of reject synchronisation.",
+                    inputLabel = "Detail",
+                    inputValue = rejectSynchronisationDetail,
+                    onInputValueChange = viewModel::setRejectSynchronisationDetail
+                )
 
-            LabeledDropdownWithTextInput(
-                label = "Reject Delay",
-                dropdownLabel = "Units",
-                options = rejectTimerUnitOptions,
-                selectedOption = rejectDelayUnits,
-                onOptionChange = viewModel::setRejectDelayUnits,
-                helpText = "Select the units for the reject delay.",
-                inputLabel = "Delay",
-                inputValue = rejectDelaySetting,
-                onInputValueChange = viewModel::setRejectDelaySetting,
-                inputKeyboardType = KeyboardType.Number
-            )
+                Spacer(modifier = Modifier.height(16.dp))
 
-            LabeledDropdownWithTextInput(
-                label = "Rej. Conf. Window",
-                dropdownLabel = "Units",
-                options = rejectTimerUnitOptions,
-                selectedOption = rejectConfirmWindowUnits,
-                onOptionChange = viewModel::setRejectConfirmWindowUnits,
-                helpText = "Select the units for the reject confirm window.",
-                inputLabel = "Conf. Window",
-                inputValue = rejectConfirmWindowSetting,
-                onInputValueChange = viewModel::setRejectConfirmWindowSetting,
-                inputKeyboardType = KeyboardType.Number
-            )
+                LabeledDropdownWithTextInput(
+                    label = "Reject Duration",
+                    dropdownLabel = "Units",
+                    options = rejectTimerUnitOptions,
+                    selectedOption = rejectDurationUnits,
+                    onOptionChange = viewModel::setRejectDurationUnits,
+                    helpText = "Select the units for the reject duration.",
+                    inputLabel = "Duration",
+                    inputValue = rejectDurationSetting,
+                    onInputValueChange = viewModel::setRejectDurationSetting,
+                    inputKeyboardType = KeyboardType.Number
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            LabeledTextFieldWithHelp(
-                label = "Engineer Notes",
-                value = rejectSettingsEngineerNotes,
-                onValueChange = viewModel::setRejectSettingsEngineerNotes,
-                helpText = "Enter any notes relevant to this section.",
-                isNAToggleEnabled = false
-            )
+                LabeledDropdownWithTextInput(
+                    label = "Reject Delay",
+                    dropdownLabel = "Units",
+                    options = rejectTimerUnitOptions,
+                    selectedOption = rejectDelayUnits,
+                    onOptionChange = viewModel::setRejectDelayUnits,
+                    helpText = "Select the units for the reject delay.",
+                    inputLabel = "Delay",
+                    inputValue = rejectDelaySetting,
+                    onInputValueChange = viewModel::setRejectDelaySetting,
+                    inputKeyboardType = KeyboardType.Number
+                )
 
-            Spacer(modifier = Modifier.height(60.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                LabeledDropdownWithTextInput(
+                    label = "Reject Confirm Window",
+                    dropdownLabel = "Units",
+                    options = rejectTimerUnitOptions,
+                    selectedOption = rejectConfirmWindowUnits,
+                    onOptionChange = viewModel::setRejectConfirmWindowUnits,
+                    helpText = "Select the units for the reject confirm window.",
+                    inputLabel = "Conf. Window",
+                    inputValue = rejectConfirmWindowSetting,
+                    onInputValueChange = viewModel::setRejectConfirmWindowSetting,
+                    inputKeyboardType = KeyboardType.Number
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                LabeledTextFieldWithHelp(
+                    label = "Engineer Notes",
+                    value = rejectSettingsEngineerNotes,
+                    onValueChange = viewModel::setRejectSettingsEngineerNotes,
+                    helpText = "Enter any notes relevant to this section.",
+                    isNAToggleEnabled = false
+                )
+
+                Spacer(modifier = Modifier.height(60.dp))
+            }
         }
     }
 }

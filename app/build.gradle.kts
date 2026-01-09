@@ -80,7 +80,9 @@ dependencies {
     implementation(libs.ui)
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.runtime.annotation)
-    implementation(libs.androidx.compose.foundation)        // Kotlin extensions
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.material3.window.size.class1)
+    implementation(libs.room.ktx)        // Kotlin extensions
     ksp(libs.androidx.room.compiler)              // ✅ use KSP for code generation
     implementation(libs.androidx.room.compiler)
     implementation(libs.androidx.runtime.livedata)

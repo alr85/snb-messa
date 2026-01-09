@@ -4,12 +4,18 @@ package com.example.mecca.screens.metaldetectorcalibration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -26,6 +32,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -50,6 +57,17 @@ import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.ConditionState
 import com.example.mecca.formModules.LabeledTextFieldWithConditionToggle
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
+import com.example.mecca.ui.theme.FormInputDisabledBorderColor
+import com.example.mecca.ui.theme.FormInputDisabledLabelColor
+import com.example.mecca.ui.theme.FormInputDisabledTextColor
+import com.example.mecca.ui.theme.FormInputFocusedBorderColor
+import com.example.mecca.ui.theme.FormInputFocusedLabelColor
+import com.example.mecca.ui.theme.FormInputFocusedTextColor
+import com.example.mecca.ui.theme.FormInputUnfocusedBorderColor
+import com.example.mecca.ui.theme.FormInputUnfocusedLabelColor
+import com.example.mecca.ui.theme.FormInputUnfocusedTextColor
+import com.example.mecca.ui.theme.FormWrapperSurface
+import com.example.mecca.ui.theme.LazyColumnWithScrollbar
 
 @Immutable
 private data class ChecklistCardModel(
@@ -89,7 +107,7 @@ fun CalMetalDetectorConveyorSystemChecklist(
 
     val systemChecklistEngineerNotes by viewModel.systemChecklistEngineerNotes
 
-    // Build UI models (easy to add/remove items without 500 lines of copy/paste)
+    // Build UI models
     val items = remember(
         beltCondition, beltConditionComments,
         guardCondition, guardConditionComments,
@@ -162,14 +180,10 @@ fun CalMetalDetectorConveyorSystemChecklist(
         )
     }
 
-    // “Next” logic (modern apps enforce rules instead of hoping humans behave)
-    // Rule: all conditions must be selected (not UNSPECIFIED)
-    // Optional rule: if condition is POOR then comments are required
+    // Next enable logic
     val isNextStepEnabled = items.all { model ->
         val conditionSelected = model.condition != ConditionState.UNSPECIFIED
-        val poorNeedsComment =
-            model.condition == ConditionState.POOR && model.comments.trim().isEmpty()
-
+        val poorNeedsComment = model.condition == ConditionState.POOR && model.comments.trim().isEmpty()
         conditionSelected && !poorNeedsComment
     }
 
@@ -180,31 +194,34 @@ fun CalMetalDetectorConveyorSystemChecklist(
     Column(modifier = Modifier.fillMaxSize()) {
         CalibrationHeader("System Checklist")
 
-        LazyColumn(
+        LazyColumnWithScrollbar(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
-                .imePadding(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .fillMaxSize(),
+
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            // Want it explicitly red? Uncomment:
+            // scrollbarColor = Color(0xFFB00020).copy(alpha = 0.55f)
         ) {
             item { Spacer(Modifier.height(8.dp)) }
 
             items(items, key = { it.key }) { model ->
-                ModernChecklistCard(model = model)
+                ModernChecklistCard(model)
             }
 
-            item {
-                EngineerNotesCard(
-                    value = systemChecklistEngineerNotes,
-                    onValueChange = viewModel::setSystemChecklistEngineerNotes
-                )
-            }
+            // If you re-enable engineer notes, keep it INSIDE the list so it scrolls too.
+            // item {
+            //     EngineerNotesCard(
+            //         value = systemChecklistEngineerNotes,
+            //         onValueChange = viewModel::setSystemChecklistEngineerNotes
+            //     )
+            // }
 
-            //item { Spacer(Modifier.height(90.dp)) }
+            // breathing room above your bottom nav buttons
+            item { Spacer(Modifier.height(60.dp)) }
         }
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ModernChecklistCard(
@@ -224,7 +241,7 @@ private fun ModernChecklistCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
         colors = androidx.compose.material3.CardDefaults.cardColors(
-            containerColor = androidx.compose.ui.graphics.Color.White
+            containerColor = FormWrapperSurface
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -286,11 +303,27 @@ private fun ModernChecklistCard(
                                 Text("Please add a brief note describing the defect/action required.")
                             }
                         },
-                        isError = commentsRequired && model.comments.trim().isEmpty()
+                        isError = commentsRequired && model.comments.trim().isEmpty(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            disabledContainerColor = Color.White,
+
+                            focusedBorderColor = FormInputFocusedBorderColor,
+                            unfocusedBorderColor = FormInputUnfocusedBorderColor,
+                            disabledBorderColor = FormInputDisabledBorderColor,
+
+                            focusedTextColor = FormInputFocusedTextColor,
+                            unfocusedTextColor = FormInputUnfocusedTextColor,
+                            disabledTextColor = FormInputDisabledTextColor,
+
+                            focusedLabelColor = FormInputFocusedLabelColor,
+                            unfocusedLabelColor = FormInputUnfocusedLabelColor,
+                            disabledLabelColor = FormInputDisabledLabelColor
+                        )
                     )
 
-                    // Optional: allow user to hide comments again when not required
-                    if (!commentsRequired) {
+                    if (!commentsRequired && model.comments.isBlank()) {
                         Spacer(Modifier.height(6.dp))
                         TextButton(onClick = { commentsExpanded = false }) {
                             Text("Hide comment")
@@ -321,37 +354,14 @@ private fun ModernChecklistCard(
 }
 
 
-@Composable
-private fun EngineerNotesCard(
-    value: String,
-    onValueChange: (String) -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text("Engineer Notes", style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(10.dp))
-            OutlinedTextField(
-                value = value,
-                onValueChange = onValueChange,
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 3,
-                label = { Text("Notes") }
-            )
-        }
-    }
-}
+
 
 @Composable
 private fun ConditionSegmented(
     value: ConditionState,
     onValueChange: (ConditionState) -> Unit
 ) {
-    // Adjust these labels and states to match your enum exactly
-    // Common setup: UNSPECIFIED / GOOD / POOR / NA
-    val options: List<Pair<ConditionState, String>> = listOf(
+    val options = listOf(
         ConditionState.GOOD to "Good",
         ConditionState.POOR to "Poor",
         ConditionState.NA to "N/A"
@@ -369,7 +379,16 @@ private fun ConditionSegmented(
                 SegmentedButton(
                     selected = value == state,
                     onClick = { onValueChange(state) },
-                    shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size)
+                    shape = SegmentedButtonDefaults.itemShape(
+                        index = index,
+                        count = options.size
+                    ),
+                    colors = SegmentedButtonDefaults.colors(
+                        activeContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        inactiveContainerColor = Color.White,
+                        activeContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        inactiveContentColor = MaterialTheme.colorScheme.onSurface
+                    )
                 ) {
                     Text(label)
                 }
@@ -385,3 +404,5 @@ private fun ConditionSegmented(
         }
     }
 }
+
+

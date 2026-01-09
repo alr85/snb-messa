@@ -2,6 +2,7 @@ package com.example.mecca.screens.metaldetectorcalibration
 
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -21,6 +22,7 @@ import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorV
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledDropdownWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
+import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,8 +30,6 @@ fun CalMetalDetectorConveyorConveyorDetails(
     navController: NavHostController,
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    val scrollState = rememberScrollState()
-
     val infeedBeltHeight by viewModel.infeedBeltHeight
     val outfeedBeltHeight by viewModel.outfeedBeltHeight
     val conveyorLength by viewModel.conveyorLength
@@ -48,7 +48,6 @@ fun CalMetalDetectorConveyorConveyorDetails(
                 rejectDevice.isNotBlank() &&
                 (rejectDevice != "Other" || rejectDeviceOther.isNotBlank())
 
-    // Tell wrapper when Next should be enabled
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
@@ -73,90 +72,97 @@ fun CalMetalDetectorConveyorConveyorDetails(
 
         CalibrationHeader("Conveyor Details")
 
-        Column(
+        // Scrollable area with scrollbar
+        ScrollableWithScrollbar(
             modifier = Modifier
-                .padding(16.dp)
-                .verticalScroll(scrollState)
+                .fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            // if you want it red via theme:
+            // scrollbarColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
         ) {
-
-            LabeledTextFieldWithHelp(
-                label = "In-feed Belt Height (mm)",
-                value = infeedBeltHeight,
-                onValueChange = viewModel::setInfeedBeltHeight,
-                helpText = "Distance from floor to belt on infeed end.",
-                keyboardType = KeyboardType.Number
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            LabeledTextFieldWithHelp(
-                label = "Out-feed Belt Height (mm)",
-                value = outfeedBeltHeight,
-                onValueChange = viewModel::setOutfeedBeltHeight,
-                helpText = "Distance from floor to belt on outfeed end.",
-                keyboardType = KeyboardType.Number
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            LabeledTextFieldWithHelp(
-                label = "Conveyor Length (mm)",
-                value = conveyorLength,
-                onValueChange = viewModel::setConveyorLength,
-                helpText = "Enter base length (floor space) for inclined conveyors.",
-                keyboardType = KeyboardType.Number
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            LabeledTextFieldWithHelp(
-                label = "Belt Speed (m/m)",
-                value = beltSpeed,
-                onValueChange = viewModel::setBeltSpeed,
-                helpText = "Measured using a tachometer.",
-                keyboardType = KeyboardType.Number
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            LabeledDropdownWithHelp(
-                label = "Conveyor Handing",
-                options = handingOptions,
-                selectedOption = conveyorHanding,
-                onSelectionChange = viewModel::setConveyorHanding,
-                helpText = "Select left-to-right or right-to-left orientation."
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            LabeledDropdownWithHelp(
-                label = "Reject System",
-                options = rejectOptions,
-                selectedOption = rejectDevice,
-                onSelectionChange = viewModel::setRejectDevice,
-                helpText = "Select the reject device type."
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            if (rejectDevice == "Other") {
+            Column {
                 LabeledTextFieldWithHelp(
-                    label = "Other Reject Device",
-                    value = rejectDeviceOther,
-                    onValueChange = viewModel::setRejectDeviceOther,
-                    helpText = "Enter custom description."
+                    label = "In-feed Belt Height (mm)",
+                    value = infeedBeltHeight,
+                    onValueChange = viewModel::setInfeedBeltHeight,
+                    helpText = "Distance from floor to belt on infeed end.",
+                    keyboardType = KeyboardType.Number
                 )
+
+                Spacer(Modifier.height(16.dp))
+
+                LabeledTextFieldWithHelp(
+                    label = "Out-feed Belt Height (mm)",
+                    value = outfeedBeltHeight,
+                    onValueChange = viewModel::setOutfeedBeltHeight,
+                    helpText = "Distance from floor to belt on outfeed end.",
+                    keyboardType = KeyboardType.Number
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                LabeledTextFieldWithHelp(
+                    label = "Conveyor Length (mm)",
+                    value = conveyorLength,
+                    onValueChange = viewModel::setConveyorLength,
+                    helpText = "Enter base length (floor space) for inclined conveyors.",
+                    keyboardType = KeyboardType.Number
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                LabeledTextFieldWithHelp(
+                    label = "Belt Speed (m/m)",
+                    value = beltSpeed,
+                    onValueChange = viewModel::setBeltSpeed,
+                    helpText = "Measured using a tachometer.",
+                    keyboardType = KeyboardType.Number
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                LabeledDropdownWithHelp(
+                    label = "Conveyor Handing",
+                    options = handingOptions,
+                    selectedOption = conveyorHanding,
+                    onSelectionChange = viewModel::setConveyorHanding,
+                    helpText = "Select left-to-right or right-to-left orientation."
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                LabeledDropdownWithHelp(
+                    label = "Reject System",
+                    options = rejectOptions,
+                    selectedOption = rejectDevice,
+                    onSelectionChange = viewModel::setRejectDevice,
+                    helpText = "Select the reject device type."
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                if (rejectDevice == "Other") {
+                    LabeledTextFieldWithHelp(
+                        label = "Other Reject Device",
+                        value = rejectDeviceOther,
+                        onValueChange = viewModel::setRejectDeviceOther,
+                        helpText = "Enter custom description."
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+                }
+
+                LabeledTextFieldWithHelp(
+                    label = "Engineer Notes",
+                    value = conveyorDetailsEngineerNotes,
+                    onValueChange = viewModel::setConveyorDetailsEngineerNotes,
+                    helpText = "Optional notes for this section.",
+                    isNAToggleEnabled = false
+                )
+
+                // optional breathing room so last field isn't glued to bottom buttons
+                Spacer(Modifier.height(60.dp))
             }
-
-            Spacer(Modifier.height(16.dp))
-
-            LabeledTextFieldWithHelp(
-                label = "Engineer Notes",
-                value = conveyorDetailsEngineerNotes,
-                onValueChange = viewModel::setConveyorDetailsEngineerNotes,
-                helpText = "Optional notes for this section.",
-                isNAToggleEnabled = false
-            )
         }
     }
 }

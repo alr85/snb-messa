@@ -1,6 +1,7 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -19,6 +20,7 @@ import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorV
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTwoTextInputsWithHelp
+import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,8 +28,6 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
     navController: NavHostController,
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    val scrollState = rememberScrollState()
-
     // Pull state from ViewModel
     val productPeakSignalAsFound by viewModel.productPeakSignalAsFound
 
@@ -50,7 +50,6 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
                 sensitivityAsFoundStainless.isNotBlank() &&
                 sensitivityAsFoundStainlessPeakSignal.isNotBlank()
 
-    // Tell wrapper about Next enabled state
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
@@ -59,68 +58,74 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
 
         CalibrationHeader("Sensitivities (As Found)")
 
-        Column(
+        ScrollableWithScrollbar(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(scrollState)
-                .imePadding()
+                .fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
         ) {
+            Column {
 
-            LabeledTextFieldWithHelp(
-                label = "Product Peak Signal",
-                value = productPeakSignalAsFound,
-                onValueChange = viewModel::setProductPeakSignalAsFound,
-                helpText = "Enter the 'As Found' peak signal from the product alone."
-            )
+                LabeledTextFieldWithHelp(
+                    label = "Product Peak Signal",
+                    value = productPeakSignalAsFound,
+                    onValueChange = viewModel::setProductPeakSignalAsFound,
+                    helpText = "Enter the 'As Found' peak signal from the product alone."
+                )
 
-            LabeledTwoTextInputsWithHelp(
-                label = "Ferrous (mm)",
-                firstInputLabel = "Fe",
-                firstInputValue = sensitivityAsFoundFerrous,
-                onFirstInputValueChange = viewModel::setSensitivityAsFoundFerrous,
-                secondInputLabel = "Signal L/M/T",
-                secondInputValue = sensitivityAsFoundFerrousPeakSignal,
-                onSecondInputValueChange = viewModel::setSensitivityAsFoundFerrousPeakSignal,
-                helpText = "Enter the Ferrous sensitivity & peak signals (Leading / Middle / Trailing).",
-                isNAToggleEnabled = true
-            )
+                Spacer(Modifier.height(16.dp))
 
-            LabeledTwoTextInputsWithHelp(
-                label = "Non-Ferrous (mm)",
-                firstInputLabel = "Non-Fe",
-                firstInputValue = sensitivityAsFoundNonFerrous,
-                onFirstInputValueChange = viewModel::setSensitivityAsFoundNonFerrous,
-                secondInputLabel = "Signal L/M/T",
-                secondInputValue = sensitivityAsFoundNonFerrousPeakSignal,
-                onSecondInputValueChange = viewModel::setSensitivityAsFoundNonFerrousPeakSignal,
-                helpText = "Enter the Non-Ferrous sensitivity & peak signals.",
-                isNAToggleEnabled = true
-            )
+                LabeledTwoTextInputsWithHelp(
+                    label = "Ferrous (mm)",
+                    firstInputLabel = "Size",
+                    firstInputValue = sensitivityAsFoundFerrous,
+                    onFirstInputValueChange = viewModel::setSensitivityAsFoundFerrous,
+                    secondInputLabel = "Signal L/M/T",
+                    secondInputValue = sensitivityAsFoundFerrousPeakSignal,
+                    onSecondInputValueChange = viewModel::setSensitivityAsFoundFerrousPeakSignal,
+                    helpText = "Enter the Ferrous sensitivity & peak signals (Leading / Middle / Trailing).",
+                    isNAToggleEnabled = true
+                )
 
-            LabeledTwoTextInputsWithHelp(
-                label = "Stainless Steel (mm)",
-                firstInputLabel = "S/Steel",
-                firstInputValue = sensitivityAsFoundStainless,
-                onFirstInputValueChange = viewModel::setSensitivityAsFoundStainless,
-                secondInputLabel = "Signal L/M/T",
-                secondInputValue = sensitivityAsFoundStainlessPeakSignal,
-                onSecondInputValueChange = viewModel::setSensitivityAsFoundStainlessPeakSignal,
-                helpText = "Enter the Stainless Steel sensitivity & peak signals.",
-                isNAToggleEnabled = true
-            )
+                Spacer(Modifier.height(16.dp))
 
-            Spacer(Modifier.height(16.dp))
+                LabeledTwoTextInputsWithHelp(
+                    label = "Non-Ferrous (mm)",
+                    firstInputLabel = "Size",
+                    firstInputValue = sensitivityAsFoundNonFerrous,
+                    onFirstInputValueChange = viewModel::setSensitivityAsFoundNonFerrous,
+                    secondInputLabel = "Signal L/M/T",
+                    secondInputValue = sensitivityAsFoundNonFerrousPeakSignal,
+                    onSecondInputValueChange = viewModel::setSensitivityAsFoundNonFerrousPeakSignal,
+                    helpText = "Enter the Non-Ferrous sensitivity & peak signals.",
+                    isNAToggleEnabled = true
+                )
 
-            LabeledTextFieldWithHelp(
-                label = "Engineer Notes",
-                value = viewModel.sensitivityAsFoundEngineerNotes.value,
-                onValueChange = viewModel::setSensitivityAsFoundEngineerNotes,
-                helpText = "Enter any notes relevant to this section.",
-                isNAToggleEnabled = false
-            )
+                Spacer(Modifier.height(16.dp))
 
-            Spacer(Modifier.height(60.dp))
+                LabeledTwoTextInputsWithHelp(
+                    label = "Stainless Steel (mm)",
+                    firstInputLabel = "Size",
+                    firstInputValue = sensitivityAsFoundStainless,
+                    onFirstInputValueChange = viewModel::setSensitivityAsFoundStainless,
+                    secondInputLabel = "Signal L/M/T",
+                    secondInputValue = sensitivityAsFoundStainlessPeakSignal,
+                    onSecondInputValueChange = viewModel::setSensitivityAsFoundStainlessPeakSignal,
+                    helpText = "Enter the Stainless Steel sensitivity & peak signals.",
+                    isNAToggleEnabled = true
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                LabeledTextFieldWithHelp(
+                    label = "Engineer Notes",
+                    value = viewModel.sensitivityAsFoundEngineerNotes.value,
+                    onValueChange = viewModel::setSensitivityAsFoundEngineerNotes,
+                    helpText = "Enter any notes relevant to this section.",
+                    isNAToggleEnabled = false
+                )
+
+                Spacer(Modifier.height(60.dp))
+            }
         }
     }
 }

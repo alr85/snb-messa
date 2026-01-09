@@ -19,6 +19,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,10 +42,13 @@ fun CalibrationNavigationButtons(
     onNextClick: () -> Unit,
     onSaveAndExitClick: () -> Unit,
     isNextEnabled: Boolean,
-    isFirstStep: Boolean
+    isFirstStep: Boolean,
+    windowSizeClass: WindowSizeClass,   // ✅ pass it in
 ) {
     var showDialog by remember { mutableStateOf(false) }
     val activity = LocalActivity.current
+
+    val showText = windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact
 
     Row(
         modifier = Modifier
@@ -55,54 +60,56 @@ fun CalibrationNavigationButtons(
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
 
-        // Previous
         OutlinedButton(
             onClick = onPreviousClick,
             enabled = !isFirstStep,
             modifier = Modifier.weight(1f)
         ) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
-            Spacer(Modifier.width(8.dp))
-            Text("Back")
+            if (showText) {
+                Spacer(Modifier.width(8.dp))
+                Text("Back", maxLines = 1, softWrap = false)
+            }
         }
 
-        // Cancel
         OutlinedButton(
             onClick = { showDialog = true },
             modifier = Modifier.weight(1f)
         ) {
             Icon(Icons.Default.Close, null)
-            Spacer(Modifier.width(8.dp))
-            Text("Cancel")
+            if (showText) {
+                Spacer(Modifier.width(8.dp))
+                Text("Cancel", maxLines = 1, softWrap = false)
+            }
         }
 
-        // Save + Exit
         OutlinedButton(
             onClick = {
                 onSaveAndExitClick()
-
                 activity?.finish()
             },
             modifier = Modifier.weight(1f)
         ) {
             Icon(Icons.AutoMirrored.Filled.ExitToApp, null)
-            Spacer(Modifier.width(8.dp))
-            Text("Exit")
+            if (showText) {
+                Spacer(Modifier.width(8.dp))
+                Text("Exit", maxLines = 1, softWrap = false)
+            }
         }
 
-        // Next
         Button(
             onClick = onNextClick,
             enabled = isNextEnabled,
             modifier = Modifier.weight(1f)
         ) {
-            Text("Next")
-            Spacer(Modifier.width(8.dp))
+            if (showText) {
+                Text("Next", maxLines = 1, softWrap = false)
+                Spacer(Modifier.width(8.dp))
+            }
             Icon(Icons.AutoMirrored.Filled.ArrowForward, null)
         }
     }
 
-    // Cancel confirmation dialog
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },

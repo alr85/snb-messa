@@ -28,40 +28,27 @@ fun LabeledTextFieldWithHelp(
     val isNa = value == "N/A"
     val inputDisabled = rowDisabled || isNa
 
+
     FormRowWrapper(
         label = label,
         naButtonText = if (isNa) "Edit" else "N/A",
-        // IMPORTANT: don't disable the wrapper just because it's N/A
-        isDisabled = rowDisabled,
+        isDisabled = false, // ALWAYS
         onNaClick = if (isNAToggleEnabled) {
-            {
-                // Toggle N/A regardless of inputDisabled, as long as the row isn't locked
-                if (!rowDisabled) {
-                    onValueChange(if (isNa) "" else "N/A")
-                }
-            }
+            { onValueChange(if (isNa) "" else "N/A") }
         } else null,
-        onHelpClick = { showHelpDialog = true }
+        onHelpClick = { showHelpDialog = true },
     ) { _ ->
         SimpleTextInput(
             value = value,
             onValueChange = { raw ->
-                if (!inputDisabled) {
-                    val cleaned =
-                        if (keyboardType == KeyboardType.Text) {
-                            raw.replaceFirstChar {
-                                if (it.isLowerCase()) it.titlecase() else it.toString()
-                            }
-                        } else raw
-
-                    onValueChange(cleaned)
-                }
+                if (!inputDisabled) onValueChange(raw)
             },
             label = label,
             keyboardType = keyboardType,
             isDisabled = inputDisabled
         )
     }
+
 
     if (showHelpDialog) {
         AlertDialog(

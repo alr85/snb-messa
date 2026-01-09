@@ -1,6 +1,7 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -20,13 +21,14 @@ import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorV
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledMultiSelectDropdownWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
+import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @Composable
 fun CalMetalDetectorConveyorDetectNotification(
     navController: NavHostController,
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    val scrollState = rememberScrollState()
+
 
     val result by viewModel.detectNotificationResult.collectAsState()
     val notes by viewModel.detectNotificationEngineerNotes
@@ -59,50 +61,52 @@ fun CalMetalDetectorConveyorDetectNotification(
 
         CalibrationHeader("Compliance Checks - Detect Notification")
 
-        Column(
+        ScrollableWithScrollbar(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(scrollState)
-                .imePadding()
+                .imePadding(),
+            contentPadding = PaddingValues(16.dp),
         ) {
 
-            LabeledMultiSelectDropdownWithHelp(
-                label = "Detect Notification Result",
-                value = result.joinToString(", "),
-                options = resultOptions,
-                selectedOptions = result,
-                onSelectionChange = { newSelection ->
+            Column {
 
-                    val cleaned = when {
-                        // If "No Result" is selected, it must be the ONLY option
-                        "No Result" in newSelection -> listOf("No Result")
+                LabeledMultiSelectDropdownWithHelp(
+                    label = "Detect Notification Result",
+                    value = result.joinToString(", "),
+                    options = resultOptions,
+                    selectedOptions = result,
+                    onSelectionChange = { newSelection ->
 
-                        // Otherwise remove "No Result" if present
-                        else -> newSelection.filterNot { it == "No Result" }
-                    }
+                        val cleaned = when {
+                            // If "No Result" is selected, it must be the ONLY option
+                            "No Result" in newSelection -> listOf("No Result")
 
-                    viewModel.setDetectNotificationResult(cleaned)
-                },
-                helpText = """
+                            // Otherwise remove "No Result" if present
+                            else -> newSelection.filterNot { it == "No Result" }
+                        }
+
+                        viewModel.setDetectNotificationResult(cleaned)
+                    },
+                    helpText = """
                     Select one or more notification results.
                     
                     If "No Result" is selected, all other options will be cleared.
                 """.trimIndent(),
-                isNAToggleEnabled = false
-            )
+                    isNAToggleEnabled = false
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            LabeledTextFieldWithHelp(
-                label = "Engineer Comments",
-                value = notes,
-                onValueChange = viewModel::setDetectNotificationEngineerNotes,
-                helpText = "Enter any notes relevant to this section.",
-                isNAToggleEnabled = false
-            )
+                LabeledTextFieldWithHelp(
+                    label = "Engineer Comments",
+                    value = notes,
+                    onValueChange = viewModel::setDetectNotificationEngineerNotes,
+                    helpText = "Enter any notes relevant to this section.",
+                    isNAToggleEnabled = false
+                )
 
-            Spacer(modifier = Modifier.height(60.dp))
+                Spacer(modifier = Modifier.height(60.dp))
+            }
         }
     }
 }

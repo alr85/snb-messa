@@ -21,6 +21,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.mecca.ui.theme.FormInputDisabledBorderColor
+import com.example.mecca.ui.theme.FormInputDisabledContainerColor
+import com.example.mecca.ui.theme.FormInputDisabledLabelColor
+import com.example.mecca.ui.theme.FormInputDisabledPlaceholderColor
+import com.example.mecca.ui.theme.FormInputDisabledTextColor
+import com.example.mecca.ui.theme.FormInputFocusedBorderColor
+import com.example.mecca.ui.theme.FormInputFocusedContainerColor
+import com.example.mecca.ui.theme.FormInputFocusedLabelColor
+import com.example.mecca.ui.theme.FormInputFocusedPlaceholderColor
+import com.example.mecca.ui.theme.FormInputFocusedTextColor
+import com.example.mecca.ui.theme.FormInputUnfocusedBorderColor
+import com.example.mecca.ui.theme.FormInputUnfocusedContainerColor
+import com.example.mecca.ui.theme.FormInputUnfocusedLabelColor
+import com.example.mecca.ui.theme.FormInputUnfocusedPlaceholderColor
+import com.example.mecca.ui.theme.FormInputUnfocusedTextColor
 
 @Composable
 fun EditableLabelTextInput(
@@ -74,9 +89,25 @@ fun EditableLabelTextInput(
             enabled = !isDisabled,
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType),
             colors = OutlinedTextFieldDefaults.colors(
-                disabledBorderColor = Color.Gray,
-                disabledTextColor = Color.Gray,
-                disabledLabelColor = Color.Gray
+                focusedContainerColor = FormInputFocusedContainerColor,
+                unfocusedContainerColor = FormInputUnfocusedContainerColor,
+                disabledContainerColor = FormInputDisabledContainerColor,
+
+                focusedBorderColor = FormInputFocusedBorderColor,
+                unfocusedBorderColor = FormInputUnfocusedBorderColor,
+                disabledBorderColor = FormInputDisabledBorderColor,
+
+                focusedTextColor = FormInputFocusedTextColor,
+                unfocusedTextColor = FormInputUnfocusedTextColor,
+                disabledTextColor = FormInputDisabledTextColor,
+
+                focusedLabelColor = FormInputFocusedLabelColor,
+                unfocusedLabelColor = FormInputUnfocusedLabelColor,
+                disabledLabelColor = FormInputDisabledLabelColor,
+
+                focusedPlaceholderColor = FormInputFocusedPlaceholderColor,
+                unfocusedPlaceholderColor = FormInputUnfocusedPlaceholderColor,
+                disabledPlaceholderColor = FormInputDisabledPlaceholderColor
             ),
             modifier = Modifier.weight(1f)
         )

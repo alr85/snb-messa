@@ -1,6 +1,7 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -23,14 +24,13 @@ import androidx.navigation.NavHostController
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
+import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @Composable
 fun CalMetalDetectorConveyorProductDetails(
     navController: NavHostController,
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    val scrollState = rememberScrollState()
-
     val description by viewModel.productDescription
     val libraryRef by viewModel.productLibraryReference
     val libraryNumber by viewModel.productLibraryNumber
@@ -55,73 +55,83 @@ fun CalMetalDetectorConveyorProductDetails(
 
         CalibrationHeader("Product Details")
 
-        Column(
+        ScrollableWithScrollbar(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(scrollState)
-                .imePadding()
+                .fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+
         ) {
+            Column {
 
-            LabeledTextFieldWithHelp(
-                label = "Product Description",
-                value = description,
-                onValueChange = viewModel::setProductDescription,
-                helpText = "Enter the details of the product (e.g., 'GOLD BARS')."
-            )
+                LabeledTextFieldWithHelp(
+                    label = "Product Description",
+                    value = description,
+                    onValueChange = viewModel::setProductDescription,
+                    helpText = "Enter the details of the product (e.g., 'GOLD BARS')."
+                )
 
-            LabeledTextFieldWithHelp(
-                label = "Product Library Reference",
-                value = libraryRef,
-                onValueChange = viewModel::setProductLibraryReference,
-                helpText = "There is usually a 'Product Name' in the metal detector library. Enter it here."
-            )
+                Spacer(Modifier.height(16.dp))
 
-            LabeledTextFieldWithHelp(
-                label = "Product Library Number",
-                value = libraryNumber,
-                onValueChange = viewModel::setProductLibraryNumber,
-                helpText = "Enter the library number / program number used on the metal detector."
-            )
+                LabeledTextFieldWithHelp(
+                    label = "Product Library Reference",
+                    value = libraryRef,
+                    onValueChange = viewModel::setProductLibraryReference,
+                    helpText = "There is usually a 'Product Name' in the metal detector library. Enter it here."
+                )
 
-            LabeledTextFieldWithHelp(
-                label = "Product Length (mm)",
-                value = length,
-                onValueChange = viewModel::setProductLength,
-                helpText = "Enter the length of the product in mm.",
-                keyboardType = KeyboardType.Number
-            )
+                Spacer(Modifier.height(16.dp))
 
-            LabeledTextFieldWithHelp(
-                label = "Product Width (mm)",
-                value = width,
-                onValueChange = viewModel::setProductWidth,
-                helpText = "Enter the width of the product in mm.",
-                keyboardType = KeyboardType.Number
-            )
+                LabeledTextFieldWithHelp(
+                    label = "Product Library Number",
+                    value = libraryNumber,
+                    onValueChange = viewModel::setProductLibraryNumber,
+                    helpText = "Enter the library number / program number used on the metal detector."
+                )
 
-            LabeledTextFieldWithHelp(
-                label = "Product Height (mm)",
-                value = height,
-                onValueChange = viewModel::setProductHeight,
-                helpText = "Enter the height of the product in mm. Required for PV calibration.",
-                keyboardType = KeyboardType.Number,
-                // PV required => height is mandatory => do NOT allow N/A toggle
-                isNAToggleEnabled = !viewModel.pvRequired.value
-            )
+                Spacer(Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
+                LabeledTextFieldWithHelp(
+                    label = "Product Length (mm)",
+                    value = length,
+                    onValueChange = viewModel::setProductLength,
+                    helpText = "Enter the length of the product in mm.",
+                    keyboardType = KeyboardType.Number
+                )
 
-            LabeledTextFieldWithHelp(
-                label = "Engineer Comments",
-                value = notes,
-                onValueChange = viewModel::setProductDetailsEngineerNotes,
-                helpText = "Enter any notes relevant to this section.",
-                isNAToggleEnabled = false
-            )
+                Spacer(Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(60.dp))
+                LabeledTextFieldWithHelp(
+                    label = "Product Width (mm)",
+                    value = width,
+                    onValueChange = viewModel::setProductWidth,
+                    helpText = "Enter the width of the product in mm.",
+                    keyboardType = KeyboardType.Number
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                LabeledTextFieldWithHelp(
+                    label = "Product Height (mm)",
+                    value = height,
+                    onValueChange = viewModel::setProductHeight,
+                    helpText = "Enter the height of the product in mm. Required for PV calibration.",
+                    keyboardType = KeyboardType.Number,
+                    // PV required => height is mandatory => do NOT allow N/A toggle
+                    isNAToggleEnabled = !viewModel.pvRequired.value
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                LabeledTextFieldWithHelp(
+                    label = "Engineer Comments",
+                    value = notes,
+                    onValueChange = viewModel::setProductDetailsEngineerNotes,
+                    helpText = "Enter any notes relevant to this section.",
+                    isNAToggleEnabled = false
+                )
+
+                Spacer(Modifier.height(60.dp))
+            }
         }
     }
 }
-

@@ -11,6 +11,7 @@ import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -20,7 +21,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -36,7 +36,8 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
     navController: NavHostController,
     viewModel: CalibrationMetalDetectorConveyorViewModel,
     calibrationId: String,
-    apiService: ApiService
+    apiService: ApiService,
+    windowSizeClass: WindowSizeClass
 ) {
     // Holds the currently visible screen composable
     var currentScreen by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }
@@ -108,7 +109,8 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
         // Top banner
         CalibrationBanner(
             progress = progress,
-            viewModel = viewModel
+            viewModel = viewModel,
+            windowSizeClass = windowSizeClass
         )
 
         // MAIN CONTENT AREA
@@ -228,7 +230,8 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
             },
             onSaveAndExitClick = {
                 viewModel.persistCurrentScreen(currentRoute ?: "")
-            }
+            },
+            windowSizeClass = windowSizeClass
         )
     }
 }

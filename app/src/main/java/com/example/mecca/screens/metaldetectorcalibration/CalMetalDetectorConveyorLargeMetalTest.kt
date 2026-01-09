@@ -2,6 +2,7 @@ package com.example.mecca.screens.metaldetectorcalibration
 
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -22,6 +23,7 @@ import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
 import com.example.mecca.formModules.YesNoState
+import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,7 +31,6 @@ fun CalMetalDetectorConveyorLargeMetalTest(
     navController: NavHostController,
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    val scrollState = rememberScrollState()
 
     val dr by viewModel.detectRejectLargeMetal
     val certNo by viewModel.sampleCertificateNumberLargeMetal
@@ -61,8 +62,10 @@ fun CalMetalDetectorConveyorLargeMetalTest(
             YesNoState.NA -> viewModel.setLargeMetalTestPvResult("N/A")
             YesNoState.YES ->
                 viewModel.setLargeMetalTestPvResult(if (certNo.isNotBlank()) "Pass" else "Fail")
+
             YesNoState.NO ->
                 viewModel.setLargeMetalTestPvResult("Fail")
+
             else ->
                 viewModel.setLargeMetalTestPvResult("Fail")
         }
@@ -72,49 +75,52 @@ fun CalMetalDetectorConveyorLargeMetalTest(
 
         CalibrationHeader("Failsafe Tests - Large Metal Test")
 
-        Column(
+        ScrollableWithScrollbar(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(scrollState)
-                .imePadding()
+                .imePadding(),
+            contentPadding = PaddingValues(16.dp),
         ) {
 
-            LabeledTriStateSwitchWithHelp(
-                label = "Det. & Rej. OK",
-                currentState = dr,
-                onStateChange = { newState ->
-                    viewModel.setDetectRejectLargeMetal(newState)
+            Column {
 
-                    // Optional but sensible: auto-fill fields for N/A
-                    if (newState == YesNoState.NA) {
-                        viewModel.setSampleCertificateNumberLargeMetal("N/A")
-                    } else if (certNo == "N/A") {
-                        viewModel.setSampleCertificateNumberLargeMetal("")
-                    }
-                },
-                helpText = "Select if there was satisfactory Detection and Rejection of the metal sample: Yes, No, or N/A."
-            )
+                LabeledTriStateSwitchWithHelp(
+                    label = "Det. & Rej. OK",
+                    currentState = dr,
+                    onStateChange = { newState ->
+                        viewModel.setDetectRejectLargeMetal(newState)
 
-            LabeledTextFieldWithHelp(
-                label = "Sample Certificate No.",
-                value = certNo,
-                onValueChange = viewModel::setSampleCertificateNumberLargeMetal,
-                helpText = "Enter the metal test sample certificate number (usually on the test piece).",
-                isNAToggleEnabled = false
-            )
+                        // Optional but sensible: auto-fill fields for N/A
+                        if (newState == YesNoState.NA) {
+                            viewModel.setSampleCertificateNumberLargeMetal("N/A")
+                        } else if (certNo == "N/A") {
+                            viewModel.setSampleCertificateNumberLargeMetal("")
+                        }
+                    },
+                    helpText = "Select if there was satisfactory Detection and Rejection of the metal sample: Yes, No, or N/A."
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            // -----------------------------------------------------
-            // PV RESULT (only when required)
-            // -----------------------------------------------------
-            if (pvRequired) {
-                LabeledFourOptionRadioWithHelp(
-                    label = "P.V. Result",
-                    value = viewModel.largeMetalTestPvResult.value,
-                    onValueChange = viewModel::setLargeMetalTestPvResult,
-                    helpText = """
+                LabeledTextFieldWithHelp(
+                    label = "Sample Certificate No.",
+                    value = certNo,
+                    onValueChange = viewModel::setSampleCertificateNumberLargeMetal,
+                    helpText = "Enter the metal test sample certificate number (usually on the test piece).",
+                    isNAToggleEnabled = false
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // -----------------------------------------------------
+                // PV RESULT (only when required)
+                // -----------------------------------------------------
+                if (pvRequired) {
+                    LabeledFourOptionRadioWithHelp(
+                        label = "P.V. Result",
+                        value = viewModel.largeMetalTestPvResult.value,
+                        onValueChange = viewModel::setLargeMetalTestPvResult,
+                        helpText = """
                         Auto-Pass rules:
                           • Det. & Rej. OK = Yes
                           • Certificate number entered
@@ -123,22 +129,23 @@ fun CalMetalDetectorConveyorLargeMetalTest(
                         If D&R OK = N/A → PV = N/A.
                         You may override manually.
                     """.trimIndent(),
-                    showNotFittedOption = true,
-                    notFittedEnabled = false
+                        showNotFittedOption = false,
+                        notFittedEnabled = false
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                LabeledTextFieldWithHelp(
+                    label = "Engineer Notes",
+                    value = notes,
+                    onValueChange = viewModel::setLargeMetalTestEngineerNotes,
+                    helpText = "Enter any notes relevant to this section.",
+                    isNAToggleEnabled = false
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(60.dp))
             }
-
-            LabeledTextFieldWithHelp(
-                label = "Engineer Notes",
-                value = notes,
-                onValueChange = viewModel::setLargeMetalTestEngineerNotes,
-                helpText = "Enter any notes relevant to this section.",
-                isNAToggleEnabled = false
-            )
-
-            Spacer(modifier = Modifier.height(60.dp))
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -25,14 +26,15 @@ import com.example.mecca.formModules.LabeledMultiSelectDropdownWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
+import com.example.mecca.formModules.LabeledYesNoSegmentedSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.YesNoState
+import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @Composable
 fun CalMetalDetectorConveyorBackupPEC(
     navController: NavHostController,
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    val scrollState = rememberScrollState()
 
     val fitted by viewModel.backupSensorFitted
     val detail by viewModel.backupSensorDetail
@@ -71,6 +73,7 @@ fun CalMetalDetectorConveyorBackupPEC(
                     controlledRestart != YesNoState.NA &&
                     (testMethod != "Other" || testMethodOther.isNotBlank())
         }
+
         else -> false
     }
 
@@ -83,135 +86,146 @@ fun CalMetalDetectorConveyorBackupPEC(
 
         CalibrationHeader("Failsafe Tests - Backup Sensor")
 
-        Column(
+        ScrollableWithScrollbar(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(scrollState)
-                .imePadding()
+                .imePadding(),
+            contentPadding = PaddingValues(16.dp),
         ) {
 
-            LabeledTriStateSwitchAndTextInputWithHelp(
-                label = "Back-up sensor fitted?",
-                currentState = fitted,
-                onStateChange = { newState ->
-                    viewModel.setBackupSensorFitted(newState)
+            Column {
 
-                    if (newState == YesNoState.NA || newState == YesNoState.NO) {
-                        viewModel.setBackupSensorDetail("N/A")
-                        viewModel.setBackupSensorTestMethod("N/A")
-                        viewModel.setBackupSensorTestMethodOther("N/A")
-                        viewModel.setBackupSensorTestResult(emptyList())
-                        viewModel.setBackupSensorLatched(YesNoState.NA)
-                        viewModel.setBackupSensorCR(YesNoState.NA)
-                    } else if (newState == YesNoState.YES) {
-                        viewModel.setBackupSensorDetail("")
-                        viewModel.setBackupSensorTestMethod("")
-                        viewModel.setBackupSensorTestMethodOther("")
-                        viewModel.setBackupSensorTestResult(emptyList())
-                        viewModel.setBackupSensorLatched(YesNoState.NO)
-                        viewModel.setBackupSensorCR(YesNoState.NO)
-                    }
+                LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
+                    label = "Back-up sensor fitted?",
+                    currentState = fitted,
+                    onStateChange = { newState ->
+                        viewModel.setBackupSensorFitted(newState)
 
-                    viewModel.autoUpdateBackupSensorPvResult()
-                },
-                helpText = "Select if there is a back-up sensor fitted.",
-                inputLabel = "Detail",
-                inputValue = detail,
-                onInputValueChange = {
-                    viewModel.setBackupSensorDetail(it)
-                    viewModel.autoUpdateBackupSensorPvResult()
-                }
-            )
-
-            if (fitted == YesNoState.YES) {
-
-                LabeledDropdownWithHelp(
-                    label = "Test Method",
-                    options = testMethodOptions,
-                    selectedOption = testMethod,
-                    onSelectionChange = {
-                        viewModel.setBackupSensorTestMethod(it)
-                        viewModel.autoUpdateBackupSensorPvResult()
-                    },
-                    helpText = "Select one option from the dropdown.",
-                    isNAToggleEnabled = false
-                )
-
-                if (testMethod == "Other") {
-                    LabeledTextFieldWithHelp(
-                        label = "Other Test Method",
-                        value = testMethodOther,
-                        onValueChange = {
-                            viewModel.setBackupSensorTestMethodOther(it)
-                            viewModel.autoUpdateBackupSensorPvResult()
-                        },
-                        helpText = "Enter the custom test method.",
-                        isNAToggleEnabled = false
-                    )
-                }
-
-                LabeledMultiSelectDropdownWithHelp(
-                    label = "Test Result",
-                    value = testResult.joinToString(", "),
-                    options = testResultOptions,
-                    selectedOptions = testResult,
-                    onSelectionChange = { newSelection ->
-
-                        // If "No Result" is selected, it becomes the ONLY selection.
-                        val cleaned = when {
-                            "No Result" in newSelection -> listOf("No Result")
-                            else -> newSelection.filterNot { it == "No Result" }
-                        }
-
-                        viewModel.setBackupSensorTestResult(cleaned)
-
-                        // If there is "No Result", force these to NO (same pattern as your others)
-                        if (cleaned == listOf("No Result")) {
+                        if (newState == YesNoState.NA || newState == YesNoState.NO) {
+                            viewModel.setBackupSensorDetail("N/A")
+                            viewModel.setBackupSensorTestMethod("N/A")
+                            viewModel.setBackupSensorTestMethodOther("N/A")
+                            viewModel.setBackupSensorTestResult(emptyList())
+                            viewModel.setBackupSensorLatched(YesNoState.NA)
+                            viewModel.setBackupSensorCR(YesNoState.NA)
+                        } else if (newState == YesNoState.YES) {
+                            viewModel.setBackupSensorDetail("")
+                            viewModel.setBackupSensorTestMethod("")
+                            viewModel.setBackupSensorTestMethodOther("")
+                            viewModel.setBackupSensorTestResult(emptyList())
                             viewModel.setBackupSensorLatched(YesNoState.NO)
                             viewModel.setBackupSensorCR(YesNoState.NO)
                         }
 
                         viewModel.autoUpdateBackupSensorPvResult()
                     },
-                    helpText = "Select one or more items from the dropdown.",
-                    isNAToggleEnabled = false
-                )
-
-                LabeledTriStateSwitchWithHelp(
-                    label = "Fault Latched?",
-                    currentState = latched,
-                    onStateChange = {
-                        viewModel.setBackupSensorLatched(it)
+                    helpText = "Select if there is a back-up sensor fitted.",
+                    inputLabel = "Detail",
+                    inputValue = detail,
+                    onInputValueChange = {
+                        viewModel.setBackupSensorDetail(it)
                         viewModel.autoUpdateBackupSensorPvResult()
-                    },
-                    helpText = "Is the fault output latched, or does it clear automatically?",
-                    isNAToggleEnabled = false
+                    }
                 )
 
-                LabeledTriStateSwitchWithHelp(
-                    label = "Fault Controlled Restart?",
-                    currentState = controlledRestart,
-                    onStateChange = {
-                        viewModel.setBackupSensorCR(it)
-                        viewModel.autoUpdateBackupSensorPvResult()
-                    },
-                    helpText = "Is a controlled restart required after a fault?",
-                    isNAToggleEnabled = false
-                )
-            }
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
+                if (fitted == YesNoState.YES) {
 
-            //-----------------------------------------------------
-            // ⭐ PV RESULT (only when required)
-            //-----------------------------------------------------
-            if (viewModel.pvRequired.value) {
-                LabeledFourOptionRadioWithHelp(
-                    label = "P.V. Result",
-                    value = viewModel.backupSensorTestPvResult.value,
-                    onValueChange = viewModel::setBackupSensorTestPvResult,
-                    helpText = """
+                    LabeledDropdownWithHelp(
+                        label = "Test Method",
+                        options = testMethodOptions,
+                        selectedOption = testMethod,
+                        onSelectionChange = {
+                            viewModel.setBackupSensorTestMethod(it)
+                            viewModel.autoUpdateBackupSensorPvResult()
+                        },
+                        helpText = "Select one option from the dropdown.",
+                        isNAToggleEnabled = false
+                    )
+
+                    if (testMethod == "Other") {
+                        LabeledTextFieldWithHelp(
+                            label = "Other Test Method",
+                            value = testMethodOther,
+                            onValueChange = {
+                                viewModel.setBackupSensorTestMethodOther(it)
+                                viewModel.autoUpdateBackupSensorPvResult()
+                            },
+                            helpText = "Enter the custom test method.",
+                            isNAToggleEnabled = false
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    LabeledMultiSelectDropdownWithHelp(
+                        label = "Test Result",
+                        value = testResult.joinToString(", "),
+                        options = testResultOptions,
+                        selectedOptions = testResult,
+                        onSelectionChange = { newSelection ->
+
+                            // If "No Result" is selected, it becomes the ONLY selection.
+                            val cleaned = when {
+                                "No Result" in newSelection -> listOf("No Result")
+                                else -> newSelection.filterNot { it == "No Result" }
+                            }
+
+                            viewModel.setBackupSensorTestResult(cleaned)
+
+                            // If there is "No Result", force these to NO (same pattern as your others)
+                            if (cleaned == listOf("No Result")) {
+                                viewModel.setBackupSensorLatched(YesNoState.NO)
+                                viewModel.setBackupSensorCR(YesNoState.NO)
+                            }
+
+                            viewModel.autoUpdateBackupSensorPvResult()
+                        },
+                        helpText = "Select one or more items from the dropdown.",
+                        isNAToggleEnabled = false
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    LabeledTriStateSwitchWithHelp(
+                        label = "Fault Latched?",
+                        currentState = latched,
+                        onStateChange = {
+                            viewModel.setBackupSensorLatched(it)
+                            viewModel.autoUpdateBackupSensorPvResult()
+                        },
+                        helpText = "Is the fault output latched, or does it clear automatically?",
+                        isNAToggleEnabled = false
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    LabeledTriStateSwitchWithHelp(
+                        label = "Fault Controlled Restart?",
+                        currentState = controlledRestart,
+                        onStateChange = {
+                            viewModel.setBackupSensorCR(it)
+                            viewModel.autoUpdateBackupSensorPvResult()
+                        },
+                        helpText = "Is a controlled restart required after a fault?",
+                        isNAToggleEnabled = false
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                //-----------------------------------------------------
+                // ⭐ PV RESULT (only when required)
+                //-----------------------------------------------------
+                if (viewModel.pvRequired.value) {
+                    LabeledFourOptionRadioWithHelp(
+                        label = "P.V. Result",
+                        value = viewModel.backupSensorTestPvResult.value,
+                        onValueChange = viewModel::setBackupSensorTestPvResult,
+                        helpText = """
                         Auto-Pass rules (when PV required):
                           • Sensor fitted = Yes
                           • Detail entered
@@ -224,20 +238,22 @@ fun CalMetalDetectorConveyorBackupPEC(
                         If sensor is N/A → PV = N/A.
                         Otherwise auto-fail. You may override manually.
                     """.trimIndent()
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+
+
+                LabeledTextFieldWithHelp(
+                    label = "Engineer Comments",
+                    value = notes,
+                    onValueChange = viewModel::setBackupSensorEngineerNotes,
+                    helpText = "Enter any notes relevant to this section.",
+                    isNAToggleEnabled = false
                 )
+
+                Spacer(modifier = Modifier.height(60.dp))
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LabeledTextFieldWithHelp(
-                label = "Engineer Comments",
-                value = notes,
-                onValueChange = viewModel::setBackupSensorEngineerNotes,
-                helpText = "Enter any notes relevant to this section.",
-                isNAToggleEnabled = false
-            )
-
-            Spacer(modifier = Modifier.height(60.dp))
         }
     }
 }

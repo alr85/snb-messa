@@ -136,27 +136,6 @@ fun CalMetalDetectorConveyorSystemDetails(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-        // Navigation Buttons
-//        CalibrationNavigationButtons(
-//            onPreviousClick = { /* Disable or hide the Previous button */ },
-//            onCancelClick = {
-//                // Clear the ViewModel's data
-//                viewModel.clearCalibrationData()
-//                // Navigate to Home Screen
-//                navController.navigate("serviceHome") {
-//                    popUpTo("serviceHome") {
-//                        inclusive = true
-//                    } // Remove the current screen from the backstack
-//                }
-//            },
-//            onNextClick = { navController.navigate("CalMetalDetectorConveyorStainlessTest") },
-//            isNextEnabled = isNextStepEnabled,
-//            isFirstStep = false, // Indicates this is the first step and disables the Previous button
-//            navController = navController,
-//            viewModel = viewModel,
-//            onSaveAndExitClick = {
-//                //viewModel.saveCalibrationData() // Custom save logic here
-//            },
-//        )
+
     }
 }

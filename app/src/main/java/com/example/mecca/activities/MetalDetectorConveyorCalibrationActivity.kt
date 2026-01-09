@@ -5,6 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.navigation.compose.rememberNavController
 import com.example.mecca.ApiService
 import com.example.mecca.AppDatabase
@@ -77,11 +79,6 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
     }
 
 
-
-
-
-
-
     // Scoping the ViewModel to the activity
     private val calibrationViewModel: CalibrationMetalDetectorConveyorViewModel by viewModels {
         CalibrationMetalDetectorConveyorViewModelFactory(
@@ -115,7 +112,7 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
         )
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -149,12 +146,15 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
                 // Unique NavController for this activity
                 val navController = rememberNavController()
 
+                val windowSizeClass = calculateWindowSizeClass(this)
+
                 // Calibration-specific navigation graph
                 MetalDetectorConveyorCalibrationScreenWrapper(
                     navController = navController,
                     viewModel = calibrationViewModel,
                     calibrationId = calibrationId,
-                    apiService = apiService
+                    apiService = apiService,
+                    windowSizeClass = windowSizeClass
                 )
 
             }

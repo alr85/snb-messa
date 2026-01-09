@@ -1,6 +1,7 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -19,6 +20,7 @@ import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorV
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledDropdownWithTextInput
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
+import com.example.mecca.ui.theme.ScrollableWithScrollbar
 import com.example.mecca.util.capitaliseFirstChar
 
 @Composable
@@ -26,8 +28,6 @@ fun CalMetalDetectorConveyorIndicators(
     navController: NavHostController,
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    val scrollState = rememberScrollState()
-
     // --- ViewModel state ---
     val indicator6colour by viewModel.indicator6colour
     val indicator5colour by viewModel.indicator5colour
@@ -45,18 +45,8 @@ fun CalMetalDetectorConveyorIndicators(
 
     val notes by viewModel.indicatorsEngineerNotes
 
-    // Options: remember so Compose doesn’t rebuild them constantly
     val colourOptions = remember {
-        listOf(
-            "Red",
-            "Yellow",
-            "Green",
-            "Blue",
-            "Amber",
-            "White",
-            "Sounder",
-            "Other"
-        )
+        listOf("Red", "Yellow", "Green", "Blue", "Amber", "White", "Sounder", "Other")
     }
 
     // Next enabled rules
@@ -78,99 +68,112 @@ fun CalMetalDetectorConveyorIndicators(
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
+    // Local helper (no @Composable annotation needed)
+    @Composable
+    fun indicatorRow(
+        number: Int,
+        colour: String,
+        label: String,
+        onColourChange: (String) -> Unit,
+        onLabelChange: (String) -> Unit
+    ) {
+        LabeledDropdownWithTextInput(
+            label = "Indicator $number",
+            dropdownLabel = "Colour",
+            options = colourOptions,
+            selectedOption = colour,
+            onOptionChange = onColourChange,
+            helpText = "Select a colour. If 'Other' is selected, describe it in the label.",
+            inputLabel = "Label",
+            inputValue = label,
+            onInputValueChange = onLabelChange,
+            isNAToggleEnabled = true
+        )
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
 
         CalibrationHeader("Indicators")
 
-        Column(
+        ScrollableWithScrollbar(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(scrollState)
-                .imePadding()
+                .fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),  // replaces your old Column padding
+            // Make thumb red (if your wrapper supports it):
+            // scrollbarColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
         ) {
+            Column {
 
-            @Composable
-            fun indicatorRow(
-                number: Int,
-                colour: String,
-                label: String,
-                onColourChange: (String) -> Unit,
-                onLabelChange: (String) -> Unit
-            ) {
-                LabeledDropdownWithTextInput(
-                    label = "Indicator $number",
-                    dropdownLabel = "Colour",
-                    options = colourOptions,
-                    selectedOption = colour,
-                    onOptionChange = onColourChange,
-                    helpText = "Select a colour. If 'Other' is selected, describe it in the label.",
-                    inputLabel = "Label",
-                    inputValue = label,
-                    onInputValueChange = onLabelChange,
-                    isNAToggleEnabled = true
+                indicatorRow(
+                    number = 6,
+                    colour = indicator6colour,
+                    label = indicator6label,
+                    onColourChange = viewModel::setIndicator6colour,
+                    onLabelChange = { viewModel.setIndicator6label(capitaliseFirstChar(it)) }
                 )
+
+                Spacer(Modifier.height(16.dp))
+
+                indicatorRow(
+                    number = 5,
+                    colour = indicator5colour,
+                    label = indicator5label,
+                    onColourChange = viewModel::setIndicator5colour,
+                    onLabelChange = { viewModel.setIndicator5label(capitaliseFirstChar(it)) }
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                indicatorRow(
+                    number = 4,
+                    colour = indicator4colour,
+                    label = indicator4label,
+                    onColourChange = viewModel::setIndicator4colour,
+                    onLabelChange = { viewModel.setIndicator4label(capitaliseFirstChar(it)) }
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                indicatorRow(
+                    number = 3,
+                    colour = indicator3colour,
+                    label = indicator3label,
+                    onColourChange = viewModel::setIndicator3colour,
+                    onLabelChange = { viewModel.setIndicator3label(capitaliseFirstChar(it)) }
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                indicatorRow(
+                    number = 2,
+                    colour = indicator2colour,
+                    label = indicator2label,
+                    onColourChange = viewModel::setIndicator2colour,
+                    onLabelChange = { viewModel.setIndicator2label(capitaliseFirstChar(it)) }
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                indicatorRow(
+                    number = 1,
+                    colour = indicator1colour,
+                    label = indicator1label,
+                    onColourChange = viewModel::setIndicator1colour,
+                    onLabelChange = { viewModel.setIndicator1label(capitaliseFirstChar(it)) }
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                LabeledTextFieldWithHelp(
+                    label = "Engineer Notes",
+                    value = notes,
+                    onValueChange = viewModel::setIndicatorsEngineerNotes,
+                    helpText = "Enter any notes relevant to this section.",
+                    isNAToggleEnabled = false
+                )
+
+                Spacer(Modifier.height(60.dp))
             }
-
-            indicatorRow(
-                number = 6,
-                colour = indicator6colour,
-                label = indicator6label,
-                onColourChange = viewModel::setIndicator6colour,
-                onLabelChange = { viewModel.setIndicator6label(capitaliseFirstChar(it)) }
-            )
-
-            indicatorRow(
-                number = 5,
-                colour = indicator5colour,
-                label = indicator5label,
-                onColourChange = viewModel::setIndicator5colour,
-                onLabelChange = { viewModel.setIndicator5label(capitaliseFirstChar(it)) }
-            )
-
-            indicatorRow(
-                number = 4,
-                colour = indicator4colour,
-                label = indicator4label,
-                onColourChange = viewModel::setIndicator4colour,
-                onLabelChange = { viewModel.setIndicator4label(capitaliseFirstChar(it)) }
-            )
-
-            indicatorRow(
-                number = 3,
-                colour = indicator3colour,
-                label = indicator3label,
-                onColourChange = viewModel::setIndicator3colour,
-                onLabelChange = { viewModel.setIndicator3label(capitaliseFirstChar(it)) }
-            )
-
-            indicatorRow(
-                number = 2,
-                colour = indicator2colour,
-                label = indicator2label,
-                onColourChange = viewModel::setIndicator2colour,
-                onLabelChange = { viewModel.setIndicator2label(capitaliseFirstChar(it)) }
-            )
-
-            indicatorRow(
-                number = 1,
-                colour = indicator1colour,
-                label = indicator1label,
-                onColourChange = viewModel::setIndicator1colour,
-                onLabelChange = { viewModel.setIndicator1label(capitaliseFirstChar(it)) }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LabeledTextFieldWithHelp(
-                label = "Engineer Notes",
-                value = notes,
-                onValueChange = viewModel::setIndicatorsEngineerNotes,
-                helpText = "Enter any notes relevant to this section.",
-                isNAToggleEnabled = false
-            )
-
-            Spacer(modifier = Modifier.height(60.dp))
         }
     }
 }

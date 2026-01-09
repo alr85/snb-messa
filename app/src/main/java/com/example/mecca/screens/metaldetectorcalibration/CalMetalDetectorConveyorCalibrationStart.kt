@@ -2,9 +2,13 @@ package com.example.mecca.screens.metaldetectorcalibration
 
 //import com.example.mecca.screens.getAppVersion
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -17,6 +21,7 @@ import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledRadioButtonWithHelp
 import com.example.mecca.formModules.LabeledReadOnlyField
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
+import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,86 +36,89 @@ fun CalMetalDetectorConveyorCalibrationStart(
     val pvRequired by viewModel.pvRequired
 
     // Pre-fill location once per calibration
-    LaunchedEffect(key1 = true) {
+    LaunchedEffect(Unit) {
         if (viewModel.newLocation.value.isBlank()) {
             viewModel.setNewLocation(lastLocation)
         }
     }
 
-    // Screen-level validation
     val isNextStepEnabled =
         canPerformCalibration || reasonForNotCalibrating.isNotBlank()
 
-    // Notify wrapper only when this boolean changes
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
-    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+    ScrollableWithScrollbar(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(horizontal = 16.dp)
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
 
-        CalibrationHeader("Calibration Start")
+            Spacer(Modifier.height(16.dp))
+            CalibrationHeader("Calibration Start")
+            Spacer(Modifier.height(16.dp))
 
-        Spacer(Modifier.height(16.dp))
+            LabeledReadOnlyField(
+                label = "Serial Number",
+                value = viewModel.serialNumber.value,
+                helpText = "This is the unique identifier for the system."
+            )
 
-        LabeledReadOnlyField(
-            label = "Serial Number",
-            value = viewModel.serialNumber.value,
-            helpText = "This is the unique identifier for the system."
-        )
+            Spacer(Modifier.height(16.dp))
 
-        Spacer(Modifier.height(16.dp))
+            LabeledReadOnlyField(
+                label = "Make/Model",
+                value = viewModel.modelDescription.value,
+                helpText = "This cannot be edited."
+            )
 
-        LabeledReadOnlyField(
-            label = "Make/Model",
-            value = viewModel.modelDescription.value,
-            helpText = "This cannot be edited."
-        )
-
-        Spacer(Modifier.height(16.dp))
-
-        LabeledTextFieldWithHelp(
-            label = "Location",
-            value = viewModel.newLocation.value,
-            onValueChange = viewModel::setNewLocation,
-            helpText = "Edit if the system has moved.",
-            isNAToggleEnabled = false
-        )
-
-        Spacer(Modifier.height(16.dp))
-
-        LabeledRadioButtonWithHelp(
-            label = "Able to Calibrate?",
-            value = canPerformCalibration,
-            onValueChange = { value ->
-                viewModel.setCanPerformCalibration(value)
-                if (value) viewModel.setReasonForNotCalibrating("")
-            },
-            helpText = "Select 'Yes' if calibration can proceed."
-        )
-
-        if (!canPerformCalibration) {
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(16.dp))
 
             LabeledTextFieldWithHelp(
-                label = "Reason for not calibrating",
-                value = reasonForNotCalibrating,
-                onValueChange = viewModel::setReasonForNotCalibrating,
-                helpText = "Explain why calibration cannot be performed.",
+                label = "Location",
+                value = viewModel.newLocation.value,
+                onValueChange = viewModel::setNewLocation,
+                helpText = "Edit if the system has moved.",
                 isNAToggleEnabled = false
             )
-        }
 
-        Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(16.dp))
 
-        if (canPerformCalibration) {
             LabeledRadioButtonWithHelp(
-                label = "P.V. Required?",
-                value = pvRequired,
-                onValueChange = viewModel::setPvRequired,
-                helpText = "Select 'Yes' if machine runs M&S products."
+                label = "Able to Calibrate?",
+                value = canPerformCalibration,
+                onValueChange = { value ->
+                    viewModel.setCanPerformCalibration(value)
+                    if (value) viewModel.setReasonForNotCalibrating("")
+                },
+                helpText = "Select 'Yes' if calibration can proceed."
             )
-        }
 
-        Spacer(Modifier.height(60.dp))
+            if (!canPerformCalibration) {
+                Spacer(Modifier.height(8.dp))
+
+                LabeledTextFieldWithHelp(
+                    label = "Reason for not calibrating",
+                    value = reasonForNotCalibrating,
+                    onValueChange = viewModel::setReasonForNotCalibrating,
+                    helpText = "Explain why calibration cannot be performed.",
+                    isNAToggleEnabled = false
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            if (canPerformCalibration) {
+                LabeledRadioButtonWithHelp(
+                    label = "P.V. Required?",
+                    value = pvRequired,
+                    onValueChange = viewModel::setPvRequired,
+                    helpText = "Select 'Yes' if machine runs M&S products."
+                )
+            }
+
+            Spacer(Modifier.height(60.dp))
+        }
     }
 }

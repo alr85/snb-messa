@@ -1,6 +1,7 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -25,14 +26,16 @@ import com.example.mecca.formModules.LabeledMultiSelectDropdownWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
+import com.example.mecca.formModules.LabeledYesNoSegmentedSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.YesNoState
+import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @Composable
 fun CalMetalDetectorConveyorAirPressureSensor(
     navController: NavHostController,
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    val scrollState = rememberScrollState()
+
 
     val fitted by viewModel.airPressureSensorFitted
     val detail by viewModel.airPressureSensorDetail
@@ -71,6 +74,7 @@ fun CalMetalDetectorConveyorAirPressureSensor(
                     controlledRestart != YesNoState.NA &&
                     (testMethod != "Other" || testMethodOther.isNotBlank())
         }
+
         else -> false
     }
 
@@ -83,132 +87,143 @@ fun CalMetalDetectorConveyorAirPressureSensor(
 
         CalibrationHeader("Failsafe Tests - Air Pressure Sensor")
 
-        Column(
+        ScrollableWithScrollbar(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(scrollState)
-                .imePadding()
+                .imePadding(),
+            contentPadding = PaddingValues(16.dp),
         ) {
 
-            LabeledTriStateSwitchAndTextInputWithHelp(
-                label = "Air pressure sensor fitted?",
-                currentState = fitted,
-                onStateChange = { newState ->
-                    viewModel.setAirPressureSensorFitted(newState)
+            Column {
 
-                    if (newState == YesNoState.NA || newState == YesNoState.NO) {
-                        viewModel.setAirPressureSensorDetail("N/A")
-                        viewModel.setAirPressureSensorTestMethod("N/A")
-                        viewModel.setAirPressureSensorTestMethodOther("N/A")
-                        viewModel.setAirPressureSensorTestResult(emptyList())
-                        viewModel.setAirPressureSensorLatched(YesNoState.NA)
-                        viewModel.setAirPressureSensorCR(YesNoState.NA)
-                    } else if (newState == YesNoState.YES) {
-                        viewModel.setAirPressureSensorDetail("")
-                        viewModel.setAirPressureSensorTestMethod("")
-                        viewModel.setAirPressureSensorTestMethodOther("")
-                        viewModel.setAirPressureSensorTestResult(emptyList())
-                        viewModel.setAirPressureSensorLatched(YesNoState.NO)
-                        viewModel.setAirPressureSensorCR(YesNoState.NO)
-                    }
+                LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
+                    label = "Air pressure sensor fitted?",
+                    currentState = fitted,
+                    onStateChange = { newState ->
+                        viewModel.setAirPressureSensorFitted(newState)
 
-                    viewModel.autoUpdateAirPressureSensorPvResult()
-                },
-                helpText = "Select if an air pressure monitoring device is fitted to the reject air supply.",
-                inputLabel = "Detail",
-                inputValue = detail,
-                onInputValueChange = {
-                    viewModel.setAirPressureSensorDetail(it)
-                    viewModel.autoUpdateAirPressureSensorPvResult()
-                }
-            )
-
-            if (fitted == YesNoState.YES) {
-
-                LabeledDropdownWithHelp(
-                    label = "Test Method",
-                    options = testMethodOptions,
-                    selectedOption = testMethod,
-                    onSelectionChange = {
-                        viewModel.setAirPressureSensorTestMethod(it)
-                        viewModel.autoUpdateAirPressureSensorPvResult()
-                    },
-                    helpText = "Select one option from the dropdown.",
-                    isNAToggleEnabled = false
-                )
-
-                if (testMethod == "Other") {
-                    LabeledTextFieldWithHelp(
-                        label = "Other Test Method",
-                        value = testMethodOther,
-                        onValueChange = {
-                            viewModel.setAirPressureSensorTestMethodOther(it)
-                            viewModel.autoUpdateAirPressureSensorPvResult()
-                        },
-                        helpText = "Enter the custom test method.",
-                        isNAToggleEnabled = false
-                    )
-                }
-
-                LabeledMultiSelectDropdownWithHelp(
-                    label = "Test Result",
-                    value = testResult.joinToString(", "),
-                    options = testResultOptions,
-                    selectedOptions = testResult,
-                    onSelectionChange = { newSelection ->
-
-                        val cleaned = when {
-                            "No Result" in newSelection -> listOf("No Result")
-                            else -> newSelection.filterNot { it == "No Result" }
-                        }
-                        viewModel.setAirPressureSensorTestResult(cleaned)
-
-                        if (cleaned == listOf("No Result")) {
+                        if (newState == YesNoState.NA || newState == YesNoState.NO) {
+                            viewModel.setAirPressureSensorDetail("N/A")
+                            viewModel.setAirPressureSensorTestMethod("N/A")
+                            viewModel.setAirPressureSensorTestMethodOther("N/A")
+                            viewModel.setAirPressureSensorTestResult(emptyList())
+                            viewModel.setAirPressureSensorLatched(YesNoState.NA)
+                            viewModel.setAirPressureSensorCR(YesNoState.NA)
+                        } else if (newState == YesNoState.YES) {
+                            viewModel.setAirPressureSensorDetail("")
+                            viewModel.setAirPressureSensorTestMethod("")
+                            viewModel.setAirPressureSensorTestMethodOther("")
+                            viewModel.setAirPressureSensorTestResult(emptyList())
                             viewModel.setAirPressureSensorLatched(YesNoState.NO)
                             viewModel.setAirPressureSensorCR(YesNoState.NO)
                         }
 
                         viewModel.autoUpdateAirPressureSensorPvResult()
                     },
-                    helpText = "Select one or more items from the dropdown.",
-                    isNAToggleEnabled = false
-                )
-
-                LabeledTriStateSwitchWithHelp(
-                    label = "Fault Latched?",
-                    currentState = latched,
-                    onStateChange = {
-                        viewModel.setAirPressureSensorLatched(it)
+                    helpText = "Select if an air pressure monitoring device is fitted to the reject air supply.",
+                    inputLabel = "Detail",
+                    inputValue = detail,
+                    onInputValueChange = {
+                        viewModel.setAirPressureSensorDetail(it)
                         viewModel.autoUpdateAirPressureSensorPvResult()
-                    },
-                    helpText = "Is the fault output latched, or does it clear automatically?",
-                    isNAToggleEnabled = false
+                    }
                 )
 
-                LabeledTriStateSwitchWithHelp(
-                    label = "Controlled Restart?",
-                    currentState = controlledRestart,
-                    onStateChange = {
-                        viewModel.setAirPressureSensorCR(it)
-                        viewModel.autoUpdateAirPressureSensorPvResult()
-                    },
-                    helpText = "Is a controlled restart required after the fault condition?",
-                    isNAToggleEnabled = false
-                )
-            }
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
+                if (fitted == YesNoState.YES) {
 
-            //-----------------------------------------------------
-            // ⭐ PV RESULT (only when required)
-            //-----------------------------------------------------
-            if (viewModel.pvRequired.value) {
-                LabeledFourOptionRadioWithHelp(
-                    label = "P.V. Result",
-                    value = viewModel.airPressureSensorTestPvResult.value,
-                    onValueChange = viewModel::setAirPressureSensorTestPvResult,
-                    helpText = """
+                    LabeledDropdownWithHelp(
+                        label = "Test Method",
+                        options = testMethodOptions,
+                        selectedOption = testMethod,
+                        onSelectionChange = {
+                            viewModel.setAirPressureSensorTestMethod(it)
+                            viewModel.autoUpdateAirPressureSensorPvResult()
+                        },
+                        helpText = "Select one option from the dropdown.",
+                        isNAToggleEnabled = false
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    if (testMethod == "Other") {
+                        LabeledTextFieldWithHelp(
+                            label = "Other Test Method",
+                            value = testMethodOther,
+                            onValueChange = {
+                                viewModel.setAirPressureSensorTestMethodOther(it)
+                                viewModel.autoUpdateAirPressureSensorPvResult()
+                            },
+                            helpText = "Enter the custom test method.",
+                            isNAToggleEnabled = false
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    LabeledMultiSelectDropdownWithHelp(
+                        label = "Test Result",
+                        value = testResult.joinToString(", "),
+                        options = testResultOptions,
+                        selectedOptions = testResult,
+                        onSelectionChange = { newSelection ->
+
+                            val cleaned = when {
+                                "No Result" in newSelection -> listOf("No Result")
+                                else -> newSelection.filterNot { it == "No Result" }
+                            }
+                            viewModel.setAirPressureSensorTestResult(cleaned)
+
+                            if (cleaned == listOf("No Result")) {
+                                viewModel.setAirPressureSensorLatched(YesNoState.NO)
+                                viewModel.setAirPressureSensorCR(YesNoState.NO)
+                            }
+
+                            viewModel.autoUpdateAirPressureSensorPvResult()
+                        },
+                        helpText = "Select one or more items from the dropdown.",
+                        isNAToggleEnabled = false
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    LabeledTriStateSwitchWithHelp(
+                        label = "Fault Latched?",
+                        currentState = latched,
+                        onStateChange = {
+                            viewModel.setAirPressureSensorLatched(it)
+                            viewModel.autoUpdateAirPressureSensorPvResult()
+                        },
+                        helpText = "Is the fault output latched, or does it clear automatically?",
+                        isNAToggleEnabled = false
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    LabeledTriStateSwitchWithHelp(
+                        label = "Controlled Restart?",
+                        currentState = controlledRestart,
+                        onStateChange = {
+                            viewModel.setAirPressureSensorCR(it)
+                            viewModel.autoUpdateAirPressureSensorPvResult()
+                        },
+                        helpText = "Is a controlled restart required after the fault condition?",
+                        isNAToggleEnabled = false
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                //-----------------------------------------------------
+                // ⭐ PV RESULT (only when required)
+                //-----------------------------------------------------
+                if (viewModel.pvRequired.value) {
+                    LabeledFourOptionRadioWithHelp(
+                        label = "P.V. Result",
+                        value = viewModel.airPressureSensorTestPvResult.value,
+                        onValueChange = viewModel::setAirPressureSensorTestPvResult,
+                        helpText = """
                         Auto-Pass rules (when PV required):
                           • Sensor fitted = Yes
                           • Detail entered
@@ -221,20 +236,21 @@ fun CalMetalDetectorConveyorAirPressureSensor(
                         If sensor is N/A → PV = N/A.
                         Otherwise auto-fail. You may override manually.
                     """.trimIndent()
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                LabeledTextFieldWithHelp(
+                    label = "Engineer Comments",
+                    value = notes,
+                    onValueChange = viewModel::setAirPressureSensorEngineerNotes,
+                    helpText = "Enter any notes relevant to this section.",
+                    isNAToggleEnabled = false
                 )
+
+                Spacer(modifier = Modifier.height(60.dp))
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LabeledTextFieldWithHelp(
-                label = "Engineer Comments",
-                value = notes,
-                onValueChange = viewModel::setAirPressureSensorEngineerNotes,
-                helpText = "Enter any notes relevant to this section.",
-                isNAToggleEnabled = false
-            )
-
-            Spacer(modifier = Modifier.height(60.dp))
         }
     }
 }

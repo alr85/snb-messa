@@ -1,5 +1,7 @@
 package com.example.mecca.formModules
 
+import android.R.attr.onClick
+import android.graphics.Color.red
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Check
@@ -33,11 +36,24 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import com.example.mecca.ui.theme.FormInputDisabledBorderColor
+import com.example.mecca.ui.theme.FormInputDisabledLabelColor
+import com.example.mecca.ui.theme.FormInputDisabledTextColor
+import com.example.mecca.ui.theme.FormInputFocusedBorderColor
+import com.example.mecca.ui.theme.FormInputFocusedLabelColor
+import com.example.mecca.ui.theme.FormInputFocusedTextColor
+import com.example.mecca.ui.theme.FormInputUnfocusedBorderColor
+import com.example.mecca.ui.theme.FormInputUnfocusedLabelColor
+import com.example.mecca.ui.theme.FormInputUnfocusedTextColor
 import com.example.mecca.ui.theme.FormWrapperContent
 import com.example.mecca.ui.theme.FormWrapperSurface
+import com.example.mecca.util.InAppLogger
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -83,10 +99,22 @@ fun FormRowWrapper(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (onNaClick != null) {
+                    val isNaState = naButtonText == "Edit"
+
                     AssistChip(
-                        onClick = { if (!isDisabled) onNaClick() },
+                        onClick = onNaClick,
                         label = { Text(naButtonText) },
-                        enabled = !isDisabled
+                        colors = AssistChipDefaults.assistChipColors(
+                            containerColor = if (isNaState)
+                                Color(0xFFDAD7DF) // very light tint of #564D65
+                            else
+                                Color(0xFFF5F5F5),
+
+                            labelColor = if (isNaState)
+                                Color(0xFF605F5F)   // brand grey
+                            else
+                                Color(0xFF564D65)   // secondary accent
+                        )
                     )
                 }
 
@@ -100,13 +128,14 @@ fun FormRowWrapper(
                         enabled = !isDisabled
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
+                            imageVector = Icons.Outlined.Info,
                             contentDescription = "Help for $label"
                         )
                     }
                 }
             }
         }
+
     }
 }
 
@@ -124,6 +153,7 @@ fun FormRowWrapperEditableLabel(
     content: @Composable RowScope.(Boolean) -> Unit
 ) {
     var isEditingLabel by remember { mutableStateOf(false) }
+    val fieldShape = RoundedCornerShape(14.dp)
 
     Surface(
         color = FormWrapperSurface,
@@ -147,6 +177,24 @@ fun FormRowWrapperEditableLabel(
                         onValueChange = onLabelChange,
                         singleLine = true,
                         enabled = !isDisabled,
+                        shape = fieldShape,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            disabledContainerColor = Color.White,
+
+                            focusedBorderColor = FormInputFocusedBorderColor,
+                            unfocusedBorderColor = FormInputUnfocusedBorderColor,
+                            disabledBorderColor = FormInputDisabledBorderColor,
+
+                            focusedTextColor = FormInputFocusedTextColor,
+                            unfocusedTextColor = FormInputUnfocusedTextColor,
+                            disabledTextColor = FormInputDisabledTextColor,
+
+                            focusedLabelColor = FormInputFocusedLabelColor,
+                            unfocusedLabelColor = FormInputUnfocusedLabelColor,
+                            disabledLabelColor = FormInputDisabledLabelColor
+                        ),
                         modifier = Modifier.weight(1f),
                         placeholder = { Text("Label") },
                         keyboardOptions = KeyboardOptions.Default.copy(
@@ -207,10 +255,22 @@ fun FormRowWrapperEditableLabel(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (onNaClick != null) {
+                    val isNaState = naButtonText == "Edit"
+
                     AssistChip(
-                        onClick = { if (!isDisabled) onNaClick() },
+                        onClick = onNaClick,
                         label = { Text(naButtonText) },
-                        enabled = !isDisabled
+                        colors = AssistChipDefaults.assistChipColors(
+                            containerColor = if (isNaState)
+                                Color(0xFFDAD7DF) // very light tint of #564D65
+                            else
+                                Color(0xFFF5F5F5),
+
+                            labelColor = if (isNaState)
+                                Color(0xFF605F5F)   // brand grey
+                            else
+                                Color(0xFF564D65)   // secondary accent
+                        )
                     )
                 }
 

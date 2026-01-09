@@ -36,6 +36,8 @@ uiVersion = "1.9.5"
 foundationLayout = "1.10.0"
 runtimeAnnotation = "1.10.0"
 foundation = "1.10.0"
+material3WindowSizeClass = "1.4.0"
+roomKtxVersion = "2.8.4"
 #material3 = "1.4.0"
 #accompanist = "0.34.0"
 
@@ -90,6 +92,8 @@ androidx-compose-foundation-layout = { group = "androidx.compose.foundation", na
 accompanist-flowlayout = { module = "com.google.accompanist:accompanist-flowlayout", version.ref = "accompanist" }
 androidx-compose-runtime-annotation = { group = "androidx.compose.runtime", name = "runtime-annotation", version.ref = "runtimeAnnotation" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
+androidx-compose-material3-window-size-class1 = { group = "androidx.compose.material3", name = "material3-window-size-class", version.ref = "material3WindowSizeClass" }
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtxVersion" }
 
 
 

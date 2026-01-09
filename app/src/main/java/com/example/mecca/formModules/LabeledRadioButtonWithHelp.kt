@@ -1,14 +1,21 @@
 package com.example.mecca.formModules
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -28,7 +35,7 @@ fun LabeledRadioButtonWithHelp(
     value: Boolean?,                // true = Yes, false = No, null = unset
     onValueChange: (Boolean) -> Unit,
     helpText: String,
-    isDisabled: Boolean = false     // parent can pass this
+    isDisabled: Boolean = false
 ) {
     var showHelpDialog by remember { mutableStateOf(false) }
 
@@ -38,39 +45,57 @@ fun LabeledRadioButtonWithHelp(
         onNaClick = null,
         onHelpClick = { showHelpDialog = true }
     ) { disabled ->
-        Row(
+
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(24.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(
-                    selected = value == true,
-                    onClick = { if (!disabled) onValueChange(true) },
-                    enabled = !disabled,
-                    colors = RadioButtonDefaults.colors(
-                        selectedColor = MaterialTheme.colorScheme.primary,
-                        unselectedColor = if (disabled) Color.Gray else Color.Gray,
-                        disabledSelectedColor = Color.Gray,
-                        disabledUnselectedColor = Color.Gray
-                    )
-                )
-                Text("Yes", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 4.dp), color = if (disabled) Color.Gray else Color.Unspecified)
+            Text(
+                text = "Result",
+                style = MaterialTheme.typography.labelMedium
+            )
+
+            val options = listOf(
+                "Yes" to true,
+                "No" to false
+            )
+
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                options.forEachIndexed { index, (text, boolValue) ->
+                    val selected = value == boolValue
+
+                    SegmentedButton(
+                        selected = selected,
+                        onClick = { if (!disabled) onValueChange(boolValue) },
+                        enabled = !disabled,
+                        shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
+                        icon = {
+                            if (selected) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Check,
+                                    contentDescription = null
+                                )
+                            }
+                        },
+                        colors = SegmentedButtonDefaults.colors(
+                            inactiveContainerColor = Color.White,
+                            activeContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            inactiveContentColor = MaterialTheme.colorScheme.onSurface,
+                            activeContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledInactiveContainerColor = Color.White,
+                            disabledActiveContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Text(text)
+                    }
+                }
             }
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(
-                    selected = value == false,
-                    onClick = { if (!disabled) onValueChange(false) },
-                    enabled = !disabled,
-                    colors = RadioButtonDefaults.colors(
-                        selectedColor = MaterialTheme.colorScheme.primary,
-                        unselectedColor = if (disabled) Color.Gray else Color.Gray,
-                        disabledSelectedColor = Color.Gray,
-                        disabledUnselectedColor = Color.Gray
-                    )
+            if (value == null) {
+                Text(
+                    text = "Select Yes or No to continue.",
+                    style = MaterialTheme.typography.bodySmall
                 )
-                Text("No", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 4.dp), color = if (disabled) Color.Gray else Color.Unspecified)
             }
         }
     }
@@ -80,103 +105,10 @@ fun LabeledRadioButtonWithHelp(
             onDismissRequest = { showHelpDialog = false },
             title = { Text(text = label) },
             text = { Text(helpText) },
-            confirmButton = { TextButton(onClick = { showHelpDialog = false }) { Text("OK") } }
+            confirmButton = {
+                TextButton(onClick = { showHelpDialog = false }) { Text("OK") }
+            }
         )
     }
 }
 
-
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//fun LabeledRadioButtonWithHelp(
-//    label: String,
-//    value: Boolean?, // Use nullable Boolean to track Yes/No or if unselected
-//    onValueChange: (Boolean) -> Unit,
-//    helpText: String
-//) {
-//    var showHelpDialog by remember { mutableStateOf(false) }
-//
-//    Row(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(8.dp),
-//        verticalAlignment = Alignment.CenterVertically,
-//        horizontalArrangement = Arrangement.SpaceBetween
-//    ) {
-//        // Label text takes up more space
-//        Text(
-//            text = label,
-//            style = MaterialTheme.typography.labelLarge,
-//            maxLines = 1,
-//            overflow = TextOverflow.Ellipsis,
-//            modifier = Modifier
-//                .weight(3f)
-//                .padding(end = 8.dp)
-//        )
-//
-//        // Yes Radio Button
-//        Row(
-//            verticalAlignment = Alignment.CenterVertically,
-//            modifier = Modifier.weight(3f)
-//        ) {
-//            RadioButton(
-//                selected = value == true,
-//                onClick = { onValueChange(true) },
-//                colors = RadioButtonDefaults.colors(
-//                    selectedColor = Color.Red,
-//                    unselectedColor = Color.Gray
-//                )
-//            )
-//            Text(
-//                text = "Yes",
-//                style = MaterialTheme.typography.bodyMedium,
-//                modifier = Modifier.padding(start = 4.dp)
-//            )
-//        }
-//
-//        // No Radio Button
-//        Row(
-//            verticalAlignment = Alignment.CenterVertically,
-//            modifier = Modifier.weight(3f)
-//        ) {
-//            RadioButton(
-//                selected = value == false,
-//                onClick = { onValueChange(false) },
-//                colors = RadioButtonDefaults.colors(
-//                    selectedColor = Color.Red,
-//                    unselectedColor = Color.Gray
-//                )
-//            )
-//            Text(
-//                text = "No",
-//                style = MaterialTheme.typography.bodyMedium,
-//                modifier = Modifier.padding(start = 4.dp)
-//            )
-//        }
-//
-//        // Help IconButton
-//        IconButton(
-//            onClick = { showHelpDialog = true },
-//            modifier = Modifier.weight(0.5f)
-//        ) {
-//            Icon(
-//                imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
-//                contentDescription = "Help for $label"
-//            )
-//        }
-//    }
-//
-//    // Show Help Dialog
-//    if (showHelpDialog) {
-//        AlertDialog(
-//            onDismissRequest = { showHelpDialog = false },
-//            title = { Text(text = label) },
-//            text = { Text(text = helpText) },
-//            confirmButton = {
-//                TextButton(onClick = { showHelpDialog = false }) {
-//                    Text("OK")
-//                }
-//            }
-//        )
-//    }
-//}
