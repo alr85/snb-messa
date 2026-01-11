@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.mecca.ApiService
 import com.example.mecca.DAOs.UserDao
 import com.example.mecca.dataClasses.UserEntity
+import com.example.mecca.util.InAppLogger
 import java.net.SocketTimeoutException
 import java.util.Date
 
@@ -31,22 +32,23 @@ class UserRepository(
 
 
     suspend fun syncUsers() {
-        Log.d("MESSA-DEBUG", "Fetching users from API (with retry)...")
+        InAppLogger.d("Fetching users from API (with retry)...")
 
         val cloudUsers = retryWithBackoff {
             apiService.getUsers()
         }.also {
-            Log.d("MESSA-DEBUG", "API call complete. success=${it.isSuccessful} code=${it.code()}")
+            InAppLogger.d("API call complete. success=${it.isSuccessful} code=${it.code()}")
         }
 
         if (!cloudUsers.isSuccessful) {
             val body = cloudUsers.errorBody()?.string()
-            Log.e("MESSA-DEBUG", "Error fetching users: HTTP ${cloudUsers.code()} ${cloudUsers.message()} body=$body")
+
+            InAppLogger.e("Error fetching users: HTTP ${cloudUsers.code()} ${cloudUsers.message()} body=$body")
             throw IllegalStateException("Users API failed: ${cloudUsers.code()} ${cloudUsers.message()}")
         }
 
         val users = cloudUsers.body() ?: emptyList()
-        Log.d("MESSA-DEBUG", "Fetched ${users.size} users from cloud")
+        InAppLogger.d("Fetched ${users.size} users from cloud")
 
         val localUsers = users.map { u ->
             UserEntity(
@@ -60,15 +62,17 @@ class UserRepository(
         }
 
         if (localUsers.isEmpty()) {
-            Log.d("MESSA-DEBUG", "No users fetched; skipping clear to avoid wiping cache")
+            InAppLogger.d("No users fetched; skipping clear to avoid wiping cache")
             return
         }
 
         Log.d("MESSA-DEBUG", "Clearing local users table...")
+        InAppLogger.d("Clearing local users table...")
         userDao.clearAllUsers()
-        Log.d("MESSA-DEBUG", "Inserting ${localUsers.size} users...")
+        InAppLogger.d("Inserting ${localUsers.size} users...")
         userDao.insertUsers(localUsers)
-        Log.d("MESSA-DEBUG", "Insert OK.")
+        InAppLogger.d("Insert OK.")
+
     }
 
 }
@@ -89,13 +93,15 @@ private suspend fun <T> retryWithBackoff(
             // If Azure is waking up, you may see these transient gateway errors.
             if (resp.code() !in listOf(502, 503, 504)) return resp
 
-            Log.w("MESSA-DEBUG", "Transient HTTP ${resp.code()} on attempt ${attemptIndex + 1}. Retrying in ${delayMs}ms")
+            //Log.w("MESSA-DEBUG", "Transient HTTP ${resp.code()} on attempt ${attemptIndex + 1}. Retrying in ${delayMs}ms")
+            InAppLogger.d("Transient HTTP ${resp.code()} on attempt ${attemptIndex + 1}. Retrying in ${delayMs}ms")
         } catch (t: Throwable) {
             lastException = t
             val retriable = t is IOException || t is SocketTimeoutException
             if (!retriable) throw t
 
             Log.w("MESSA-DEBUG", "Network exception on attempt ${attemptIndex + 1}: ${t.javaClass.simpleName} ${t.message}. Retrying in ${delayMs}ms")
+            InAppLogger.d("Network exception on attempt ${attemptIndex + 1}: ${t.javaClass.simpleName} ${t.message}. Retrying in ${delayMs}ms")
         }
 
         delay(delayMs)
@@ -106,7 +112,9 @@ private suspend fun <T> retryWithBackoff(
     try {
         return block()
     } catch (t: Throwable) {
+        InAppLogger.d("Final attempt failed: ${t.javaClass.simpleName} ${t.message}")
         throw lastException ?: t
+
     }
 }
 

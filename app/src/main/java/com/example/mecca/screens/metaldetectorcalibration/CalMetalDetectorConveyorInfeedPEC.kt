@@ -96,8 +96,7 @@ fun CalMetalDetectorConveyorInfeedPEC(
 
         ScrollableWithScrollbar(
             modifier = Modifier
-                .fillMaxSize()
-                .imePadding(),
+                .fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
         ) {
 

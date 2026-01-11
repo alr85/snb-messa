@@ -29,6 +29,7 @@ import com.example.mecca.CalibrationBanner
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.ui.theme.FormBackground
 import com.example.mecca.ui.theme.MetalDetectorConveyorCalibrationNavGraphContent
+import com.example.mecca.util.InAppLogger
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -215,20 +216,25 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
                 // Normal back navigation
                 if (!isFirstStep && currentIndex > 0) {
                     navController.navigate(routeOrder[currentIndex - 1])
+                    InAppLogger.d("MD Calibration, Navigation from $currentRoute to ${routeOrder[currentIndex - 1]}")
                 }
             },
             onNextClick = {
                 viewModel.persistCurrentScreen(currentRoute ?: "")
                 if (viewModel.shouldSkipToSummary()) {
                     navController.navigate("CalMetalDetectorConveyorSummary")
+                    InAppLogger.d("MD Calibration, Navigation from $currentRoute to Summary")
                 } else if (currentIndex < routeOrder.lastIndex) {
                     navController.navigate(routeOrder[currentIndex + 1])
+                    InAppLogger.d("MD Calibration, Navigation from $currentRoute to ${routeOrder[currentIndex + 1]}")
                 }
             },
             onCancelClick = {
+                InAppLogger.d("MD Calibration, Navigation from $currentRoute to Cancel")
                 viewModel.clearCalibrationData()
             },
             onSaveAndExitClick = {
+                InAppLogger.d("MD Calibration, Navigation from $currentRoute to Save and Exit")
                 viewModel.persistCurrentScreen(currentRoute ?: "")
             },
             windowSizeClass = windowSizeClass
