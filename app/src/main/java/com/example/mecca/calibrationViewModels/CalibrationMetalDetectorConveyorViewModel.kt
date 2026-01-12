@@ -3239,6 +3239,23 @@ class CalibrationMetalDetectorConveyorViewModel(
                     row.detectionSetting6label,
                     row.detectionSetting7label,
                     row.detectionSetting8label,
+                    row.detectionSettingPvResult,
+                    row.ferrousTestPvResult,
+                    row.nonFerrousTestPvResult,
+                    row.stainlessTestPvResult,
+                    row.smeTestPvResult,
+                    row.infeedSensorTestPvResult,
+                    row.binFullSensorTestPvResult,
+                    row.largeMetalTestPvResult,
+                    row.rejectConfirmSensorTestPvResult,
+                    row.backupSensorTestPvResult,
+                    row.airPressureSensorTestPvResult,
+                    row.packCheckSensorTestPvResult,
+                    row.speedSensorTestPvResult,
+                    row.binDoorMonitorTestPvResult,
+
+
+
                 )
 
 
