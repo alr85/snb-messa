@@ -77,6 +77,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     systemId: Int,
     cloudSystemId: Int,
     tempSystemId: Int,
+    systemTypeId: Int,
     serialNumber: String,
     modelDescription: String,
     customerName: String,
@@ -126,6 +127,7 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _systemId.intValue = existingCalibration.systemId
                 _cloudSystemId.intValue = existingCalibration.cloudSystemId
                 _tempSystemId.intValue = existingCalibration.tempSystemId
+                _systemTypeId.intValue = existingCalibration.systemTypeId
                 _calibrationStartTime.value = existingCalibration.startDate
                 //_calibrationEndTime.value = existingCalibration.endDate
                 //_engineerId.value = (existingCalibration.engineerId).toString()
@@ -1037,6 +1039,10 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     private val _tempSystemId = mutableIntStateOf(tempSystemId)
     val tempSystemId: State<Int> = _tempSystemId
+
+    private val _systemTypeId = mutableIntStateOf(systemTypeId)
+    val systemTypeId: State<Int> = _systemTypeId
+
 
     private val _modelId = mutableIntStateOf(modelId)
     val modelId: State<Int> = _modelId
@@ -3021,6 +3027,7 @@ class CalibrationMetalDetectorConveyorViewModel(
                     row.systemId,
                     row.tempSystemId,
                     row.cloudSystemId,
+                    row.systemTypeId,
                     row.modelId,
                     row.engineerId,
                     row.customerId,

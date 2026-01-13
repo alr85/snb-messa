@@ -124,6 +124,7 @@ fun MetalDetectorConveyorSystemScreen(
             putExtra("SYSTEM_ID", system.id)
             putExtra("CLOUD_SYSTEM_ID", system.cloudId)
             putExtra("TEMP_SYSTEM_ID", system.tempId)
+            putExtra("SYSTEM_TYPE_ID", system.systemTypeId)
             putExtra("CUSTOMER_ID", system.fusionID)
             putExtra("SERIAL_NUMBER", system.serialNumber)
             putExtra("MODEL_DESCRIPTION", system.modelDescription)

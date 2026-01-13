@@ -28,6 +28,7 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
     private var systemId: Int = 0
     private var cloudSystemId: Int = 0
     private var tempSystemId: Int = 0
+    private var systemTypeId: Int = 0
     private lateinit var serialNumber: String
     private lateinit var modelDescription: String
     private lateinit var customerName: String
@@ -91,6 +92,7 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
             customerId,
             systemId,
             tempSystemId,
+            systemTypeId,
             cloudSystemId,
             serialNumber,
             modelDescription,

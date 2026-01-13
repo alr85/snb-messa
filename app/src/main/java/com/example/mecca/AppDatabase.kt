@@ -38,7 +38,7 @@ import com.example.mecca.dataClasses.UserEntity
         PipelineRetailerSensitivitiesEntity::class
 
     ],
-    version = 47,
+    version = 48,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

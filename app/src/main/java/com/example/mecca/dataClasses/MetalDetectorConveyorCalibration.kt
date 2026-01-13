@@ -15,6 +15,7 @@ data class MetalDetectorConveyorCalibrationLocal(
     var systemId: Int = 0,
     var tempSystemId: Int = 0,
     var cloudSystemId: Int = 0,
+    var systemTypeId: Int = 0,
     var modelId: Int = 0,
     var serialNumber: String = "",
     var engineerId: Int = 0,
