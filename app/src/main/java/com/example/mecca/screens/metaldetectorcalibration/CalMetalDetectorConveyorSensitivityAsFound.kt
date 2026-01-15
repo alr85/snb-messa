@@ -20,6 +20,7 @@ import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorV
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTwoTextInputsWithHelp
+import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,7 +73,7 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
                     helpText = "Enter the 'As Found' peak signal from the product alone."
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTwoTextInputsWithHelp(
                     label = "Ferrous (mm)",
@@ -86,7 +87,7 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
                     isNAToggleEnabled = true
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTwoTextInputsWithHelp(
                     label = "Non-Ferrous (mm)",
@@ -100,7 +101,7 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
                     isNAToggleEnabled = true
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTwoTextInputsWithHelp(
                     label = "Stainless Steel (mm)",
@@ -114,7 +115,7 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
                     isNAToggleEnabled = true
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Notes",

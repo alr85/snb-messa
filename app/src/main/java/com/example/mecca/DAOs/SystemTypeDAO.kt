@@ -18,5 +18,8 @@ interface SystemTypeDAO {
     @Query("DELETE FROM systemTypes")
     suspend fun deleteAllSystemTypes()  // Function to delete all systemTypes
 
+    @Query("SELECT systemType FROM systemTypes WHERE id = :systemTypeId")
+    suspend fun getSystemTypeById(systemTypeId: Int)
+
 }
 

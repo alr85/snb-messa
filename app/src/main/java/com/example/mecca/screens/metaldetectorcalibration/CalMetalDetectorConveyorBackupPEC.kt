@@ -28,6 +28,7 @@ import com.example.mecca.formModules.LabeledTriStateSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
 import com.example.mecca.formModules.LabeledYesNoSegmentedSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.YesNoState
+import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @Composable
@@ -127,7 +128,7 @@ fun CalMetalDetectorConveyorBackupPEC(
                     }
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 if (fitted == YesNoState.YES) {
 
@@ -155,10 +156,10 @@ fun CalMetalDetectorConveyorBackupPEC(
                             isNAToggleEnabled = false
                         )
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        FormSpacer()
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledMultiSelectDropdownWithHelp(
                         label = "Test Result",
@@ -187,7 +188,7 @@ fun CalMetalDetectorConveyorBackupPEC(
                         isNAToggleEnabled = false
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledTriStateSwitchWithHelp(
                         label = "Fault Latched?",
@@ -200,7 +201,7 @@ fun CalMetalDetectorConveyorBackupPEC(
                         isNAToggleEnabled = false
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledTriStateSwitchWithHelp(
                         label = "Fault Controlled Restart?",
@@ -214,7 +215,7 @@ fun CalMetalDetectorConveyorBackupPEC(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 //-----------------------------------------------------
                 // ⭐ PV RESULT (only when required)
@@ -238,7 +239,7 @@ fun CalMetalDetectorConveyorBackupPEC(
                         Otherwise auto-fail. You may override manually.
                     """.trimIndent()
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
                 }
 
 

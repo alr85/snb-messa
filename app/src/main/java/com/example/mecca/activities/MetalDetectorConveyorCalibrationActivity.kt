@@ -122,6 +122,7 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
         calibrationId = intent.getStringExtra("CALIBRATION_ID") ?: ""
         customerId = intent.getIntExtra("CUSTOMER_ID", 0)
         systemId = intent.getIntExtra("SYSTEM_ID", 0)
+        systemTypeId = intent.getIntExtra("SYSTEM_TYPE_ID", 0)
         cloudSystemId = intent.getIntExtra("CLOUD_SYSTEM_ID", 0)
         tempSystemId = intent.getIntExtra("TEMP_SYSTEM_ID", 0)
         serialNumber = intent.getStringExtra("SERIAL_NUMBER") ?: ""

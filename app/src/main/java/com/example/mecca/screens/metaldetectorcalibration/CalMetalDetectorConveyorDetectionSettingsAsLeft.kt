@@ -25,6 +25,7 @@ import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorV
 import com.example.mecca.formModules.AnimatedActionPill
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
+import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,7 +88,7 @@ fun CalMetalDetectorConveyorDetectionSettingsAsLeft(
                     )
                 }
 
-                Spacer(Modifier.height(20.dp))
+                FormSpacer()
 
                 // Detection setting fields
                 labelStates.indices.forEach { index ->
@@ -112,7 +113,7 @@ fun CalMetalDetectorConveyorDetectionSettingsAsLeft(
                         helpText = ""
                     )
 
-                    Spacer(Modifier.height(16.dp))
+                    FormSpacer()
                 }
 
                 LabeledTextFieldWithHelp(

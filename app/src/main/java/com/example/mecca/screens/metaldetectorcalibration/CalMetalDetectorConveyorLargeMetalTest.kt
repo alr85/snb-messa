@@ -23,6 +23,7 @@ import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
 import com.example.mecca.formModules.YesNoState
+import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -99,7 +100,7 @@ fun CalMetalDetectorConveyorLargeMetalTest(
                     helpText = "Select if there was satisfactory Detection and Rejection of the metal sample: Yes, No, or N/A."
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Sample Certificate No.",
@@ -109,7 +110,7 @@ fun CalMetalDetectorConveyorLargeMetalTest(
                     isNAToggleEnabled = false
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 // -----------------------------------------------------
                 // PV RESULT (only when required)
@@ -132,7 +133,7 @@ fun CalMetalDetectorConveyorLargeMetalTest(
                         notFittedEnabled = false
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
                 }
 
                 LabeledTextFieldWithHelp(

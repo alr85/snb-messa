@@ -27,6 +27,7 @@ import com.example.mecca.formModules.LabeledTriStateSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.LabeledTwoTextInputsWithHelp
 import com.example.mecca.formModules.LabeledYesNoSegmentedSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.YesNoState
+import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -105,7 +106,7 @@ fun CalMetalDetectorConveyorStainlessTest(
                     isNAToggleEnabled = true
                 )
 
-                Spacer(Modifier.height(16.dp))
+               FormSpacer()
 
                 //-----------------------------------------------------
                 // Skip detection tests entirely if N/A
@@ -128,7 +129,7 @@ fun CalMetalDetectorConveyorStainlessTest(
                         }
                     )
 
-                    Spacer(Modifier.height(16.dp))
+                   FormSpacer()
 
                     LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
                         label = "Detected & Rejected (Middle)",
@@ -146,7 +147,7 @@ fun CalMetalDetectorConveyorStainlessTest(
                         }
                     )
 
-                    Spacer(Modifier.height(16.dp))
+                   FormSpacer()
 
                     LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
                         label = "Detected & Rejected (Trailing)",
@@ -165,7 +166,7 @@ fun CalMetalDetectorConveyorStainlessTest(
                     )
                 }
 
-                Spacer(Modifier.height(16.dp))
+               FormSpacer()
 
                 //-----------------------------------------------------
                 // PV RESULT (only when required)
@@ -189,7 +190,7 @@ fun CalMetalDetectorConveyorStainlessTest(
                     )
                 }
 
-                Spacer(Modifier.height(16.dp))
+               FormSpacer()
 
                 //-----------------------------------------------------
                 // Notes

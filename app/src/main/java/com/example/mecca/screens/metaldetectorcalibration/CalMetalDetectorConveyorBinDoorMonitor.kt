@@ -30,6 +30,7 @@ import com.example.mecca.formModules.LabeledTriStateSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
 import com.example.mecca.formModules.LabeledYesNoSegmentedSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.YesNoState
+import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -153,7 +154,7 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                     }
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 if (fitted == YesNoState.YES) {
 
@@ -169,7 +170,7 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                         isNAToggleEnabled = false
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledMultiSelectDropdownWithHelp(
                         label = "Bin Door Open Indication",
@@ -194,7 +195,7 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                         isNAToggleEnabled = false
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledMultiSelectDropdownWithHelp(
                         label = "Bin Door Unlocked Indication",
@@ -219,7 +220,7 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                         isNAToggleEnabled = false
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledTextFieldWithHelp(
                         label = "Bin Door Timeout (secs)",
@@ -233,7 +234,7 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                         keyboardType = KeyboardType.Number
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledMultiSelectDropdownWithHelp(
                         label = "Bin Door Timeout Result",
@@ -259,7 +260,7 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                         isNAToggleEnabled = false
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledTriStateSwitchWithHelp(
                         label = "Fault Latched?",
@@ -272,7 +273,7 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                         isNAToggleEnabled = false
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledTriStateSwitchWithHelp(
                         label = "Controlled Restart?",
@@ -286,7 +287,7 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 //-----------------------------------------------------
                 // ⭐ PV RESULT (only when required)
@@ -315,7 +316,7 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Comments",

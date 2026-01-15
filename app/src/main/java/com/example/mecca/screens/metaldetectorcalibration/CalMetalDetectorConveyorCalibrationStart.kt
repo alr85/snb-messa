@@ -21,6 +21,7 @@ import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledRadioButtonWithHelp
 import com.example.mecca.formModules.LabeledReadOnlyField
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
+import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 
@@ -65,7 +66,7 @@ fun CalMetalDetectorConveyorCalibrationStart(
                 helpText = "This is the unique identifier for the system."
             )
 
-            Spacer(Modifier.height(16.dp))
+            FormSpacer()
 
             LabeledReadOnlyField(
                 label = "Make/Model",
@@ -73,7 +74,15 @@ fun CalMetalDetectorConveyorCalibrationStart(
                 helpText = "This cannot be edited."
             )
 
-            Spacer(Modifier.height(16.dp))
+            FormSpacer()
+
+            LabeledReadOnlyField(
+                label = "System Type",
+                value = viewModel.systemTypeId.value.toString(),
+                helpText = "This cannot be edited."
+            )
+
+            FormSpacer()
 
             LabeledTextFieldWithHelp(
                 label = "Location",
@@ -83,7 +92,7 @@ fun CalMetalDetectorConveyorCalibrationStart(
                 isNAToggleEnabled = false
             )
 
-            Spacer(Modifier.height(16.dp))
+            FormSpacer()
 
             LabeledRadioButtonWithHelp(
                 label = "Able to Calibrate?",
@@ -107,7 +116,7 @@ fun CalMetalDetectorConveyorCalibrationStart(
                 )
             }
 
-            Spacer(Modifier.height(16.dp))
+            FormSpacer()
 
             if (canPerformCalibration) {
                 LabeledRadioButtonWithHelp(

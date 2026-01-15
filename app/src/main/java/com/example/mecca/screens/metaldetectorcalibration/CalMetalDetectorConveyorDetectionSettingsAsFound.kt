@@ -22,6 +22,7 @@ import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelpEdit
+import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -116,7 +117,7 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
                         helpText = "Enter the detection setting value. Tap the label to rename."
                     )
 
-                    Spacer(Modifier.height(16.dp))
+                    FormSpacer()
                 }
 
                 LabeledTextFieldWithHelp(
@@ -129,7 +130,7 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
                     helpText = "Eg: 'Password protected', 'Key switch', etc."
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 if (pvRequired) {
                     LabeledFourOptionRadioWithHelp(
@@ -145,7 +146,7 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
                         """.trimIndent()
                     )
 
-                    Spacer(Modifier.height(16.dp))
+                    FormSpacer()
                 }
 
                 LabeledTextFieldWithHelp(

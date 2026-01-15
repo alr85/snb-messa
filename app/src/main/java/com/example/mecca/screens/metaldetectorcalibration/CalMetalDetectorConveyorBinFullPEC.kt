@@ -28,6 +28,7 @@ import com.example.mecca.formModules.LabeledTriStateSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
 import com.example.mecca.formModules.LabeledYesNoSegmentedSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.YesNoState
+import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @Composable
@@ -131,7 +132,7 @@ fun CalMetalDetectorConveyorBinFullPEC(
                     }
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 if (fitted == YesNoState.YES) {
 
@@ -147,7 +148,7 @@ fun CalMetalDetectorConveyorBinFullPEC(
                         isNAToggleEnabled = false
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     if (testMethod == "Other") {
                         LabeledTextFieldWithHelp(
@@ -162,7 +163,7 @@ fun CalMetalDetectorConveyorBinFullPEC(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledMultiSelectDropdownWithHelp(
                         label = "Test Result",
@@ -190,7 +191,7 @@ fun CalMetalDetectorConveyorBinFullPEC(
                         isNAToggleEnabled = false
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledTriStateSwitchWithHelp(
                         label = "Fault Latched?",
@@ -203,7 +204,7 @@ fun CalMetalDetectorConveyorBinFullPEC(
                         isNAToggleEnabled = false
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledTriStateSwitchWithHelp(
                         label = "Controlled Restart?",
@@ -217,7 +218,7 @@ fun CalMetalDetectorConveyorBinFullPEC(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 //-----------------------------------------------------
                 // ⭐ PV RESULT (only when required)
@@ -243,7 +244,7 @@ fun CalMetalDetectorConveyorBinFullPEC(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Comments",

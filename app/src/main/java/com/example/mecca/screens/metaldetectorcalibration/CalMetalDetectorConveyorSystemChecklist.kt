@@ -209,13 +209,7 @@ fun CalMetalDetectorConveyorSystemChecklist(
                 ModernChecklistCard(model)
             }
 
-            // If you re-enable engineer notes, keep it INSIDE the list so it scrolls too.
-            // item {
-            //     EngineerNotesCard(
-            //         value = systemChecklistEngineerNotes,
-            //         onValueChange = viewModel::setSystemChecklistEngineerNotes
-            //     )
-            // }
+
 
             // breathing room above your bottom nav buttons
             item { Spacer(Modifier.height(60.dp)) }

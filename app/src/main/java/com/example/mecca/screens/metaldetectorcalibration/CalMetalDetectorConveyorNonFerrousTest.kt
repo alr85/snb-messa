@@ -26,6 +26,7 @@ import com.example.mecca.formModules.LabeledTriStateSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.LabeledTwoTextInputsWithHelp
 import com.example.mecca.formModules.LabeledYesNoSegmentedSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.YesNoState
+import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -102,7 +103,7 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                     isNAToggleEnabled = true
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 // Skip the D&R tests if N/A
                 if (sensitivity != "N/A") {
@@ -123,7 +124,7 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                         }
                     )
 
-                    Spacer(Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
                         label = "Detected & Rejected (Middle)",
@@ -141,7 +142,7 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                         }
                     )
 
-                    Spacer(Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
                         label = "Detected & Rejected (Trailing)",
@@ -160,7 +161,7 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                     )
                 }
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 // ⭐ PV Result (only when required)
                 if (viewModel.pvRequired.value) {
@@ -183,7 +184,7 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                     )
                 }
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Notes",

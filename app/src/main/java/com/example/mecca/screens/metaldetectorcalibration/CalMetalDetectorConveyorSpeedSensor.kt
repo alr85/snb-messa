@@ -29,6 +29,7 @@ import com.example.mecca.formModules.LabeledTriStateSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
 import com.example.mecca.formModules.LabeledYesNoSegmentedSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.YesNoState
+import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -131,7 +132,7 @@ fun CalMetalDetectorConveyorSpeedSensor(
                     }
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 if (fitted == YesNoState.YES) {
 
@@ -151,7 +152,7 @@ fun CalMetalDetectorConveyorSpeedSensor(
 
                     if (testMethod == "Other") {
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        FormSpacer()
 
                         LabeledTextFieldWithHelp(
                             label = "Other Test Method",
@@ -165,7 +166,7 @@ fun CalMetalDetectorConveyorSpeedSensor(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledMultiSelectDropdownWithHelp(
                         label = "Test Result",
@@ -191,7 +192,7 @@ fun CalMetalDetectorConveyorSpeedSensor(
                         isNAToggleEnabled = false
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledTriStateSwitchWithHelp(
                         label = "Fault Latched?",
@@ -204,7 +205,7 @@ fun CalMetalDetectorConveyorSpeedSensor(
                         isNAToggleEnabled = false
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledTriStateSwitchWithHelp(
                         label = "Controlled Restart?",
@@ -218,7 +219,7 @@ fun CalMetalDetectorConveyorSpeedSensor(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 //-----------------------------------------------------
                 // ⭐ PV RESULT (only when required)
@@ -244,7 +245,7 @@ fun CalMetalDetectorConveyorSpeedSensor(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Comments",

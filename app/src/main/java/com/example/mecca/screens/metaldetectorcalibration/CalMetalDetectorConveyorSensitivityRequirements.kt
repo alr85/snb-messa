@@ -26,6 +26,7 @@ import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorV
 import com.example.mecca.formModules.AnimatedActionPill
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
+import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 
@@ -77,7 +78,7 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
                         )
                     }
 
-                    Spacer(Modifier.height(16.dp))
+                    FormSpacer()
                 }
 
                 LabeledTextFieldWithHelp(
@@ -93,7 +94,7 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
                     keyboardType = KeyboardType.Number
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Non-Ferrous (mm)",
@@ -108,7 +109,7 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
                     keyboardType = KeyboardType.Number
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Stainless Steel (mm)",
@@ -123,7 +124,7 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
                     keyboardType = KeyboardType.Number
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Notes",

@@ -54,11 +54,7 @@ fun CalMetalDetectorConveyorSystemDetails(
             .padding(16.dp)
             .verticalScroll(scrollState) // Add scrolling to the whole column
     ) {
-//        CalibrationBanner(
-//            progress = progress,
-//            viewModel = viewModel
-//
-//        )
+
 
         Spacer(modifier = Modifier.height(16.dp))
 

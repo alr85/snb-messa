@@ -27,6 +27,7 @@ import com.example.mecca.formModules.LabeledTriStateSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
 import com.example.mecca.formModules.LabeledYesNoSegmentedSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.YesNoState
+import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @Composable
@@ -140,7 +141,7 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                     }
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 if (fitted == YesNoState.YES) {
 
@@ -156,7 +157,7 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                         isNAToggleEnabled = false
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     if (testMethod == "Other") {
                         LabeledTextFieldWithHelp(
@@ -197,7 +198,7 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                         isNAToggleEnabled = false
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledTriStateSwitchWithHelp(
                         label = "Fault Latched?",
@@ -210,7 +211,7 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                         isNAToggleEnabled = false
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledTriStateSwitchWithHelp(
                         label = "Controlled Restart?",
@@ -223,7 +224,7 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                         isNAToggleEnabled = false
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledDropdownWithHelp(
                         label = "Test Pack Stop Position",
@@ -238,7 +239,7 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 //-----------------------------------------------------
                 // ⭐ PV RESULT (only when required)
@@ -264,7 +265,7 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Comments",

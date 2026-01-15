@@ -22,6 +22,7 @@ import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorV
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledDropdownWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
+import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -89,7 +90,7 @@ fun CalMetalDetectorConveyorConveyorDetails(
                     keyboardType = KeyboardType.Number
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Out-feed Belt Height (mm)",
@@ -99,7 +100,7 @@ fun CalMetalDetectorConveyorConveyorDetails(
                     keyboardType = KeyboardType.Number
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Conveyor Length (mm)",
@@ -109,7 +110,7 @@ fun CalMetalDetectorConveyorConveyorDetails(
                     keyboardType = KeyboardType.Number
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Belt Speed (m/m)",
@@ -119,7 +120,7 @@ fun CalMetalDetectorConveyorConveyorDetails(
                     keyboardType = KeyboardType.Number
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledDropdownWithHelp(
                     label = "Conveyor Handing",
@@ -129,7 +130,7 @@ fun CalMetalDetectorConveyorConveyorDetails(
                     helpText = "Select left-to-right or right-to-left orientation."
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledDropdownWithHelp(
                     label = "Reject System",
@@ -139,7 +140,7 @@ fun CalMetalDetectorConveyorConveyorDetails(
                     helpText = "Select the reject device type."
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 if (rejectDevice == "Other") {
                     LabeledTextFieldWithHelp(
@@ -149,7 +150,7 @@ fun CalMetalDetectorConveyorConveyorDetails(
                         helpText = "Enter custom description."
                     )
 
-                    Spacer(Modifier.height(16.dp))
+                    FormSpacer()
                 }
 
                 LabeledTextFieldWithHelp(

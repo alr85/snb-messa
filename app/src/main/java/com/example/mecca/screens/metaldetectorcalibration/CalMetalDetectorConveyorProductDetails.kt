@@ -24,6 +24,7 @@ import androidx.navigation.NavHostController
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
+import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @Composable
@@ -70,7 +71,7 @@ fun CalMetalDetectorConveyorProductDetails(
                     helpText = "Enter the details of the product (e.g., 'GOLD BARS')."
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Product Library Reference",
@@ -79,7 +80,7 @@ fun CalMetalDetectorConveyorProductDetails(
                     helpText = "There is usually a 'Product Name' in the metal detector library. Enter it here."
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Product Library Number",
@@ -88,7 +89,7 @@ fun CalMetalDetectorConveyorProductDetails(
                     helpText = "Enter the library number / program number used on the metal detector."
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Product Length (mm)",
@@ -98,7 +99,7 @@ fun CalMetalDetectorConveyorProductDetails(
                     keyboardType = KeyboardType.Number
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Product Width (mm)",
@@ -108,7 +109,7 @@ fun CalMetalDetectorConveyorProductDetails(
                     keyboardType = KeyboardType.Number
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Product Height (mm)",
@@ -120,7 +121,7 @@ fun CalMetalDetectorConveyorProductDetails(
                     isNAToggleEnabled = !viewModel.pvRequired.value
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Comments",

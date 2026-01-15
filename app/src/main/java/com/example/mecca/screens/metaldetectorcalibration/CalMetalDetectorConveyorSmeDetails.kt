@@ -25,6 +25,7 @@ import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
 import com.example.mecca.formModules.LabeledTwoTextInputsWithHelp
 import com.example.mecca.formModules.YesNoState
+import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -117,7 +118,7 @@ fun CalMetalDetectorConveyorSmeDetails(
                     helpText = "If you witnessed an operator perform a successful sensitivity check, select Yes. Otherwise select No or N/A."
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 if (operatorTestWitnessed == YesNoState.YES) {
 
@@ -132,7 +133,7 @@ fun CalMetalDetectorConveyorSmeDetails(
                         isNAToggleEnabled = true
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledTwoTextInputsWithHelp(
                         label = "Ferrous Test",
@@ -154,7 +155,7 @@ fun CalMetalDetectorConveyorSmeDetails(
                         isNAToggleEnabled = true
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledTwoTextInputsWithHelp(
                         label = "Non Ferrous Test",
@@ -176,7 +177,7 @@ fun CalMetalDetectorConveyorSmeDetails(
                         isNAToggleEnabled = true
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledTwoTextInputsWithHelp(
                         label = "Stainless Test",
@@ -198,7 +199,7 @@ fun CalMetalDetectorConveyorSmeDetails(
                         isNAToggleEnabled = true
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledTwoTextInputsWithHelp(
                         label = "Large Metal",
@@ -220,7 +221,7 @@ fun CalMetalDetectorConveyorSmeDetails(
                         isNAToggleEnabled = true
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    FormSpacer()
 
                     LabeledTextFieldWithHelp(
                         label = "On Site SME Name",
@@ -234,7 +235,7 @@ fun CalMetalDetectorConveyorSmeDetails(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 if (viewModel.pvRequired.value) {
                     LabeledFourOptionRadioWithHelp(
@@ -258,7 +259,7 @@ fun CalMetalDetectorConveyorSmeDetails(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Comments",

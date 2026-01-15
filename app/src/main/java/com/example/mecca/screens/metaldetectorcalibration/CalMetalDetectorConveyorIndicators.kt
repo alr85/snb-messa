@@ -20,6 +20,7 @@ import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorV
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledDropdownWithTextInput
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
+import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 import com.example.mecca.util.capitaliseFirstChar
 
@@ -112,7 +113,7 @@ fun CalMetalDetectorConveyorIndicators(
                     onLabelChange = { viewModel.setIndicator6label(capitaliseFirstChar(it)) }
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 indicatorRow(
                     number = 5,
@@ -122,7 +123,7 @@ fun CalMetalDetectorConveyorIndicators(
                     onLabelChange = { viewModel.setIndicator5label(capitaliseFirstChar(it)) }
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 indicatorRow(
                     number = 4,
@@ -132,7 +133,7 @@ fun CalMetalDetectorConveyorIndicators(
                     onLabelChange = { viewModel.setIndicator4label(capitaliseFirstChar(it)) }
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 indicatorRow(
                     number = 3,
@@ -142,7 +143,7 @@ fun CalMetalDetectorConveyorIndicators(
                     onLabelChange = { viewModel.setIndicator3label(capitaliseFirstChar(it)) }
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 indicatorRow(
                     number = 2,
@@ -152,7 +153,7 @@ fun CalMetalDetectorConveyorIndicators(
                     onLabelChange = { viewModel.setIndicator2label(capitaliseFirstChar(it)) }
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 indicatorRow(
                     number = 1,
@@ -162,7 +163,7 @@ fun CalMetalDetectorConveyorIndicators(
                     onLabelChange = { viewModel.setIndicator1label(capitaliseFirstChar(it)) }
                 )
 
-                Spacer(Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Notes",

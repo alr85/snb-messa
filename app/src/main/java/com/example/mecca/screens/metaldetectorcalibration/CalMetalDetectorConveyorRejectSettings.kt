@@ -24,6 +24,7 @@ import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.LabeledYesNoSegmentedSwitchAndTextInputWithHelp
 import com.example.mecca.formModules.YesNoState
+import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @Composable
@@ -88,7 +89,7 @@ fun CalMetalDetectorConveyorRejectSettings(
                     onInputValueChange = viewModel::setRejectSynchronisationDetail
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledDropdownWithTextInput(
                     label = "Reject Duration",
@@ -103,7 +104,7 @@ fun CalMetalDetectorConveyorRejectSettings(
                     inputKeyboardType = KeyboardType.Number
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledDropdownWithTextInput(
                     label = "Reject Delay",
@@ -118,7 +119,7 @@ fun CalMetalDetectorConveyorRejectSettings(
                     inputKeyboardType = KeyboardType.Number
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledDropdownWithTextInput(
                     label = "Reject Confirm Window",
@@ -133,7 +134,7 @@ fun CalMetalDetectorConveyorRejectSettings(
                     inputKeyboardType = KeyboardType.Number
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Notes",
