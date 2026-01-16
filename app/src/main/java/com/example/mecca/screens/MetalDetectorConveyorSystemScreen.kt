@@ -124,6 +124,7 @@ fun MetalDetectorConveyorSystemScreen(
             putExtra("SYSTEM_ID", system.id)
             putExtra("CLOUD_SYSTEM_ID", system.cloudId)
             putExtra("TEMP_SYSTEM_ID", system.tempId)
+            InAppLogger.d("System Type ID: ${system.systemTypeId}")
             putExtra("SYSTEM_TYPE_ID", system.systemTypeId)
             putExtra("CUSTOMER_ID", system.fusionID)
             putExtra("SERIAL_NUMBER", system.serialNumber)
@@ -131,6 +132,8 @@ fun MetalDetectorConveyorSystemScreen(
             putExtra("CUSTOMER_NAME", system.customerName)
             putExtra("MODEL_ID", system.modelId)
             putExtra("ENGINEER_ID", engineerId ?: 0)
+            putExtra("SYSTEM_TYPE_DESCRIPTION", system.systemType)
+
 
             putExtra("DETECTION_SETTING_1_LABEL", modelDetails?.detectionSetting1)
             putExtra("DETECTION_SETTING_2_LABEL", modelDetails?.detectionSetting2)

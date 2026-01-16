@@ -78,7 +78,7 @@ fun CalMetalDetectorConveyorCalibrationStart(
 
             LabeledReadOnlyField(
                 label = "System Type",
-                value = viewModel.systemTypeId.value.toString(),
+                value = viewModel.systemTypeDescription.value,
                 helpText = "This cannot be edited."
             )
 

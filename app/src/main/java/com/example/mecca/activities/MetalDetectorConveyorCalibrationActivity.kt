@@ -18,6 +18,7 @@ import com.example.mecca.repositories.MetalDetectorSystemsRepository
 import com.example.mecca.repositories.RetailerSensitivitiesRepository
 import com.example.mecca.screens.metaldetectorcalibration.MetalDetectorConveyorCalibrationScreenWrapper
 import com.example.mecca.ui.theme.MyAppTheme
+import com.example.mecca.util.InAppLogger
 
 
 class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
@@ -32,6 +33,7 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
     private lateinit var serialNumber: String
     private lateinit var modelDescription: String
     private lateinit var customerName: String
+    private lateinit var systemTypeDescription: String
     private var modelId: Int = 0
     private var engineerId: Int = 0 // New property for engineerId
     private var detectionSetting1label: String = ""
@@ -57,6 +59,10 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
 
     private val mdSystemsDAO by lazy {
         AppDatabase.getDatabase(applicationContext).mdSystemDAO()
+    }
+
+    private val systemTypeDAO by lazy {
+        AppDatabase.getDatabase(applicationContext).systemTypeDAO()
     }
 
     private val customerDAO by lazy {
@@ -87,6 +93,7 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
             repository = repository,
             mdModelsDAO,
             mdSystemsDAO,
+            systemTypeDAO,
             apiService,
             calibrationId,
             customerId,
@@ -97,6 +104,7 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
             serialNumber,
             modelDescription,
             customerName,
+            systemTypeDescription,
             modelId,
             engineerId,
             customerDAO,
@@ -123,11 +131,13 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
         customerId = intent.getIntExtra("CUSTOMER_ID", 0)
         systemId = intent.getIntExtra("SYSTEM_ID", 0)
         systemTypeId = intent.getIntExtra("SYSTEM_TYPE_ID", 0)
+        InAppLogger.d("System Type ID: $systemTypeId")
         cloudSystemId = intent.getIntExtra("CLOUD_SYSTEM_ID", 0)
         tempSystemId = intent.getIntExtra("TEMP_SYSTEM_ID", 0)
         serialNumber = intent.getStringExtra("SERIAL_NUMBER") ?: ""
         modelDescription = intent.getStringExtra("MODEL_DESCRIPTION") ?: ""
         customerName = intent.getStringExtra("CUSTOMER_NAME") ?: ""
+        systemTypeDescription = intent.getStringExtra("SYSTEM_TYPE_DESCRIPTION") ?: ""
         modelId = intent.getIntExtra("MODEL_ID", 0)
         engineerId = intent.getIntExtra("ENGINEER_ID", 0) // Retrieve the engineerId
         detectionSetting1label = intent.getStringExtra("DETECTION_SETTING_1_LABEL") ?: ""

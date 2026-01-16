@@ -87,7 +87,8 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
             detectionSetting6label = insert.detectionSetting6label,
             detectionSetting7label = insert.detectionSetting7label,
             detectionSetting8label = insert.detectionSetting8label,
-            lastLocation = insert.lastLocation
+            lastLocation = insert.lastLocation,
+            systemTypeId = insert.systemTypeId
         )
 
         calibrationDao.insertOrUpdateCalibration(entity)

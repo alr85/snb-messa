@@ -7,6 +7,7 @@ import com.example.mecca.DAOs.CustomerDAO
 import com.example.mecca.DAOs.MdModelsDAO
 import com.example.mecca.DAOs.MetalDetectorConveyorCalibrationDAO
 import com.example.mecca.DAOs.MetalDetectorSystemsDAO
+import com.example.mecca.DAOs.SystemTypeDAO
 import com.example.mecca.repositories.MetalDetectorConveyorCalibrationRepository
 import com.example.mecca.repositories.MetalDetectorSystemsRepository
 import com.example.mecca.repositories.RetailerSensitivitiesRepository
@@ -16,6 +17,7 @@ class CalibrationMetalDetectorConveyorViewModelFactory(
     private val repository: MetalDetectorSystemsRepository,
     private val mdModelsDAO: MdModelsDAO,
     private val mdSystemsDAO: MetalDetectorSystemsDAO,
+    private val systemTypeDao: SystemTypeDAO,
     private val apiService: ApiService,
     private val calibrationId: String,
     private val customerId: Int,
@@ -26,6 +28,7 @@ class CalibrationMetalDetectorConveyorViewModelFactory(
     private val serialNumber: String,
     private val modelDescription: String,
     private val customerName: String,
+    private val systemTypeDescription: String,
     private val modelId: Int,
     private val engineerId: Int, // Add engineerId here,
     private val customersDao: CustomerDAO,
@@ -53,6 +56,7 @@ class CalibrationMetalDetectorConveyorViewModelFactory(
                 mdModelsDAO = mdModelsDAO,
                 mdSystemsDAO = mdSystemsDAO,
                 customerDAO = customersDao,
+                systemTypeDAO = systemTypeDao,
                 repository = repository,
                 calibrationId = calibrationId,
                 customerId = customerId,
@@ -63,6 +67,7 @@ class CalibrationMetalDetectorConveyorViewModelFactory(
                 serialNumber = serialNumber,
                 modelDescription = modelDescription,
                 customerName = customerName,
+                systemTypeDescription = systemTypeDescription,
                 modelId = modelId,
                 detectionSetting1label = detectionSetting1label,
                 detectionSetting2label = detectionSetting2label,

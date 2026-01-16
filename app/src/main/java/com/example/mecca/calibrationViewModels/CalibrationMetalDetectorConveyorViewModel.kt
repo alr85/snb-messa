@@ -11,6 +11,7 @@ import com.example.mecca.DAOs.CustomerDAO
 import com.example.mecca.DAOs.MdModelsDAO
 import com.example.mecca.DAOs.MetalDetectorConveyorCalibrationDAO
 import com.example.mecca.DAOs.MetalDetectorSystemsDAO
+import com.example.mecca.DAOs.SystemTypeDAO
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.setAllPvResultsNa
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toAirPressureSensorUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toBackupSensorUpdate
@@ -70,6 +71,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     private val calibrationRepository: MetalDetectorConveyorCalibrationRepository,
     private val mdModelsDAO: MdModelsDAO,
     private val mdSystemsDAO: MetalDetectorSystemsDAO,
+    private val systemTypeDAO: SystemTypeDAO,
     private val customerDAO: CustomerDAO,
     private val repository: MetalDetectorSystemsRepository,
     calibrationId: String,
@@ -81,6 +83,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     serialNumber: String,
     modelDescription: String,
     customerName: String,
+    systemTypeDescription: String,
     modelId: Int,
     detectionSetting1label: String,
     detectionSetting2label: String,
@@ -118,6 +121,11 @@ class CalibrationMetalDetectorConveyorViewModel(
                     customerDAO.getCustomerName(existingCalibration.customerId) ?: "Error"
                 _customerName.value = customer
 
+                val systemType =
+                    systemTypeDAO.getMdSystemTypeDescriptionFromDb(existingCalibration.systemTypeId) ?: "Error"
+                    InAppLogger.d("existingCalibration.systemTypeId = ${existingCalibration.systemTypeId}")
+                _systemTypeDescription.value = systemType
+
 
                 _serialNumber.value = existingCalibration.serialNumber
                 _isSynced.value = existingCalibration.isSynced
@@ -128,6 +136,7 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _cloudSystemId.intValue = existingCalibration.cloudSystemId
                 _tempSystemId.intValue = existingCalibration.tempSystemId
                 _systemTypeId.intValue = existingCalibration.systemTypeId
+
                 _calibrationStartTime.value = existingCalibration.startDate
                 //_calibrationEndTime.value = existingCalibration.endDate
                 //_engineerId.value = (existingCalibration.engineerId).toString()
@@ -584,10 +593,6 @@ class CalibrationMetalDetectorConveyorViewModel(
     private val _isNavigating = MutableStateFlow(false)
     val isNavigating: StateFlow<Boolean> get() = _isNavigating
 
-
-
-
-
     fun startNavigation() {
         _isNavigating.value = true
     }
@@ -1027,6 +1032,10 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     private val _modelDescription = mutableStateOf(modelDescription)
     val modelDescription: State<String> = _modelDescription
+
+    private val _systemTypeDescription = mutableStateOf(systemTypeDescription)
+    val systemTypeDescription: State<String> = _systemTypeDescription
+
 
     private val _customerId = mutableIntStateOf(customerId)
     val customerId: State<Int> = _customerId
