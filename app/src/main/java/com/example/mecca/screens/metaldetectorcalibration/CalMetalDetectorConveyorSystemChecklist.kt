@@ -1,6 +1,7 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
 
+import android.R.attr.label
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -335,17 +337,27 @@ private fun ModernChecklistCard(
         }
     }
 
-    if (showHelp) {
-        ModalBottomSheet(onDismissRequest = { showHelp = false }) {
-            Column(Modifier.padding(16.dp)) {
-                Text(text = model.title, style = MaterialTheme.typography.titleLarge)
-                Spacer(Modifier.height(8.dp))
-                Text(text = model.helpText, style = MaterialTheme.typography.bodyMedium)
-                Spacer(Modifier.height(24.dp))
+    if (showHelp) {  //title = { Text(text = label) },
+
+        AlertDialog(
+            onDismissRequest = { showHelp = false },
+            title = { Text (text = model.title) },
+            text = { Text(text = model.helpText) },
+            confirmButton = {
+                TextButton(onClick = { showHelp = false }) { Text("OK") }
             }
-        }
+        )
+//        ModalBottomSheet(onDismissRequest = { showHelp = false }) {
+//            Column(Modifier.padding(16.dp)) {
+//                Text(text = model.title, style = MaterialTheme.typography.titleLarge)
+//                Spacer(Modifier.height(8.dp))
+//                Text(text = model.helpText, style = MaterialTheme.typography.bodyMedium)
+//                Spacer(Modifier.height(24.dp))
+//            }
+//        }
     }
 }
+
 
 
 

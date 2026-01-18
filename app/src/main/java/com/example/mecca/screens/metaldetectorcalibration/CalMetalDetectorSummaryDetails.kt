@@ -1,5 +1,6 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
+import android.R.attr.label
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -114,6 +115,13 @@ fun CalMetalDetectorConveyorSummaryDetails(
 
 
         // --- ORDERED TO MATCH NAV LIST ---
+
+        Section(title = "Calibration Details") {
+            SummaryItem(label = "Calibration ID", value = viewModel.calibrationId.value)
+            SummaryItem(label = "Engineer ID", value = viewModel.engineerId.toString())
+            SummaryItem(label = "Calibration Start Time", value = viewModel.calibrationStartTime.value)
+        }
+
 
 // MetalDetectorConveyorCalibrationStart
         Section(title = "System Details") {
