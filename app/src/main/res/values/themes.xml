@@ -5,7 +5,8 @@
     <style name="Theme.MECCA" parent="android:Theme.Material.Light.NoActionBar">
         <!-- Splash Screen attributes -->
         <item name="android:windowSplashScreenBackground">@color/white</item> <!-- Background color -->
-        <item name="android:windowSplashScreenAnimatedIcon">@drawable/logo_electronics</item> <!-- App logo -->
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground_logo</item> <!-- App logo -->
+
         <item name="android:windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
 
 

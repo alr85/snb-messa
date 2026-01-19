@@ -12,9 +12,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -57,6 +60,11 @@ import com.example.mecca.repositories.MetalDetectorSystemsRepository
 import com.example.mecca.repositories.SystemTypeRepository
 import com.example.mecca.dataClasses.MdModelsLocal
 import com.example.mecca.dataClasses.SystemTypeLocal
+import com.example.mecca.formModules.FormRowWrapper
+import com.example.mecca.formModules.LabeledDualNumberInputsWithHelp
+import com.example.mecca.formModules.LabeledObjectDropdownWithHelp
+import com.example.mecca.formModules.LabeledReadOnlyField
+import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.util.InAppLogger
 import com.example.mecca.util.SerialCheckResult
 import kotlinx.coroutines.Dispatchers
@@ -81,380 +89,187 @@ fun AddNewMetalDetectorScreen(
     customerName: String
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val context = LocalContext.current
 
-    // States for input fields
+    // Inputs
     var serialNumber by remember { mutableStateOf("") }
     var apertureWidth by remember { mutableStateOf("") }
     var apertureHeight by remember { mutableStateOf("") }
     var lastLocation by remember { mutableStateOf("") }
 
-
-    // States for dropdowns
+    // Dropdown data
     var systemTypes by remember { mutableStateOf<List<SystemTypeLocal>>(emptyList()) }
-    var expandedSystemType by remember { mutableStateOf(false) }
     var selectedSystemType by remember { mutableStateOf<SystemTypeLocal?>(null) }
 
     var mdModels by remember { mutableStateOf<List<MdModelsLocal>>(emptyList()) }
-    var expandedMdModel by remember { mutableStateOf(false) }
     var selectedMdModel by remember { mutableStateOf<MdModelsLocal?>(null) }
 
-    // Snackbar state
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    // State to track whether the submit button is enabled or disabled
+    // Submit state
     var isProcessing by remember { mutableStateOf(false) }
 
-    // Keyboard controller to close keyboard on submit
-    val keyboardController = LocalSoftwareKeyboardController.current
+    val scrollState = rememberScrollState()
 
-
-    // Fetch system types and MdModels when the composable is launched
+    // Load dropdown options
     LaunchedEffect(Unit) {
         coroutineScope.launch {
             systemTypes = systemTypeRepository.getSystemTypesFromDb()
-                .filter { it.systemType.contains("Metal", ignoreCase = true) } // Filter for "Metal"
+                .filter { it.systemType.contains("Metal", ignoreCase = true) }
+
             mdModels = mdModelsRepository.getMdModelsFromDb()
+
             Log.d("DatabaseDebug", "System types: $systemTypes")
             Log.d("DatabaseDebug", "MdModels: $mdModels")
         }
     }
 
+    // Helpers (keep inputs consistent)
+    fun sanitiseUpper(value: String): String =
+        value.replace(Regex("[^A-Za-z0-9 _.-]"), "").uppercase()
+
+    fun digitsOnly(value: String): String =
+        value.filter { it.isDigit() }
+
+    val isFormValid =
+        serialNumber.isNotBlank() &&
+                apertureWidth.isNotBlank() &&
+                apertureHeight.isNotBlank() &&
+                selectedSystemType != null &&
+                selectedMdModel != null &&
+                lastLocation.isNotBlank()
+
     Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(16.dp)
-                    .background(Color.White),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Customer Name
-                Text(
-                    text = customerName,
-                    style = MaterialTheme.typography.bodyLarge,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Left,
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(Color.White)
+                .verticalScroll(scrollState)
+                .imePadding()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Header
+            Text(
+                    text = "Add New Metal Detector",
+            style = MaterialTheme.typography.bodyLarge,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+            )
+
+            LabeledReadOnlyField(
+                label = "Customer",
+                value = customerName,
+                helpText = "This system will be added to the selected customer and cannot be changed here."
+            )
+
+
+            LabeledObjectDropdownWithHelp(
+                label = "System Type",
+                options = systemTypes,
+                selectedOption = selectedSystemType,
+                onSelectionChange = { selectedSystemType = it },
+                optionLabel = { it.systemType },
+                helpText = "Select the metal detector system type.",
+                placeholder = "Select..."
+            )
+
+            LabeledObjectDropdownWithHelp(
+                label = "Make/Model",
+                options = mdModels,
+                selectedOption = selectedMdModel,
+                onSelectionChange = { selectedMdModel = it },
+                optionLabel = { it.modelDescription },
+                helpText = "Select the manufacturer and model.",
+                placeholder = "Select..."
+            )
+
+            LabeledTextFieldWithHelp(
+                label = "Serial Number",
+                value = serialNumber,
+                onValueChange = { raw ->
+                    serialNumber = raw.replace(Regex("[^A-Za-z0-9 _.-]"), "").uppercase()
+                },
+                helpText = "Enter the serial number (A-Z / 0-9 / space / _ . -).",
+                keyboardType = KeyboardType.Text,
+                isNAToggleEnabled = false
+            )
+
+            LabeledDualNumberInputsWithHelp(
+                label = "Aperture Size (mm)",
+                firstLabel = "Width",
+                firstValue = apertureWidth,
+                onFirstValueChange = { apertureWidth = it.filter(Char::isDigit) },
+                secondLabel = "Height",
+                secondValue = apertureHeight,
+                onSecondValueChange = { apertureHeight = it.filter(Char::isDigit) },
+                helpText = "Enter aperture width and height in millimetres."
+            )
+
+            LabeledTextFieldWithHelp(
+                label = "Location Ref",
+                value = lastLocation,
+                onValueChange = { raw ->
+                    lastLocation = raw.replace(Regex("[^A-Za-z0-9 _.-]"), "").uppercase()
+                },
+                helpText = "Enter the site location reference.",
+                keyboardType = KeyboardType.Text,
+                isNAToggleEnabled = false
+            )
+
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Submit
+            Button(
+                onClick = {
+                    keyboardController?.hide()
+                    if (!isFormValid || isProcessing) return@Button
+
+                    isProcessing = true
+                    coroutineScope.launch {
+                        try {
+                            submitNewMdSystem(
+                                context = context,
+                                customerID = customerID,
+                                serialNumber = serialNumber,
+                                apertureWidth = apertureWidth.toInt(),
+                                apertureHeight = apertureHeight.toInt(),
+                                systemTypeId = selectedSystemType!!.id,
+                                modelId = selectedMdModel!!.meaId,
+                                lastLocation = lastLocation,
+                                mdSystemsRepository = mdSystemsRepository,
+                                snackbarHostState = snackbarHostState,
+                                navController = navController
+                            )
+                        } finally {
+                            isProcessing = false
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isProcessing && isFormValid,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Gray,
+                    contentColor = Color.White
                 )
-
-                Spacer(modifier = Modifier.height(5.dp))
-
-                // System Type Row
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp), // Adjust padding as needed
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "System Type:",
-                        style = MaterialTheme.typography.labelLarge,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 8.dp) // Add some space between the label and field
-                    )
-
-                    // System Type Dropdown
-                    ExposedDropdownMenuBox(
-                        expanded = expandedSystemType,
-                        onExpandedChange = { expandedSystemType = !expandedSystemType },
-                        modifier = Modifier.weight(2f) // Adjust weight to control spacing
-                    ) {
-                        OutlinedTextField(
-                            value = selectedSystemType?.systemType ?: "Select...",
-                            onValueChange = {},
-                            readOnly = true,
-                            trailingIcon = {
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedSystemType)
-                            },
-                            modifier = Modifier
-                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                                .fillMaxWidth(),
-                            colors = ExposedDropdownMenuDefaults.textFieldColors(
-                                focusedIndicatorColor = Color.Red,
-                                unfocusedIndicatorColor = Color.Gray,
-                                focusedLabelColor = Color.DarkGray,
-                                unfocusedLabelColor = Color.Gray,
-                                focusedContainerColor = Color.White,
-                                unfocusedContainerColor = Color.White,
-                            )
-                        )
-                        ExposedDropdownMenu(
-                            expanded = expandedSystemType,
-                            onDismissRequest = { expandedSystemType = false }
-                        ) {
-                            systemTypes.forEach { systemType ->
-                                DropdownMenuItem(
-                                    text = { Text(systemType.systemType) },
-                                    onClick = {
-                                        selectedSystemType = systemType
-                                        expandedSystemType = false
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-
-                // Make/Model Row
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp), // Adjust padding as needed
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Make/Model:",
-                        style = MaterialTheme.typography.labelLarge,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 8.dp) // Add space between the label and the field
-                    )
-
-                    // MdModels Dropdown
-                    ExposedDropdownMenuBox(
-                        expanded = expandedMdModel,
-                        onExpandedChange = { expandedMdModel = !expandedMdModel },
-                        modifier = Modifier.weight(2f) // Adjust weight to control spacing
-                    ) {
-                        OutlinedTextField(
-                            value = selectedMdModel?.modelDescription ?: "Select Make/Model",
-                            onValueChange = {},
-                            readOnly = true,
-                            trailingIcon = {
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedMdModel)
-                            },
-                            modifier = Modifier
-                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                                .fillMaxWidth(),
-                            colors = ExposedDropdownMenuDefaults.textFieldColors(
-                                focusedIndicatorColor = Color.Red,
-                                unfocusedIndicatorColor = Color.Gray,
-                                focusedLabelColor = Color.DarkGray,
-                                unfocusedLabelColor = Color.Gray,
-                                focusedContainerColor = Color.White,
-                                unfocusedContainerColor = Color.White,
-                            )
-                        )
-                        ExposedDropdownMenu(
-                            expanded = expandedMdModel,
-                            onDismissRequest = { expandedMdModel = false }
-                        ) {
-                            mdModels.forEach { mdModel ->
-                                DropdownMenuItem(
-                                    text = { Text(mdModel.modelDescription) },
-                                    onClick = {
-                                        selectedMdModel = mdModel
-                                        expandedMdModel = false
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-
-                // Serial Number Row
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp), // Adjust padding as needed
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Serial Number:",
-                        style = MaterialTheme.typography.labelLarge,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 8.dp) // Add space between the label and the field
-                    )
-
-                    // Serial Number Input (Capitalized)
-                    OutlinedTextField(
-                        value = serialNumber,
-                        onValueChange = {
-                            // Allow A-Z, a-z, 0-9, space, hyphen, underscore
-                            // The ^ inside [] means "not these characters"
-                            // So, replace anything that is NOT in the allowed set.
-                            serialNumber = it.replace(Regex("[^A-Za-z0-9 _.-]"), "").uppercase()
-                        },
-                        modifier = Modifier.weight(2f),
-                        visualTransformation = UppercaseTransformation,
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.Red,
-                            unfocusedBorderColor = Color.Gray,
-                            focusedLabelColor = Color.DarkGray,
-                            unfocusedLabelColor = Color.Gray,
-                        )
-                    )
-
-                }
-
-                // Aperture Size Row
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp), // Adjust padding as needed
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Aperture Size (mm):",
-                        style = MaterialTheme.typography.labelLarge,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 8.dp) // Add space between the label and the field
-                    )
-
-                    OutlinedTextField(
-                        value = apertureWidth,
-                        onValueChange = {
-                            if (it.all { char -> char.isDigit() }) apertureWidth = it
-                        },
-                        label = { Text("Width") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier
-                            .weight(1f) // Adjust weight to control spacing
-                            .padding(end = 8.dp),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.Red,
-                            unfocusedBorderColor = Color.Gray,
-                            focusedLabelColor = Color.DarkGray,
-                            unfocusedLabelColor = Color.Gray,
-                        )
-                    )
-
-                    Text(
-                        text = "x",
-                        style = MaterialTheme.typography.labelLarge,
-                        modifier = Modifier.padding(end = 8.dp)
-                    )
-
-                    OutlinedTextField(
-                        value = apertureHeight,
-                        onValueChange = {
-                            if (it.all { char -> char.isDigit() }) apertureHeight = it
-                        },
-                        label = { Text("Height") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.weight(1f),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.Red,
-                            unfocusedBorderColor = Color.Gray,
-                            focusedLabelColor = Color.DarkGray,
-                            unfocusedLabelColor = Color.Gray,
-                        )
-                    )
-
-
-                }
-
-                // Site Location Row
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp), // Adjust padding as needed
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Location Ref:",
-                        style = MaterialTheme.typography.labelLarge,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 8.dp) // Add space between the label and the field
-                    )
-
-                    //Location Input (Capitalized)
-                    OutlinedTextField(
-                        value = lastLocation,
-                        onValueChange = {
-                            // Allow A-Z, a-z, 0-9, space, hyphen, underscore
-                            // The ^ inside [] means "not these characters"
-                            // So, replace anything that is NOT in the allowed set.
-                            lastLocation = it.replace(Regex("[^A-Za-z0-9 _.-]"), "").uppercase()
-                        },
-                        modifier = Modifier.weight(2f),
-                        visualTransformation = UppercaseTransformation,
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.Red,
-                            unfocusedBorderColor = Color.Gray,
-                            focusedLabelColor = Color.DarkGray,
-                            unfocusedLabelColor = Color.Gray,
-                        )
-                    )
-
-                }
-                Spacer(modifier = Modifier.height(15.dp))
-                val context = LocalContext.current  // Retrieve the context using LocalContext
-
-                // Submit Button
-
-                Button(
-                    onClick = {
-                        keyboardController?.hide()
-
-                        val valid = serialNumber.isNotBlank() &&
-                                apertureWidth.isNotBlank() &&
-                                apertureHeight.isNotBlank() &&
-                                selectedSystemType != null &&
-                                selectedMdModel != null &&
-                                lastLocation.isNotBlank()
-
-                        if (!valid) return@Button
-
-                        isProcessing = true
-
-                        coroutineScope.launch {
-                            try {
-                                submitNewMdSystem(
-                                    context = context,
-                                    customerID = customerID,
-                                    serialNumber = serialNumber,
-                                    apertureWidth = apertureWidth.toInt(),
-                                    apertureHeight = apertureHeight.toInt(),
-                                    systemTypeId = selectedSystemType!!.id,
-                                    modelId = selectedMdModel!!.meaId,
-                                    lastLocation = lastLocation,
-                                    mdSystemsRepository = mdSystemsRepository,
-                                    snackbarHostState = snackbarHostState,
-                                    navController = navController
-                                )
-                            } finally {
-                                isProcessing = false
-                            }
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !isProcessing,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Gray,
-                        contentColor = Color.White
-                    )
-                ) {
-                    if (isProcessing) {
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                    } else {
-                        Text("Add Metal Detector")
-                    }
+            ) {
+                if (isProcessing) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                } else {
+                    Text("Add Metal Detector")
                 }
             }
-        })
+        }
     }
+}
+
 
 suspend fun submitNewMdSystem(
     context: Context,

@@ -24,8 +24,6 @@ fun LabeledReadOnlyField(
 ) {
     var showHelpDialog by remember { mutableStateOf(false) }
 
-    val fieldShape = RoundedCornerShape(14.dp)
-
     FormRowWrapper(
         label = label,
         onNaClick = null, // disables the N/A button
@@ -33,13 +31,11 @@ fun LabeledReadOnlyField(
             { showHelpDialog = true }
         } else null
     ) {
-        // Read-only field for the middle zone
         OutlinedTextField(
             value = value,
             onValueChange = {},
             singleLine = true,
-            enabled = false,
-            shape = fieldShape,
+            readOnly = true,
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
                 disabledBorderColor = Color.Gray,
@@ -49,7 +45,6 @@ fun LabeledReadOnlyField(
         )
     }
 
-    // Help dialog (only shown if text provided)
     if (showHelpDialog && helpText != null) {
         AlertDialog(
             onDismissRequest = { showHelpDialog = false },
@@ -63,4 +58,3 @@ fun LabeledReadOnlyField(
         )
     }
 }
-

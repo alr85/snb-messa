@@ -66,7 +66,7 @@ fun MyTopAppBar(navController: NavHostController, scrollBehavior: TopAppBarScrol
                     .padding(start = 8.dp) // Add left padding here
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.snb_crop),
+                    painter = painterResource(id = R.drawable.snb_logo_transparent),
                     contentScale = ContentScale.Fit, // Ensures the image fits within the bounds
                     contentDescription = "Company Logo"
                 )
