@@ -6,12 +6,14 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,6 +26,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.CloudOff
@@ -39,14 +42,18 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -112,38 +119,56 @@ fun ServiceSelectSystemScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "$customerName – $customerPostcode",
+                        text = customerName,
                         maxLines = 1
                     )
                 },
-                actions = {
-
-
-                    FilledTonalButton(onClick = { showMenu = true }) {
-                        Icon(Icons.Default.Tune, contentDescription = null)
-                        Text("Actions", modifier = Modifier.padding(start = 6.dp))
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-
-                }
+                },
+                actions = {
+                    Box(
+                        modifier = Modifier
+                            .height(40.dp)
+                            .width(52.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(MaterialTheme.colorScheme.secondaryContainer)
+                            .clickable { showMenu = true },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "Menu",
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
             )
+
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
 
-
         // Modern menu bottom sheet
         if (showMenu) {
+            val sheetBg = Color.White // or MaterialTheme.colorScheme.background if you want dark-mode friendly
+
             ModalBottomSheet(
                 onDismissRequest = { showMenu = false },
-                sheetState = sheetState
+                sheetState = sheetState,
+                containerColor = sheetBg
             ) {
-                // Menu items
                 ListItem(
                     headlineContent = { Text("New Metal Detector") },
-                    leadingContent = {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = null)
-                    },
+                    leadingContent = { Icon(Icons.Default.Add, contentDescription = null) },
                     supportingContent = { Text("Add a new metal detector for this customer") },
+                    colors = ListItemDefaults.colors(containerColor = sheetBg),
                     modifier = Modifier.clickable {
                         showMenu = false
                         navController.navigate("AddNewMetalDetectorScreen/$customerID/$customerName")
@@ -152,42 +177,36 @@ fun ServiceSelectSystemScreen(
 
                 ListItem(
                     headlineContent = { Text("New Checkweigher") },
-                    leadingContent = {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = null)
-                    },
+                    leadingContent = { Icon(Icons.Default.Add, contentDescription = null) },
                     supportingContent = { Text("Coming soon") },
-                    // Disabled look + no click
+                    colors = ListItemDefaults.colors(containerColor = sheetBg)
                 )
 
                 ListItem(
                     headlineContent = { Text("New Static Scale") },
-                    leadingContent = {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = null)
-                    },
+                    leadingContent = { Icon(Icons.Default.Add, contentDescription = null) },
                     supportingContent = { Text("Coming soon") },
+                    colors = ListItemDefaults.colors(containerColor = sheetBg)
                 )
 
                 ListItem(
                     headlineContent = { Text("New X-Ray") },
-                    leadingContent = {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = null)
-                    },
+                    leadingContent = { Icon(Icons.Default.Add, contentDescription = null) },
                     supportingContent = { Text("Coming soon") },
+                    colors = ListItemDefaults.colors(containerColor = sheetBg)
                 )
 
                 Divider()
 
                 ListItem(
                     headlineContent = { Text("Navigate to Site") },
-                    leadingContent = {
-                        Icon(imageVector = Icons.Default.Navigation, contentDescription = null)
-                    },
+                    leadingContent = { Icon(Icons.Default.Navigation, contentDescription = null) },
                     supportingContent = { Text(customerPostcode) },
+                    colors = ListItemDefaults.colors(containerColor = sheetBg),
                     modifier = Modifier.clickable {
                         showMenu = false
                         try {
-                            val gmmIntentUri =
-                                "google.navigation:q=${Uri.encode(customerPostcode)}".toUri()
+                            val gmmIntentUri = "google.navigation:q=${Uri.encode(customerPostcode)}".toUri()
                             val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
                                 setPackage("com.google.android.apps.maps")
                             }
@@ -201,10 +220,9 @@ fun ServiceSelectSystemScreen(
 
                 ListItem(
                     headlineContent = { Text("Refresh Database") },
-                    leadingContent = {
-                        Icon(imageVector = Icons.Default.CloudSync, contentDescription = null)
-                    },
+                    leadingContent = { Icon(Icons.Default.CloudSync, contentDescription = null) },
                     supportingContent = { Text("Sync local and cloud systems") },
+                    colors = ListItemDefaults.colors(containerColor = sheetBg),
                     modifier = Modifier.clickable {
                         showMenu = false
                         coroutineScope.launch {
@@ -219,7 +237,6 @@ fun ServiceSelectSystemScreen(
                     }
                 )
 
-                // Bottom padding so it doesn’t feel cramped
                 Box(modifier = Modifier.height(24.dp))
             }
         }
@@ -240,6 +257,13 @@ fun ServiceSelectSystemScreen(
                 val filteredSystems = metalDetectorsCalibrationsList.value.sortedBy { it.serialNumber }
                 Log.d("DEBUG", "UNFiltered Systems: ${metalDetectorsCalibrationsList.value}")
                 Log.d("DEBUG", "Filtered Systems: $filteredSystems")
+
+                Text(
+                    text = "Metal Detectors",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
 
                 LazyRow(
                     modifier = Modifier
@@ -325,8 +349,35 @@ fun ServiceSelectSystemScreen(
                         }
                     }
                 }
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+
+                ComingSoonRow("Checkweighers")
+                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+                ComingSoonRow("X-Ray Systems")
+                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+                ComingSoonRow("Static Scales")
+
             }
         }
+    }
+}
+
+@Composable
+private fun ComingSoonRow(title: String) {
+    Column(modifier = Modifier.padding(vertical = 12.dp)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        Text(
+            text = "Coming soon",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
     }
 }
 

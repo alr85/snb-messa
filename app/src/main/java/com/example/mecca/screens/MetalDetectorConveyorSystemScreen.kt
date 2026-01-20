@@ -2,38 +2,38 @@ package com.example.mecca.screens
 
 import android.content.Intent
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CloudUpload
-import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Handyman
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,11 +45,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.navigation.NavHostController
@@ -66,7 +66,6 @@ import com.example.mecca.ui.theme.ExpandableSection
 import com.example.mecca.util.InAppLogger
 import com.example.mecca.util.SerialCheckResult
 import kotlinx.coroutines.launch
-import java.util.UUID
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -124,7 +123,6 @@ fun MetalDetectorConveyorSystemScreen(
             putExtra("SYSTEM_ID", system.id)
             putExtra("CLOUD_SYSTEM_ID", system.cloudId)
             putExtra("TEMP_SYSTEM_ID", system.tempId)
-            InAppLogger.d("System Type ID: ${system.systemTypeId}")
             putExtra("SYSTEM_TYPE_ID", system.systemTypeId)
             putExtra("CUSTOMER_ID", system.fusionID)
             putExtra("SERIAL_NUMBER", system.serialNumber)
@@ -234,12 +232,16 @@ fun MetalDetectorConveyorSystemScreen(
     if (showActions) {
         ModalBottomSheet(
             onDismissRequest = { showActions = false },
-            sheetState = sheetState
+            sheetState = sheetState,
+            containerColor = Color.White
         ) {
             ListItem(
-                headlineContent = { Text("Start a New Calibration") },
+                headlineContent = { Text("Start a New Calibration", fontWeight = FontWeight.Bold) },
                 supportingContent = { Text("Begin a new calibration for this system") },
-                leadingContent = { Icon(Icons.Default.Add, contentDescription = null) },
+                leadingContent = { Icon(Icons.Default.Tune, contentDescription = null) },
+                colors = ListItemDefaults.colors(
+                        containerColor = Color.White
+                    ),
                 modifier = Modifier.clickable {
                     showActions = false
                     startCalibration()
@@ -247,21 +249,28 @@ fun MetalDetectorConveyorSystemScreen(
             )
 
             ListItem(
-                headlineContent = { Text("Start a New Service Call") },
-                supportingContent = { Text("Log a service call for this system") },
-                leadingContent = { Icon(Icons.Default.Add, contentDescription = null) },
+                headlineContent = { Text("Start a New Service Call", fontWeight = FontWeight.Bold) },
+                supportingContent = { Text("Coming Soon") },
+                leadingContent = { Icon(Icons.Default.Handyman , contentDescription = null) },
+                colors = ListItemDefaults.colors(
+                    containerColor = Color.White
+                ),
                 modifier = Modifier.clickable {
                     showActions = false
                     startServiceCall()
                 }
             )
 
+
             if (mdSystem?.isSynced == false) {
                 Divider()
                 ListItem(
-                    headlineContent = { Text("Sync to Cloud") },
+                    headlineContent = { Text("Sync to Cloud",  fontWeight = FontWeight.Bold) },
                     supportingContent = { Text("Upload this system and link local records") },
                     leadingContent = { Icon(Icons.Default.CloudUpload, contentDescription = null) },
+                    colors = ListItemDefaults.colors(
+                        containerColor = Color.White
+                    ),
                     modifier = Modifier.clickable {
                         showActions = false
                         coroutineScope.launch { syncThisSystem() }
@@ -274,18 +283,40 @@ fun MetalDetectorConveyorSystemScreen(
     }
 
     Scaffold(
-        topBar = {
+        topBar =  {
             CenterAlignedTopAppBar(
-                title = { Text(mdSystem?.systemType ?: "System") },
-                actions = {
-                    FilledTonalButton(onClick = { showActions = true }) {
-                        Icon(Icons.Default.Tune, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Text("Actions", modifier = Modifier.padding(start = 8.dp))
-                        Icon(Icons.Default.ExpandMore, contentDescription = null, modifier = Modifier.padding(start = 4.dp))
+                title = { /* no title */ },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
+                actions = {
+                    // "Shaded" menu button
+                    Box(
+                        modifier = Modifier
+                            .height(40.dp)
+                            .width(80.dp) // wider than tall = pill
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(MaterialTheme.colorScheme.secondaryContainer)
+                            .clickable { showActions = true },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "Menu",
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
             )
         },
+
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { paddingValues ->
         LazyColumn(
@@ -296,6 +327,7 @@ fun MetalDetectorConveyorSystemScreen(
         ) {
             item {
                 ExpandableSection(title = "System Details", initiallyExpanded = true) {
+                    DetailItem(label = "System Type", value = mdSystem?.systemType ?: "?")
                     DetailItem(label = "Serial Number", value = mdSystem?.serialNumber ?: "?")
                     DetailItem(label = "Customer", value = mdSystem?.customerName ?: "?")
                     DetailItem(label = "Model", value = mdSystem?.modelDescription ?: "?")
