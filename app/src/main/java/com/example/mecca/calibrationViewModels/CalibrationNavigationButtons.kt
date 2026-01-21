@@ -29,13 +29,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.ui.theme.FormBackground
 
 @Composable
 fun CalibrationNavigationButtons(
-    navController: NavHostController,
     viewModel: CalibrationMetalDetectorConveyorViewModel,
     onPreviousClick: () -> Unit,
     onCancelClick: () -> Unit,

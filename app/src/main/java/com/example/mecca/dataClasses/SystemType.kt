@@ -5,8 +5,8 @@ import androidx.room.PrimaryKey
 
 // This data class represents the structure of the data returned by the API and needs to match up
 data class SystemType(
-    val id: Int,
-    val systemType: String
+    val id: Int?,
+    val systemType: String?
 
 )
 

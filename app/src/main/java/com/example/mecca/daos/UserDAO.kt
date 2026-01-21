@@ -1,4 +1,4 @@
-package com.example.mecca.DAOs
+package com.example.mecca.daos
 
 
 import androidx.room.Dao

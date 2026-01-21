@@ -1,6 +1,5 @@
-package com.example.mecca.DAOs
+package com.example.mecca.daos
 
-// DetectionLevelDaos.kt
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy

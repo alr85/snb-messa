@@ -3,11 +3,11 @@ package com.example.mecca.calibrationViewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.mecca.ApiService
-import com.example.mecca.DAOs.CustomerDAO
-import com.example.mecca.DAOs.MdModelsDAO
-import com.example.mecca.DAOs.MetalDetectorConveyorCalibrationDAO
-import com.example.mecca.DAOs.MetalDetectorSystemsDAO
-import com.example.mecca.DAOs.SystemTypeDAO
+import com.example.mecca.daos.CustomerDAO
+import com.example.mecca.daos.MdModelsDAO
+import com.example.mecca.daos.MetalDetectorConveyorCalibrationDAO
+import com.example.mecca.daos.MetalDetectorSystemsDAO
+import com.example.mecca.daos.SystemTypeDAO
 import com.example.mecca.repositories.MetalDetectorConveyorCalibrationRepository
 import com.example.mecca.repositories.MetalDetectorSystemsRepository
 import com.example.mecca.repositories.RetailerSensitivitiesRepository

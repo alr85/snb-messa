@@ -34,7 +34,7 @@
 
 package com.example.mecca.repositories
 
-import com.example.mecca.DAOs.MetalDetectorConveyorCalibrationDAO
+import com.example.mecca.daos.MetalDetectorConveyorCalibrationDAO
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.AirPressureSensorUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.BackupSensorUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.BinDoorMonitorUpdate

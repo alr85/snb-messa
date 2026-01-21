@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mecca.Network.isNetworkAvailable
+import com.example.mecca.network.isNetworkAvailable
 import com.example.mecca.repositories.UserRepository
 import com.example.mecca.util.InAppLogger
 import kotlinx.coroutines.flow.MutableStateFlow

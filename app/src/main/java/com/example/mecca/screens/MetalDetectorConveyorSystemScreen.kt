@@ -43,7 +43,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.navigation.NavHostController
 import com.example.mecca.AppChromeViewModel
-import com.example.mecca.DAOs.MetalDetectorConveyorCalibrationDAO
+import com.example.mecca.daos.MetalDetectorConveyorCalibrationDAO
 import com.example.mecca.PreferencesHelper
 import com.example.mecca.TopBarState
 import com.example.mecca.activities.MetalDetectorConveyorCalibrationActivity

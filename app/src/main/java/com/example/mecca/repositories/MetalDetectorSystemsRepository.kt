@@ -4,7 +4,7 @@ import android.content.Context
 import com.example.mecca.ApiService
 import com.example.mecca.AppDatabase
 import com.example.mecca.FetchResult
-import com.example.mecca.Network.isNetworkAvailable
+import com.example.mecca.network.isNetworkAvailable
 import com.example.mecca.dataClasses.MdSystemCloud
 import com.example.mecca.dataClasses.MdSystemLocal
 import com.example.mecca.dataClasses.MetalDetectorWithFullDetails

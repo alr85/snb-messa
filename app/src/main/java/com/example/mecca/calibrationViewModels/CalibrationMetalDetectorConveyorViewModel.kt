@@ -7,11 +7,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mecca.ApiService
-import com.example.mecca.DAOs.CustomerDAO
-import com.example.mecca.DAOs.MdModelsDAO
-import com.example.mecca.DAOs.MetalDetectorConveyorCalibrationDAO
-import com.example.mecca.DAOs.MetalDetectorSystemsDAO
-import com.example.mecca.DAOs.SystemTypeDAO
+import com.example.mecca.daos.CustomerDAO
+import com.example.mecca.daos.MdModelsDAO
+import com.example.mecca.daos.MetalDetectorConveyorCalibrationDAO
+import com.example.mecca.daos.MetalDetectorSystemsDAO
+import com.example.mecca.daos.SystemTypeDAO
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.setAllPvResultsNa
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toAirPressureSensorUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toBackupSensorUpdate

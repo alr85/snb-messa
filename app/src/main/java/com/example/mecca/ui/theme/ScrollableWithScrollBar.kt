@@ -24,6 +24,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -74,8 +77,18 @@ fun ScrollableWithScrollbar(
                 }
 
                 // Safe fraction (no divide-by-zero, no NaN)
-                val fraction = (scrollState.value.toFloat() / maxScroll.toFloat())
-                    .coerceIn(0f, 1f)
+
+                val scrollFraction by remember(scrollState, maxScroll) {
+                    derivedStateOf {
+                        if (maxScroll > 0) {
+                            (scrollState.value.toFloat() / maxScroll.toFloat()).coerceIn(0f, 1f)
+                        } else {
+                            0f
+                        }
+                    }
+                }
+                val fraction = scrollFraction
+
 
                 val offsetPx = (availablePx * fraction).coerceIn(0f, availablePx)
 
@@ -126,22 +139,30 @@ fun LazyColumnWithScrollbar(
                 .width(scrollbarWidth)
                 .padding(vertical = 8.dp)
         ) {
-            val layoutInfo = listState.layoutInfo
-            val totalItems = layoutInfo.totalItemsCount
-            val visibleItems = layoutInfo.visibleItemsInfo.size
+            val availableHeightPx = with(density) {
+                (maxHeight - thumbHeight).toPx().coerceAtLeast(0f)
+            }
 
-            if (totalItems > 0 && visibleItems in 1 until totalItems) {
-                // Rough scroll fraction based on first visible item index
-                val firstIndex = layoutInfo.visibleItemsInfo.firstOrNull()?.index ?: 0
-                val maxIndex = (totalItems - visibleItems).coerceAtLeast(1)
+            // Derive scroll fraction from frequently-changing layoutInfo
+            val scrollFraction by remember(listState) {
+                derivedStateOf {
+                    val layoutInfo = listState.layoutInfo
+                    val totalItems = layoutInfo.totalItemsCount
+                    val visibleItems = layoutInfo.visibleItemsInfo.size
 
-                val scrollFraction = (firstIndex.toFloat() / maxIndex.toFloat()).coerceIn(0f, 1f)
-
-                val availableHeightPx = with(density) {
-                    (maxHeight - thumbHeight).toPx().coerceAtLeast(0f)
+                    if (totalItems <= 0 || visibleItems <= 0 || visibleItems >= totalItems) {
+                        null // no scrollbar needed
+                    } else {
+                        val firstIndex = layoutInfo.visibleItemsInfo.firstOrNull()?.index ?: 0
+                        val maxIndex = (totalItems - visibleItems).coerceAtLeast(1)
+                        (firstIndex.toFloat() / maxIndex.toFloat()).coerceIn(0f, 1f)
+                    }
                 }
+            }
 
-                val thumbOffsetPx = (availableHeightPx * scrollFraction).coerceIn(0f, availableHeightPx)
+            val fraction = scrollFraction
+            if (fraction != null) {
+                val thumbOffsetPx = (availableHeightPx * fraction).coerceIn(0f, availableHeightPx)
 
                 Box(
                     modifier = Modifier
@@ -152,5 +173,6 @@ fun LazyColumnWithScrollbar(
                 )
             }
         }
+
     }
 }

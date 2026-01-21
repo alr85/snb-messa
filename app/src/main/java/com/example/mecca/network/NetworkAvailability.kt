@@ -1,4 +1,4 @@
-package com.example.mecca.Network
+package com.example.mecca.network
 
 import android.Manifest
 import android.content.Context

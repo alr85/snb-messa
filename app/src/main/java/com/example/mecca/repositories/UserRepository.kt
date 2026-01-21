@@ -2,15 +2,13 @@ package com.example.mecca.repositories
 
 import android.util.Log
 import com.example.mecca.ApiService
-import com.example.mecca.DAOs.UserDao
+import com.example.mecca.daos.UserDao
 import com.example.mecca.dataClasses.UserEntity
 import com.example.mecca.util.InAppLogger
-import java.net.SocketTimeoutException
-import java.util.Date
-
 import kotlinx.coroutines.delay
 import retrofit2.Response
 import java.io.IOException
+import java.util.Date
 
 
 class UserRepository(
@@ -97,12 +95,14 @@ private suspend fun <T> retryWithBackoff(
             InAppLogger.d("Transient HTTP ${resp.code()} on attempt ${attemptIndex + 1}. Retrying in ${delayMs}ms")
         } catch (t: Throwable) {
             lastException = t
-            val retriable = t is IOException || t is SocketTimeoutException
-            if (!retriable) throw t
+            if (t !is IOException) throw t
 
-            Log.w("MESSA-DEBUG", "Network exception on attempt ${attemptIndex + 1}: ${t.javaClass.simpleName} ${t.message}. Retrying in ${delayMs}ms")
-            InAppLogger.d("Network exception on attempt ${attemptIndex + 1}: ${t.javaClass.simpleName} ${t.message}. Retrying in ${delayMs}ms")
+            InAppLogger.d(
+                "Network exception on attempt ${attemptIndex + 1}: " +
+                        "${t.javaClass.simpleName} ${t.message}. Retrying in ${delayMs}ms"
+            )
         }
+
 
         delay(delayMs)
         delayMs = (delayMs * 2).coerceAtMost(maxDelayMs)

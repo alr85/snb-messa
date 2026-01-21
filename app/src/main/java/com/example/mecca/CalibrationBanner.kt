@@ -28,6 +28,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -227,7 +228,11 @@ fun CalibrationSummaryDialog(
                     }
 
                     // Bottom fade hint (only show if not fully scrolled)
-                    if (scrollState.value < scrollState.maxValue) {
+                    val showBottomFade by remember {
+                        derivedStateOf { scrollState.value < scrollState.maxValue }
+                    }
+
+                    if (showBottomFade) {
                         Box(
                             modifier = Modifier
                                 .align(Alignment.BottomCenter)
@@ -243,7 +248,11 @@ fun CalibrationSummaryDialog(
                     }
 
                     // Top fade hint (only show if scrolled down)
-                    if (scrollState.value > 0) {
+                    val showTopFade by remember {
+                        derivedStateOf { scrollState.value > 0 }
+                    }
+
+                    if (showTopFade) {
                         Box(
                             modifier = Modifier
                                 .align(Alignment.TopCenter)
@@ -257,6 +266,7 @@ fun CalibrationSummaryDialog(
                                 )
                         )
                     }
+
                 }
 
 
