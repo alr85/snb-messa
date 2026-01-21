@@ -7,7 +7,6 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,19 +15,12 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -54,13 +46,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.mecca.AppChromeViewModel
 import com.example.mecca.FetchResult
+import com.example.mecca.TopBarState
 import com.example.mecca.repositories.MetalDetectorModelsRepository
 import com.example.mecca.repositories.MetalDetectorSystemsRepository
 import com.example.mecca.repositories.SystemTypeRepository
 import com.example.mecca.dataClasses.MdModelsLocal
 import com.example.mecca.dataClasses.SystemTypeLocal
-import com.example.mecca.formModules.FormRowWrapper
 import com.example.mecca.formModules.LabeledDualNumberInputsWithHelp
 import com.example.mecca.formModules.LabeledObjectDropdownWithHelp
 import com.example.mecca.formModules.LabeledReadOnlyField
@@ -86,7 +79,8 @@ fun AddNewMetalDetectorScreen(
     mdModelsRepository: MetalDetectorModelsRepository,
     mdSystemsRepository: MetalDetectorSystemsRepository,
     customerID: Int,
-    customerName: String
+    customerName: String,
+    chromeVm: AppChromeViewModel
 ) {
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -138,6 +132,17 @@ fun AddNewMetalDetectorScreen(
                 selectedSystemType != null &&
                 selectedMdModel != null &&
                 lastLocation.isNotBlank()
+
+    LaunchedEffect(Unit) {
+        chromeVm.setTopBar(
+            TopBarState(
+                title = "Add New Metal Detector",
+                showBack = true,
+                showCall = false,
+                showMenu = false
+            )
+        )
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }

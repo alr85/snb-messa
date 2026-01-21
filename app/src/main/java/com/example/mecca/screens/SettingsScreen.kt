@@ -27,10 +27,14 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,72 +47,83 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.mecca.AppChromeViewModel
+import com.example.mecca.MyTopAppBar
 import com.example.mecca.PreferencesHelper
+import com.example.mecca.TopBarState
 import com.example.mecca.UserViewModel
 import kotlin.system.exitProcess
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(navController: NavHostController, userViewModel: UserViewModel) {
-
+fun SettingsScreen(
+    navController: NavHostController,
+    userViewModel: UserViewModel,
+    chromeVm: AppChromeViewModel
+) {
     val context = LocalContext.current
     val showDialog = remember { mutableStateOf(false) }
 
-    // Define the settings list inside the composable
+    val settingsItems = remember {
+        listOf(
+            SettingItem("My Calibrations"),
+            SettingItem("Database Sync"),
+            SettingItem("Debug Logs"),
+            SettingItem("About App"),
+            SettingItem("Logout")
+        )
+    }
 
-    val settingsItems = listOf(
-        SettingItem("My Calibrations"),
-        SettingItem("Database Sync"),
-        SettingItem("Debug Logs"),
-        SettingItem("About App"),
-        SettingItem("Logout") // Add Logout button
-        //SettingItem("Another switch", isSwitch = true, isChecked = false),
-        //SettingItem("Account settings"),
-    )
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White) // Set the entire screen background to white
-            .padding(8.dp),
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start
-        ) {
-            Text(
-                text = "Menu",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(6.dp),
-                style = TextStyle(
-                    fontSize = 20.sp,
-                    textAlign = TextAlign.Center
-                )
+    LaunchedEffect(Unit) {
+        chromeVm.setTopBar(
+            TopBarState(
+                title = "Menu",
+                showBack = false,
+                showCall = true,
+                showMenu = false
             )
+        )
+    }
 
-            LazyColumn {
-                items(settingsItems) { setting ->
-                    SettingRow(setting, navController, showDialog)
-                }
+    Scaffold(
+//        topBar = {
+//            MyTopAppBar(
+//                navController = navController,
+//                title = "Settings",
+//                showBack = true,
+//                showCall = false
+//            )
+//        },
+        containerColor = Color.White // matches your "white screen" preference
+    ) { paddingValues ->
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            items(settingsItems) { setting ->
+                SettingRow(
+                    setting = setting,
+                    navController = navController,
+                    showDialog = showDialog
+                )
             }
         }
     }
 
-
     if (showDialog.value) {
         LogoutConfirmationDialog(
             onConfirm = {
-                // Clear credentials and close the app
-                userViewModel.loginStatus.value = false // Reset login state
-                userViewModel.syncStatus.value = false // Optionally reset sync state
+                userViewModel.loginStatus.value = false
+                userViewModel.syncStatus.value = false
                 PreferencesHelper.clearCredentials(context)
 
                 Log.d("LoginDebug", "Credentials cleared")
-                
+
                 (context as? ComponentActivity)?.apply {
-                    finishAffinity() // Close all activities
-                    exitProcess(0)   // Fully exit the app
+                    finishAffinity()
+                    exitProcess(0)
                 }
             },
             onDismiss = { showDialog.value = false }
@@ -116,74 +131,75 @@ fun SettingsScreen(navController: NavHostController, userViewModel: UserViewMode
     }
 }
 
+
 @Composable
-fun SettingRow(setting: SettingItem, navController: NavHostController, showDialog: MutableState<Boolean>) {
+fun SettingRow(
+    setting: SettingItem,
+    navController: NavHostController,
+    showDialog: MutableState<Boolean>
+) {
+    val icon = when (setting.name) {
+        "Database Sync" -> Icons.Default.CloudSync
+        "About App" -> Icons.Default.Info
+        "My Calibrations" -> Icons.Filled.EditNote
+        "Debug Logs" -> Icons.AutoMirrored.Filled.ListAlt
+        "Logout" -> Icons.Default.Refresh
+        else -> Icons.Filled.Settings
+    }
+
     Column {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    // Navigate to different screens based on setting name
                     when (setting.name) {
                         "Database Sync" -> navController.navigate("databaseSync")
                         "About App" -> navController.navigate("aboutApp")
                         "My Calibrations" -> navController.navigate("myCalibrations")
                         "Debug Logs" -> navController.navigate("logsScreen")
-                        "Logout" -> {
-                            // Show confirmation dialog for logout
-                            showDialog.value = true
-                        }
-                        else -> navController.navigate("databaseSync") // fallback
+                        "Logout" -> showDialog.value = true
+                        else -> navController.navigate("databaseSync")
                     }
                 }
-                .padding(16.dp),
+                .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Add an icon to the left
             Icon(
-                imageVector = when (setting.name) {
-                    "Database Sync" -> Icons.Default.CloudSync
-                    "Account settings" -> Icons.Filled.Person
-                    "About App" -> Icons.Default.Info
-                    "My Calibrations" -> Icons.Filled.EditNote
-                    "Debug Logs" -> Icons.AutoMirrored.Filled.ListAlt
-                    "Logout" -> Icons.Default.Refresh
-                    else -> Icons.Filled.Settings
-                },
-                contentDescription = "${setting.name} icon",
-                modifier = Modifier.size(24.dp), // Adjust icon size
-                tint = Color.Black // Adjust icon color
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                tint = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.width(16.dp)) // Space between icon and text
+            Spacer(modifier = Modifier.width(16.dp))
 
-            // Display the setting name
             Text(
                 text = setting.name,
-                style = TextStyle(fontSize = 16.sp)
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.weight(1f)) // Push chevron to the right
+            Spacer(modifier = Modifier.weight(1f))
 
-            // Add a chevron to the right
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = "Chevron",
+                contentDescription = null,
                 modifier = Modifier.size(24.dp),
-                tint = Color.Black // Adjust icon color
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
-        // Divider with inset
+        // Divider (use theme, not raw gray)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp) // Insets for the divider
+                .padding(start = 56.dp, end = 16.dp) // inset so it aligns after the icon
                 .height(1.dp)
-                .background(Color.Gray) // Divider color
+                .background(MaterialTheme.colorScheme.outlineVariant)
         )
     }
 }
+
 
 data class SettingItem(
     val name: String,

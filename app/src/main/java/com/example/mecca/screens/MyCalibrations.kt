@@ -14,7 +14,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -25,6 +28,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -44,9 +48,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.mecca.ApiService
+import com.example.mecca.AppChromeViewModel
 import com.example.mecca.AppDatabase
 import com.example.mecca.DAOs.MetalDetectorConveyorCalibrationDAO
+import com.example.mecca.MyTopAppBar
 import com.example.mecca.Network.isNetworkAvailable
+import com.example.mecca.TopBarState
 import com.example.mecca.repositories.CustomerRepository
 import com.example.mecca.repositories.MetalDetectorSystemsRepository
 import com.example.mecca.activities.MetalDetectorConveyorCalibrationActivity
@@ -61,25 +68,78 @@ import java.io.File
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyCalibrationsScreen(
-    //navController: NavHostController,
-    //db: AppDatabase,
-    //repositoryMD: MetalDetectorSystemsRepository,
-    dao: MetalDetectorConveyorCalibrationDAO, // DAO for fetching unfinished calibrations
+    dao: MetalDetectorConveyorCalibrationDAO,
     customerRepository: CustomerRepository,
     apiService: ApiService,
     navController: NavHostController,
     db: AppDatabase,
-    repositoryMD: MetalDetectorSystemsRepository
+    repositoryMD: MetalDetectorSystemsRepository,
+    chromeVm: AppChromeViewModel
 ) {
-
-    var isMenuExpanded by remember { mutableStateOf(false) } // Tracks menu visibility
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    // Collect once. Don’t collect flows inside expandable content blocks.
+    val unfinishedCalibrations by dao.getAllUnfinishedCalibrations()
+        .collectAsState(initial = emptyList())
+
+    val pendingCalibrations by dao.getAllPendingCalibrations()
+        .collectAsState(initial = emptyList())
+
+    val completedCalibrations by dao.getAllCompletedCalibrations()
+        .collectAsState(initial = emptyList())
+
+    // Cache customer names so we don’t launch N coroutines per list item.
+    var customerNameCache by remember { mutableStateOf<Map<Int, String>>(emptyMap()) }
+
+    LaunchedEffect(
+        unfinishedCalibrations,
+        pendingCalibrations,
+        completedCalibrations
+    ) {
+        val allCustomerIds = (unfinishedCalibrations + pendingCalibrations + completedCalibrations)
+            .map { it.customerId }
+            .distinct()
+
+        // Only fetch missing names
+        val missingIds = allCustomerIds.filterNot { customerNameCache.containsKey(it) }
+        if (missingIds.isEmpty()) return@LaunchedEffect
+
+        val newEntries = missingIds.associateWith { id ->
+            customerRepository.getCustomerName(fusionId = id) ?: "Unknown"
+        }
+
+        customerNameCache = customerNameCache + newEntries
+    }
+
+    LaunchedEffect(Unit) {
+        chromeVm.setTopBar(
+            TopBarState(
+                title = "My Calibrations",
+                showBack = true,
+                showCall = false,
+                showMenu = false,
+            )
+        )
+    }
+
+
 
     Scaffold(
+
+//        topBar = {
+//            MyTopAppBar(
+//                navController = navController,
+//                title = "My Calibrations",
+//                showBack = true,
+//                showCall = false
+//            )
+//        },
+
+
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -87,183 +147,77 @@ fun MyCalibrationsScreen(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            // Top Row with Refresh Button
+
+
             item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "My Calibrations",
-                        style = TextStyle(fontSize = 24.sp, textAlign = TextAlign.Center)
+                ExpandableSection(title = "Incomplete Calibrations", initiallyExpanded = false) {
+                    CalibrationList(
+                        calibrations = unfinishedCalibrations,
+                        status = "Incomplete",
+                        customerNameCache = customerNameCache,
+                        onItemClick = { calibration ->
+                            val intent = Intent(context, MetalDetectorConveyorCalibrationActivity::class.java).apply {
+                                putExtra("CALIBRATION_ID", calibration.calibrationId)
+                            }
+                            context.startActivity(intent)
+                        }
                     )
-
-                    // Box to ensure proper alignment of Menu Button and Dropdown Menu
-                    Box(
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    ) {
-                        IconButton(onClick = { isMenuExpanded = !isMenuExpanded }) {
-                            Icon(
-                                imageVector = Icons.Default.MoreVert,
-                                contentDescription = "Customer Systems Menu"
-                            )
-                        }
-                        DropdownMenu(
-                            expanded = isMenuExpanded,
-                            onDismissRequest = { isMenuExpanded = false }
-                        ) {
-
-
-//                            DropdownMenuItem(
-//                                text = {
-//                                    Row(
-//                                        verticalAlignment = Alignment.CenterVertically,
-//                                        modifier = Modifier.padding(8.dp)
-//                                    ) {
-//                                        Icon(
-//                                            imageVector = Icons.Default.Add,
-//                                            contentDescription = null,
-//                                            modifier = Modifier.size(20.dp)
-//                                        )
-//                                        Text(
-//                                            text = "Start a New Service Call",
-//                                            fontSize = 18.sp,
-//                                            modifier = Modifier.padding(start = 8.dp)
-//                                        )
-//                                    }
-//                                },
-//                                onClick = {
-//                                    isMenuExpanded = false
-//
-//                                }
-//                            )
-                        }
-                    }
-                }
-            }
-
-
-            item {
-                ExpandableSection(
-                    title = "Incomplete Calibrations",
-                    initiallyExpanded = false
-                ) {
-                        Column {
-                            val unfinishedCalibrations by dao.getAllUnfinishedCalibrations()
-                                .collectAsState(initial = emptyList())
-                            unfinishedCalibrations.forEach { calibration ->
-                                MyCalibrationItem(
-                                    calibration = calibration,
-                                    status = "Incomplete",
-                                    customerRepository = customerRepository,
-                                    onClick = {
-                                        val intent = Intent(
-                                            context,
-                                            MetalDetectorConveyorCalibrationActivity::class.java
-                                        ).apply {
-                                            putExtra("CALIBRATION_ID", calibration.calibrationId)
-                                        }
-                                        context.startActivity(intent)
-                                    }
-                                )
-                            }
-                        }
-
                 }
             }
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
             item {
-                ExpandableSection(
-                    title = "Pending Calibrations for Upload",
-                    initiallyExpanded = false
-                ) {
-                    Column {
-                        val pendingCalibrations by dao.getAllPendingCalibrations()
-                            .collectAsState(initial = emptyList())
-
-                        pendingCalibrations.forEach { calibration ->
-                            MyCalibrationItem(
-                                calibration = calibration,
-                                status = "Pending",
-                                customerRepository = customerRepository,
-                                onClick = {
-                                    coroutineScope.launch {
-                                        if (isNetworkAvailable(context)) {
-
-                                            Log.d("MESSA-DEBUG", "Starting upload: ${calibration.calibrationId}")
-                                            Log.d("MESSA-DEBUG", "Checking for a matching system: ${calibration.cloudSystemId}")
-
-
-
-                                            // --- Ensure system exists in the cloud ---
-                                            if (calibration.cloudSystemId == 0) {
-                                                Log.d("MESSA-DEBUG", "No cloud ID found")
-                                                snackbarHostState.showSnackbar("No matching system found. Please add this system to the cloud first")
-                                                return@launch
-                                            }
-
-                                            Log.d("MESSA-DEBUG", "Building the CSV file")
-
-                                            // --- Build CSV file path ---
-                                            val csvFile = File(
-                                                context.filesDir,
-                                                "calibration_data_${calibration.calibrationId}.csv"
-                                            )
-
-                                            Log.d("MESSA-DEBUG", "Uploading the CSV file: $csvFile")
-
-                                            val success = CsvUploader.uploadCsvFile(
-                                                csvFile = csvFile,
-                                                apiService = apiService,
-                                                fileName = calibration.calibrationId
-                                            )
-                                            if (success) {
-                                                Log.d("MESSA-DEBUG", "Upload of csvFile: $csvFile successful ")
-                                                Log.d("MESSA-DEBUG", "Updating 'isSynced' flag to true ")
-                                                dao.updateIsSynced(calibration.calibrationId, true)
-                                                Log.d("MESSA-DEBUG", "Upload complete")
-                                                snackbarHostState.showSnackbar("Upload successful!")
-                                            } else {
-                                                snackbarHostState.showSnackbar("Upload failed.")
-                                            }
-
-                                        } else {
-                                            snackbarHostState.showSnackbar("No internet connection. Unable to upload.")
-                                        }
-                                    }
+                ExpandableSection(title = "Pending Calibrations for Upload", initiallyExpanded = false) {
+                    CalibrationList(
+                        calibrations = pendingCalibrations,
+                        status = "Pending",
+                        customerNameCache = customerNameCache,
+                        onItemClick = { calibration ->
+                            coroutineScope.launch {
+                                if (!isNetworkAvailable(context)) {
+                                    snackbarHostState.showSnackbar("No internet connection. Unable to upload.")
+                                    return@launch
                                 }
-                            )
+
+                                if (calibration.cloudSystemId == 0) {
+                                    snackbarHostState.showSnackbar("No matching system found. Add this system to the cloud first.")
+                                    return@launch
+                                }
+
+                                val csvFile = File(
+                                    context.filesDir,
+                                    "calibration_data_${calibration.calibrationId}.csv"
+                                )
+
+                                val success = CsvUploader.uploadCsvFile(
+                                    csvFile = csvFile,
+                                    apiService = apiService,
+                                    fileName = calibration.calibrationId
+                                )
+
+                                if (success) {
+                                    dao.updateIsSynced(calibration.calibrationId, true)
+                                    snackbarHostState.showSnackbar("Upload successful!")
+                                } else {
+                                    snackbarHostState.showSnackbar("Upload failed.")
+                                }
+                            }
                         }
-                    }
+                    )
                 }
             }
-
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
             item {
-                ExpandableSection(
-                    title = "Completed Calibrations",
-                    initiallyExpanded = false
-                ) {
-                        Column {
-                            val completedCalibrations by dao.getAllCompletedCalibrations()
-                                .collectAsState(initial = emptyList())
-                            completedCalibrations.forEach { calibration ->
-                                MyCalibrationItem(
-                                    calibration = calibration,
-                                    status = "Completed",
-                                    onClick = {},
-                                    customerRepository = customerRepository,
-                                )
-                            }
-                        }
-
+                ExpandableSection(title = "Completed Calibrations", initiallyExpanded = false) {
+                    CalibrationList(
+                        calibrations = completedCalibrations,
+                        status = "Completed",
+                        customerNameCache = customerNameCache,
+                        onItemClick = { /* no-op for now */ }
+                    )
                 }
             }
 
@@ -272,35 +226,47 @@ fun MyCalibrationsScreen(
     }
 }
 
+@Composable
+private fun CalibrationList(
+    calibrations: List<MetalDetectorConveyorCalibrationLocal>,
+    status: String,
+    customerNameCache: Map<Int, String>,
+    onItemClick: (MetalDetectorConveyorCalibrationLocal) -> Unit
+) {
+    Column {
+        if (calibrations.isEmpty()) {
+            Text(
+                text = "None",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+            return
+        }
 
-
-
+        calibrations.forEach { calibration ->
+            MyCalibrationItem(
+                calibration = calibration,
+                status = status,
+                customerName = customerNameCache[calibration.customerId] ?: "Loading…",
+                onClick = { onItemClick(calibration) }
+            )
+        }
+    }
+}
 
 @Composable
 fun MyCalibrationItem(
     calibration: MetalDetectorConveyorCalibrationLocal,
     status: String,
-    customerRepository: CustomerRepository,
+    customerName: String,
     onClick: () -> Unit
 ) {
-
-    val coroutineScope = rememberCoroutineScope()
-    var customerName by remember { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(Unit) {
-        coroutineScope.launch {
-            val name = customerRepository.getCustomerName(fusionId = calibration.customerId)
-            customerName = name
-        }
-    }
-
     val formattedDate = try {
         formatDate(calibration.startDate)
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         "Invalid date"
     }
-
-
 
     Column(
         modifier = Modifier
@@ -312,39 +278,43 @@ fun MyCalibrationItem(
             text = "Calibration ID: ${calibration.calibrationId}",
             fontWeight = FontWeight.Bold,
             style = MaterialTheme.typography.bodyLarge,
-            color = Color.Black
+            color = MaterialTheme.colorScheme.onSurface
         )
         Text(
-            text = "Customer Name: $customerName", // Display the customer name here
+            text = "Customer: $customerName",
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        Text(
-            text = "Serial Number: ${calibration.serialNumber}", // Display the customer name here
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray
-        )
-        Text(
-            text = "Status: $status",
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray
-        )
+
         Text(
             text = "Location: ${calibration.lastLocation}",
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Text(
+            text = "Serial Number: ${calibration.serialNumber}",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
-            text = "Started on: $formattedDate",
+            text = "Started: $formattedDate",
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+
+        Text(
+            text = "Status: $status",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+
+
         HorizontalDivider(
             modifier = Modifier.padding(top = 8.dp),
             thickness = 1.dp,
-            color = Color.LightGray
+            color = MaterialTheme.colorScheme.outlineVariant
         )
     }
 }
-
-

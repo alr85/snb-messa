@@ -11,21 +11,28 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -50,6 +57,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.rememberNavController
@@ -92,14 +100,9 @@ class MainActivity : ComponentActivity() {
             when {
                 // Case 1: sync not yet complete or failed
                 !syncStatus -> {
-                    Text(
-                        text = loginError ?: "Syncing users... Please wait.",
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.White)
-                            .padding(16.dp),
-                        color = if (loginError != null) Color.Red else Color.Gray,
-                        textAlign = TextAlign.Center
+                    SyncUsersScreen(
+                        message = loginError,
+                        onRetry = { userViewModel.syncUsers(this) }
                     )
                 }
 
@@ -129,15 +132,109 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@Composable
+fun SyncUsersScreen(
+    message: String?,
+    onRetry: () -> Unit
+) {
+    // Optional: simple auto-retry countdown when there’s an error
+    // Useful for “Azure is waking up” without making the user babysit it.
+    var retryInSeconds by remember { mutableIntStateOf(if (message != null) 10 else 0) }
+
+    LaunchedEffect(message) {
+        if (message != null) {
+            retryInSeconds = 10
+            while (retryInSeconds > 0) {
+                delay(1000)
+                retryInSeconds--
+            }
+            onRetry()
+        } else {
+            retryInSeconds = 0
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            // This is the key bit: avoids status bar/cutout overlap
+            .windowInsetsPadding(WindowInsets.safeDrawing),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+
+            if (message == null) {
+                CircularProgressIndicator()
+                Text(
+                    text = "Syncing users…",
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "Waking the server up and pulling the latest user list.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center
+                )
+            } else {
+                // Error state
+                Text(
+                    text = "Couldn’t sync users",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color(0xFFB71C1C),
+                    textAlign = TextAlign.Center
+                )
+
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center,
+                    maxLines = 4,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                Button(onClick = onRetry) {
+                    Text("Retry now")
+                }
+
+                // Optional auto retry status
+                if (retryInSeconds > 0) {
+                    Text(
+                        text = "Retrying automatically in ${retryInSeconds}s…",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                }
+
+                // Optional: allow offline login path if you want later
+                // OutlinedButton(onClick = { /* continue offline */ }) { Text("Continue offline") }
+            }
+        }
+    }
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun MyApp(db: AppDatabase, userViewModel: UserViewModel) {
     val navController = rememberNavController()
     val context = LocalContext.current
+
     var isOffline by remember { mutableStateOf(false) }
     var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
     var showBottomBar by rememberSaveable { mutableStateOf(true) }
+    val chromeVm: AppChromeViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    val topBarState by chromeVm.topBarState.collectAsState()
 
     //Detect offline status
     LaunchedEffect(Unit) {
@@ -164,8 +261,9 @@ fun MyApp(db: AppDatabase, userViewModel: UserViewModel) {
 
 
 
+
     val items = listOf(
-        NavigationBarItem("Diary", Icons.Filled.DateRange, Icons.Default.DateRange),
+        NavigationBarItem("Schedule", Icons.Filled.DateRange, Icons.Default.DateRange),
         NavigationBarItem("Service", Icons.Filled.Build, Icons.Default.Build),
         NavigationBarItem("Messages", Icons.Filled.Email, Icons.Default.Email),
         NavigationBarItem("Menu", Icons.Filled.Menu, Icons.Default.Menu)
@@ -178,7 +276,13 @@ fun MyApp(db: AppDatabase, userViewModel: UserViewModel) {
         contentWindowInsets = WindowInsets.systemBars,
         topBar = {
             if (navController.currentBackStackEntry?.destination?.route != "login") {
-                MyTopAppBar(navController = navController)
+                MyTopAppBar(
+                    navController = navController,
+                    title = topBarState.title,
+                    showBack = topBarState.showBack,
+                    showCall = topBarState.showCall,
+                    onMenuClick = if (topBarState.showMenu) topBarState.onMenuClick else null
+                )
             }
         },
         bottomBar = {
@@ -221,16 +325,14 @@ fun MyApp(db: AppDatabase, userViewModel: UserViewModel) {
             }
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .consumeWindowInsets(innerPadding)
-        ) {
+        Column(Modifier.padding(innerPadding)) {
             OfflineBanner(isOffline)
-
-            // App navigation
-            AppNavGraph(navController = navController, db = db, userViewModel = userViewModel)
+            AppNavGraph(
+                navController = navController,
+                db = db,
+                userViewModel = userViewModel,
+                chromeVm = chromeVm // pass it down
+            )
         }
     }
 }
@@ -271,3 +373,4 @@ data class NavigationBarItem(
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector
 )
+

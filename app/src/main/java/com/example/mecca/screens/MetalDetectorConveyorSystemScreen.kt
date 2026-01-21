@@ -2,38 +2,28 @@ package com.example.mecca.screens
 
 import android.content.Intent
 import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Handyman
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Tune
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,7 +35,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -53,8 +42,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.navigation.NavHostController
+import com.example.mecca.AppChromeViewModel
 import com.example.mecca.DAOs.MetalDetectorConveyorCalibrationDAO
 import com.example.mecca.PreferencesHelper
+import com.example.mecca.TopBarState
 import com.example.mecca.activities.MetalDetectorConveyorCalibrationActivity
 import com.example.mecca.dataClasses.MdModelsLocal
 import com.example.mecca.dataClasses.MetalDetectorWithFullDetails
@@ -76,6 +67,7 @@ fun MetalDetectorConveyorSystemScreen(
     dao: MetalDetectorConveyorCalibrationDAO,
     repositoryModels: MetalDetectorModelsRepository,
     systemId: Int,
+    chromeVm: AppChromeViewModel,
 ) {
     var mdSystem by remember { mutableStateOf<MetalDetectorWithFullDetails?>(null) }
     var modelDetails by remember { mutableStateOf<MdModelsLocal?>(null) }
@@ -105,6 +97,18 @@ fun MetalDetectorConveyorSystemScreen(
             Log.d("MESSA-DEBUG", "Refreshing system details after resume")
             refresh()
         }
+    }
+
+    LaunchedEffect(Unit) {
+        chromeVm.setTopBar(
+            TopBarState(
+                title = "System Details",
+                showBack = true,
+                showMenu = true,
+                showCall = false,
+                onMenuClick = { showActions = true }
+            )
+        )
     }
 
     val formattedLastCalibrationDate = try { formatDate(mdSystem?.lastCalibration) } catch (_: Exception) { "Invalid date" }
@@ -283,39 +287,6 @@ fun MetalDetectorConveyorSystemScreen(
     }
 
     Scaffold(
-        topBar =  {
-            CenterAlignedTopAppBar(
-                title = { /* no title */ },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                actions = {
-                    // "Shaded" menu button
-                    Box(
-                        modifier = Modifier
-                            .height(40.dp)
-                            .width(80.dp) // wider than tall = pill
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(MaterialTheme.colorScheme.secondaryContainer)
-                            .clickable { showActions = true },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = "Menu",
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
-            )
-        },
 
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { paddingValues ->

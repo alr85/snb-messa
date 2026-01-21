@@ -9,12 +9,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.mecca.AppChromeViewModel
+import com.example.mecca.TopBarState
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -52,8 +55,18 @@ object InAppLogger {
     }
 }
 @Composable
-fun LogConsole() {
+fun LogConsole(chromeVm: AppChromeViewModel) {
     val logs = remember { mutableStateListOf<Pair<String, InAppLogger.LogLevel>>() }
+
+    LaunchedEffect(Unit) {
+        chromeVm.setTopBar(
+            TopBarState(
+                title = "In App Logger",
+                showBack = true,
+                showCall = false
+            )
+        )
+    }
 
     DisposableEffect(Unit) {
         val observer: (List<Pair<String, InAppLogger.LogLevel>>) -> Unit = { newList ->

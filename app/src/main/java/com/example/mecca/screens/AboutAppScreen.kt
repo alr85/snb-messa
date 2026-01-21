@@ -18,6 +18,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,14 +32,30 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.mecca.AppChromeViewModel
 import com.example.mecca.R
+import com.example.mecca.TopBarState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AboutAppScreen(navController: NavHostController, scrollBehavior: TopAppBarScrollBehavior? = null) {
+fun AboutAppScreen(
+    navController: NavHostController,
+    scrollBehavior: TopAppBarScrollBehavior? = null,
+    chromeVm: AppChromeViewModel
+) {
 
     val appVersion = getAppVersion()  // Get the app version
     val audiowide = FontFamily(Font(R.font.audiowide))
+
+    LaunchedEffect(Unit) {
+        chromeVm.setTopBar(
+            TopBarState(
+                title = "About",
+                showBack = true,
+                showCall = false
+            )
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -50,20 +67,18 @@ fun AboutAppScreen(navController: NavHostController, scrollBehavior: TopAppBarSc
     ) {
 
 
-        Spacer(modifier = Modifier.height(5.dp))
-
-        Image(
-            painter = painterResource(id = R.drawable.logo_electronics),
-            contentScale = ContentScale.Fit, // Ensures the image fits within the bounds
-            contentDescription = "Company Logo"
-        )
+//        Image(
+//            painter = painterResource(id = R.drawable.logo_electronics),
+//            contentScale = ContentScale.Fit, // Ensures the image fits within the bounds
+//            contentDescription = "Company Logo"
+//        )
 
         Spacer(modifier = Modifier.height(5.dp))
 
         Text(
             text = "MESA",
             color = Color.Black,
-            fontSize = 64.sp, // Adjust font size for "MESSA"
+            fontSize = 90.sp, // Adjust font size for "MESSA"
             fontWeight = FontWeight.Bold, // Optional: make it bold
             fontFamily = audiowide,
             maxLines = 1, // Ensure each Text takes only one line

@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.mecca.AppChromeViewModel
 import com.example.mecca.AppDatabase
 import com.example.mecca.repositories.CustomerRepository
 import com.example.mecca.repositories.MetalDetectorModelsRepository
@@ -27,7 +28,7 @@ import com.example.mecca.util.LogConsole
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppNavGraph(navController: NavHostController, db: AppDatabase, userViewModel: UserViewModel) {
+fun AppNavGraph(navController: NavHostController, db: AppDatabase, userViewModel: UserViewModel, chromeVm: AppChromeViewModel) {
     val apiService = RetrofitClient.instance
     val repositoryCustomer = CustomerRepository(apiService, db)
     val repositoryMdModels = MetalDetectorModelsRepository(apiService, db)
@@ -38,10 +39,12 @@ fun AppNavGraph(navController: NavHostController, db: AppDatabase, userViewModel
 
     NavHost(navController = navController, startDestination = "serviceHome") {
 
-        composable("logsScreen") { LogConsole() }
+        composable("logsScreen") { LogConsole(chromeVm = chromeVm) }
 
-        composable("serviceHome") { HomeScreen(navController) }
-        composable("menu") { SettingsScreen(navController, userViewModel) }
+        composable("serviceHome") { HomeScreen(navController, chromeVm = chromeVm) }
+
+        composable("menu") { SettingsScreen(navController, userViewModel, chromeVm = chromeVm) }
+
         composable("databaseSync") {
             DatabaseSyncScreen(
                 navController,
@@ -49,16 +52,20 @@ fun AppNavGraph(navController: NavHostController, db: AppDatabase, userViewModel
                 repositoryMdModels,
                 repositoryMdSystems,
                 repositorySystemTypes,
-                repositoryDetectionLevels
+                repositoryDetectionLevels,
+                chromeVm = chromeVm
             )
         }
-        composable("aboutApp") { AboutAppScreen(navController) }
-        composable("messagesHomeScreen") { MessagesHomeScreen(navController) }
+        composable("aboutApp") { AboutAppScreen(navController,chromeVm = chromeVm) }
+
+        composable("messagesHomeScreen") { MessagesHomeScreen(navController, chromeVm = chromeVm) }
+
         composable("serviceSelectCustomer") {
             ServiceSelectCustomerScreen(
                 navController,
                 db,
-                repositoryCustomer
+                repositoryCustomer,
+                chromeVm
             )
         }
         composable("calibrationSearchSystem/{customerID}/{customerName}/{customerPostcode}") { backStackEntry ->
@@ -72,7 +79,8 @@ fun AppNavGraph(navController: NavHostController, db: AppDatabase, userViewModel
                 repository = repositoryMdSystems,
                 customerID = customerID,
                 customerName = customerName,
-                customerPostcode = customerPostcode
+                customerPostcode = customerPostcode,
+                chromeVm = chromeVm
             )
         }
         composable("AddNewMetalDetectorScreen/{customerId}/{customerName}") { backStackEntry ->
@@ -85,7 +93,8 @@ fun AppNavGraph(navController: NavHostController, db: AppDatabase, userViewModel
                 mdModelsRepository = repositoryMdModels,
                 customerID = customerId,
                 customerName = customerName,
-                mdSystemsRepository = repositoryMdSystems
+                mdSystemsRepository = repositoryMdSystems,
+                chromeVm = chromeVm
             )
         }
         composable("MetalDetectorConveyorSystemScreen/{systemId}") { backStackEntry ->
@@ -97,6 +106,7 @@ fun AppNavGraph(navController: NavHostController, db: AppDatabase, userViewModel
                 systemId = systemId,
                 dao = dao,
                 repositoryModels = repositoryMdModels,
+                chromeVm = chromeVm
             )
         }
 
@@ -109,7 +119,8 @@ fun AppNavGraph(navController: NavHostController, db: AppDatabase, userViewModel
                 repositoryMD = repositoryMdSystems,
                 dao = dao,
                 apiService = apiService,
-                customerRepository = repositoryCustomer
+                customerRepository = repositoryCustomer,
+                chromeVm = chromeVm
             )
         }
 

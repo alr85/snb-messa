@@ -1,20 +1,17 @@
 package com.example.mecca.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.mecca.AppChromeViewModel
 import com.example.mecca.FetchResult
+import com.example.mecca.TopBarState
 import com.example.mecca.repositories.CustomerRepository
 import com.example.mecca.repositories.MetalDetectorModelsRepository
 import com.example.mecca.repositories.MetalDetectorSystemsRepository
@@ -32,9 +29,10 @@ data class SyncTask(
 data class SyncLogItem(
     val name: String,
     val message: String,
-    val isSuccess: Boolean? = null // optional if you want to color-code later
+    val isSuccess: Boolean? = null
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatabaseSyncScreen(
     navController: NavHostController,
@@ -42,7 +40,8 @@ fun DatabaseSyncScreen(
     repositoryMdModels: MetalDetectorModelsRepository,
     repositoryMdSystems: MetalDetectorSystemsRepository,
     repositorySystemTypes: SystemTypeRepository,
-    detectionRepo: RetailerSensitivitiesRepository
+    detectionRepo: RetailerSensitivitiesRepository,
+    chromeVm: AppChromeViewModel
 ) {
     val tasks = remember {
         listOf(
@@ -103,26 +102,34 @@ fun DatabaseSyncScreen(
     val total = tasks.size
     val progress = if (total == 0) 0f else (currentIndex.coerceIn(0, total).toFloat() / total.toFloat())
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(12.dp)
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start
-        ) {
-            Text(
-                text = "Database Synchronisation",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center)
+    LaunchedEffect(Unit) {
+        chromeVm.setTopBar(
+            TopBarState(
+                title = "Database Sync",
+                showBack = true,
+                showCall = false
             )
+        )
+    }
 
-            // One button to rule them all
+    Scaffold(
+//        topBar = {
+//            MyTopAppBar(
+//                navController = navController,
+//                title = "Database Sync",
+//                showBack = true,
+//                showCall = false
+//            )
+//        },
+        containerColor = Color.White
+    ) { paddingValues ->
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp)
+        ) {
             Button(
                 onClick = {
                     if (isSyncing) return@Button
@@ -158,43 +165,38 @@ fun DatabaseSyncScreen(
                     }
                 },
                 enabled = !isSyncing,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isSyncing) Color.DarkGray else Color.Gray,
-                    contentColor = Color.White
-                )
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(text = if (isSyncing) "Syncing..." else "Sync Everything")
             }
 
             // Feedback area
             if (isSyncing) {
-                Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
-                    LinearProgressIndicator(
-                        progress = { progress },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = overallMessage.ifBlank { "Syncing..." },
-                        color = Color.Gray,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
+                Spacer(modifier = Modifier.height(12.dp))
+
+                LinearProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = overallMessage.ifBlank { "Syncing..." },
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium
+                )
             } else if (overallMessage.isNotBlank()) {
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = overallMessage,
-                    color = Color.Gray,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Per-table log output as it completes
             LazyColumn(
                 modifier = Modifier.fillMaxSize()
             ) {
@@ -202,7 +204,7 @@ fun DatabaseSyncScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 6.dp)
+                            .padding(vertical = 8.dp)
                     ) {
                         Text(
                             text = item.name,
@@ -210,10 +212,10 @@ fun DatabaseSyncScreen(
                         )
                         Text(
                             text = item.message,
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.bodySmall
                         )
-                        Divider(modifier = Modifier.padding(top = 6.dp))
+                        Divider(modifier = Modifier.padding(top = 8.dp))
                     }
                 }
             }

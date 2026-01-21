@@ -48,7 +48,7 @@ fun CalMetalDetectorConveyorBackupPEC(
 
     // Options: remember so Compose doesn’t rebuild them constantly
     val testMethodOptions = remember {
-        listOf("Reject Override Switch", "Product Removal", "Other")
+        listOf("Reject Override Switch", "Product Removal", "Manual Block", "Other")
     }
     val testResultOptions = remember {
         listOf(

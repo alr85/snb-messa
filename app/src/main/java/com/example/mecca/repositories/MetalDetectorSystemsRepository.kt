@@ -93,8 +93,16 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
 
     // Return MD systems using the cloud id
     suspend fun getMetalDetectorUsingCloudId(id: Int?): List<MetalDetectorWithFullDetails> {
-        val result = db.mdSystemDAO().getMetalDetectorsWithFullDetailsUsingCloudId(id)
-        InAppLogger.d("Get Metal Detectors With Full Details Using Cloud ID: Query Result: $result")
+        val result = db.mdSystemDAO()
+            .getMetalDetectorsWithFullDetailsUsingCloudId(id)
+
+        val summary = when {
+            id == null -> "FAILED (cloudId=null)"
+            result.isEmpty() -> "SUCCESS (0 records)"
+            else -> "SUCCESS (${result.size} record(s))"
+        }
+
+        InAppLogger.d("Get MD by CloudId=$id → $summary")
         return result
     }
 
