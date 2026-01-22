@@ -5,10 +5,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -16,7 +12,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateSmePvResult
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.formModules.CalibrationHeader
@@ -31,7 +26,6 @@ import com.example.mecca.ui.theme.ScrollableWithScrollbar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalMetalDetectorConveyorSmeDetails(
-    navController: NavHostController,
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
     val operatorTestWitnessed by viewModel.operatorTestWitnessed

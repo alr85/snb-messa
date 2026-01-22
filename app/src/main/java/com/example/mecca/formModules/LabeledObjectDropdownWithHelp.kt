@@ -27,7 +27,6 @@ fun <T> LabeledObjectDropdownWithHelp(
     // selectedOption == null means "nothing selected", and "N/A" is stored via a sentinel label.
     val selectedLabel = selectedOption?.let(optionLabel) ?: ""
     val isNa = isNAToggleEnabled && selectedLabel == "N/A"
-    val inputDisabled = isNa
 
     FormRowWrapper(
         label = label,
@@ -50,11 +49,11 @@ fun <T> LabeledObjectDropdownWithHelp(
             options = stringOptions,
             selectedOption = selectedOption?.let(optionLabel),
             onSelectionChange = { chosenLabel ->
-                if (inputDisabled) return@SimpleDropdown
+                if (isNa) return@SimpleDropdown
                 val chosen = options.firstOrNull { optionLabel(it) == chosenLabel }
                 onSelectionChange(chosen)
             },
-            isDisabled = inputDisabled,
+            isDisabled = isNa,
             placeholder = placeholder
         )
     }

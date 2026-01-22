@@ -40,7 +40,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.ConditionState
@@ -70,7 +69,6 @@ private data class ChecklistCardModel(
 
 @Composable
 fun CalMetalDetectorConveyorSystemChecklist(
-    navController: NavHostController,
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
     // Bind ViewModel state
@@ -91,8 +89,6 @@ fun CalMetalDetectorConveyorSystemChecklist(
 
     val screwsCondition by viewModel.screwsCondition
     val screwsConditionComments by viewModel.screwsConditionComments
-
-    val systemChecklistEngineerNotes by viewModel.systemChecklistEngineerNotes
 
     // Build UI models
     val items = remember(

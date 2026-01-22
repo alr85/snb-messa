@@ -39,7 +39,7 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
                     val generatedPassword = MasterPasswordGenerator.generateWeeklyPassword()
                     InAppLogger.d("Generated weekly password")
                    Log.d("MESSA-DEBUG","Generated weekly password: $generatedPassword")
-                    if (password == generatedPassword.toString()) {
+                    if (password == generatedPassword) {
                         PreferencesHelper.saveCredentials(context, username, password, user.meaId)
                         InAppLogger.d("Login successful. Credentials saved.")
                         loginStatus.value = true

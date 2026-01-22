@@ -200,7 +200,6 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
 
         // Bottom navigation buttons
         CalibrationNavigationButtons(
-            navController = navController,
             viewModel = viewModel,
             isNextEnabled = isNextEnabled,
             isFirstStep = isFirstStep,

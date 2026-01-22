@@ -47,7 +47,6 @@ fun AppNavGraph(navController: NavHostController, db: AppDatabase, userViewModel
 
         composable("databaseSync") {
             DatabaseSyncScreen(
-                navController,
                 repositoryCustomer,
                 repositoryMdModels,
                 repositoryMdSystems,
@@ -56,7 +55,7 @@ fun AppNavGraph(navController: NavHostController, db: AppDatabase, userViewModel
                 chromeVm = chromeVm
             )
         }
-        composable("aboutApp") { AboutAppScreen(navController,chromeVm = chromeVm) }
+        composable("aboutApp") { AboutAppScreen(chromeVm = chromeVm) }
 
         composable("messagesHomeScreen") { MessagesHomeScreen(navController, chromeVm = chromeVm) }
 

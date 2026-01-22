@@ -39,7 +39,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import com.example.mecca.ApiService
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.util.InAppLogger
@@ -48,7 +47,6 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalMetalDetectorConveyorSummary(
-    navController: NavHostController,
     viewModel: CalibrationMetalDetectorConveyorViewModel = viewModel(),
     apiService: ApiService
 ) {

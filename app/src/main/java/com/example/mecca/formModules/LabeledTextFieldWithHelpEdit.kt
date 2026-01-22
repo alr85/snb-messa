@@ -1,3 +1,7 @@
+@file:Suppress("SameParameterValue", "SameParameterValue", "SameParameterValue",
+    "SameParameterValue", "SameParameterValue", "SameParameterValue"
+)
+
 package com.example.mecca.formModules
 
 import androidx.compose.foundation.layout.fillMaxWidth

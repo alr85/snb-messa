@@ -54,101 +54,101 @@ fun MetalDetectorConveyorCalibrationNavGraphContent(
             arguments = listOf(navArgument("calibrationId") { type = NavType.StringType })
         ) {
             onScreenChanged {
-                CalMetalDetectorConveyorCalibrationStart(navController, viewModel)
+                CalMetalDetectorConveyorCalibrationStart( viewModel)
             }
         }
 
         // -------------------- SENSITIVITY REQUIREMENTS --------------------
         composable("CalMetalDetectorConveyorSensitivityRequirements") {
             onScreenChanged {
-                CalMetalDetectorConveyorSensitivityRequirements(navController, viewModel)
+                CalMetalDetectorConveyorSensitivityRequirements( viewModel)
             }
         }
 
         // -------------------- PRODUCT DETAILS --------------------
         composable("CalMetalDetectorConveyorProductDetails") {
             onScreenChanged {
-                CalMetalDetectorConveyorProductDetails(navController, viewModel)
+                CalMetalDetectorConveyorProductDetails(viewModel)
             }
         }
 
         // -------------------- DETECTION SETTINGS (AS FOUND) --------------------
         composable("CalMetalDetectorConveyorDetectionSettingsAsFound") {
             onScreenChanged {
-                CalMetalDetectorConveyorDetectionSettingsAsFound(navController, viewModel)
+                CalMetalDetectorConveyorDetectionSettingsAsFound(viewModel)
             }
         }
 
         composable("CalMetalDetectorConveyorSensitivityAsFound") {
             onScreenChanged {
-                CalMetalDetectorConveyorSensitivityAsFound(navController, viewModel)
+                CalMetalDetectorConveyorSensitivityAsFound(viewModel)
             }
         }
 
         // -------------------- METAL TESTS --------------------
         composable("CalMetalDetectorConveyorFerrousTest") {
             onScreenChanged {
-                CalMetalDetectorConveyorFerrousTest(navController, viewModel)
+                CalMetalDetectorConveyorFerrousTest(viewModel)
             }
         }
 
         composable("CalMetalDetectorConveyorNonFerrousTest") {
             onScreenChanged {
-                CalMetalDetectorConveyorNonFerrousTest(navController, viewModel)
+                CalMetalDetectorConveyorNonFerrousTest(viewModel)
             }
         }
 
         composable("CalMetalDetectorConveyorStainlessTest") {
             onScreenChanged {
-                CalMetalDetectorConveyorStainlessTest(navController, viewModel)
+                CalMetalDetectorConveyorStainlessTest(viewModel)
             }
         }
 
         composable("CalMetalDetectorConveyorLargeMetalTest") {
             onScreenChanged {
-                CalMetalDetectorConveyorLargeMetalTest(navController, viewModel)
+                CalMetalDetectorConveyorLargeMetalTest(viewModel)
             }
         }
 
         // -------------------- DETECTION SETTINGS (AS LEFT) --------------------
         composable("CalMetalDetectorConveyorDetectionSettingsAsLeft") {
             onScreenChanged {
-                CalMetalDetectorConveyorDetectionSettingsAsLeft(navController, viewModel)
+                CalMetalDetectorConveyorDetectionSettingsAsLeft(viewModel)
             }
         }
 
         // -------------------- REJECT SYSTEM --------------------
         composable("CalMetalDetectorConveyorRejectSettings") {
             onScreenChanged {
-                CalMetalDetectorConveyorRejectSettings(navController, viewModel)
+                CalMetalDetectorConveyorRejectSettings(viewModel)
             }
         }
 
         // -------------------- SYSTEM CHECKLIST --------------------
         composable("CalMetalDetectorConveyorSystemChecklist") {
             onScreenChanged {
-                CalMetalDetectorConveyorSystemChecklist(navController, viewModel)
+                CalMetalDetectorConveyorSystemChecklist(viewModel)
             }
         }
 
         // -------------------- CONVEYOR DETAILS --------------------
         composable("CalMetalDetectorConveyorConveyorDetails") {
             onScreenChanged {
-                CalMetalDetectorConveyorConveyorDetails(navController, viewModel)
+                CalMetalDetectorConveyorConveyorDetails( viewModel)
             }
         }
 
         // -------------------- INDICATORS --------------------
         composable("CalMetalDetectorConveyorIndicators") {
             onScreenChanged {
-                CalMetalDetectorConveyorIndicators(navController, viewModel)
+                CalMetalDetectorConveyorIndicators(viewModel)
             }
         }
 
         // -------------------- PEC SENSORS --------------------
         composable("CalMetalDetectorConveyorInfeedPEC") {
             onScreenChanged {
-                CalMetalDetectorConveyorInfeedPEC(navController, viewModel)
+                CalMetalDetectorConveyorInfeedPEC(viewModel)
             }
         }
 
@@ -160,50 +160,50 @@ fun MetalDetectorConveyorCalibrationNavGraphContent(
 
         composable("CalMetalDetectorConveyorBinFullPEC") {
             onScreenChanged {
-                CalMetalDetectorConveyorBinFullPEC(navController, viewModel)
+                CalMetalDetectorConveyorBinFullPEC(viewModel)
             }
         }
 
         composable("CalMetalDetectorConveyorBackupPEC") {
             onScreenChanged {
-                CalMetalDetectorConveyorBackupPEC(navController, viewModel)
+                CalMetalDetectorConveyorBackupPEC(viewModel)
             }
         }
 
         composable("CalMetalDetectorConveyorAirPressureSensor") {
             onScreenChanged {
-                CalMetalDetectorConveyorAirPressureSensor(navController, viewModel)
+                CalMetalDetectorConveyorAirPressureSensor(viewModel)
             }
         }
 
         composable("CalMetalDetectorConveyorPackCheckSensor") {
             onScreenChanged {
-                CalMetalDetectorConveyorPackCheckSensor(navController, viewModel)
+                CalMetalDetectorConveyorPackCheckSensor(viewModel)
             }
         }
 
         composable("CalMetalDetectorConveyorSpeedSensor") {
             onScreenChanged {
-                CalMetalDetectorConveyorSpeedSensor(navController, viewModel)
+                CalMetalDetectorConveyorSpeedSensor(viewModel)
             }
         }
 
         composable("CalMetalDetectorConveyorDetectNotification") {
             onScreenChanged {
-                CalMetalDetectorConveyorDetectNotification(navController, viewModel)
+                CalMetalDetectorConveyorDetectNotification(viewModel)
             }
         }
 
         composable("CalMetalDetectorConveyorBinDoorMonitor") {
             onScreenChanged {
-                CalMetalDetectorConveyorBinDoorMonitor(navController, viewModel)
+                CalMetalDetectorConveyorBinDoorMonitor( viewModel)
             }
         }
 
         // -------------------- SME DETAILS --------------------
         composable("CalMetalDetectorConveyorSmeDetails") {
             onScreenChanged {
-                CalMetalDetectorConveyorSmeDetails(navController, viewModel)
+                CalMetalDetectorConveyorSmeDetails(viewModel)
             }
         }
 
@@ -217,7 +217,7 @@ fun MetalDetectorConveyorCalibrationNavGraphContent(
         // -------------------- SUMMARY --------------------
         composable("CalMetalDetectorConveyorSummary") {
             onScreenChanged {
-                CalMetalDetectorConveyorSummary(navController, viewModel, apiService)
+                CalMetalDetectorConveyorSummary( viewModel, apiService)
             }
         }
     }

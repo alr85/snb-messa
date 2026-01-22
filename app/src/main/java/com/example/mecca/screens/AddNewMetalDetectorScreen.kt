@@ -37,11 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.OffsetMapping
-import androidx.compose.ui.text.input.TransformedText
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -63,13 +59,6 @@ import com.example.mecca.util.SerialCheckResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-// Capitalization transformation
-object UppercaseTransformation : VisualTransformation {
-    override fun filter(text: AnnotatedString): TransformedText {
-        return TransformedText(AnnotatedString(text.text.uppercase()), OffsetMapping.Identity)
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -117,13 +106,6 @@ fun AddNewMetalDetectorScreen(
             Log.d("DatabaseDebug", "MdModels: $mdModels")
         }
     }
-
-    // Helpers (keep inputs consistent)
-    fun sanitiseUpper(value: String): String =
-        value.replace(Regex("[^A-Za-z0-9 _.-]"), "").uppercase()
-
-    fun digitsOnly(value: String): String =
-        value.filter { it.isDigit() }
 
     val isFormValid =
         serialNumber.isNotBlank() &&

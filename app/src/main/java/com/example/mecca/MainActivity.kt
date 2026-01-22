@@ -255,7 +255,7 @@ fun MyApp(db: AppDatabase, userViewModel: UserViewModel) {
     }
 
     // detect if keyboard visible
-    val imeVisible = WindowInsets.isImeVisible
+    WindowInsets.isImeVisible
 
 
 

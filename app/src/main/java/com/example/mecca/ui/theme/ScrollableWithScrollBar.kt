@@ -1,7 +1,6 @@
 package com.example.mecca.ui.theme
 
 
-import android.R.attr.maxHeight
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

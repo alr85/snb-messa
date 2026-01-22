@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
 
     // ✅ Compose compiler plugin (for Kotlin 2.x)
-    id("org.jetbrains.kotlin.plugin.compose") version "2.2.20"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.3.0"
 
     // ✅ KSP plugin — must match your Kotlin version!
     id("com.google.devtools.ksp") version "2.2.20-2.0.4"
@@ -43,9 +43,12 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    kotlinOptions {
-        jvmTarget = "1.8"
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
+        }
     }
+
 
     buildFeatures {
         compose = true
@@ -77,12 +80,10 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.compose.ui)
-    implementation(libs.ui)
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.runtime.annotation)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.material3.window.size.class1)
-    implementation(libs.room.ktx)        // Kotlin extensions
     ksp(libs.androidx.room.compiler)              // ✅ use KSP for code generation
     implementation(libs.androidx.room.compiler)
     implementation(libs.androidx.runtime.livedata)
@@ -92,8 +93,6 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.converter.gson)
     implementation(libs.squareup.retrofit)
-    //implementation(libs.androidx.compose.material3) // Ensure this is included
-
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -101,19 +100,11 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
     implementation(libs.icons.lucide)
-
     implementation(libs.androidx.material.icons.extended)
-
-    //implementation(libs.androidxComposeMaterial)
     implementation(libs.androidxComposeMaterial3)
-
     implementation(libs.androidxLifecycleRuntimeCompose)
     implementation(libs.kotlinxCoroutinesCore)
-
-    implementation(libs.accompanistInsets)
-
     implementation(libs.accompanist.flowlayout)
 
     configurations.all {

@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.formModules.LabeledDropdownWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
@@ -28,7 +27,6 @@ import com.example.mecca.formModules.LabeledTriStateSwitchAndTextInputWithHelp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalMetalDetectorConveyorSystemDetails(
-    navController: NavHostController,
     viewModel: CalibrationMetalDetectorConveyorViewModel = viewModel()
 ) {
     //val progress = viewModel.progress
@@ -45,7 +43,6 @@ fun CalMetalDetectorConveyorSystemDetails(
     // Determine if "Next Step" button should be enabled
 //    val isNextStepEnabled = systemLocation.isNotBlank() &&
 //            (canPerformCalibration == true || (canPerformCalibration == false && reasonForNotCalibrating.isNotBlank()))
-    val isNextStepEnabled = true
 
 
     Column(

@@ -1,7 +1,6 @@
 package com.example.mecca
 
 import android.content.Context
-import android.util.Log
 import androidx.core.content.edit
 import com.example.mecca.util.InAppLogger
 

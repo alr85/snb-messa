@@ -1,6 +1,5 @@
 package com.example.mecca.screens.metaldetectorcalibration
 
-import android.R.attr.label
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -75,7 +74,6 @@ fun CalMetalDetectorConveyorSummaryDetails(
             }
         }
 
-        val desiredCop by viewModel.desiredCop.collectAsState()
         val infeedSensorTestResult by viewModel.infeedSensorTestResult.collectAsState()
         val rejectConfirmSensorTestResult by viewModel.rejectConfirmSensorTestResult.collectAsState()
         val binFullSensorTestResult by viewModel.binFullSensorTestResult.collectAsState()

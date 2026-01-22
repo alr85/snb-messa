@@ -14,9 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Card
-import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import java.util.Locale
 import kotlin.math.max
 
 
@@ -43,45 +41,6 @@ data class MetalSpec(
     val targetMM: Double,
     val maxMM: Double
 )
-
-@Composable
-fun CalibrationSensitivityPanel(
-    productHeightMM: Double,
-    ferrous: MetalSpec,
-    nonFerrous: MetalSpec,
-    ss316: MetalSpec,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Column(Modifier.padding(16.dp)) {
-            // Header
-            Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Detection Summary", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                AssistChip(
-                    onClick = { },
-                    label = { Text("Product height: ${productHeightMM.clean()} mm") }
-                )
-            }
-            Spacer(Modifier.height(12.dp))
-
-            SensitivityRow(spec = ferrous)
-            Divider(Modifier.padding(vertical = 8.dp))
-            SensitivityRow(spec = nonFerrous)
-            Divider(Modifier.padding(vertical = 8.dp))
-            SensitivityRow(spec = ss316)
-
-            Spacer(Modifier.height(12.dp))
-            OverallBanner(ferrous, nonFerrous, ss316)
-        }
-    }
-}
 
 @Composable
 private fun SensitivityRow(spec: MetalSpec) {
@@ -227,10 +186,11 @@ private fun OverallBanner(vararg specs: MetalSpec) {
 
 /* ---------- tiny helpers ---------- */
 
-private fun Double.clean(): String {
-    val v = this
-    return if (v % 1.0 == 0.0) v.toInt().toString() else String.format("%.1f", v)
-}
+private fun Double.clean(): String =
+    if (this % 1.0 == 0.0)
+        this.toInt().toString()
+    else
+        String.format(Locale.US, "%.1f", this)
 
 // convert a fraction [0..1] into dp offset using the parent width later
 private fun Double.safeFrac(): Float = this.coerceIn(0.0, 1.0).toFloat()
