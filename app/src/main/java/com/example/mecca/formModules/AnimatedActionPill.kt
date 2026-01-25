@@ -3,6 +3,8 @@ package com.example.mecca.formModules
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -31,23 +33,18 @@ fun AnimatedActionPill(
     icon: ImageVector,
     onClick: () -> Unit
 ) {
-    var pressed by remember { mutableStateOf(false) }
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
 
     val scale by animateFloatAsState(
-        targetValue = if (pressed) 0.95f else 1f,
-        animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "pillScale"
     )
 
-    LaunchedEffect(pressed) {
-        if (pressed) {
-            kotlinx.coroutines.delay(120)
-            pressed = false
-            onClick()
-        }
-    }
-
     Surface(
-        onClick = { pressed = true },
+        onClick = onClick,
+        interactionSource = interactionSource,
         shape = RoundedCornerShape(50),
         color = MaterialTheme.colorScheme.primaryContainer,
         modifier = Modifier.scale(scale)
@@ -62,3 +59,4 @@ fun AnimatedActionPill(
         }
     }
 }
+

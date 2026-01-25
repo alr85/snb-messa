@@ -1,3 +1,5 @@
+@file:Suppress("AssignedValueIsNeverRead")
+
 package com.example.mecca
 
 import androidx.activity.compose.BackHandler
@@ -42,10 +44,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.screens.metaldetectorcalibration.CalMetalDetectorConveyorSummaryDetails
+import com.example.mecca.screens.service.mdCalibration.CalMetalDetectorConveyorSummaryDetails
 import com.example.mecca.ui.theme.FormBackground
 
-
+@Suppress("AssignedValueIsNeverRead", "AssignedValueIsNeverRead", "AssignedValueIsNeverRead",
+    "AssignedValueIsNeverRead", "AssignedValueIsNeverRead", "AssignedValueIsNeverRead",
+    "AssignedValueIsNeverRead", "AssignedValueIsNeverRead", "AssignedValueIsNeverRead",
+    "AssignedValueIsNeverRead", "AssignedValueIsNeverRead", "AssignedValueIsNeverRead",
+    "AssignedValueIsNeverRead", "AssignedValueIsNeverRead", "AssignedValueIsNeverRead",
+    "AssignedValueIsNeverRead", "AssignedValueIsNeverRead", "AssignedValueIsNeverRead",
+    "AssignedValueIsNeverRead", "AssignedValueIsNeverRead", "AssignedValueIsNeverRead",
+    "AssignedValueIsNeverRead", "AssignedValueIsNeverRead", "AssignedValueIsNeverRead",
+    "AssignedValueIsNeverRead", "AssignedValueIsNeverRead", "AssignedValueIsNeverRead",
+    "AssignedValueIsNeverRead", "AssignedValueIsNeverRead", "AssignedValueIsNeverRead",
+    "AssignedValueIsNeverRead", "AssignedValueIsNeverRead", "AssignedValueIsNeverRead",
+    "AssignedValueIsNeverRead", "AssignedValueIsNeverRead", "AssignedValueIsNeverRead",
+    "AssignedValueIsNeverRead", "AssignedValueIsNeverRead", "AssignedValueIsNeverRead",
+    "AssignedValueIsNeverRead", "AssignedValueIsNeverRead", "AssignedValueIsNeverRead",
+    "AssignedValueIsNeverRead", "AssignedValueIsNeverRead", "AssignedValueIsNeverRead",
+    "AssignedValueIsNeverRead", "AssignedValueIsNeverRead", "AssignedValueIsNeverRead",
+    "AssignedValueIsNeverRead", "AssignedValueIsNeverRead", "AssignedValueIsNeverRead"
+)
 @Composable
 fun CalibrationBanner(
     progress: Float,                     // now comes from NavController state
@@ -142,49 +161,57 @@ fun CalibrationBanner(
 
 
 
-    CalibrationSummaryDialog(
-        showDetailsDialog = showDetailsDialog,
-        onClose = { showDetailsDialog = false },
-        viewModel = viewModel,
-        windowSizeClass = windowSizeClass
-    )
-
-
-    // ---------------- Back Disabled Dialog ----------------
-    if (showBackDisabledDialog) {
-        AlertDialog(
-            onDismissRequest = { showBackDisabledDialog = false },
-            confirmButton = {
-                TextButton(onClick = { showBackDisabledDialog = false }) {
-                    Text("OK")
-                }
-            },
-            title = { Text("Action Disabled") },
-            text = {
-                Text(
-                    "To prevent data loss, the normal back button is disabled during calibration. " +
-                            "Please use the navigation buttons at the bottom of the screen."
-                )
-            },
-            containerColor = Color.White
+    if (showDetailsDialog) {
+        CalibrationSummaryDialog(
+            onClose = {showDetailsDialog = false },
+            viewModel = viewModel,
+            windowSizeClass = windowSizeClass,
         )
     }
+
+    if (showBackDisabledDialog) {
+        BackDisabledDialog(
+            onDismiss = { showBackDisabledDialog = false }
+        )
+    }
+
+
+
 
 
 }
 
 @Composable
+fun BackDisabledDialog(
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("OK")
+            }
+        },
+        title = { Text("Action Disabled") },
+        text = {
+            Text(
+                "To prevent data loss, the normal back button is disabled during calibration. " +
+                        "Please use the navigation buttons at the bottom of the screen."
+            )
+        },
+        containerColor = Color.White
+    )
+}
+
+
+@Composable
 fun CalibrationSummaryDialog(
-    showDetailsDialog: Boolean,
     onClose: () -> Unit,
     viewModel: CalibrationMetalDetectorConveyorViewModel,
     windowSizeClass: WindowSizeClass
 ) {
-    if (!showDetailsDialog) return
 
     val isCompact = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
-
-    rememberScrollState()
 
     Dialog(
         onDismissRequest = onClose,

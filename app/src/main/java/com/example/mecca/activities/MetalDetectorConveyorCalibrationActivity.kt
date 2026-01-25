@@ -16,7 +16,7 @@ import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorV
 import com.example.mecca.repositories.MetalDetectorConveyorCalibrationRepository
 import com.example.mecca.repositories.MetalDetectorSystemsRepository
 import com.example.mecca.repositories.RetailerSensitivitiesRepository
-import com.example.mecca.screens.metaldetectorcalibration.MetalDetectorConveyorCalibrationScreenWrapper
+import com.example.mecca.screens.service.mdCalibration.MetalDetectorConveyorCalibrationScreenWrapper
 import com.example.mecca.ui.theme.MyAppTheme
 import com.example.mecca.util.InAppLogger
 

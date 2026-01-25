@@ -122,7 +122,7 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _customerName.value = customer
 
                 val systemType = systemTypeDAO.getMdSystemTypeDescriptionFromDb(existingCalibration.systemTypeId) ?: "Error"
-                    InAppLogger.d("existingCalibration.systemTypeId = ${existingCalibration.systemTypeId}")
+                InAppLogger.d("existingCalibration.systemTypeId = ${existingCalibration.systemTypeId}")
                 _systemTypeDescription.value = systemType
 
 

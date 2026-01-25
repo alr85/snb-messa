@@ -14,16 +14,16 @@ import com.example.mecca.repositories.RetailerSensitivitiesRepository
 import com.example.mecca.repositories.SystemTypeRepository
 import com.example.mecca.RetrofitClient
 import com.example.mecca.UserViewModel
-import com.example.mecca.screens.AboutAppScreen
-import com.example.mecca.screens.AddNewMetalDetectorScreen
-import com.example.mecca.screens.DatabaseSyncScreen
-import com.example.mecca.screens.HomeScreen
-import com.example.mecca.screens.MessagesHomeScreen
-import com.example.mecca.screens.MetalDetectorConveyorSystemScreen
-import com.example.mecca.screens.MyCalibrationsScreen
-import com.example.mecca.screens.ServiceSelectCustomerScreen
-import com.example.mecca.screens.ServiceSelectSystemScreen
-import com.example.mecca.screens.SettingsScreen
+import com.example.mecca.screens.menu.AboutAppScreen
+import com.example.mecca.screens.service.AddNewMetalDetectorScreen
+import com.example.mecca.screens.menu.DatabaseSyncScreen
+import com.example.mecca.screens.mainmenu.HomeScreen
+import com.example.mecca.screens.mainmenu.MessagesHomeScreen
+import com.example.mecca.screens.service.MetalDetectorConveyorSystemScreen
+import com.example.mecca.screens.menu.MyCalibrationsScreen
+import com.example.mecca.screens.mainmenu.ServiceSelectCustomerScreen
+import com.example.mecca.screens.service.ServiceSelectSystemScreen
+import com.example.mecca.screens.mainmenu.SettingsScreen
 import com.example.mecca.util.LogConsole
 
 @OptIn(ExperimentalMaterial3Api::class)
