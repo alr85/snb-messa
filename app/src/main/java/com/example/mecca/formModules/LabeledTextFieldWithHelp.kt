@@ -20,8 +20,11 @@ fun LabeledTextFieldWithHelp(
     helpText: String,
     keyboardType: KeyboardType = KeyboardType.Text,
     isNAToggleEnabled: Boolean = true,
-    rowDisabled: Boolean = false // optional: only use if you truly want to lock the whole row
-) {
+    rowDisabled: Boolean = false, // optional: only use if you truly want to lock the whole row
+    maxLength: Int? = null,
+    singleLine: Boolean = true,
+
+    ) {
     var showHelpDialog by remember { mutableStateOf(false) }
 
     val isNa = value == "N/A"
@@ -44,7 +47,9 @@ fun LabeledTextFieldWithHelp(
             },
             label = label,
             keyboardType = keyboardType,
-            isDisabled = inputDisabled
+            isDisabled = inputDisabled,
+            maxLength = maxLength,
+            singleLine = singleLine
         )
     }
 

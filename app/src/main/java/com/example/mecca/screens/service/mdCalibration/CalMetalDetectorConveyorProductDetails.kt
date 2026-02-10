@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
+import com.example.mecca.config.FieldLimits
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.ui.theme.FormSpacer
@@ -57,7 +58,8 @@ fun CalMetalDetectorConveyorProductDetails(
                     label = "Product Description",
                     value = description,
                     onValueChange = viewModel::setProductDescription,
-                    helpText = "Enter the details of the product (e.g., 'GOLD BARS')."
+                    helpText = "Enter the details of the product.",
+                    maxLength = FieldLimits.PRODUCT_DESCRIPTION
                 )
 
                 FormSpacer()
@@ -66,7 +68,8 @@ fun CalMetalDetectorConveyorProductDetails(
                     label = "Product Library Reference",
                     value = libraryRef,
                     onValueChange = viewModel::setProductLibraryReference,
-                    helpText = "There is usually a 'Product Name' in the metal detector library. Enter it here."
+                    helpText = "There is usually a 'Product Name' in the metal detector library. Enter it here.",
+                    maxLength = 12
                 )
 
                 FormSpacer()
@@ -75,7 +78,8 @@ fun CalMetalDetectorConveyorProductDetails(
                     label = "Product Library Number",
                     value = libraryNumber,
                     onValueChange = viewModel::setProductLibraryNumber,
-                    helpText = "Enter the library number / program number used on the metal detector."
+                    helpText = "Enter the library number / program number used on the metal detector.",
+                    maxLength = 5
                 )
 
                 FormSpacer()
@@ -85,7 +89,8 @@ fun CalMetalDetectorConveyorProductDetails(
                     value = length,
                     onValueChange = viewModel::setProductLength,
                     helpText = "Enter the length of the product in mm.",
-                    keyboardType = KeyboardType.Number
+                    keyboardType = KeyboardType.Number,
+                    maxLength = 4
                 )
 
                 FormSpacer()
@@ -95,7 +100,8 @@ fun CalMetalDetectorConveyorProductDetails(
                     value = width,
                     onValueChange = viewModel::setProductWidth,
                     helpText = "Enter the width of the product in mm.",
-                    keyboardType = KeyboardType.Number
+                    keyboardType = KeyboardType.Number,
+                    maxLength = 4
                 )
 
                 FormSpacer()
@@ -107,7 +113,8 @@ fun CalMetalDetectorConveyorProductDetails(
                     helpText = "Enter the height of the product in mm. Required for PV calibration.",
                     keyboardType = KeyboardType.Number,
                     // PV required => height is mandatory => do NOT allow N/A toggle
-                    isNAToggleEnabled = !viewModel.pvRequired.value
+                    isNAToggleEnabled = !viewModel.pvRequired.value,
+                    maxLength = 4
                 )
 
                 FormSpacer()
@@ -117,7 +124,8 @@ fun CalMetalDetectorConveyorProductDetails(
                     value = notes,
                     onValueChange = viewModel::setProductDetailsEngineerNotes,
                     helpText = "Enter any notes relevant to this section.",
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    maxLength = 50
                 )
 
                 Spacer(Modifier.height(60.dp))

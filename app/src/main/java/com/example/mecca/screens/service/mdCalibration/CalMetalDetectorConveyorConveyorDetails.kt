@@ -82,7 +82,8 @@ fun CalMetalDetectorConveyorConveyorDetails(
                     value = infeedBeltHeight,
                     onValueChange = viewModel::setInfeedBeltHeight,
                     helpText = "Distance from floor to belt on infeed end.",
-                    keyboardType = KeyboardType.Number
+                    keyboardType = KeyboardType.Number,
+                    maxLength = 4
                 )
 
                 FormSpacer()
@@ -92,7 +93,8 @@ fun CalMetalDetectorConveyorConveyorDetails(
                     value = outfeedBeltHeight,
                     onValueChange = viewModel::setOutfeedBeltHeight,
                     helpText = "Distance from floor to belt on outfeed end.",
-                    keyboardType = KeyboardType.Number
+                    keyboardType = KeyboardType.Number,
+                    maxLength = 4
                 )
 
                 FormSpacer()
@@ -102,7 +104,8 @@ fun CalMetalDetectorConveyorConveyorDetails(
                     value = conveyorLength,
                     onValueChange = viewModel::setConveyorLength,
                     helpText = "Enter base length (floor space) for inclined conveyors.",
-                    keyboardType = KeyboardType.Number
+                    keyboardType = KeyboardType.Number,
+                    maxLength = 4
                 )
 
                 FormSpacer()
@@ -112,7 +115,8 @@ fun CalMetalDetectorConveyorConveyorDetails(
                     value = beltSpeed,
                     onValueChange = viewModel::setBeltSpeed,
                     helpText = "Measured using a tachometer.",
-                    keyboardType = KeyboardType.Number
+                    keyboardType = KeyboardType.Number,
+                    maxLength = 3
                 )
 
                 FormSpacer()
@@ -142,7 +146,8 @@ fun CalMetalDetectorConveyorConveyorDetails(
                         label = "Other Reject Device",
                         value = rejectDeviceOther,
                         onValueChange = viewModel::setRejectDeviceOther,
-                        helpText = "Enter custom description."
+                        helpText = "Enter custom description.",
+                        maxLength = 12
                     )
 
                     FormSpacer()
@@ -153,7 +158,8 @@ fun CalMetalDetectorConveyorConveyorDetails(
                     value = conveyorDetailsEngineerNotes,
                     onValueChange = viewModel::setConveyorDetailsEngineerNotes,
                     helpText = "Optional notes for this section.",
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    maxLength = 50
                 )
 
                 // optional breathing room so last field isn't glued to bottom buttons

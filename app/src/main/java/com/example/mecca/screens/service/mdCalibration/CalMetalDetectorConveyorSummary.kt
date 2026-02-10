@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,6 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -65,6 +67,16 @@ fun CalMetalDetectorConveyorSummary(
 
     var pendingLocationCandidate by remember { mutableStateOf<String?>(null) }
 
+    var engineerConfirmed by remember { mutableStateOf(false) }
+
+    // Next enabled
+    val isNextStepEnabled = false
+
+    LaunchedEffect(isNextStepEnabled) {
+        viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
+    }
+
+
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
@@ -80,9 +92,43 @@ fun CalMetalDetectorConveyorSummary(
                 CalMetalDetectorConveyorSummaryDetails(viewModel = viewModel)
             }
 
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .padding(16.dp)
+                ) {
+
+                    Text(
+                        text = "Engineer Declaration",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+
+                        Checkbox(
+                            checked = engineerConfirmed,
+                            onCheckedChange = { engineerConfirmed = it }
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Text(
+                            text = "I confirm this calibration has been completed in accordance with company procedures and that the recorded information is accurate to the best of my knowledge. This digital confirmation is equivalent to a handwritten signature.",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            }
+
+
             // Finish button
             item {
                 OutlinedButton(
+                    enabled = engineerConfirmed,
                     onClick = {
                         InAppLogger.d("Finish button clicked")
                         val oldLocation = viewModel.lastLocation.value.trim()

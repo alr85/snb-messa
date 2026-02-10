@@ -84,7 +84,8 @@ fun CalMetalDetectorConveyorCalibrationStart(
                 value = viewModel.newLocation.value,
                 onValueChange = viewModel::setNewLocation,
                 helpText = "Edit if the system has moved.",
-                isNAToggleEnabled = false
+                isNAToggleEnabled = false,
+                maxLength = 12
             )
 
             FormSpacer()
@@ -107,7 +108,8 @@ fun CalMetalDetectorConveyorCalibrationStart(
                     value = reasonForNotCalibrating,
                     onValueChange = viewModel::setReasonForNotCalibrating,
                     helpText = "Explain why calibration cannot be performed.",
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    maxLength = 50
                 )
             }
 
