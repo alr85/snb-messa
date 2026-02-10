@@ -98,7 +98,7 @@ fun AddNewMetalDetectorScreen(
     LaunchedEffect(Unit) {
         coroutineScope.launch {
             systemTypes = systemTypeRepository.getSystemTypesFromDb()
-                .filter { it.systemType.contains("Metal", ignoreCase = true) }
+                .filter { it.systemType.contains("MD", ignoreCase = true) }
 
             mdModels = mdModelsRepository.getMdModelsFromDb()
 
