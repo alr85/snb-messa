@@ -87,6 +87,7 @@ fun CalMetalDetectorConveyorDetectNotification(
                     If "No Result" is selected, all other options will be cleared.
                 """.trimIndent(),
                     isNAToggleEnabled = false
+
                 )
 
                 FormSpacer()
@@ -96,7 +97,8 @@ fun CalMetalDetectorConveyorDetectNotification(
                     value = notes,
                     onValueChange = viewModel::setDetectNotificationEngineerNotes,
                     helpText = "Enter any notes relevant to this section.",
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    maxLength = 50
                 )
 
                 Spacer(modifier = Modifier.height(60.dp))

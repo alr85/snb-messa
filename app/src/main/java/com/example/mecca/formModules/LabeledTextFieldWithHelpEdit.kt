@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.example.mecca.formModules.inputs.SimpleTextInput
 import com.example.mecca.ui.theme.FormInputDisabledBorderColor
 import com.example.mecca.ui.theme.FormInputDisabledLabelColor
 import com.example.mecca.ui.theme.FormInputDisabledTextColor
@@ -41,7 +42,12 @@ fun LabeledTextFieldWithHelpEdit(
     onValueChange: (String) -> Unit,
     helpText: String,
     keyboardType: KeyboardType = KeyboardType.Text,
-    isNAToggleEnabled: Boolean = true
+    isNAToggleEnabled: Boolean = true,
+    maxLength: Int? = null,
+    singleLine: Boolean = true,
+    transformInput: ((String) -> String)? = null,
+    showCounter: Boolean = true,
+
 ) {
     var showHelpDialog by remember { mutableStateOf(false) }
 
@@ -65,49 +71,20 @@ fun LabeledTextFieldWithHelpEdit(
         } else null,
         onHelpClick = { showHelpDialog = true }
     ) { disabled ->
-        OutlinedTextField(
+        SimpleTextInput(
             value = value,
             onValueChange = { raw ->
-                if (!disabled) {
-                    var cleaned = raw.replace(',', '.')
-                    if (keyboardType == KeyboardType.Text) {
-                        cleaned = cleaned.replaceFirstChar {
-                            if (it.isLowerCase()) it.titlecase() else it.toString()
-                        }
-                    }
-                    onValueChange(cleaned)
-                }
+                if (!disabled) onValueChange(raw)
             },
-            label = { Text("Value") },
-            singleLine = true,
-            enabled = !disabled,
-            shape = fieldShape,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = keyboardType,
-                capitalization = when (keyboardType) {
-                    KeyboardType.Text -> KeyboardCapitalization.Sentences
-                    else -> KeyboardCapitalization.None
-                }
-            ),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                disabledContainerColor = Color.White,
-
-                focusedBorderColor = FormInputFocusedBorderColor,
-                unfocusedBorderColor = FormInputUnfocusedBorderColor,
-                disabledBorderColor = FormInputDisabledBorderColor,
-
-                focusedTextColor = FormInputFocusedTextColor,
-                unfocusedTextColor = FormInputUnfocusedTextColor,
-                disabledTextColor = FormInputDisabledTextColor,
-
-                focusedLabelColor = FormInputFocusedLabelColor,
-                unfocusedLabelColor = FormInputUnfocusedLabelColor,
-                disabledLabelColor = FormInputDisabledLabelColor
-            ),
-            modifier = Modifier.fillMaxWidth()
+            label = "Value",
+            keyboardType = keyboardType,
+            isDisabled = disabled,
+            maxLength = maxLength,
+            singleLine = singleLine,
+            transformInput = transformInput,
+            showCounter = showCounter
         )
+
     }
 
     if (showHelpDialog) {

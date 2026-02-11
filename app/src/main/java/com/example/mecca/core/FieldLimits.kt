@@ -1,8 +1,9 @@
-package com.example.mecca.config
+package com.example.mecca.core
 
 object FieldLimits {
 
     const val PRODUCT_DESCRIPTION = 60
+    const val CHECKLIST_COMMENTS = 50
     const val LIBRARY_REFERENCE = 40
     const val LIBRARY_NUMBER = 25
 

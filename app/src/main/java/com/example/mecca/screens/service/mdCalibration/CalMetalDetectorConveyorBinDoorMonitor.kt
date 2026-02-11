@@ -16,6 +16,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateBinDoorMonitorPvResult
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
+import com.example.mecca.core.InputTransforms
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledDropdownWithHelp
 import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
@@ -224,7 +225,9 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                         },
                         helpText = "How many seconds until the system acknowledges the bin door has been left open/unlocked?",
                         isNAToggleEnabled = false,
-                        keyboardType = KeyboardType.Number
+                        keyboardType = KeyboardType.Decimal,
+                        transformInput = InputTransforms.decimal,
+                        maxLength = 3
                     )
 
                     FormSpacer()
@@ -316,7 +319,8 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                     value = notes,
                     onValueChange = viewModel::setBinDoorEngineerNotes,
                     helpText = "Enter any notes relevant to this section.",
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    maxLength = 50
                 )
 
                 Spacer(modifier = Modifier.height(60.dp))

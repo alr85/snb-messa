@@ -1,6 +1,7 @@
 package com.example.mecca.formModules.inputs
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -48,10 +49,15 @@ fun DropdownWithTextInput(
     options: List<String>,
     selectedOption: String,
     onOptionChange: (String) -> Unit,
+
     inputLabel: String,
     inputValue: String,
     onInputValueChange: (String) -> Unit,
     inputKeyboardType: KeyboardType = KeyboardType.Text,
+    inputMaxLength: Int? = null,
+    inputSingleLine: Boolean = true,
+    inputTransform: ((String) -> String)? = null,
+
     isDisabled: Boolean
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -60,41 +66,24 @@ fun DropdownWithTextInput(
 
     Row(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Text input
-        OutlinedTextField(
-            value = inputValue,
-            onValueChange = { if (!isDisabled) onInputValueChange(it) },
-            label = { Text(inputLabel) },
-            singleLine = true,
-            enabled = !isDisabled,
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = inputKeyboardType),
-            modifier = Modifier.weight(1f),
-            shape = fieldShape,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = FormInputFocusedContainerColor,
-                unfocusedContainerColor = FormInputUnfocusedContainerColor,
-                disabledContainerColor = FormInputDisabledContainerColor,
 
-                focusedBorderColor = FormInputFocusedBorderColor,
-                unfocusedBorderColor = FormInputUnfocusedBorderColor,
-                disabledBorderColor = FormInputDisabledBorderColor,
-
-                focusedTextColor = FormInputFocusedTextColor,
-                unfocusedTextColor = FormInputUnfocusedTextColor,
-                disabledTextColor = FormInputDisabledTextColor,
-
-                focusedLabelColor = FormInputFocusedLabelColor,
-                unfocusedLabelColor = FormInputUnfocusedLabelColor,
-                disabledLabelColor = FormInputDisabledLabelColor,
-
-                focusedPlaceholderColor = FormInputFocusedPlaceholderColor,
-                unfocusedPlaceholderColor = FormInputUnfocusedPlaceholderColor,
-                disabledPlaceholderColor = FormInputDisabledPlaceholderColor
+            SimpleTextInput(
+                modifier = Modifier.weight(1f),
+                value = inputValue,
+                onValueChange = onInputValueChange,
+                label = inputLabel,
+                keyboardType = inputKeyboardType,
+                isDisabled = isDisabled,
+                maxLength = inputMaxLength,
+                singleLine = inputSingleLine,
+                transformInput = inputTransform,
+                // optional: I’d keep the counter on if maxLength is set
+                showCounter = true
             )
-        )
+
 
         // Dropdown (Material3 Exposed)
         ExposedDropdownMenuBox(
@@ -146,12 +135,7 @@ fun DropdownWithTextInput(
             ) {
                 options.forEach { option ->
                     DropdownMenuItem(
-                        text = {
-                            Text(
-                                text = option,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        },
+                        text = { Text(option, style = MaterialTheme.typography.bodyLarge) },
                         onClick = {
                             onOptionChange(option)
                             expanded = false

@@ -244,7 +244,8 @@ fun CalMetalDetectorConveyorBinFullPEC(
                     value = notes,
                     onValueChange = viewModel::setBinFullSensorEngineerNotes,
                     helpText = "Enter any notes relevant to this section.",
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    maxLength = 50
                 )
 
                 Spacer(modifier = Modifier.height(60.dp))

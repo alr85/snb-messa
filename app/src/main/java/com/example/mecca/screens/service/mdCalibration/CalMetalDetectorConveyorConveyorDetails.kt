@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
+import com.example.mecca.core.InputTransforms
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledDropdownWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
@@ -83,7 +84,8 @@ fun CalMetalDetectorConveyorConveyorDetails(
                     onValueChange = viewModel::setInfeedBeltHeight,
                     helpText = "Distance from floor to belt on infeed end.",
                     keyboardType = KeyboardType.Number,
-                    maxLength = 4
+                    maxLength = 4,
+                    transformInput = InputTransforms.digitsOnly
                 )
 
                 FormSpacer()
@@ -94,7 +96,8 @@ fun CalMetalDetectorConveyorConveyorDetails(
                     onValueChange = viewModel::setOutfeedBeltHeight,
                     helpText = "Distance from floor to belt on outfeed end.",
                     keyboardType = KeyboardType.Number,
-                    maxLength = 4
+                    maxLength = 4,
+                    transformInput = InputTransforms.digitsOnly
                 )
 
                 FormSpacer()
@@ -105,7 +108,8 @@ fun CalMetalDetectorConveyorConveyorDetails(
                     onValueChange = viewModel::setConveyorLength,
                     helpText = "Enter base length (floor space) for inclined conveyors.",
                     keyboardType = KeyboardType.Number,
-                    maxLength = 4
+                    maxLength = 4,
+                    transformInput = InputTransforms.digitsOnly
                 )
 
                 FormSpacer()
@@ -116,7 +120,8 @@ fun CalMetalDetectorConveyorConveyorDetails(
                     onValueChange = viewModel::setBeltSpeed,
                     helpText = "Measured using a tachometer.",
                     keyboardType = KeyboardType.Number,
-                    maxLength = 3
+                    maxLength = 3,
+                    transformInput = InputTransforms.digitsOnly
                 )
 
                 FormSpacer()

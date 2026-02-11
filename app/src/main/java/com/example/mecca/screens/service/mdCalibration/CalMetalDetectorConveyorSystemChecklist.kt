@@ -42,8 +42,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
+import com.example.mecca.core.FieldLimits
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.ConditionState
+import com.example.mecca.formModules.inputs.SimpleTextInput
 import com.example.mecca.ui.theme.FormInputDisabledBorderColor
 import com.example.mecca.ui.theme.FormInputDisabledLabelColor
 import com.example.mecca.ui.theme.FormInputDisabledTextColor
@@ -56,7 +58,6 @@ import com.example.mecca.ui.theme.FormInputUnfocusedTextColor
 import com.example.mecca.ui.theme.FormWrapperSurface
 import com.example.mecca.ui.theme.LazyColumnWithScrollbar
 
-@Immutable
 private data class ChecklistCardModel(
     val key: String,
     val title: String,
@@ -268,38 +269,17 @@ private fun ModernChecklistCard(
 
             AnimatedVisibility(visible = showComments) {
                 Column {
-                    OutlinedTextField(
+                    SimpleTextInput(
                         value = model.comments,
                         onValueChange = model.onCommentsChange,
-                        modifier = Modifier.fillMaxWidth(),
-                        label = {
-                            Text(if (commentsRequired) "Comments (required)" else "Comments")
-                        },
-                        minLines = 2,
-                        supportingText = {
-                            if (commentsRequired && model.comments.trim().isEmpty()) {
-                                Text("Please add a brief note describing the defect/action required.")
-                            }
-                        },
-                        isError = commentsRequired && model.comments.trim().isEmpty(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                            disabledContainerColor = Color.White,
-
-                            focusedBorderColor = FormInputFocusedBorderColor,
-                            unfocusedBorderColor = FormInputUnfocusedBorderColor,
-                            disabledBorderColor = FormInputDisabledBorderColor,
-
-                            focusedTextColor = FormInputFocusedTextColor,
-                            unfocusedTextColor = FormInputUnfocusedTextColor,
-                            disabledTextColor = FormInputDisabledTextColor,
-
-                            focusedLabelColor = FormInputFocusedLabelColor,
-                            unfocusedLabelColor = FormInputUnfocusedLabelColor,
-                            disabledLabelColor = FormInputDisabledLabelColor
-                        )
+                        label = if (commentsRequired) "Comments (required)" else "Comments",
+                        singleLine = false,
+                        maxLength = FieldLimits.CHECKLIST_COMMENTS,
+                        transformInput = null,
+                        isDisabled = false,
+                        minLines = 2
                     )
+
 
                     if (!commentsRequired && model.comments.isBlank()) {
                         Spacer(Modifier.height(6.dp))

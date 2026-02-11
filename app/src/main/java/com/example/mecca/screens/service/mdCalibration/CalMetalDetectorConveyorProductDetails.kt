@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.config.FieldLimits
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.ui.theme.FormSpacer
@@ -59,7 +58,7 @@ fun CalMetalDetectorConveyorProductDetails(
                     value = description,
                     onValueChange = viewModel::setProductDescription,
                     helpText = "Enter the details of the product.",
-                    maxLength = FieldLimits.PRODUCT_DESCRIPTION
+                    maxLength = 18
                 )
 
                 FormSpacer()

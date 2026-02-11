@@ -20,21 +20,21 @@ fun LabeledTextFieldWithHelp(
     helpText: String,
     keyboardType: KeyboardType = KeyboardType.Text,
     isNAToggleEnabled: Boolean = true,
-    rowDisabled: Boolean = false, // optional: only use if you truly want to lock the whole row
+    rowDisabled: Boolean = false,
     maxLength: Int? = null,
     singleLine: Boolean = true,
-
-    ) {
+    transformInput: ((String) -> String)? = null,
+    showCounter: Boolean = true,
+) {
     var showHelpDialog by remember { mutableStateOf(false) }
 
     val isNa = value == "N/A"
     val inputDisabled = rowDisabled || isNa
 
-
     FormRowWrapper(
         label = label,
         naButtonText = if (isNa) "Edit" else "N/A",
-        isDisabled = false, // ALWAYS
+        isDisabled = false, // keep wrapper consistent with your existing behavior
         onNaClick = if (isNAToggleEnabled) {
             { onValueChange(if (isNa) "" else "N/A") }
         } else null,
@@ -49,10 +49,11 @@ fun LabeledTextFieldWithHelp(
             keyboardType = keyboardType,
             isDisabled = inputDisabled,
             maxLength = maxLength,
-            singleLine = singleLine
+            singleLine = singleLine,
+            transformInput = transformInput,
+            showCounter = showCounter
         )
     }
-
 
     if (showHelpDialog) {
         AlertDialog(

@@ -85,7 +85,8 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
                         M&S Target: ${sensitivityData?.FerrousTargetMM?.toString() ?: "N/A"} mm
                         M&S Max: ${sensitivityData?.FerrousMaxMM?.toString() ?: "N/A"} mm
                     """.trimIndent(),
-                    keyboardType = KeyboardType.Number
+                    keyboardType = KeyboardType.Decimal,
+                    maxLength = 4
                 )
 
                 FormSpacer()
@@ -100,7 +101,8 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
                         M&S Target: ${sensitivityData?.NonFerrousTargetMM?.toString() ?: "N/A"} mm
                         M&S Max: ${sensitivityData?.NonFerrousMaxMM?.toString() ?: "N/A"} mm
                     """.trimIndent(),
-                    keyboardType = KeyboardType.Number
+                    keyboardType = KeyboardType.Decimal,
+                    maxLength = 4
                 )
 
                 FormSpacer()
@@ -115,7 +117,8 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
                         M&S Target: ${sensitivityData?.Stainless316TargetMM?.toString() ?: "N/A"} mm
                         M&S Max: ${sensitivityData?.Stainless316MaxMM?.toString() ?: "N/A"} mm
                     """.trimIndent(),
-                    keyboardType = KeyboardType.Number
+                    keyboardType = KeyboardType.Decimal,
+                    maxLength = 4
                 )
 
                 FormSpacer()
@@ -125,7 +128,8 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
                     value = engineerNotes,
                     onValueChange = viewModel::setSensitivityRequirementEngineerNotes,
                     helpText = "Enter any notes relevant to this section",
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    maxLength = 50
                 )
 
                 Spacer(Modifier.height(60.dp))

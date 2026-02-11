@@ -31,49 +31,63 @@ import com.example.mecca.ui.theme.FormInputUnfocusedTextColor
 
 @Composable
 fun SimpleTextInput(
+    modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
     keyboardType: KeyboardType = KeyboardType.Text,
     isDisabled: Boolean = false,
     maxLength: Int? = null,
-    singleLine: Boolean = true
+    singleLine: Boolean = true,
+    transformInput: ((String) -> String)? = null,
+    showCounter: Boolean = true, // allow turning off counter if you ever want
+    minLines: Int = 1,
 
-
-) {
-
+    ) {
     val fieldShape = RoundedCornerShape(14.dp)
+
+    val capitalization =
+        if (keyboardType == KeyboardType.Text) KeyboardCapitalization.Sentences
+        else KeyboardCapitalization.None
 
     OutlinedTextField(
         value = value,
-        onValueChange = {
-            if (!isDisabled) {
-                val trimmed = maxLength?.let { limit -> it.take(limit) } ?: it
-                onValueChange(trimmed)
+        onValueChange = { incoming ->
+            if (isDisabled) return@OutlinedTextField
+
+            // 1) Optional transform (sanitize / formatting)
+            var processed = transformInput?.invoke(incoming) ?: incoming
+
+            // 2) Optional max length clamp
+            if (maxLength != null) {
+                processed = processed.take(maxLength)
             }
+
+            onValueChange(processed)
         },
-        label = { Section.Text(label) },
+        label = { Text(label) },
         singleLine = singleLine,
+        minLines = minLines,
         enabled = !isDisabled,
         shape = fieldShape,
-        modifier = Modifier.fillMaxWidth(),
-        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType,capitalization = KeyboardCapitalization.Sentences),
+        modifier = modifier.fillMaxWidth(),
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = keyboardType,
+            capitalization = capitalization
+        ),
         supportingText = {
-            maxLength?.let { limit ->
-                val remaining = limit - value.length
-                val color = if (remaining <= 5)
-                    MaterialTheme.colorScheme.error
-                else
-                    MaterialTheme.colorScheme.onSurfaceVariant
+            if (showCounter && maxLength != null) {
+                val remaining = maxLength - value.length
+                val color =
+                    if (remaining < 1) MaterialTheme.colorScheme.error
+                    else MaterialTheme.colorScheme.onSurfaceVariant
 
                 Text(
-                    text = "${value.length} / $limit",
+                    text = "${value.length} / $maxLength",
                     color = color
                 )
             }
-        }
-,
-
+        },
         colors = OutlinedTextFieldDefaults.colors(
             focusedContainerColor = FormInputFocusedContainerColor,
             unfocusedContainerColor = FormInputUnfocusedContainerColor,
@@ -97,4 +111,3 @@ fun SimpleTextInput(
         )
     )
 }
-

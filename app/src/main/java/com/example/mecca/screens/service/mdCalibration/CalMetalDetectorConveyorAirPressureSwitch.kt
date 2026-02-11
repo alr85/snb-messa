@@ -149,7 +149,8 @@ fun CalMetalDetectorConveyorAirPressureSensor(
                                 viewModel.autoUpdateAirPressureSensorPvResult()
                             },
                             helpText = "Enter the custom test method.",
-                            isNAToggleEnabled = false
+                            isNAToggleEnabled = false,
+                            maxLength = 18
                         )
                     }
 
@@ -239,7 +240,8 @@ fun CalMetalDetectorConveyorAirPressureSensor(
                     value = notes,
                     onValueChange = viewModel::setAirPressureSensorEngineerNotes,
                     helpText = "Enter any notes relevant to this section.",
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    maxLength = 50
                 )
 
                 Spacer(modifier = Modifier.height(60.dp))

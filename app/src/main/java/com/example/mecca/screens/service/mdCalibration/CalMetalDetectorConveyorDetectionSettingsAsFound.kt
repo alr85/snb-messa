@@ -108,7 +108,8 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
                         onLabelChange = { labelSetters[index](it) },
                         value = valueState.value,
                         onValueChange = { valueSetters[index](it) },
-                        helpText = "Enter the detection setting value. Tap the label to rename."
+                        helpText = "Enter the detection setting value. Tap the label to rename.",
+                        maxLength = 18
                     )
 
                     FormSpacer()
@@ -121,7 +122,8 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
                         viewModel.setSensitivityAccessRestriction(it)
                         viewModel.autoUpdateDetectionSettingPvResult()
                     },
-                    helpText = "Eg: 'Password protected', 'Key switch', etc."
+                    helpText = "Eg: 'Password protected', 'Key switch', etc.",
+                    maxLength = 18
                 )
 
                 FormSpacer()
@@ -148,7 +150,8 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
                     value = viewModel.detectionSettingAsFoundEngineerNotes.value,
                     onValueChange = viewModel::setDetectionSettingAsFoundEngineerNotes,
                     helpText = "Enter any notes relevant to this section.",
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    maxLength = 50
                 )
 
                 Spacer(Modifier.height(60.dp))

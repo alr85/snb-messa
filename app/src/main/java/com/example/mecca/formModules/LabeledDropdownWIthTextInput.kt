@@ -24,11 +24,13 @@ fun LabeledDropdownWithTextInput(
     inputValue: String,
     onInputValueChange: (String) -> Unit,
     inputKeyboardType: KeyboardType = KeyboardType.Text,
-    isNAToggleEnabled: Boolean = true
+    isNAToggleEnabled: Boolean = true,
+    inputMaxLength: Int? = null,
+    inputSingleLine: Boolean = true,
+    inputTransform: ((String) -> String)? = null,
 ) {
     var showHelpDialog by remember { mutableStateOf(false) }
 
-    // Disabled iff BOTH values are "N/A" (since your N/A button writes "N/A" to both)
     var isDisabled by remember {
         mutableStateOf(selectedOption == "N/A" && inputValue == "N/A")
     }
@@ -56,10 +58,15 @@ fun LabeledDropdownWithTextInput(
             options = options,
             selectedOption = selectedOption,
             onOptionChange = { if (!disabled) onOptionChange(it) },
+
             inputLabel = inputLabel,
             inputValue = inputValue,
             onInputValueChange = { if (!disabled) onInputValueChange(it) },
             inputKeyboardType = inputKeyboardType,
+            inputMaxLength = inputMaxLength,
+            inputSingleLine = inputSingleLine,
+            inputTransform = inputTransform,
+
             isDisabled = disabled
         )
     }

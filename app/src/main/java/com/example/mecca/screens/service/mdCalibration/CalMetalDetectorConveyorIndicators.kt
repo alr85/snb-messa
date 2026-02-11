@@ -82,8 +82,10 @@ fun CalMetalDetectorConveyorIndicators(
             inputLabel = "Label",
             inputValue = label,
             onInputValueChange = onLabelChange,
-            isNAToggleEnabled = true
+            isNAToggleEnabled = true,
+            inputMaxLength = 15
         )
+
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -164,7 +166,9 @@ fun CalMetalDetectorConveyorIndicators(
                     value = notes,
                     onValueChange = viewModel::setIndicatorsEngineerNotes,
                     helpText = "Enter any notes relevant to this section.",
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    maxLength = 50
+
                 )
 
                 Spacer(Modifier.height(60.dp))

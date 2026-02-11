@@ -146,7 +146,8 @@ fun CalMetalDetectorConveyorBackupPEC(
                                 viewModel.autoUpdateBackupSensorPvResult()
                             },
                             helpText = "Enter the custom test method.",
-                            isNAToggleEnabled = false
+                            isNAToggleEnabled = false,
+                            maxLength = 18
                         )
 
                         FormSpacer()
@@ -242,7 +243,8 @@ fun CalMetalDetectorConveyorBackupPEC(
                     value = notes,
                     onValueChange = viewModel::setBackupSensorEngineerNotes,
                     helpText = "Enter any notes relevant to this section.",
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    maxLength = 50
                 )
 
                 Spacer(modifier = Modifier.height(60.dp))
