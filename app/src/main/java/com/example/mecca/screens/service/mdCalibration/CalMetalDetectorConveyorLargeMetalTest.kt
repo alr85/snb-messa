@@ -52,7 +52,7 @@ fun CalMetalDetectorConveyorLargeMetalTest(
             return@LaunchedEffect
         }
 
-        // PV rules (adjust if your spec differs)
+        // PV rules
         when (dr) {
             YesNoState.NA -> viewModel.setLargeMetalTestPvResult("N/A")
             YesNoState.YES ->
@@ -101,7 +101,8 @@ fun CalMetalDetectorConveyorLargeMetalTest(
                     value = certNo,
                     onValueChange = viewModel::setSampleCertificateNumberLargeMetal,
                     helpText = "Enter the metal test sample certificate number (usually on the test piece).",
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    maxLength = 12
                 )
 
                 FormSpacer()
@@ -135,7 +136,8 @@ fun CalMetalDetectorConveyorLargeMetalTest(
                     value = notes,
                     onValueChange = viewModel::setLargeMetalTestEngineerNotes,
                     helpText = "Enter any notes relevant to this section.",
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    maxLength = 50
                 )
 
                 Spacer(modifier = Modifier.height(60.dp))

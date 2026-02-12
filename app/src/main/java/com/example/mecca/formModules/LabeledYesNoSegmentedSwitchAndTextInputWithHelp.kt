@@ -22,8 +22,11 @@ fun LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
     inputLabel: String,
     inputValue: String,
     onInputValueChange: (String) -> Unit,
-    inputKeyboardType: KeyboardType = KeyboardType.Text
-) {
+    inputKeyboardType: KeyboardType = KeyboardType.Text,
+    inputMaxLength: Int? = null,
+    inputTransform: ((String) -> String)? = null,
+
+    ) {
     var showHelpDialog by remember { mutableStateOf(false) }
     var isDisabled by remember { mutableStateOf(currentState == YesNoState.NA) }
     var localCurrentState by remember {
@@ -49,15 +52,17 @@ fun LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
         onHelpClick = { showHelpDialog = true }
     ) { disabled ->
         YesNoSegmented(
-            currentState = localCurrentState,               // single source of truth for child
+            currentState = localCurrentState,
             onStateChange = { new ->
-                localCurrentState = new                    // update row-local
-                onStateChange(new)                         // then notify VM
+                localCurrentState = new
+                onStateChange(new)
             },
             inputLabel = inputLabel,
             inputValue = inputValue,
             onInputValueChange = onInputValueChange,
             inputKeyboardType = inputKeyboardType,
+            inputMaxLength = inputMaxLength,
+            inputTransform = inputTransform,
             isDisabled = disabled
         )
     }

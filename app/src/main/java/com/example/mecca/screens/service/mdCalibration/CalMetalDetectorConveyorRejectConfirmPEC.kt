@@ -133,7 +133,8 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                     onInputValueChange = {
                         viewModel.setRejectConfirmSensorDetail(it)
                         viewModel.autoUpdateRejectConfirmSensorPvResult()
-                    }
+                    },
+                    inputMaxLength = 12
                 )
 
                 FormSpacer()
@@ -163,7 +164,8 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                                 viewModel.autoUpdateRejectConfirmSensorPvResult()
                             },
                             helpText = "Enter the custom test method.",
-                            isNAToggleEnabled = false
+                            isNAToggleEnabled = false,
+                            maxLength = 12
                         )
                     }
 
@@ -267,7 +269,8 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                     value = notes,
                     onValueChange = viewModel::setRejectConfirmSensorEngineerNotes,
                     helpText = "Enter any notes relevant to this section.",
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    maxLength = 50
                 )
 
                 Spacer(modifier = Modifier.height(60.dp))

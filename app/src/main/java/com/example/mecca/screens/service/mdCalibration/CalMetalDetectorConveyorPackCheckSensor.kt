@@ -118,7 +118,8 @@ fun CalMetalDetectorConveyorPackCheckSensor(
                     onInputValueChange = {
                         viewModel.setPackCheckSensorDetail(it)
                         viewModel.autoUpdatePackCheckSensorPvResult()
-                    }
+                    },
+                    inputMaxLength = 12
                 )
 
                 FormSpacer()
@@ -148,7 +149,8 @@ fun CalMetalDetectorConveyorPackCheckSensor(
                                 viewModel.autoUpdatePackCheckSensorPvResult()
                             },
                             helpText = "Enter the custom test method.",
-                            isNAToggleEnabled = false
+                            isNAToggleEnabled = false,
+                            maxLength = 12
                         )
                     }
 
@@ -237,7 +239,8 @@ fun CalMetalDetectorConveyorPackCheckSensor(
                     value = notes,
                     onValueChange = viewModel::setPackCheckSensorEngineerNotes,
                     helpText = "Enter any notes relevant to this section.",
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    maxLength = 50
                 )
 
                 Spacer(modifier = Modifier.height(60.dp))

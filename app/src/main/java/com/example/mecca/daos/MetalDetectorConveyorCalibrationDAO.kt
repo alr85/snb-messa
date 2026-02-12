@@ -623,12 +623,15 @@ interface MetalDetectorConveyorCalibrationDAO {
     @Query(
         "UPDATE MetalDetectorConveyorCalibrations " +
                 "SET detectNotificationResult = :detectNotificationResult, " +
-                "detectNotificationEngineerNotes = :detectNotificationEngineerNotes " +
+                "detectNotificationEngineerNotes = :detectNotificationEngineerNotes, " +
+                "detectNotificationTestPvResult = :detectNotificationTestPvResult " +
                 "WHERE calibrationId = :calibrationId"
     )
     suspend fun updateDetectNotification(
         detectNotificationResult: String,
+        detectNotificationTestPvResult: String,
         detectNotificationEngineerNotes: String,
+
         calibrationId: String
     )
 

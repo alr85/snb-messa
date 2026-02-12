@@ -145,7 +145,8 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                     onInputValueChange = {
                         viewModel.setBinDoorMonitorDetail(it)
                         viewModel.autoUpdateBinDoorMonitorPvResult()
-                    }
+                    },
+                    inputMaxLength = 12
                 )
 
                 FormSpacer()

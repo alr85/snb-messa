@@ -122,7 +122,8 @@ fun CalMetalDetectorConveyorSpeedSensor(
                     onInputValueChange = {
                         viewModel.setSpeedSensorDetail(it)
                         viewModel.autoUpdateSpeedSensorPvResult()
-                    }
+                    },
+                    inputMaxLength = 12
                 )
 
                 FormSpacer()
@@ -155,7 +156,8 @@ fun CalMetalDetectorConveyorSpeedSensor(
                                 viewModel.autoUpdateSpeedSensorPvResult()
                             },
                             helpText = "Enter the custom test method.",
-                            isNAToggleEnabled = false
+                            isNAToggleEnabled = false,
+                            maxLength = 12
                         )
                     }
 
@@ -245,7 +247,8 @@ fun CalMetalDetectorConveyorSpeedSensor(
                     value = notes,
                     onValueChange = viewModel::setSpeedSensorEngineerNotes,
                     helpText = "Enter any notes relevant to this section.",
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    maxLength = 50
                 )
 
                 Spacer(modifier = Modifier.height(60.dp))

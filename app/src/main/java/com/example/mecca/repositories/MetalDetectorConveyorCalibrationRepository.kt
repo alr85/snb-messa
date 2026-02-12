@@ -412,6 +412,7 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
         calibrationDao.updateDetectNotification(
             detectNotificationResult = update.detectNotificationResult,
             detectNotificationEngineerNotes = update.detectNotificationEngineerNotes,
+            detectNotificationTestPvResult = update.detectNotificationTestPvResult,
             calibrationId = update.calibrationId
         )
     }

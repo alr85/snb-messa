@@ -80,7 +80,6 @@ fun DropdownWithTextInput(
                 maxLength = inputMaxLength,
                 singleLine = inputSingleLine,
                 transformInput = inputTransform,
-                // optional: I’d keep the counter on if maxLength is set
                 showCounter = true
             )
 

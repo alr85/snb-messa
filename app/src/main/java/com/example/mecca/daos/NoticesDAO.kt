@@ -14,10 +14,10 @@ interface NoticesDAO {
     suspend fun upsertNotices(notices: List<NoticeLocal>)
 
 
-    @Query("SELECT * FROM notice WHERE isActive = 1 ORDER BY dateAdded DESC")
+    @Query("SELECT * FROM notice WHERE isActive = 1 ORDER BY isPinned DESC, dateAdded DESC")
     fun getActiveNotices(): Flow<List<NoticeLocal>>
 
-    @Query("SELECT * FROM notice WHERE isActive = 1 ORDER BY dateAdded DESC")
+    @Query("SELECT * FROM notice WHERE isActive = 1 ORDER BY isPinned DESC, dateAdded DESC")
     suspend fun getActiveNoticesOnce(): List<NoticeLocal>
 
 

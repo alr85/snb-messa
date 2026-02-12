@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -59,7 +60,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
+import com.example.mecca.calibrationViewModels.NoticeViewModel
 import com.example.mecca.network.isNetworkAvailable
+import com.example.mecca.repositories.NoticeRepository
 import com.example.mecca.repositories.UserRepository
 import com.example.mecca.screens.LoginScreen
 import com.example.mecca.ui.theme.AppNavGraph
@@ -68,6 +71,8 @@ import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     private lateinit var userViewModel: UserViewModel
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -89,7 +94,6 @@ class MainActivity : ComponentActivity() {
         val savedPassword = savedCredentials.second
 
 
-
         setContent {
             val syncStatus by userViewModel.syncStatus.collectAsState()
             val loginStatus by userViewModel.loginStatus.collectAsState()
@@ -106,6 +110,7 @@ class MainActivity : ComponentActivity() {
 
                 // Case 2: login already successful
                 loginStatus -> {
+
                     MyApp(db, userViewModel)
                 }
 
@@ -261,9 +266,9 @@ fun MyApp(db: AppDatabase, userViewModel: UserViewModel) {
 
 
     val items = listOf(
-        NavigationBarItem("Schedule", Icons.Filled.DateRange, Icons.Default.DateRange),
+        //NavigationBarItem("Schedule", Icons.Filled.DateRange, Icons.Default.DateRange),
         NavigationBarItem("Service", Icons.Filled.Build, Icons.Default.Build),
-        NavigationBarItem("Messages", Icons.Filled.Email, Icons.Default.Email),
+        NavigationBarItem("Notices", Icons.Filled.NotificationsNone, Icons.Default.NotificationsNone),
         NavigationBarItem("Menu", Icons.Filled.Menu, Icons.Default.Menu)
     )
 
@@ -292,10 +297,10 @@ fun MyApp(db: AppDatabase, userViewModel: UserViewModel) {
                             onClick = {
                                 selectedItemIndex = index
                                 when (index) {
-                                    0 -> navController.navigate("serviceHome")
-                                    1 -> navController.navigate("serviceSelectCustomer")
-                                    2 -> navController.navigate("messagesHomeScreen")
-                                    3 -> navController.navigate("menu")
+                                    //0 -> navController.navigate("serviceHome")
+                                    0 -> navController.navigate("serviceSelectCustomer")
+                                    1 -> navController.navigate("notices")
+                                    2 -> navController.navigate("menu")
                                 }
                             },
                             label = {

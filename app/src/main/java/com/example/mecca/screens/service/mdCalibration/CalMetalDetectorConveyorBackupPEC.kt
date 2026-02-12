@@ -118,7 +118,8 @@ fun CalMetalDetectorConveyorBackupPEC(
                     onInputValueChange = {
                         viewModel.setBackupSensorDetail(it)
                         viewModel.autoUpdateBackupSensorPvResult()
-                    }
+                    },
+                    inputMaxLength = 12
                 )
 
                 FormSpacer()
@@ -147,7 +148,7 @@ fun CalMetalDetectorConveyorBackupPEC(
                             },
                             helpText = "Enter the custom test method.",
                             isNAToggleEnabled = false,
-                            maxLength = 18
+                            maxLength = 12
                         )
 
                         FormSpacer()

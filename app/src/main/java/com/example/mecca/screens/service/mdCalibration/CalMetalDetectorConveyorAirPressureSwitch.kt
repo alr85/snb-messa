@@ -119,7 +119,8 @@ fun CalMetalDetectorConveyorAirPressureSensor(
                     onInputValueChange = {
                         viewModel.setAirPressureSensorDetail(it)
                         viewModel.autoUpdateAirPressureSensorPvResult()
-                    }
+                    },
+                    inputMaxLength = 12
                 )
 
                 FormSpacer()
@@ -150,7 +151,7 @@ fun CalMetalDetectorConveyorAirPressureSensor(
                             },
                             helpText = "Enter the custom test method.",
                             isNAToggleEnabled = false,
-                            maxLength = 18
+                            maxLength = 12
                         )
                     }
 

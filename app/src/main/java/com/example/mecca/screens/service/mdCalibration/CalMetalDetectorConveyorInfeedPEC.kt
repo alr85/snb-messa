@@ -1,5 +1,6 @@
 package com.example.mecca.screens.service.mdCalibration
 
+import android.R.attr.maxLength
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -126,7 +127,8 @@ fun CalMetalDetectorConveyorInfeedPEC(
                     onInputValueChange = {
                         viewModel.setInfeedSensorDetail(it)
                         viewModel.autoUpdateInfeedSensorPvResult()
-                    }
+                    },
+                    inputMaxLength = 12
                 )
 
                 FormSpacer()
@@ -142,7 +144,7 @@ fun CalMetalDetectorConveyorInfeedPEC(
                             viewModel.autoUpdateInfeedSensorPvResult()
                         },
                         helpText = "Select one option from the dropdown.",
-                        isNAToggleEnabled = false
+                        isNAToggleEnabled = false,
                     )
 
                     FormSpacer()
@@ -156,7 +158,8 @@ fun CalMetalDetectorConveyorInfeedPEC(
                                 viewModel.autoUpdateInfeedSensorPvResult()
                             },
                             helpText = "Enter the custom test method.",
-                            isNAToggleEnabled = false
+                            isNAToggleEnabled = false,
+                            maxLength = 12
                         )
                     }
 
@@ -248,7 +251,8 @@ fun CalMetalDetectorConveyorInfeedPEC(
                     value = notes,
                     onValueChange = viewModel::setInfeedSensorEngineerNotes,
                     helpText = "Enter any notes relevant to this section.",
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    maxLength = 50
                 )
 
                 Spacer(modifier = Modifier.height(60.dp))

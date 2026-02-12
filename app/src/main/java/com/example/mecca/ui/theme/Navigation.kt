@@ -18,7 +18,7 @@ import com.example.mecca.screens.menu.AboutAppScreen
 import com.example.mecca.screens.service.AddNewMetalDetectorScreen
 import com.example.mecca.screens.menu.DatabaseSyncScreen
 import com.example.mecca.screens.mainmenu.HomeScreen
-import com.example.mecca.screens.mainmenu.MessagesHomeScreen
+import com.example.mecca.screens.mainmenu.NoticesScreen
 import com.example.mecca.screens.service.MetalDetectorConveyorSystemScreen
 import com.example.mecca.screens.menu.MyCalibrationsScreen
 import com.example.mecca.screens.mainmenu.ServiceSelectCustomerScreen
@@ -57,7 +57,7 @@ fun AppNavGraph(navController: NavHostController, db: AppDatabase, userViewModel
         }
         composable("aboutApp") { AboutAppScreen(chromeVm = chromeVm) }
 
-        composable("messagesHomeScreen") { MessagesHomeScreen(navController, chromeVm = chromeVm) }
+        composable("notices") { NoticesScreen(navController, chromeVm = chromeVm) }
 
         composable("serviceSelectCustomer") {
             ServiceSelectCustomerScreen(

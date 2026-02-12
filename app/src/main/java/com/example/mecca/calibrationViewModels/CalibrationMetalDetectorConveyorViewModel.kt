@@ -480,6 +480,8 @@ class CalibrationMetalDetectorConveyorViewModel(
                     .split(",")
                     .map { it.trim() }
                     .filter { it.isNotBlank() }
+                _detectNotificationTestPvResult.value =
+                    existingCalibration.detectNotificationTestPvResult
                 _detectNotificationEngineerNotes.value =
                     existingCalibration.detectNotificationEngineerNotes
 
@@ -2727,6 +2729,13 @@ class CalibrationMetalDetectorConveyorViewModel(
         _detectNotificationResult.value = newValue
     }
 
+    private val _detectNotificationTestPvResult = mutableStateOf("")
+    val detectNotificationTestPvResult: State<String> = _detectNotificationTestPvResult
+
+    fun setDetectNotificationTestPvResult(newValue: String) {
+        _detectNotificationTestPvResult.value = newValue
+    }
+
     private val _detectNotificationEngineerNotes = mutableStateOf("")
     val detectNotificationEngineerNotes: State<(String)> = _detectNotificationEngineerNotes
 
@@ -3268,6 +3277,7 @@ class CalibrationMetalDetectorConveyorViewModel(
                     row.packCheckSensorTestPvResult,
                     row.speedSensorTestPvResult,
                     row.binDoorMonitorTestPvResult,
+                    row.detectNotificationTestPvResult
 
 
 

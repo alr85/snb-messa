@@ -10,8 +10,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
+import com.example.mecca.core.InputTransforms
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTwoTextInputsWithHelp
@@ -64,7 +66,8 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
                     label = "Product Peak Signal",
                     value = productPeakSignalAsFound,
                     onValueChange = viewModel::setProductPeakSignalAsFound,
-                    helpText = "Enter the 'As Found' peak signal from the product alone."
+                    helpText = "Enter the 'As Found' peak signal from the product alone.",
+                    maxLength = 10
                 )
 
                 FormSpacer()
@@ -78,7 +81,15 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
                     secondInputValue = sensitivityAsFoundFerrousPeakSignal,
                     onSecondInputValueChange = viewModel::setSensitivityAsFoundFerrousPeakSignal,
                     helpText = "Enter the Ferrous sensitivity & peak signals (Leading / Middle / Trailing).",
-                    isNAToggleEnabled = true
+                    isNAToggleEnabled = true,
+                    firstInputKeyboardType = KeyboardType.Decimal,
+                    secondInputKeyboardType = KeyboardType.Decimal,
+
+                    firstMaxLength = 6,
+                    secondMaxLength = 6,
+
+                    firstTransform = InputTransforms.decimal,
+                    secondTransform = InputTransforms.decimal
                 )
 
                 FormSpacer()
@@ -92,7 +103,15 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
                     secondInputValue = sensitivityAsFoundNonFerrousPeakSignal,
                     onSecondInputValueChange = viewModel::setSensitivityAsFoundNonFerrousPeakSignal,
                     helpText = "Enter the Non-Ferrous sensitivity & peak signals.",
-                    isNAToggleEnabled = true
+                    isNAToggleEnabled = true,
+                    firstInputKeyboardType = KeyboardType.Decimal,
+                    secondInputKeyboardType = KeyboardType.Decimal,
+
+                    firstMaxLength = 6,
+                    secondMaxLength = 6,
+
+                    firstTransform = InputTransforms.decimal,
+                    secondTransform = InputTransforms.decimal
                 )
 
                 FormSpacer()
@@ -106,7 +125,15 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
                     secondInputValue = sensitivityAsFoundStainlessPeakSignal,
                     onSecondInputValueChange = viewModel::setSensitivityAsFoundStainlessPeakSignal,
                     helpText = "Enter the Stainless Steel sensitivity & peak signals.",
-                    isNAToggleEnabled = true
+                    isNAToggleEnabled = true,
+                    firstInputKeyboardType = KeyboardType.Decimal,
+                    secondInputKeyboardType = KeyboardType.Decimal,
+
+                    firstMaxLength = 6,
+                    secondMaxLength = 6,
+
+                    firstTransform = InputTransforms.decimal,
+                    secondTransform = InputTransforms.decimal
                 )
 
                 FormSpacer()
@@ -116,7 +143,8 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
                     value = viewModel.sensitivityAsFoundEngineerNotes.value,
                     onValueChange = viewModel::setSensitivityAsFoundEngineerNotes,
                     helpText = "Enter any notes relevant to this section.",
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    maxLength = 50
                 )
 
                 Spacer(Modifier.height(60.dp))

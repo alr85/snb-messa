@@ -20,6 +20,7 @@ fun NoticeCloud.toLocal(): NoticeLocal? {
         dateAdded = dateAdded,
         createdBy = createdBy,
 
-        isActive = isActive ?: true
+        isActive = isActive ?: true,
+        isPinned = isPinned
     )
 }

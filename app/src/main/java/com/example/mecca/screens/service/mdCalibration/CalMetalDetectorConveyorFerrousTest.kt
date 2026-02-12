@@ -14,6 +14,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateFerrousPvResult
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
+import com.example.mecca.core.InputTransforms
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
@@ -96,9 +97,11 @@ fun CalMetalDetectorConveyorFerrousTest(
                         M&S Target: ${viewModel.sensitivityData.value?.FerrousTargetMM}mm  
                         Max Allowed: ${viewModel.sensitivityData.value?.FerrousMaxMM}mm
                     """.trimIndent(),
-                    firstInputKeyboardType = KeyboardType.Number,
+                    firstInputKeyboardType = KeyboardType.Decimal,
                     secondInputKeyboardType = KeyboardType.Text,
-                    isNAToggleEnabled = true
+                    isNAToggleEnabled = true,
+                    firstMaxLength = 4,
+                    secondMaxLength = 12
                 )
 
                 FormSpacer()
@@ -121,7 +124,8 @@ fun CalMetalDetectorConveyorFerrousTest(
                         onInputValueChange = {
                             viewModel.setPeakSignalFerrousLeading(it)
                             viewModel.autoUpdateFerrousPvResult()
-                        }
+                        },
+                        inputMaxLength = 12,
                     )
 
                     FormSpacer()
@@ -139,7 +143,8 @@ fun CalMetalDetectorConveyorFerrousTest(
                         onInputValueChange = {
                             viewModel.setPeakSignalFerrousMiddle(it)
                             viewModel.autoUpdateFerrousPvResult()
-                        }
+                        },
+                        inputMaxLength = 12,
                     )
 
                     FormSpacer()
@@ -157,7 +162,8 @@ fun CalMetalDetectorConveyorFerrousTest(
                         onInputValueChange = {
                             viewModel.setPeakSignalFerrousTrailing(it)
                             viewModel.autoUpdateFerrousPvResult()
-                        }
+                        },
+                        inputMaxLength = 12,
                     )
                 }
 
@@ -195,7 +201,8 @@ fun CalMetalDetectorConveyorFerrousTest(
                     value = engineerNotes,
                     onValueChange = viewModel::setFerrousTestEngineerNotes,
                     helpText = "Relevant notes for this section.",
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    maxLength = 50,
                 )
 
                 Spacer(Modifier.height(60.dp))

@@ -122,7 +122,8 @@ fun CalMetalDetectorConveyorBinFullPEC(
                     onInputValueChange = {
                         viewModel.setBinFullSensorDetail(it)
                         viewModel.autoUpdateBinFullSensorPvResult()
-                    }
+                    },
+                    inputMaxLength = 12
                 )
 
                 FormSpacer()
@@ -152,7 +153,8 @@ fun CalMetalDetectorConveyorBinFullPEC(
                                 viewModel.autoUpdateBinFullSensorPvResult()
                             },
                             helpText = "Enter the custom test method.",
-                            isNAToggleEnabled = false
+                            isNAToggleEnabled = false,
+                            maxLength = 12
                         )
                     }
 

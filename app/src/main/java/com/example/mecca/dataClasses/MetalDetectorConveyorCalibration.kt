@@ -291,10 +291,13 @@ data class MetalDetectorConveyorCalibrationLocal(
 
 
 
-    //-----------------------------------------------------------------------------Speed sensor Test
+    //----------------------------------------------------------------------Detect Notification Test
 
     var detectNotificationResult: String = "",
     var detectNotificationEngineerNotes: String = "",
+    var detectNotificationTestPvResult: String = "",
+
+
 
 //-------------------------------------------------------------------------------------Bin Door Test
 

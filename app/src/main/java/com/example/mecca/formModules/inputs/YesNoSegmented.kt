@@ -47,9 +47,12 @@ fun YesNoSegmented(
     inputValue: String,
     onInputValueChange: (String) -> Unit,
     inputKeyboardType: KeyboardType = KeyboardType.Text,
-    isDisabled: Boolean
+    isDisabled: Boolean,
+    inputMaxLength: Int? = null,
+    inputTransform: ((String) -> String)? = null,
 
-) {
+
+    ) {
     val fieldShape = RoundedCornerShape(14.dp)
 
     Row(
@@ -92,55 +95,17 @@ fun YesNoSegmented(
         }
 
 
-
-
-        // Input field
-        OutlinedTextField(
+        SimpleTextInput(
             value = inputValue,
-            onValueChange = { raw ->
-                if (!isDisabled) {
-                    var cleaned = raw.replace(',', '.')
-                    if (inputKeyboardType == KeyboardType.Text) {
-                        cleaned = cleaned.replaceFirstChar {
-                            if (it.isLowerCase()) it.titlecase() else it.toString()
-                        }
-                    }
-                    onInputValueChange(cleaned)
-                }
-            },
-            label = { Text(inputLabel) },
-            enabled = !isDisabled,
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = inputKeyboardType,
-                capitalization = if (inputKeyboardType == KeyboardType.Text)
-                    KeyboardCapitalization.Sentences
-                else
-                    KeyboardCapitalization.None
-            ),
+            onValueChange = onInputValueChange,
+            label = inputLabel,
+            keyboardType = inputKeyboardType,
+            isDisabled = isDisabled,
+            maxLength = inputMaxLength,
+            transformInput = inputTransform,
             modifier = Modifier.weight(1.2f),
-            shape = fieldShape,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = FormInputFocusedContainerColor,
-                unfocusedContainerColor = FormInputUnfocusedContainerColor,
-                disabledContainerColor = FormInputDisabledContainerColor,
-
-                focusedBorderColor = FormInputFocusedBorderColor,
-                unfocusedBorderColor = FormInputUnfocusedBorderColor,
-                disabledBorderColor = FormInputDisabledBorderColor,
-
-                focusedTextColor = FormInputFocusedTextColor,
-                unfocusedTextColor = FormInputUnfocusedTextColor,
-                disabledTextColor = FormInputDisabledTextColor,
-
-                focusedLabelColor = FormInputFocusedLabelColor,
-                unfocusedLabelColor = FormInputUnfocusedLabelColor,
-                disabledLabelColor = FormInputDisabledLabelColor,
-
-                focusedPlaceholderColor = FormInputFocusedPlaceholderColor,
-                unfocusedPlaceholderColor = FormInputUnfocusedPlaceholderColor,
-                disabledPlaceholderColor = FormInputDisabledPlaceholderColor
-            )
+            singleLine = true
         )
+
     }
 }

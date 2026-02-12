@@ -124,7 +124,8 @@ fun CalMetalDetectorConveyorSmeDetails(
                             viewModel.autoUpdateSmePvResult()
                         },
                         helpText = "Enter the name of the operator in charge of this system",
-                        isNAToggleEnabled = true
+                        isNAToggleEnabled = true,
+                        maxLength = 25
                     )
 
                     FormSpacer()
@@ -144,9 +145,11 @@ fun CalMetalDetectorConveyorSmeDetails(
                             viewModel.autoUpdateSmePvResult()
                         },
                         helpText = "Enter the operator test size and certificate number for Ferrous.",
-                        firstInputKeyboardType = KeyboardType.Number,
+                        firstInputKeyboardType = KeyboardType.Decimal,
                         secondInputKeyboardType = KeyboardType.Text,
-                        isNAToggleEnabled = true
+                        isNAToggleEnabled = true,
+                        firstMaxLength = 4,
+                        secondMaxLength = 12
                     )
 
                     FormSpacer()
@@ -166,9 +169,11 @@ fun CalMetalDetectorConveyorSmeDetails(
                             viewModel.autoUpdateSmePvResult()
                         },
                         helpText = "Enter the operator test size and certificate number for Non-Ferrous.",
-                        firstInputKeyboardType = KeyboardType.Number,
+                        firstInputKeyboardType = KeyboardType.Decimal,
                         secondInputKeyboardType = KeyboardType.Text,
-                        isNAToggleEnabled = true
+                        isNAToggleEnabled = true,
+                        firstMaxLength = 4,
+                        secondMaxLength = 12
                     )
 
                     FormSpacer()
@@ -188,9 +193,11 @@ fun CalMetalDetectorConveyorSmeDetails(
                             viewModel.autoUpdateSmePvResult()
                         },
                         helpText = "Enter the operator test size and certificate number for Stainless.",
-                        firstInputKeyboardType = KeyboardType.Number,
+                        firstInputKeyboardType = KeyboardType.Decimal,
                         secondInputKeyboardType = KeyboardType.Text,
-                        isNAToggleEnabled = true
+                        isNAToggleEnabled = true,
+                        firstMaxLength = 4,
+                        secondMaxLength = 12
                     )
 
                     FormSpacer()
@@ -210,9 +217,11 @@ fun CalMetalDetectorConveyorSmeDetails(
                             viewModel.autoUpdateSmePvResult()
                         },
                         helpText = "Enter the operator test size and certificate number for Large Metal.",
-                        firstInputKeyboardType = KeyboardType.Number,
+                        firstInputKeyboardType = KeyboardType.Decimal,
                         secondInputKeyboardType = KeyboardType.Text,
-                        isNAToggleEnabled = true
+                        isNAToggleEnabled = true,
+                        firstMaxLength = 4,
+                        secondMaxLength = 12
                     )
 
                     FormSpacer()
@@ -225,7 +234,8 @@ fun CalMetalDetectorConveyorSmeDetails(
                             viewModel.autoUpdateSmePvResult()
                         },
                         helpText = "Enter the name of the SME currently on site",
-                        isNAToggleEnabled = true
+                        isNAToggleEnabled = true,
+                        maxLength = 25
                     )
                 }
 
@@ -260,7 +270,8 @@ fun CalMetalDetectorConveyorSmeDetails(
                     value = notes,
                     onValueChange = viewModel::setSmeEngineerNotes,
                     helpText = "Enter any notes relevant to this section",
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    maxLength = 50
                 )
 
                 Spacer(modifier = Modifier.height(60.dp))

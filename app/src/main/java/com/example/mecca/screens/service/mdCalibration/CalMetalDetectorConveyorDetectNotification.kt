@@ -12,8 +12,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateDetectNotificationTestPvResult
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.formModules.CalibrationHeader
+import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
 import com.example.mecca.formModules.LabeledMultiSelectDropdownWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.ui.theme.FormSpacer
@@ -91,6 +93,24 @@ fun CalMetalDetectorConveyorDetectNotification(
                 )
 
                 FormSpacer()
+
+                //-----------------------------------------------------
+                // ⭐ PV RESULT (only when required)
+                //-----------------------------------------------------
+//                if (viewModel.pvRequired.value) {
+//                    LabeledFourOptionRadioWithHelp(
+//                        label = "P.V. Result",
+//                        value = viewModel.detectNotificationTestPvResult.value,
+//                        onValueChange = viewModel::autoUpdateDetectNotificationTestPvResult,
+//                        helpText = """
+//                    Auto-Pass rules (when PV required):
+//
+//                    Otherwise auto-fail. You may override manually.
+//                    """.trimIndent()
+//                    )
+//
+//                    FormSpacer()
+//                }
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Comments",

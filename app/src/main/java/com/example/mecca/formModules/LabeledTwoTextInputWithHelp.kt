@@ -25,8 +25,13 @@ fun LabeledTwoTextInputsWithHelp(
     helpText: String,
     firstInputKeyboardType: KeyboardType = KeyboardType.Text,
     secondInputKeyboardType: KeyboardType = KeyboardType.Text,
-    isNAToggleEnabled: Boolean = true
-) {
+    isNAToggleEnabled: Boolean = true,
+    firstMaxLength: Int? = null,
+    secondMaxLength: Int? = null,
+    firstTransform: ((String) -> String)? = null,
+    secondTransform: ((String) -> String)? = null,
+
+    ) {
     var showHelpDialog by remember { mutableStateOf(false) }
 
     // Disabled iff BOTH values are "N/A" (your N/A toggle sets both)
@@ -65,6 +70,11 @@ fun LabeledTwoTextInputsWithHelp(
             },
             firstKeyboard = firstInputKeyboardType,
             secondKeyboard = secondInputKeyboardType,
+            firstMaxLength = firstMaxLength,
+            secondMaxLength = secondMaxLength,
+
+            firstTransform = firstTransform,
+            secondTransform = secondTransform,
             isDisabled = disabled
         )
     }

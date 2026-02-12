@@ -730,6 +730,8 @@ fun CalibrationMetalDetectorConveyorViewModel.toSpeedSensorUpdate(): SpeedSensor
 data class DetectNotificationUpdate(
     val detectNotificationResult: String,
     val detectNotificationEngineerNotes: String,
+
+    val detectNotificationTestPvResult: String,
     val calibrationId: String
 )
 
@@ -737,6 +739,7 @@ fun CalibrationMetalDetectorConveyorViewModel.toDetectNotificationUpdate(): Dete
     return DetectNotificationUpdate(
         detectNotificationResult = detectNotificationResult.value.toString(),
         detectNotificationEngineerNotes = detectNotificationEngineerNotes.value,
+        detectNotificationTestPvResult = detectNotificationTestPvResult.value,
         calibrationId = calibrationId.value
     )
 }

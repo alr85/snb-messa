@@ -79,7 +79,9 @@ fun CalMetalDetectorConveyorRejectSettings(
                     helpText = "Select if there is a method of reject synchronisation.",
                     inputLabel = "Detail",
                     inputValue = rejectSynchronisationDetail,
-                    onInputValueChange = viewModel::setRejectSynchronisationDetail
+                    onInputValueChange = viewModel::setRejectSynchronisationDetail,
+                    inputMaxLength = 12,
+                    inputKeyboardType = KeyboardType.Text
                 )
 
                 FormSpacer()
@@ -94,7 +96,8 @@ fun CalMetalDetectorConveyorRejectSettings(
                     inputLabel = "Duration",
                     inputValue = rejectDurationSetting,
                     onInputValueChange = viewModel::setRejectDurationSetting,
-                    inputKeyboardType = KeyboardType.Number
+                    inputKeyboardType = KeyboardType.Decimal,
+                    inputMaxLength = 5
                 )
 
                 FormSpacer()
@@ -109,7 +112,8 @@ fun CalMetalDetectorConveyorRejectSettings(
                     inputLabel = "Delay",
                     inputValue = rejectDelaySetting,
                     onInputValueChange = viewModel::setRejectDelaySetting,
-                    inputKeyboardType = KeyboardType.Number
+                    inputKeyboardType = KeyboardType.Decimal,
+                    inputMaxLength = 5
                 )
 
                 FormSpacer()
@@ -124,7 +128,8 @@ fun CalMetalDetectorConveyorRejectSettings(
                     inputLabel = "Conf. Window",
                     inputValue = rejectConfirmWindowSetting,
                     onInputValueChange = viewModel::setRejectConfirmWindowSetting,
-                    inputKeyboardType = KeyboardType.Number
+                    inputKeyboardType = KeyboardType.Decimal,
+                    inputMaxLength = 5,
                 )
 
                 FormSpacer()
@@ -134,7 +139,8 @@ fun CalMetalDetectorConveyorRejectSettings(
                     value = rejectSettingsEngineerNotes,
                     onValueChange = viewModel::setRejectSettingsEngineerNotes,
                     helpText = "Enter any notes relevant to this section.",
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    maxLength = 50
                 )
 
                 Spacer(modifier = Modifier.height(60.dp))

@@ -59,6 +59,20 @@ fun CalibrationMetalDetectorConveyorViewModel.autoUpdateDetectionSettingPvResult
     }
 }
 
+// ---------------------------------------------------------
+// Detect Notify PV Logic
+// ---------------------------------------------------------
+fun CalibrationMetalDetectorConveyorViewModel.autoUpdateDetectNotificationTestPvResult() {
+
+    val passes =
+        detectNotificationTestPvResult.value.isNotBlank() && detectNotificationTestPvResult.value != "No Result"
+
+
+    setDetectNotificationTestPvResult(
+        if (passes) "Pass" else "Fail"
+    )
+}
+
 
 // ---------------------------------------------------------
 // Sensitivity PV Logic

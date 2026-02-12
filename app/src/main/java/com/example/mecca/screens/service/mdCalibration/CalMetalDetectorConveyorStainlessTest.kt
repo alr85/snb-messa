@@ -96,7 +96,9 @@ fun CalMetalDetectorConveyorStainlessTest(
                     """.trimIndent(),
                     firstInputKeyboardType = KeyboardType.Number,
                     secondInputKeyboardType = KeyboardType.Text,
-                    isNAToggleEnabled = true
+                    isNAToggleEnabled = true,
+                    firstMaxLength = 4,
+                    secondMaxLength = 12
                 )
 
                FormSpacer()
@@ -119,7 +121,8 @@ fun CalMetalDetectorConveyorStainlessTest(
                         onInputValueChange = {
                             viewModel.setPeakSignalStainlessLeading(it)
                             viewModel.autoUpdateStainlessPvResult()
-                        }
+                        },
+                        inputMaxLength = 12
                     )
 
                    FormSpacer()
@@ -137,7 +140,8 @@ fun CalMetalDetectorConveyorStainlessTest(
                         onInputValueChange = {
                             viewModel.setPeakSignalStainlessMiddle(it)
                             viewModel.autoUpdateStainlessPvResult()
-                        }
+                        },
+                        inputMaxLength = 12
                     )
 
                    FormSpacer()
@@ -155,7 +159,8 @@ fun CalMetalDetectorConveyorStainlessTest(
                         onInputValueChange = {
                             viewModel.setPeakSignalStainlessTrailing(it)
                             viewModel.autoUpdateStainlessPvResult()
-                        }
+                        },
+                        inputMaxLength = 12
                     )
                 }
 
@@ -193,7 +198,8 @@ fun CalMetalDetectorConveyorStainlessTest(
                     value = notes,
                     onValueChange = viewModel::setStainlessTestEngineerNotes,
                     helpText = "Enter any notes relevant to this section",
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    maxLength = 50
                 )
 
                 Spacer(Modifier.height(60.dp))

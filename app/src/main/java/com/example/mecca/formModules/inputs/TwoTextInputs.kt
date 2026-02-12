@@ -40,83 +40,39 @@ fun TwoTextInputs(
     onSecondChange: (String) -> Unit,
     firstKeyboard: KeyboardType = KeyboardType.Text,
     secondKeyboard: KeyboardType = KeyboardType.Text,
+    firstMaxLength: Int? = null,
+    secondMaxLength: Int? = null,
+    firstTransform: ((String) -> String)? = null,
+    secondTransform: ((String) -> String)? = null,
     isDisabled: Boolean
 ) {
-    fun sanitize(value: String, keyboard: KeyboardType): String {
-        var v = value.replace(',', '.')
-        if (keyboard == KeyboardType.Text) {
-            v = v.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
-        }
-        return v
-    }
-
-    val fieldShape = RoundedCornerShape(14.dp)
-
-    val fieldColors = OutlinedTextFieldDefaults.colors(
-        focusedContainerColor = FormInputFocusedContainerColor,
-        unfocusedContainerColor = FormInputUnfocusedContainerColor,
-        disabledContainerColor = FormInputDisabledContainerColor,
-
-        focusedBorderColor = FormInputFocusedBorderColor,
-        unfocusedBorderColor = FormInputUnfocusedBorderColor,
-        disabledBorderColor = FormInputDisabledBorderColor,
-
-        focusedTextColor = FormInputFocusedTextColor,
-        unfocusedTextColor = FormInputUnfocusedTextColor,
-        disabledTextColor = FormInputDisabledTextColor,
-
-        focusedLabelColor = FormInputFocusedLabelColor,
-        unfocusedLabelColor = FormInputUnfocusedLabelColor,
-        disabledLabelColor = FormInputDisabledLabelColor,
-
-        focusedPlaceholderColor = FormInputFocusedPlaceholderColor,
-        unfocusedPlaceholderColor = FormInputUnfocusedPlaceholderColor,
-        disabledPlaceholderColor = FormInputDisabledPlaceholderColor
-    )
 
     Row(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.Top, // VERY important
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        OutlinedTextField(
+
+        SimpleTextInput(
             value = firstValue,
-            onValueChange = { raw ->
-                if (!isDisabled) onFirstChange(sanitize(raw, firstKeyboard))
-            },
-            label = { Text(firstLabel) },
-            enabled = !isDisabled,
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = firstKeyboard,
-                capitalization = if (firstKeyboard == KeyboardType.Text)
-                    KeyboardCapitalization.Sentences
-                else
-                    KeyboardCapitalization.None
-            ),
-            modifier = Modifier.weight(1f),
-            shape = fieldShape,
-            colors = fieldColors
+            onValueChange = onFirstChange,
+            label = firstLabel,
+            keyboardType = firstKeyboard,
+            isDisabled = isDisabled,
+            maxLength = firstMaxLength,
+            transformInput = firstTransform,
+            modifier = Modifier.weight(1f)
         )
 
-        OutlinedTextField(
+        SimpleTextInput(
             value = secondValue,
-            onValueChange = { raw ->
-                if (!isDisabled) onSecondChange(sanitize(raw, secondKeyboard))
-            },
-            label = { Text(secondLabel) },
-            enabled = !isDisabled,
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = secondKeyboard,
-                capitalization = if (secondKeyboard == KeyboardType.Text)
-                    KeyboardCapitalization.Sentences
-                else
-                    KeyboardCapitalization.None
-            ),
-            modifier = Modifier.weight(1f),
-            shape = fieldShape,
-            colors = fieldColors
+            onValueChange = onSecondChange,
+            label = secondLabel,
+            keyboardType = secondKeyboard,
+            isDisabled = isDisabled,
+            maxLength = secondMaxLength,
+            transformInput = secondTransform,
+            modifier = Modifier.weight(1f)
         )
     }
 }
