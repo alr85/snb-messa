@@ -8,6 +8,8 @@ import com.example.mecca.dataClasses.MdModel
 import com.example.mecca.dataClasses.MdSystem
 import com.example.mecca.dataClasses.MdSystemCloud
 import com.example.mecca.dataClasses.MdSystemLocal
+import com.example.mecca.dataClasses.NoticeCloud
+import com.example.mecca.dataClasses.NoticeLocal
 import com.example.mecca.dataClasses.PipelineRetailerSensitivitiesEntity
 import com.example.mecca.dataClasses.SystemType
 import okhttp3.MultipartBody
@@ -68,6 +70,8 @@ interface ApiService {
     @GET("detectionlevels/pipeline")
     suspend fun getPipelineLevels(): List<PipelineRetailerSensitivitiesEntity>
 
+    @GET("notices")
+    suspend fun getNotices(): Response<List<NoticeCloud>>
 
 
 

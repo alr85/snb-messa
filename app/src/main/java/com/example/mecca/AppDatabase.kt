@@ -12,6 +12,7 @@ import com.example.mecca.daos.FreefallDao
 import com.example.mecca.daos.MdModelsDAO
 import com.example.mecca.daos.MetalDetectorConveyorCalibrationDAO
 import com.example.mecca.daos.MetalDetectorSystemsDAO
+import com.example.mecca.daos.NoticesDAO
 import com.example.mecca.daos.PipelineDao
 import com.example.mecca.daos.SystemTypeDAO
 import com.example.mecca.daos.UserDao
@@ -21,6 +22,7 @@ import com.example.mecca.dataClasses.FreefallThroatRetailerSensitivitiesEntity
 import com.example.mecca.dataClasses.MdModelsLocal
 import com.example.mecca.dataClasses.MdSystemLocal
 import com.example.mecca.dataClasses.MetalDetectorConveyorCalibrationLocal
+import com.example.mecca.dataClasses.NoticeLocal
 import com.example.mecca.dataClasses.PipelineRetailerSensitivitiesEntity
 import com.example.mecca.dataClasses.SystemTypeLocal
 import com.example.mecca.dataClasses.UserEntity
@@ -35,10 +37,11 @@ import com.example.mecca.dataClasses.UserEntity
         SystemTypeLocal::class,
         ConveyorRetailerSensitivitiesEntity::class,
         FreefallThroatRetailerSensitivitiesEntity::class,
-        PipelineRetailerSensitivitiesEntity::class
+        PipelineRetailerSensitivitiesEntity::class,
+        NoticeLocal::class
 
     ],
-    version = 49,
+    version = 50,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -54,6 +57,9 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun conveyorDao(): ConveyorDao
     abstract fun freefallDao(): FreefallDao
     abstract fun pipelineDao(): PipelineDao
+
+    abstract fun noticesDAO(): NoticesDAO
+
 
     companion object {
         @Volatile private var INSTANCE: AppDatabase? = null
