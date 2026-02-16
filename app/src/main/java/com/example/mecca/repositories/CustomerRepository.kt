@@ -1,15 +1,38 @@
 package com.example.mecca.repositories
 
+import androidx.room.withTransaction
 import com.example.mecca.ApiService
 import com.example.mecca.AppDatabase
 import com.example.mecca.FetchResult
 import com.example.mecca.dataClasses.CustomerLocal
 import com.example.mecca.util.InAppLogger
+import com.example.mecca.util.SyncPreferences
 
 class CustomerRepository(
     private val apiService: ApiService,
-    private val db: AppDatabase
+    private val db: AppDatabase,
+    private val syncPrefs: SyncPreferences
 ) {
+
+    fun observeCustomers() = db.customerDao().observeCustomers()
+
+    private fun shouldRefresh(): Boolean {
+
+        val lastSync = syncPrefs.getCustomerLastSync()
+        val twelveHours = 12 * 60 * 60 * 1000L
+
+        val should = System.currentTimeMillis() - lastSync > twelveHours
+
+        InAppLogger.d(
+            "SYNC CHECK -> lastSync=$lastSync | shouldRefresh=$should"
+        )
+
+        return should
+    }
+
+
+
+
 
     suspend fun getCustomerName(fusionId: Int): String {
         val name = db.customerDao().getCustomerName(fusionId) ?: "Customer Not Found"
@@ -17,12 +40,22 @@ class CustomerRepository(
         return name
     }
 
-    suspend fun fetchAndStoreCustomers(): FetchResult {
+    suspend fun fetchAndStoreCustomers(force: Boolean = false): FetchResult
+    {
+
+        if (!force && !shouldRefresh()) {
+            return FetchResult.Success("Customer list already up to date")
+        }
+
+        if (force) {
+            InAppLogger.d("FORCED CUSTOMER SYNC")
+        }
+
         InAppLogger.d("Fetching customers from API...")
 
         return try {
             val response = apiService.getCustomers()
-            InAppLogger.d("API call to fetch customers complete. HTTP ${response.code()}")
+            InAppLogger.d("API call complete. HTTP ${response.code()}")
 
             if (!response.isSuccessful) {
                 val msg = "HTTP ${response.code()} error: ${response.message()}"
@@ -32,27 +65,14 @@ class CustomerRepository(
 
             val apiCustomers = response.body()
             if (apiCustomers.isNullOrEmpty()) {
-                val msg = "No customer data returned by API."
-                InAppLogger.e(msg)
-                return FetchResult.Failure(msg)
+                return FetchResult.Failure("No customer data returned by API.")
             }
 
-            // Clear DB
-            try {
-                db.customerDao().deleteAllCustomers()
-                InAppLogger.d("Cleared local customer database.")
-            } catch (e: Exception) {
-                val msg = "Error clearing customer database: ${e.message}"
-                InAppLogger.e(msg)
-                return FetchResult.Failure(msg)
-            }
-
-            // Map + insert
             val customerLocals = apiCustomers.map { apiCustomer ->
                 CustomerLocal(
                     id = 0,
-                    name = apiCustomer.customerName,              // remove ?: if non-nullable
-                    fusionID = apiCustomer.fusionID,              // remove ?: if non-nullable
+                    name = apiCustomer.customerName,
+                    fusionID = apiCustomer.fusionID,
                     postcode = apiCustomer.customerPostcode,
                     dateAdded = apiCustomer.dateAdded,
                     lat = apiCustomer.latitude,
@@ -61,7 +81,16 @@ class CustomerRepository(
                 )
             }
 
-            db.customerDao().insertCustomer(customerLocals)
+
+            db.withTransaction {
+
+                db.customerDao().deleteAllCustomers()
+
+                db.customerDao().insertCustomer(customerLocals)
+
+                syncPrefs.setCustomerLastSync(System.currentTimeMillis())
+            }
+
             InAppLogger.d("Inserted ${customerLocals.size} customers into local DB.")
 
             FetchResult.Success("Customers successfully fetched and stored.")
@@ -72,6 +101,7 @@ class CustomerRepository(
             FetchResult.Failure(msg)
         }
     }
+
 
     suspend fun getCustomersFromDb(): List<CustomerLocal> {
         val customers = db.customerDao().getAllCustomers()

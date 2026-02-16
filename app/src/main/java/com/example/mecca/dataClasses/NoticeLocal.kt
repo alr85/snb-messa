@@ -40,6 +40,6 @@ data class NoticeLocal(
     val dateAdded: String?,  // optional is fine
     val createdBy: String?,
     val isActive: Boolean,
-    val isPinned: Boolean?
+    val isPinned: Boolean
 )
 

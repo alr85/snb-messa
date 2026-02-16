@@ -44,6 +44,7 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
                         InAppLogger.d("Login successful. Credentials saved.")
                         loginStatus.value = true
                         _loginError.value = null
+                        PreferencesHelper.setLoggedIn(context, true)
                     } else {
                         InAppLogger.e("Incorrect password for $username. Login failed.")
                         _loginError.value = "Incorrect username or password."

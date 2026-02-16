@@ -10,6 +10,8 @@ object PreferencesHelper {
     private const val KEY_PASSWORD = "password"
     private const val KEY_ENGINEER_ID = "engineer_id"
 
+    private const val KEY_LOGGED_IN = "logged_in"
+
     // Save credentials, including userID
     fun saveCredentials(context: Context, username: String, password: String, engineerId: Int) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -41,6 +43,18 @@ object PreferencesHelper {
         } // Clears all stored preferences synchronously
 
         InAppLogger.d("Credentials after clearing: ${sharedPreferences.all}")
+    }
+
+    fun isLoggedIn(context: Context): Boolean {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getBoolean(KEY_LOGGED_IN, false)
+    }
+
+    fun setLoggedIn(context: Context, loggedIn: Boolean) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit {
+                putBoolean(KEY_LOGGED_IN, loggedIn)
+            }
     }
 }
 

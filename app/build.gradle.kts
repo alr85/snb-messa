@@ -87,7 +87,6 @@ dependencies {
     ksp(libs.androidx.room.compiler)              // ✅ use KSP for code generation
     implementation(libs.androidx.room.compiler)
     implementation(libs.androidx.runtime.livedata)
-    implementation(libs.protolite.well.known.types)
     implementation(libs.androidx.core.i18n)
 
     implementation(libs.androidx.core.splashscreen)
@@ -109,6 +108,9 @@ dependencies {
 
     configurations.all {
         exclude(group = "com.intellij", module = "annotations")
+        exclude(group = "com.google.api.grpc", module = "proto-google-common-protos")
+        exclude(group = "com.google.protobuf", module = "protobuf-java")
+        exclude(group = "com.google.auto.value", module = "auto-value")
     }
 
 

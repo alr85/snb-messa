@@ -14,23 +14,18 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.NotificationsNone
+import androidx.compose.material.icons.filled.MailOutline
+import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,7 +33,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -55,28 +49,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
+import com.example.mecca.calibrationViewModels.CustomerViewModel
 import com.example.mecca.calibrationViewModels.NoticeViewModel
 import com.example.mecca.network.isNetworkAvailable
+import com.example.mecca.repositories.CustomerRepository
 import com.example.mecca.repositories.NoticeRepository
 import com.example.mecca.repositories.UserRepository
 import com.example.mecca.screens.LoginScreen
 import com.example.mecca.ui.theme.AppNavGraph
+import com.example.mecca.util.SyncPreferences
 import kotlinx.coroutines.delay
 
 
 class MainActivity : ComponentActivity() {
+
     private lateinit var userViewModel: UserViewModel
-
-
+    private lateinit var customerViewModel: CustomerViewModel
+    private lateinit var noticeViewModel: NoticeViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
+
+        //requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
+        android.util.Log.d("MESSA DEBUG", "onCreate. savedInstanceState is null = ${savedInstanceState == null}")
 
         window.setFlags(
             WindowManager.LayoutParams.FLAG_SECURE,
@@ -86,21 +86,36 @@ class MainActivity : ComponentActivity() {
         val app = application as MyApplication
         val db = app.database
         val apiService = app.apiService
+        val syncPrefs = SyncPreferences(this)
+
+        // Repositories
         val userRepository = UserRepository(db.userDao(), apiService)
+        val customerRepository = CustomerRepository(apiService, db, syncPrefs)
+        val noticeRepository = NoticeRepository(apiService, db)
+
+        // ViewModels
         userViewModel = UserViewModel(userRepository)
+        customerViewModel = CustomerViewModel(customerRepository)
+        noticeViewModel = NoticeViewModel(noticeRepository)
 
         val savedCredentials = PreferencesHelper.getCredentials(this)
-        val savedUsername = savedCredentials.first
-        val savedPassword = savedCredentials.second
+        val isPersistedLogin = PreferencesHelper.isLoggedIn(this)
 
+        // Always sync users on launch
+        userViewModel.syncUsers(this)
 
         setContent {
+
             val syncStatus by userViewModel.syncStatus.collectAsState()
             val loginStatus by userViewModel.loginStatus.collectAsState()
             val loginError by userViewModel.loginError.collectAsState()
 
             when {
-                // Case 1: sync not yet complete or failed
+
+                //----------------------------------------
+                // 1. WAIT FOR USER SYNC
+                //----------------------------------------
+
                 !syncStatus -> {
                     SyncUsersScreen(
                         message = loginError,
@@ -108,18 +123,54 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                // Case 2: login already successful
-                loginStatus -> {
+                //----------------------------------------
+                // 2. AUTO LOGIN IF SESSION EXISTS
+                //----------------------------------------
 
-                    MyApp(db, userViewModel)
+                loginStatus || isPersistedLogin -> {
+
+                    LaunchedEffect(Unit) {
+
+                        // If ViewModel forgot login but prefs say yes → restore session
+                        if (!loginStatus && isPersistedLogin) {
+
+                            val savedUsername = savedCredentials.first
+                            val savedPassword = savedCredentials.second
+
+                            if (!savedUsername.isNullOrBlank() && !savedPassword.isNullOrBlank()) {
+
+                                android.util.Log.d("MESSA DEBUG", "Restoring persisted login")
+
+                                userViewModel.login(
+                                    this@MainActivity,
+                                    savedUsername,
+                                    savedPassword
+                                )
+                            }
+                        }
+
+                        // Boot sync (runs once)
+                        customerViewModel.syncCustomers()
+                        noticeViewModel.syncNotices()
+                    }
+
+                    MyApp(
+                        db = db,
+                        userViewModel = userViewModel,
+                        customerViewModel = customerViewModel,
+                        noticeViewModel = noticeViewModel
+                    )
                 }
 
-                // Case 3: ready for user to log in
+                //----------------------------------------
+                // 3. SHOW LOGIN
+                //----------------------------------------
+
                 else -> {
                     LoginScreen(
                         userViewModel = userViewModel,
-                        defaultUsername = savedUsername,
-                        defaultPassword = savedPassword,
+                        defaultUsername = savedCredentials.first,
+                        defaultPassword = savedCredentials.second,
                         loginError = loginError,
                         onLoginClick = { username, password ->
                             userViewModel.login(this, username, password)
@@ -128,12 +179,14 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
 
-
-        // Start syncing users when the app launches
-        userViewModel.syncUsers(this)
+    override fun onDestroy() {
+        android.util.Log.d("MESSA DEBUG", "onDestroy called")
+        super.onDestroy()
     }
 }
+
 
 @Composable
 fun SyncUsersScreen(
@@ -226,119 +279,131 @@ fun SyncUsersScreen(
     }
 }
 
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
-@Composable
-fun MyApp(db: AppDatabase, userViewModel: UserViewModel) {
-    val navController = rememberNavController()
-    val context = LocalContext.current
-
-    var isOffline by remember { mutableStateOf(false) }
-    var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
-    var showBottomBar by rememberSaveable { mutableStateOf(true) }
-    val chromeVm: AppChromeViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
-    val topBarState by chromeVm.topBarState.collectAsState()
-
-    //Detect offline status
-    LaunchedEffect(Unit) {
-        while (true) {
-            isOffline = !isNetworkAvailable(context)
-            delay(3000)
-        }
-    }
-
-    // detect current route
-    LaunchedEffect(navController) {
-        navController.addOnDestinationChangedListener { _, destination, _ ->
-            showBottomBar = when {
-                destination.route?.startsWith("CalibrationProcess") == true ||
-                        destination.route?.startsWith("login") == true ||
-                        destination.route?.startsWith("CalMetalDetectorConveyor") == true -> false
-                else -> true
-            }
-        }
-    }
-
-    // detect if keyboard visible
-    WindowInsets.isImeVisible
-
-
-
-
-    val items = listOf(
-        //NavigationBarItem("Schedule", Icons.Filled.DateRange, Icons.Default.DateRange),
-        NavigationBarItem("Service", Icons.Filled.Build, Icons.Default.Build),
-        NavigationBarItem("Notices", Icons.Filled.NotificationsNone, Icons.Default.NotificationsNone),
-        NavigationBarItem("Menu", Icons.Filled.Menu, Icons.Default.Menu)
-    )
-
-
-
-    Scaffold(
-        modifier = Modifier.fillMaxSize(), //.background(Color.LightGray),
-        contentWindowInsets = WindowInsets.systemBars,
-        topBar = {
-            if (navController.currentBackStackEntry?.destination?.route != "login") {
-                MyTopAppBar(
-                    navController = navController,
-                    title = topBarState.title,
-                    showBack = topBarState.showBack,
-                    showCall = topBarState.showCall,
-                    onMenuClick = if (topBarState.showMenu) topBarState.onMenuClick else null
-                )
-            }
-        },
-        bottomBar = {
-            if (showBottomBar) {
-                NavigationBar(containerColor = Color.LightGray) {
-                    items.forEachIndexed { index, item ->
-                        NavigationBarItem(
-                            selected = selectedItemIndex == index,
-                            onClick = {
-                                selectedItemIndex = index
-                                when (index) {
-                                    //0 -> navController.navigate("serviceHome")
-                                    0 -> navController.navigate("serviceSelectCustomer")
-                                    1 -> navController.navigate("notices")
-                                    2 -> navController.navigate("menu")
-                                }
-                            },
-                            label = {
-                                Text(
-                                    text = item.title,
-                                    color = if (selectedItemIndex == index) Color.Red else Color.Unspecified,
-                                    fontWeight = if (selectedItemIndex == index) FontWeight.Bold else FontWeight.Normal
-                                )
-                            },
-                            icon = {
-                                Icon(
-                                    imageVector = if (index == selectedItemIndex) item.selectedIcon else item.unselectedIcon,
-                                    contentDescription = item.title,
-                                    tint = if (selectedItemIndex == index) Color.Red else Color.Unspecified
-                                )
-                            },
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = Color.Red,
-                                unselectedIconColor = Color.Gray,
-                                indicatorColor = Color.Transparent
-                            )
-                        )
-                    }
-                }
-            }
-        }
-    ) { innerPadding ->
-        Column(Modifier.padding(innerPadding)) {
-            OfflineBanner(isOffline)
-            AppNavGraph(
-                navController = navController,
-                db = db,
-                userViewModel = userViewModel,
-                chromeVm = chromeVm // pass it down
-            )
-        }
-    }
-}
+//
+//@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+//@Composable
+//fun AppNavGraph(
+//    navController: NavHostController,
+//    db: AppDatabase,
+//    userViewModel: UserViewModel,
+//    customerViewModel: CustomerViewModel,
+//    noticeViewModel: NoticeViewModel,
+//    chromeVm: AppChromeViewModel
+//)
+//
+// {
+//    val navController = rememberNavController()
+//    val context = LocalContext.current
+//
+//    var isOffline by remember { mutableStateOf(false) }
+//    var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
+//    var showBottomBar by rememberSaveable { mutableStateOf(true) }
+//    val chromeVm: AppChromeViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+//    val topBarState by chromeVm.topBarState.collectAsState()
+//
+//    //Detect offline status
+//    LaunchedEffect(Unit) {
+//        while (true) {
+//            isOffline = !isNetworkAvailable(context)
+//            delay(3000)
+//        }
+//    }
+//
+//    // detect current route
+//    LaunchedEffect(navController) {
+//        navController.addOnDestinationChangedListener { _, destination, _ ->
+//            showBottomBar = when {
+//                destination.route?.startsWith("CalibrationProcess") == true ||
+//                        destination.route?.startsWith("login") == true ||
+//                        destination.route?.startsWith("CalMetalDetectorConveyor") == true -> false
+//                else -> true
+//            }
+//        }
+//    }
+//
+//    // detect if keyboard visible
+//    WindowInsets.isImeVisible
+//
+//
+//
+//
+//    val items = listOf(
+//        //NavigationBarItem("Schedule", Icons.Filled.DateRange, Icons.Default.DateRange),
+//        NavigationBarItem("Service", Icons.Filled.Build, Icons.Default.Build),
+//        NavigationBarItem("Messages", Icons.Filled.MailOutline, Icons.Default.MailOutline),
+//        NavigationBarItem("More", Icons.Filled.MoreHoriz, Icons.Default.MoreHoriz)
+//    )
+//
+//
+//
+//    Scaffold(
+//        modifier = Modifier.fillMaxSize(), //.background(Color.LightGray),
+//        contentWindowInsets = WindowInsets.systemBars,
+//        topBar = {
+//            if (navController.currentBackStackEntry?.destination?.route != "login") {
+//                MyTopAppBar(
+//                    navController = navController,
+//                    title = topBarState.title,
+//                    showBack = topBarState.showBack,
+//                    showCall = topBarState.showCall,
+//                    onMenuClick = if (topBarState.showMenu) topBarState.onMenuClick else null
+//                )
+//            }
+//        },
+//        bottomBar = {
+//            if (showBottomBar) {
+//                NavigationBar(containerColor = Color.LightGray) {
+//                    items.forEachIndexed { index, item ->
+//                        NavigationBarItem(
+//                            selected = selectedItemIndex == index,
+//                            onClick = {
+//                                selectedItemIndex = index
+//                                when (index) {
+//                                    //0 -> navController.navigate("serviceHome")
+//                                    0 -> navController.navigate("serviceSelectCustomer")
+//                                    1 -> navController.navigate("notices")
+//                                    2 -> navController.navigate("menu")
+//                                }
+//                            },
+//                            label = {
+//                                Text(
+//                                    text = item.title,
+//                                    color = if (selectedItemIndex == index) Color.Red else Color.Unspecified,
+//                                    fontWeight = if (selectedItemIndex == index) FontWeight.Bold else FontWeight.Normal
+//                                )
+//                            },
+//                            icon = {
+//                                Icon(
+//                                    imageVector = if (index == selectedItemIndex) item.selectedIcon else item.unselectedIcon,
+//                                    contentDescription = item.title,
+//                                    tint = if (selectedItemIndex == index) Color.Red else Color.Unspecified
+//                                )
+//                            },
+//                            colors = NavigationBarItemDefaults.colors(
+//                                selectedIconColor = Color.Red,
+//                                unselectedIconColor = Color.Gray,
+//                                indicatorColor = Color.Transparent
+//                            )
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//    ) { innerPadding ->
+//        Column(Modifier.padding(innerPadding)) {
+//            OfflineBanner(isOffline)
+//            AppNavGraph(
+//                navController = navController,
+//                db = db,
+//                userViewModel = userViewModel,
+//                customerViewModel = customerViewModel,
+//                noticeViewModel = noticeViewModel,
+//                chromeVm = chromeVm
+//            )
+//
+//        }
+//    }
+//}
 
 
 @Composable
@@ -377,3 +442,93 @@ data class NavigationBarItem(
     val unselectedIcon: ImageVector
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MyApp(
+    db: AppDatabase,
+    userViewModel: UserViewModel,
+    customerViewModel: CustomerViewModel,
+    noticeViewModel: NoticeViewModel
+) {
+
+    val navController = rememberNavController()
+    val chromeVm: AppChromeViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    val context = LocalContext.current
+
+    var isOffline by remember { mutableStateOf(false) }
+
+    // Network watcher
+    LaunchedEffect(Unit) {
+        while (true) {
+            isOffline = !isNetworkAvailable(context)
+            delay(3000)
+        }
+    }
+
+    val items = listOf(
+        NavigationBarItem("Service", Icons.Filled.Build, Icons.Default.Build),
+        NavigationBarItem("Messages", Icons.Filled.MailOutline, Icons.Default.MailOutline),
+        NavigationBarItem("More", Icons.Filled.MoreHoriz, Icons.Default.MoreHoriz)
+    )
+
+    var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
+
+    Scaffold(
+
+        topBar = {
+            MyTopAppBar(
+                navController = navController,
+                title = chromeVm.topBarState.collectAsState().value.title,
+                showBack = chromeVm.topBarState.collectAsState().value.showBack,
+                showCall = chromeVm.topBarState.collectAsState().value.showCall,
+                onMenuClick = null
+            )
+        },
+
+        bottomBar = {
+            NavigationBar(containerColor = Color.LightGray) {
+
+                items.forEachIndexed { index, item ->
+
+                    NavigationBarItem(
+                        selected = selectedItemIndex == index,
+                        onClick = {
+
+                            selectedItemIndex = index
+
+                            when (index) {
+                                0 -> navController.navigate("serviceSelectCustomer")
+                                1 -> navController.navigate("notices")
+                                2 -> navController.navigate("menu")
+                            }
+                        },
+                        icon = {
+                            Icon(
+                                imageVector = item.selectedIcon,
+                                contentDescription = item.title
+                            )
+                        },
+                        label = { Text(item.title) }
+                    )
+                }
+            }
+        }
+
+    ) { innerPadding ->
+
+        Column(Modifier.padding(innerPadding)) {
+
+            OfflineBanner(isOffline)
+
+            // ⭐ THIS is where navigation belongs
+            AppNavGraph(
+                navController = navController,
+                db = db,
+                userViewModel = userViewModel,
+                customerViewModel = customerViewModel,
+                noticeViewModel = noticeViewModel,
+                chromeVm = chromeVm
+            )
+        }
+    }
+}

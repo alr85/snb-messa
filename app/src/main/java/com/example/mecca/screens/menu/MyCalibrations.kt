@@ -52,9 +52,6 @@ fun MyCalibrationsScreen(
     dao: MetalDetectorConveyorCalibrationDAO,
     customerRepository: CustomerRepository,
     apiService: ApiService,
-    navController: NavHostController,
-    db: AppDatabase,
-    repositoryMD: MetalDetectorSystemsRepository,
     chromeVm: AppChromeViewModel
 ) {
     val context = LocalContext.current

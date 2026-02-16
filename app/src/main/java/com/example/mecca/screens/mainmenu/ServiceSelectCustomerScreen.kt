@@ -2,6 +2,7 @@ package com.example.mecca.screens.mainmenu
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,17 +17,24 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,40 +47,47 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.mecca.AppChromeViewModel
-import com.example.mecca.AppDatabase
 import com.example.mecca.TopBarState
+import com.example.mecca.calibrationViewModels.CustomerViewModel
 import com.example.mecca.dataClasses.CustomerLocal
-import com.example.mecca.repositories.CustomerRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ServiceSelectCustomerScreen(
     navController: NavHostController,
-    db: AppDatabase,
-    repository: CustomerRepository,
-    chromeVm: AppChromeViewModel
-) {
+    chromeVm: AppChromeViewModel,
+    customerViewModel: CustomerViewModel
+
+){
+
+    val vm = customerViewModel
+
+    val customers by vm.customers.collectAsState(initial = emptyList())
+    val isRefreshing by vm.isRefreshing.collectAsState()
+
     var searchQuery by remember { mutableStateOf("") }
-    val customerList = remember { mutableStateOf<List<CustomerLocal>>(emptyList()) }
     val keyboardController = LocalSoftwareKeyboardController.current
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
-        customerList.value = repository.getCustomersFromDb()
+        vm.events.collect { message ->
+            snackbarHostState.showSnackbar(message, duration = SnackbarDuration.Short)
+        }
     }
+
 
     LaunchedEffect(Unit) {
         chromeVm.setTopBar(
             TopBarState(
-                title = "",
+                title = "Customers",
                 showBack = false,
                 showCall = true
             )
         )
     }
 
-
-    val filteredCustomers = remember(searchQuery, customerList.value) {
-        customerList.value
+    val filteredCustomers = remember(searchQuery, customers) {
+        customers
             .asSequence()
             .filter { it.name?.contains(searchQuery, ignoreCase = true) == true }
             .sortedBy { it.name }
@@ -80,14 +95,7 @@ fun ServiceSelectCustomerScreen(
     }
 
     Scaffold(
-//        topBar = {
-//            MyTopAppBar(
-//                navController = navController,
-//                title = "Select a Customer",
-//                showBack = true,
-//                showCall = false
-//            )
-//        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = Color.White
     ) { paddingValues ->
 
@@ -98,15 +106,33 @@ fun ServiceSelectCustomerScreen(
                 .padding(16.dp)
         ) {
 
-            Text(
-                text = "Select A Customer",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Select a Customer",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
 
-            Spacer(modifier = Modifier.height(8.dp))
+                FilledTonalIconButton(
+                    onClick = { vm.syncCustomers(force = true) },
+                    enabled = !isRefreshing
+                ) {
+                    if (isRefreshing) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(Icons.Default.Refresh, contentDescription = "Refresh customers")
+                    }
+                }
+            }
 
+            Spacer(modifier = Modifier.height(12.dp))
 
             TextField(
                 value = searchQuery,
@@ -139,10 +165,11 @@ fun ServiceSelectCustomerScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(filteredCustomers) { customer ->
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                items(
+                    filteredCustomers,
+                    key = { it.fusionID ?: it.id }
+                ) { customer ->
                     CustomerRow(
                         customer = customer,
                         onClick = {
@@ -157,6 +184,7 @@ fun ServiceSelectCustomerScreen(
         }
     }
 }
+
 
 @Composable
 private fun CustomerRow(

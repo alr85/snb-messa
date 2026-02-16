@@ -1,9 +1,9 @@
 package com.example.mecca.repositories
 
+import androidx.room.withTransaction
 import com.example.mecca.ApiService
 import com.example.mecca.AppDatabase
 import com.example.mecca.FetchResult
-import com.example.mecca.dataClasses.NoticeLocal
 import com.example.mecca.dataClasses.mappers.toLocal
 import com.example.mecca.util.InAppLogger
 
@@ -11,16 +11,20 @@ class NoticeRepository(
     private val apiService: ApiService,
     private val db: AppDatabase
 ) {
+
     fun observeActiveNotices() = db.noticesDAO().getActiveNotices()
 
-    suspend fun fetchAndStoreNotices(): FetchResult {
-        InAppLogger.d("Fetching notices from API...")
+    suspend fun fetchAndStoreNotices(force: Boolean = false): FetchResult {
+
+        InAppLogger.d("Refreshing notices (full sync)...")
+
         return try {
+
+
             val response = apiService.getNotices()
-            InAppLogger.d("API call to fetch notices complete. HTTP ${response.code()}")
 
             if (!response.isSuccessful) {
-                val msg = "HTTP ${response.code()} error: ${response.message()}"
+                val msg = "Could not refresh notices (${response.code()})"
                 InAppLogger.e(msg)
                 return FetchResult.Failure(msg)
             }
@@ -28,19 +32,34 @@ class NoticeRepository(
             val apiNotices = response.body().orEmpty()
             val noticeLocals = apiNotices.mapNotNull { it.toLocal() }
 
-            db.noticesDAO().upsertNotices(noticeLocals)
-            InAppLogger.d("Upserted ${noticeLocals.size} notices into local DB.")
+            val oldCount = db.noticesDAO().getNoticeCount()
+            val newCount = noticeLocals.size
 
-            FetchResult.Success(
-                if (noticeLocals.isEmpty()) "No notices returned."
-                else "Notices successfully fetched and stored."
-            )
+            db.withTransaction {
+                db.noticesDAO().deleteAllNotices()
+                db.noticesDAO().upsertNotices(noticeLocals)
+
+            }
+
+
+            InAppLogger.d("Notice sync complete. Old=$oldCount New=$newCount")
+
+            val message = when {
+                newCount == 0 -> "You're all caught up 👍"
+                newCount > oldCount -> "${newCount - oldCount} new notice${if (newCount - oldCount > 1) "s" else ""}"
+                else -> "Notices refreshed"
+            }
+
+            FetchResult.Success(message)
 
         } catch (e: Exception) {
-            val msg = "Exception during fetch: ${e.message}"
+
+            val msg = "Notice refresh failed: ${e.message}"
             InAppLogger.e(msg)
-            FetchResult.Failure(msg)
+
+            FetchResult.Failure("Could not refresh notices. Check connection.")
         }
     }
 }
+
 

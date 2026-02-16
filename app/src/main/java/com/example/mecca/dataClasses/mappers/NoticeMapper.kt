@@ -21,6 +21,6 @@ fun NoticeCloud.toLocal(): NoticeLocal? {
         createdBy = createdBy,
 
         isActive = isActive ?: true,
-        isPinned = isPinned
+        isPinned = isPinned ?: false
     )
 }

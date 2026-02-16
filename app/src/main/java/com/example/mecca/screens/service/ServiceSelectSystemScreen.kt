@@ -67,6 +67,7 @@ import com.example.mecca.R
 import com.example.mecca.TopBarState
 import com.example.mecca.dataClasses.MetalDetectorWithFullDetails
 import com.example.mecca.repositories.MetalDetectorSystemsRepository
+import com.example.mecca.util.InAppLogger
 import kotlinx.coroutines.launch
 
 
@@ -100,17 +101,17 @@ fun ServiceSelectSystemScreen(
 
     val scrollState = rememberScrollState()
 
-    LaunchedEffect(Unit) {
-        chromeVm.setTopBar(
-            TopBarState(
-                title = "Select a System",
-                showBack = true,
-                showCall = false,
-                showMenu = true,
-                onMenuClick = { showMenu = true }
-            )
+    chromeVm.setTopBar(
+        TopBarState(
+            title = "Select a System",
+            showBack = true,
+            showCall = false,
+            showMenu = true,
+            onMenuClick = {
+                InAppLogger.d("MENU CLICKED")
+                showMenu = true }
         )
-    }
+    )
 
     Scaffold(
 

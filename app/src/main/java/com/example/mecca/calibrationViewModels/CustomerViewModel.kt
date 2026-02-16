@@ -3,28 +3,31 @@ package com.example.mecca.calibrationViewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mecca.FetchResult
-import com.example.mecca.repositories.NoticeRepository
+import com.example.mecca.repositories.CustomerRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
-class NoticeViewModel(
-    private val repository: NoticeRepository
+class CustomerViewModel(
+    private val repository: CustomerRepository
 ) : ViewModel() {
 
-    val notices = repository.observeActiveNotices()
+    val customers = repository.observeCustomers()
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing
 
-    private val _events = MutableSharedFlow<String>(
-        extraBufferCapacity = 1
-    )
+    private val _events = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val events = _events.asSharedFlow()
 
-    fun syncNotices(force: Boolean = false) {
+    init {
+        syncCustomers(force = false)
+    }
+
+
+    fun syncCustomers(force: Boolean = false) {
 
         if (_isRefreshing.value) return
 
@@ -32,11 +35,15 @@ class NoticeViewModel(
 
             _isRefreshing.value = true
 
-            val result = repository.fetchAndStoreNotices(force)
+            val result = repository.fetchAndStoreCustomers(force)
 
             val message = when (result) {
-                is FetchResult.Success -> "Notices updated"
-                is FetchResult.Failure -> result.errorMessage
+                is FetchResult.Success ->
+                    if (force) "Customer list refreshed"
+                    else result.message
+
+                is FetchResult.Failure ->
+                    result.errorMessage
             }
 
             _events.tryEmit(message)
@@ -44,6 +51,5 @@ class NoticeViewModel(
             _isRefreshing.value = false
         }
     }
-
 }
 
