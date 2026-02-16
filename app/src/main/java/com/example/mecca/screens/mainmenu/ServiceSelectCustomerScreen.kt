@@ -76,15 +76,7 @@ fun ServiceSelectCustomerScreen(
     }
 
 
-    LaunchedEffect(Unit) {
-        chromeVm.setTopBar(
-            TopBarState(
-                title = "Customers",
-                showBack = false,
-                showCall = true
-            )
-        )
-    }
+
 
     val filteredCustomers = remember(searchQuery, customers) {
         customers

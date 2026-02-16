@@ -9,25 +9,22 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.mecca.AppChromeViewModel
 import com.example.mecca.AppDatabase
-import com.example.mecca.repositories.CustomerRepository
-import com.example.mecca.repositories.MetalDetectorModelsRepository
-import com.example.mecca.repositories.MetalDetectorSystemsRepository
-import com.example.mecca.repositories.RetailerSensitivitiesRepository
-import com.example.mecca.repositories.SystemTypeRepository
 import com.example.mecca.RetrofitClient
 import com.example.mecca.UserViewModel
 import com.example.mecca.calibrationViewModels.CustomerViewModel
 import com.example.mecca.calibrationViewModels.NoticeViewModel
-import com.example.mecca.screens.menu.AboutAppScreen
-import com.example.mecca.screens.service.AddNewMetalDetectorScreen
-import com.example.mecca.screens.menu.DatabaseSyncScreen
+import com.example.mecca.repositories.CustomerRepository
+import com.example.mecca.repositories.MetalDetectorModelsRepository
+import com.example.mecca.repositories.MetalDetectorSystemsRepository
+import com.example.mecca.repositories.SystemTypeRepository
 import com.example.mecca.screens.mainmenu.HomeScreen
 import com.example.mecca.screens.mainmenu.NoticesScreen
-import com.example.mecca.screens.service.MetalDetectorConveyorSystemScreen
-import com.example.mecca.screens.menu.MyCalibrationsScreen
 import com.example.mecca.screens.mainmenu.ServiceSelectCustomerScreen
-import com.example.mecca.screens.service.ServiceSelectSystemScreen
 import com.example.mecca.screens.mainmenu.SettingsScreen
+import com.example.mecca.screens.menu.AboutAppScreen
+import com.example.mecca.screens.menu.MyCalibrationsScreen
+import com.example.mecca.screens.service.MetalDetectorConveyorSystemScreen
+import com.example.mecca.screens.service.ServiceSelectSystemScreen
 import com.example.mecca.util.LogConsole
 import com.example.mecca.util.SyncPreferences
 
@@ -62,7 +59,7 @@ fun AppNavGraph(
 
     NavHost(
         navController = navController,
-        startDestination = "serviceHome"
+        startDestination = "serviceSelectCustomer"
     ) {
 
         composable("logsScreen") {

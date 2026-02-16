@@ -19,16 +19,6 @@ import com.example.mecca.TopBarState
 @Composable
 fun HomeScreen(navController: NavHostController, scrollBehavior: TopAppBarScrollBehavior? = null, chromeVm: AppChromeViewModel) {
 
-    LaunchedEffect(Unit) {
-        chromeVm.setTopBar(
-            TopBarState(
-                title = "",
-                showBack = false,
-                showCall = true,
-                showMenu = false
-            )
-        )
-    }
 
     Column(
         modifier = Modifier

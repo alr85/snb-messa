@@ -32,4 +32,46 @@ class AppChromeViewModel : ViewModel() {
     fun setMenuClick(handler: (() -> Unit)?) {
         _topBarState.update { it.copy(onMenuClick = handler, showMenu = handler != null) }
     }
+
+    fun topBarForRoute(route: String?): TopBarState {
+        return when (route) {
+
+            "notices" -> TopBarState(
+                title = "Notices",
+                showBack = false,
+                showCall = true,
+                showMenu = false
+            )
+
+            "serviceSelectCustomer" -> TopBarState(
+                title = "Select Customer",
+                showBack = false,
+                showCall = true,
+                showMenu = false
+            )
+
+            "serviceSelectSystem" -> TopBarState(
+                title = "Select a System",
+                showBack = true,
+                showCall = false,
+                showMenu = true
+            )
+
+            "settings" -> TopBarState(
+                title = "Settings",
+                showBack = false,
+                showCall = true,
+                showMenu = false
+            )
+
+
+            else -> TopBarState(
+                title = "",
+                showBack = false,
+                showCall = false,
+                showMenu = false
+            )
+        }
+    }
+
 }

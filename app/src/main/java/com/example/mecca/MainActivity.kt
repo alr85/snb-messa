@@ -1,5 +1,6 @@
 package com.example.mecca
 
+import android.R.attr.visible
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
@@ -46,12 +47,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.mecca.calibrationViewModels.CustomerViewModel
 import com.example.mecca.calibrationViewModels.NoticeViewModel
@@ -279,136 +283,19 @@ fun SyncUsersScreen(
     }
 }
 
-//
-//@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
-//@Composable
-//fun AppNavGraph(
-//    navController: NavHostController,
-//    db: AppDatabase,
-//    userViewModel: UserViewModel,
-//    customerViewModel: CustomerViewModel,
-//    noticeViewModel: NoticeViewModel,
-//    chromeVm: AppChromeViewModel
-//)
-//
-// {
-//    val navController = rememberNavController()
-//    val context = LocalContext.current
-//
-//    var isOffline by remember { mutableStateOf(false) }
-//    var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
-//    var showBottomBar by rememberSaveable { mutableStateOf(true) }
-//    val chromeVm: AppChromeViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
-//    val topBarState by chromeVm.topBarState.collectAsState()
-//
-//    //Detect offline status
-//    LaunchedEffect(Unit) {
-//        while (true) {
-//            isOffline = !isNetworkAvailable(context)
-//            delay(3000)
-//        }
-//    }
-//
-//    // detect current route
-//    LaunchedEffect(navController) {
-//        navController.addOnDestinationChangedListener { _, destination, _ ->
-//            showBottomBar = when {
-//                destination.route?.startsWith("CalibrationProcess") == true ||
-//                        destination.route?.startsWith("login") == true ||
-//                        destination.route?.startsWith("CalMetalDetectorConveyor") == true -> false
-//                else -> true
-//            }
-//        }
-//    }
-//
-//    // detect if keyboard visible
-//    WindowInsets.isImeVisible
-//
-//
-//
-//
-//    val items = listOf(
-//        //NavigationBarItem("Schedule", Icons.Filled.DateRange, Icons.Default.DateRange),
-//        NavigationBarItem("Service", Icons.Filled.Build, Icons.Default.Build),
-//        NavigationBarItem("Messages", Icons.Filled.MailOutline, Icons.Default.MailOutline),
-//        NavigationBarItem("More", Icons.Filled.MoreHoriz, Icons.Default.MoreHoriz)
-//    )
-//
-//
-//
-//    Scaffold(
-//        modifier = Modifier.fillMaxSize(), //.background(Color.LightGray),
-//        contentWindowInsets = WindowInsets.systemBars,
-//        topBar = {
-//            if (navController.currentBackStackEntry?.destination?.route != "login") {
-//                MyTopAppBar(
-//                    navController = navController,
-//                    title = topBarState.title,
-//                    showBack = topBarState.showBack,
-//                    showCall = topBarState.showCall,
-//                    onMenuClick = if (topBarState.showMenu) topBarState.onMenuClick else null
-//                )
-//            }
-//        },
-//        bottomBar = {
-//            if (showBottomBar) {
-//                NavigationBar(containerColor = Color.LightGray) {
-//                    items.forEachIndexed { index, item ->
-//                        NavigationBarItem(
-//                            selected = selectedItemIndex == index,
-//                            onClick = {
-//                                selectedItemIndex = index
-//                                when (index) {
-//                                    //0 -> navController.navigate("serviceHome")
-//                                    0 -> navController.navigate("serviceSelectCustomer")
-//                                    1 -> navController.navigate("notices")
-//                                    2 -> navController.navigate("menu")
-//                                }
-//                            },
-//                            label = {
-//                                Text(
-//                                    text = item.title,
-//                                    color = if (selectedItemIndex == index) Color.Red else Color.Unspecified,
-//                                    fontWeight = if (selectedItemIndex == index) FontWeight.Bold else FontWeight.Normal
-//                                )
-//                            },
-//                            icon = {
-//                                Icon(
-//                                    imageVector = if (index == selectedItemIndex) item.selectedIcon else item.unselectedIcon,
-//                                    contentDescription = item.title,
-//                                    tint = if (selectedItemIndex == index) Color.Red else Color.Unspecified
-//                                )
-//                            },
-//                            colors = NavigationBarItemDefaults.colors(
-//                                selectedIconColor = Color.Red,
-//                                unselectedIconColor = Color.Gray,
-//                                indicatorColor = Color.Transparent
-//                            )
-//                        )
-//                    }
-//                }
-//            }
-//        }
-//    ) { innerPadding ->
-//        Column(Modifier.padding(innerPadding)) {
-//            OfflineBanner(isOffline)
-//            AppNavGraph(
-//                navController = navController,
-//                db = db,
-//                userViewModel = userViewModel,
-//                customerViewModel = customerViewModel,
-//                noticeViewModel = noticeViewModel,
-//                chromeVm = chromeVm
-//            )
-//
-//        }
-//    }
-//}
+
 
 
 @Composable
-fun OfflineBanner(isOffline: Boolean) {
+fun OfflineBanner(
+    isOffline: Boolean,
+    modifier: Modifier = Modifier
+) {
+
     AnimatedVisibility(
+        modifier = modifier
+            .shadow(4.dp)
+            .zIndex(1f),
         visible = isOffline,
         enter = fadeIn(animationSpec = tween(400)) + slideInVertically(
             initialOffsetY = { -it } // slide down from top
@@ -454,6 +341,11 @@ fun MyApp(
     val navController = rememberNavController()
     val chromeVm: AppChromeViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
     val context = LocalContext.current
+    val topBarState by chromeVm.topBarState.collectAsState()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val route = navBackStackEntry?.destination?.route
+
+
 
     var isOffline by remember { mutableStateOf(false) }
 
@@ -464,6 +356,13 @@ fun MyApp(
             delay(3000)
         }
     }
+
+    LaunchedEffect(route) {
+        chromeVm.setTopBar(
+            chromeVm.topBarForRoute(route)
+        )
+    }
+
 
     val items = listOf(
         NavigationBarItem("Service", Icons.Filled.Build, Icons.Default.Build),
@@ -478,10 +377,10 @@ fun MyApp(
         topBar = {
             MyTopAppBar(
                 navController = navController,
-                title = chromeVm.topBarState.collectAsState().value.title,
-                showBack = chromeVm.topBarState.collectAsState().value.showBack,
-                showCall = chromeVm.topBarState.collectAsState().value.showCall,
-                onMenuClick = null
+                title = topBarState.title,
+                showBack = topBarState.showBack,
+                showCall = topBarState.showCall,
+                onMenuClick = topBarState.onMenuClick
             )
         },
 
@@ -516,11 +415,12 @@ fun MyApp(
 
     ) { innerPadding ->
 
-        Column(Modifier.padding(innerPadding)) {
+        Box(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+        ) {
 
-            OfflineBanner(isOffline)
-
-            // ⭐ THIS is where navigation belongs
             AppNavGraph(
                 navController = navController,
                 db = db,
@@ -529,6 +429,10 @@ fun MyApp(
                 noticeViewModel = noticeViewModel,
                 chromeVm = chromeVm
             )
+
+            OfflineBanner(
+                isOffline = isOffline,
+                modifier = Modifier.align(Alignment.TopCenter))
         }
     }
 }
