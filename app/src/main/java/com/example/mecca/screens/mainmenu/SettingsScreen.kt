@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -52,8 +53,7 @@ import kotlin.system.exitProcess
 @Composable
 fun SettingsScreen(
     navController: NavHostController,
-    userViewModel: UserViewModel,
-    chromeVm: AppChromeViewModel
+    userViewModel: UserViewModel
 ) {
     val context = LocalContext.current
     val showDialog = remember { mutableStateOf(false) }
@@ -68,34 +68,19 @@ fun SettingsScreen(
         )
     }
 
-    LaunchedEffect(Unit) {
-        chromeVm.setTopBar(
-            TopBarState(
-                title = "Menu",
-                showBack = false,
-                showCall = true,
-                showMenu = false
-            )
-        )
-    }
-
-    Scaffold(
-//        topBar = {
-//            MyTopAppBar(
-//                navController = navController,
-//                title = "Settings",
-//                showBack = true,
-//                showCall = false
-//            )
-//        },
-        containerColor = Color.White // matches your "white screen" preference
-    ) { paddingValues ->
 
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .background(Color.White),
+
+            contentPadding = PaddingValues(
+                top = 12.dp,
+                bottom = 24.dp)
+
         ) {
+
+
             items(settingsItems) { setting ->
                 SettingRow(
                     setting = setting,
@@ -104,7 +89,7 @@ fun SettingsScreen(
                 )
             }
         }
-    }
+
 
     if (showDialog.value) {
         LogoutConfirmationDialog(
@@ -155,7 +140,7 @@ fun SettingRow(
                         else -> navController.navigate("databaseSync")
                     }
                 }
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(

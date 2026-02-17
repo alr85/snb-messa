@@ -2,37 +2,17 @@ package com.example.mecca.screens.service
 
 import android.content.Intent
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Handyman
 import androidx.compose.material.icons.filled.Tune
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,10 +23,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.navigation.NavHostController
 import com.example.mecca.AppChromeViewModel
-import com.example.mecca.daos.MetalDetectorConveyorCalibrationDAO
 import com.example.mecca.PreferencesHelper
-import com.example.mecca.TopBarState
 import com.example.mecca.activities.MetalDetectorConveyorCalibrationActivity
+import com.example.mecca.daos.MetalDetectorConveyorCalibrationDAO
 import com.example.mecca.dataClasses.MdModelsLocal
 import com.example.mecca.dataClasses.MetalDetectorWithFullDetails
 import com.example.mecca.formatDate
@@ -58,7 +37,6 @@ import com.example.mecca.util.InAppLogger
 import com.example.mecca.util.SerialCheckResult
 import kotlinx.coroutines.launch
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MetalDetectorConveyorSystemScreen(
@@ -68,57 +46,62 @@ fun MetalDetectorConveyorSystemScreen(
     repositoryModels: MetalDetectorModelsRepository,
     systemId: Int,
     chromeVm: AppChromeViewModel,
+    snackbarHostState: SnackbarHostState // ✅ GLOBAL
 ) {
-    var mdSystem by remember { mutableStateOf<MetalDetectorWithFullDetails?>(null) }
-    var modelDetails by remember { mutableStateOf<MdModelsLocal?>(null) }
 
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
+    var mdSystem by remember { mutableStateOf<MetalDetectorWithFullDetails?>(null) }
+    var modelDetails by remember { mutableStateOf<MdModelsLocal?>(null) }
     var isUploading by remember { mutableStateOf(false) }
 
-    // Bottom sheet menu state
     var showActions by rememberSaveable { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     suspend fun refresh() {
-        mdSystem = repositoryMD.getMetalDetectorsWithFullDetailsUsingLocalId(systemId).firstOrNull()
-        val modelId = mdSystem?.modelId
-        modelDetails = if (modelId != null && modelId != 0) {
-            repositoryModels.getMdModelDetails(modelId)
-        } else null
+        mdSystem = repositoryMD
+            .getMetalDetectorsWithFullDetailsUsingLocalId(systemId)
+            .firstOrNull()
+
+        modelDetails = mdSystem?.modelId
+            ?.takeIf { it != 0 }
+            ?.let { repositoryModels.getMdModelDetails(it) }
     }
 
+    // Initial load
     LaunchedEffect(systemId) { refresh() }
 
+    // Refresh when returning from calibration
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-        coroutineScope.launch {
-            Log.d("MESSA-DEBUG", "Refreshing system details after resume")
-            refresh()
+        scope.launch { refresh() }
+    }
+
+    /**
+     * MENU WIRING
+     *
+     * Root scaffold owns the icon.
+     * This screen only supplies the click behaviour.
+     */
+    DisposableEffect(Unit) {
+        chromeVm.setMenuAction { showActions = true }
+
+        onDispose {
+            chromeVm.setMenuAction(null)
         }
     }
 
-    LaunchedEffect(Unit) {
-        chromeVm.setTopBar(
-            TopBarState(
-                title = "System Details",
-                showBack = true,
-                showMenu = true,
-                showCall = false,
-                onMenuClick = { showActions = true }
-            )
-        )
-    }
+    val formattedLastCalibrationDate =
+        runCatching { formatDate(mdSystem?.lastCalibration) }.getOrElse { "Invalid date" }
 
-    val formattedLastCalibrationDate = try { formatDate(mdSystem?.lastCalibration) } catch (_: Exception) { "Invalid date" }
-    val formattedAddedDate = try { formatDate(mdSystem?.addedDate) } catch (_: Exception) { "Invalid date" }
+    val formattedAddedDate =
+        runCatching { formatDate(mdSystem?.addedDate) }.getOrElse { "Invalid date" }
 
     fun startCalibration() {
         val system = mdSystem ?: return
 
-        // Generate a new calibration ID (your method is fine)
-        val newCalibrationId = System.currentTimeMillis().toString(36) + "-" + (100..999).random()
+        val newCalibrationId =
+            System.currentTimeMillis().toString(36) + "-" + (100..999).random()
 
         val (_, _, engineerId) = PreferencesHelper.getCredentials(context)
 
@@ -136,7 +119,9 @@ fun MetalDetectorConveyorSystemScreen(
             putExtra("ENGINEER_ID", engineerId ?: 0)
             putExtra("SYSTEM_TYPE_DESCRIPTION", system.systemType)
 
+            putExtra("LAST_LOCATION", system.lastLocation)
 
+            // detection labels
             putExtra("DETECTION_SETTING_1_LABEL", modelDetails?.detectionSetting1)
             putExtra("DETECTION_SETTING_2_LABEL", modelDetails?.detectionSetting2)
             putExtra("DETECTION_SETTING_3_LABEL", modelDetails?.detectionSetting3)
@@ -145,47 +130,40 @@ fun MetalDetectorConveyorSystemScreen(
             putExtra("DETECTION_SETTING_6_LABEL", modelDetails?.detectionSetting6)
             putExtra("DETECTION_SETTING_7_LABEL", modelDetails?.detectionSetting7)
             putExtra("DETECTION_SETTING_8_LABEL", modelDetails?.detectionSetting8)
-
-            putExtra("LAST_LOCATION", system.lastLocation)
         }
+
         context.startActivity(intent)
     }
 
-    fun startServiceCall() {
-        // TODO: hook this up later
-        coroutineScope.launch {
-            snackbarHostState.showSnackbar("Service call flow not wired yet.")
-        }
-    }
-
     suspend fun syncThisSystem() {
-        val system = mdSystem ?: return
 
-        InAppLogger.d("Attempting to sync this machine to the cloud...")
+        val system = mdSystem ?: return
 
         try {
             isUploading = true
 
             if (system.cloudId != 0) {
-                // Has cloudId -> update
+
                 repositoryMD.updateSystem(
                     context = context,
                     cloudId = system.cloudId,
                     localId = system.id,
                     tempId = system.tempId
                 )
+
                 snackbarHostState.showSnackbar("System updated successfully.")
                 refresh()
                 return
             }
 
-            // No cloudId -> check serial
-            when (val status = repositoryMD.checkSerialNumberStatus(context, system.serialNumber)) {
-                SerialCheckResult.Exists -> {
-                    snackbarHostState.showSnackbar("Serial already exists in cloud. Link it or change the serial.")
-                }
+            when (val status =
+                repositoryMD.checkSerialNumberStatus(context, system.serialNumber)) {
+
+                SerialCheckResult.Exists ->
+                    snackbarHostState.showSnackbar("Serial already exists in cloud.")
 
                 SerialCheckResult.NotFound -> {
+
                     val newCloudId = repositoryMD.addMetalDetectorToCloud(
                         customerID = system.customerId,
                         serialNumber = system.serialNumber,
@@ -198,54 +176,51 @@ fun MetalDetectorConveyorSystemScreen(
                     )
 
                     if (newCloudId != null && newCloudId != 0) {
-                        snackbarHostState.showSnackbar("System added to cloud. Updating local records...")
 
-                        // Update any calibrations referencing tempId
                         dao.updateCalibrationWithCloudId(system.tempId, newCloudId)
 
-                        // Refresh cache
                         repositoryMD.fetchAndStoreMdSystems()
-                        refresh()
+
+                        snackbarHostState.showSnackbar("System added to cloud.")
                         navController.popBackStack()
                     } else {
-                        snackbarHostState.showSnackbar("Failed to add system to cloud. Try again later.")
+                        snackbarHostState.showSnackbar("Failed to add system.")
                     }
                 }
 
-                SerialCheckResult.ExistsLocalOffline -> {
-                    snackbarHostState.showSnackbar("Offline: serial exists locally. Connect to the internet to sync.")
-                }
+                SerialCheckResult.ExistsLocalOffline ->
+                    snackbarHostState.showSnackbar("Offline: serial exists locally.")
 
-                SerialCheckResult.NotFoundLocalOffline -> {
-                    snackbarHostState.showSnackbar("No network. System must be synced when online.")
-                }
+                SerialCheckResult.NotFoundLocalOffline ->
+                    snackbarHostState.showSnackbar("No network. Sync later.")
 
-                is SerialCheckResult.Error -> {
-                    snackbarHostState.showSnackbar("Error checking serial: ${status.message ?: "network error"}")
-                }
+                is SerialCheckResult.Error ->
+                    snackbarHostState.showSnackbar("Error: ${status.message}")
             }
+
         } catch (e: Exception) {
-            InAppLogger.e("Sync flow crashed: ${e.message}")
-            snackbarHostState.showSnackbar("Sync failed. Try again later.")
+
+            InAppLogger.e("Sync crashed: ${e.message}")
+            snackbarHostState.showSnackbar("Sync failed.")
+
         } finally {
             isUploading = false
         }
     }
 
-    // Bottom sheet content
+    // ---------- Bottom Sheet ----------
     if (showActions) {
+
         ModalBottomSheet(
             onDismissRequest = { showActions = false },
             sheetState = sheetState,
             containerColor = Color.White
         ) {
+
             ListItem(
-                headlineContent = { Text("Start a New Calibration", fontWeight = FontWeight.Bold) },
-                supportingContent = { Text("Begin a new calibration for this system") },
-                leadingContent = { Icon(Icons.Default.Tune, contentDescription = null) },
-                colors = ListItemDefaults.colors(
-                        containerColor = Color.White
-                    ),
+                headlineContent = { Text("Start Calibration", fontWeight = FontWeight.Bold) },
+                supportingContent = { Text("Begin a new calibration") },
+                leadingContent = { Icon(Icons.Default.Tune, null) },
                 modifier = Modifier.clickable {
                     showActions = false
                     startCalibration()
@@ -253,86 +228,84 @@ fun MetalDetectorConveyorSystemScreen(
             )
 
             ListItem(
-                headlineContent = { Text("Start a New Service Call", fontWeight = FontWeight.Bold) },
-                supportingContent = { Text("Coming Soon") },
-                leadingContent = { Icon(Icons.Default.Handyman , contentDescription = null) },
-                colors = ListItemDefaults.colors(
-                    containerColor = Color.White
-                ),
+                headlineContent = { Text("Start Service Call", fontWeight = FontWeight.Bold) },
+                supportingContent = { Text("Coming soon") },
+                leadingContent = { Icon(Icons.Default.Handyman, null) },
                 modifier = Modifier.clickable {
                     showActions = false
-                    startServiceCall()
+
+                    scope.launch {
+                        snackbarHostState.showSnackbar("Service flow not wired yet.")
+                    }
                 }
             )
 
-
             if (mdSystem?.isSynced == false) {
-                Divider()
+
+                HorizontalDivider()
+
                 ListItem(
-                    headlineContent = { Text("Sync to Cloud",  fontWeight = FontWeight.Bold) },
-                    supportingContent = { Text("Upload this system and link local records") },
-                    leadingContent = { Icon(Icons.Default.CloudUpload, contentDescription = null) },
-                    colors = ListItemDefaults.colors(
-                        containerColor = Color.White
-                    ),
+                    headlineContent = { Text("Sync to Cloud", fontWeight = FontWeight.Bold) },
+                    supportingContent = { Text("Upload this system") },
+                    leadingContent = { Icon(Icons.Default.CloudUpload, null) },
                     modifier = Modifier.clickable {
                         showActions = false
-                        coroutineScope.launch { syncThisSystem() }
+                        scope.launch { syncThisSystem() }
                     }
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(Modifier.height(24.dp))
         }
     }
 
-    Scaffold(
+    // ---------- CONTENT ----------
+    Box(Modifier.fillMaxSize()) {
 
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-    ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .background(Color.White)
                 .padding(16.dp)
         ) {
+
             item {
-                ExpandableSection(title = "System Details", initiallyExpanded = true) {
-                    DetailItem(label = "System Type", value = mdSystem?.systemType ?: "?")
-                    DetailItem(label = "Serial Number", value = mdSystem?.serialNumber ?: "?")
-                    DetailItem(label = "Customer", value = mdSystem?.customerName ?: "?")
-                    DetailItem(label = "Model", value = mdSystem?.modelDescription ?: "?")
-                    DetailItem(label = "Aperture Width", value = "${mdSystem?.apertureWidth ?: "?"} mm")
-                    DetailItem(label = "Aperture Height", value = "${mdSystem?.apertureHeight ?: "?"} mm")
-                    DetailItem(label = "Location", value = mdSystem?.lastLocation ?: "?")
-                    DetailItem(label = "Last Calibrated", value = formattedLastCalibrationDate)
+                ExpandableSection("System Details", true) {
+
+                    DetailItem("System Type", mdSystem?.systemType ?: "?")
+                    DetailItem("Serial Number", mdSystem?.serialNumber ?: "?")
+                    DetailItem("Customer", mdSystem?.customerName ?: "?")
+                    DetailItem("Model", mdSystem?.modelDescription ?: "?")
+                    DetailItem("Aperture Width", "${mdSystem?.apertureWidth ?: "?"} mm")
+                    DetailItem("Aperture Height", "${mdSystem?.apertureHeight ?: "?"} mm")
+                    DetailItem("Location", mdSystem?.lastLocation ?: "?")
+                    DetailItem("Last Calibrated", formattedLastCalibrationDate)
                 }
             }
 
-            item { Spacer(modifier = Modifier.height(16.dp)) }
+            item { Spacer(Modifier.height(16.dp)) }
 
             item {
-                ExpandableSection(title = "Database Info", initiallyExpanded = false) {
-                    DetailItem(label = "Cloud Synced", value = if (mdSystem?.isSynced == true) "Yes" else "No")
-                    DetailItem(label = "Local ID", value = mdSystem?.id?.toString() ?: "?")
-                    DetailItem(label = "Cloud ID", value = mdSystem?.cloudId?.toString() ?: "?")
-                    DetailItem(label = "Temp ID", value = (mdSystem?.tempId ?: 0).toString())
-                    DetailItem(label = "Fusion Customer ID", value = mdSystem?.fusionID?.toString() ?: "?")
-                    DetailItem(label = "Date added", value = formattedAddedDate)
+                ExpandableSection("Database Info", false) {
+
+                    DetailItem("Cloud Synced", if (mdSystem?.isSynced == true) "Yes" else "No")
+                    DetailItem("Local ID", mdSystem?.id?.toString() ?: "?")
+                    DetailItem("Cloud ID", mdSystem?.cloudId?.toString() ?: "?")
+                    DetailItem("Temp ID", (mdSystem?.tempId ?: 0).toString())
+                    DetailItem("Fusion Customer ID", mdSystem?.fusionID?.toString() ?: "?")
+                    DetailItem("Date added", formattedAddedDate)
                 }
             }
 
-            item { Spacer(modifier = Modifier.height(16.dp)) }
-
-            // Add other sections here...
+            item { Spacer(Modifier.height(32.dp)) }
         }
 
-        // More intentional loading overlay
+        // Upload overlay
         if (isUploading) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues),
+                    .background(Color.Black.copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()

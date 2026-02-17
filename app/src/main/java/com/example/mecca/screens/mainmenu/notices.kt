@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -28,19 +29,14 @@ import java.util.Locale
 fun NoticesScreen(
     navController: NavHostController,
     chromeVm: AppChromeViewModel,
-    scrollBehavior: TopAppBarScrollBehavior? = null,
-    noticeViewModel: NoticeViewModel
+    noticeViewModel: NoticeViewModel,
+    snackbarHostState: SnackbarHostState
 ) {
-
-
     val isRefreshing by noticeViewModel.isRefreshing.collectAsState()
-
     val notices by noticeViewModel.notices.collectAsState(initial = emptyList())
 
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    // ✅ Listen for refresh messages
-    LaunchedEffect(Unit) {
+    // Listen for refresh messages -> show on the GLOBAL snackbar host
+    LaunchedEffect(true) {
         noticeViewModel.events.collect { message ->
             snackbarHostState.showSnackbar(
                 message = message,
@@ -49,87 +45,71 @@ fun NoticesScreen(
         }
     }
 
+    // Auto-load if empty
     LaunchedEffect(notices.isEmpty()) {
         if (notices.isEmpty()) {
             noticeViewModel.syncNotices(force = true)
         }
     }
 
+    // No Scaffold here. No TopBar setting here. Just content.
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .padding(horizontal = 16.dp)
+    ) {
+        Spacer(Modifier.height(10.dp))
 
-    // Top bar state
-    LaunchedEffect(Unit) {
-        chromeVm.setTopBar(
-            TopBarState(
-                title = "Notices", // <- rename this. Trust me.
-                showBack = false,
-                showCall = true,
-                showMenu = false
-            )
-        )
-    }
-
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { padding ->
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            Text(
+                text = "Notices",
+                style = MaterialTheme.typography.titleMedium
+            )
 
-            Spacer(Modifier.height(10.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            FilledTonalIconButton(
+                onClick = { noticeViewModel.syncNotices(force = true) },
+                enabled = !isRefreshing
             ) {
-                Text(
-                    text = "Notices",
-                    style = MaterialTheme.typography.titleMedium
-                )
-
-                FilledTonalIconButton(
-                    onClick = { noticeViewModel.syncNotices(force = true) },
-                    enabled = !isRefreshing
-                ) {
-                    if (isRefreshing) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
-                    }
+                if (isRefreshing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                 }
             }
+        }
 
-            Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(12.dp))
 
-            if (notices.isEmpty()) {
-                EmptyNoticesState()
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    items(notices, key = { it.noticeId }) { notice ->
-                        NoticeCard(
-                            title = notice.title,
-                            body = notice.body,
-                            createdBy = notice.createdBy,
-                            dateAdded = notice.dateAdded,
-                            isPinned = notice.isPinned
-                        )
-                    }
+        if (notices.isEmpty()) {
+            EmptyNoticesState()
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                items(notices, key = { it.noticeId }) { notice ->
+                    NoticeCard(
+                        title = notice.title,
+                        body = notice.body,
+                        createdBy = notice.createdBy,
+                        dateAdded = notice.dateAdded,
+                        isPinned = notice.isPinned
+                    )
                 }
             }
         }
     }
 }
+
 
 
 @Composable

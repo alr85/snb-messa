@@ -1,8 +1,10 @@
 package com.example.mecca.screens.mainmenu
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -56,7 +58,8 @@ import com.example.mecca.dataClasses.CustomerLocal
 fun ServiceSelectCustomerScreen(
     navController: NavHostController,
     chromeVm: AppChromeViewModel,
-    customerViewModel: CustomerViewModel
+    customerViewModel: CustomerViewModel,
+    snackbarHostState: SnackbarHostState
 
 ){
 
@@ -67,7 +70,6 @@ fun ServiceSelectCustomerScreen(
 
     var searchQuery by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
-    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
         vm.events.collect { message ->
@@ -86,16 +88,17 @@ fun ServiceSelectCustomerScreen(
             .toList()
     }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = Color.White
-    ) { paddingValues ->
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
                 .padding(16.dp)
+
         ) {
 
             Row(

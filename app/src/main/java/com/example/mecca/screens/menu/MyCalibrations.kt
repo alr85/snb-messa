@@ -1,6 +1,7 @@
 package com.example.mecca.screens.menu
 
 import android.content.Intent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -25,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -42,6 +44,7 @@ import com.example.mecca.dataClasses.MetalDetectorConveyorCalibrationLocal
 import com.example.mecca.formatDate
 import com.example.mecca.ui.theme.ExpandableSection
 import com.example.mecca.util.CsvUploader
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -52,13 +55,12 @@ fun MyCalibrationsScreen(
     dao: MetalDetectorConveyorCalibrationDAO,
     customerRepository: CustomerRepository,
     apiService: ApiService,
-    chromeVm: AppChromeViewModel
+    snackbarHostState: SnackbarHostState
 ) {
+
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
 
-    // Collect once. Don’t collect flows inside expandable content blocks.
     val unfinishedCalibrations by dao.getAllUnfinishedCalibrations()
         .collectAsState(initial = emptyList())
 
@@ -68,19 +70,22 @@ fun MyCalibrationsScreen(
     val completedCalibrations by dao.getAllCompletedCalibrations()
         .collectAsState(initial = emptyList())
 
-    // Cache customer names so we don’t launch N coroutines per list item.
+
+
+    // ---------------- Customer Cache ----------------
+
     var customerNameCache by remember { mutableStateOf<Map<Int, String>>(emptyMap()) }
 
     LaunchedEffect(
-        unfinishedCalibrations,
-        pendingCalibrations,
-        completedCalibrations
+        unfinishedCalibrations.size,
+        pendingCalibrations.size,
+        completedCalibrations.size
     ) {
+
         val allCustomerIds = (unfinishedCalibrations + pendingCalibrations + completedCalibrations)
             .map { it.customerId }
             .distinct()
 
-        // Only fetch missing names
         val missingIds = allCustomerIds.filterNot { customerNameCache.containsKey(it) }
         if (missingIds.isEmpty()) return@LaunchedEffect
 
@@ -91,118 +96,100 @@ fun MyCalibrationsScreen(
         customerNameCache = customerNameCache + newEntries
     }
 
-    LaunchedEffect(Unit) {
-        chromeVm.setTopBar(
-            TopBarState(
-                title = "My Calibrations",
-                showBack = true,
-                showCall = false,
-                showMenu = false,
-            )
-        )
-    }
 
 
+    // ---------------- UI ----------------
 
-    Scaffold(
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .padding(16.dp)
+    ) {
 
-//        topBar = {
-//            MyTopAppBar(
-//                navController = navController,
-//                title = "My Calibrations",
-//                showBack = true,
-//                showCall = false
-//            )
-//        },
-
-
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp)
-        ) {
-
-
-            item {
-                ExpandableSection(title = "Incomplete Calibrations", initiallyExpanded = false) {
-                    CalibrationList(
-                        calibrations = unfinishedCalibrations,
-                        status = "Incomplete",
-                        customerNameCache = customerNameCache,
-                        onItemClick = { calibration ->
-                            val intent = Intent(context, MetalDetectorConveyorCalibrationActivity::class.java).apply {
-                                putExtra("CALIBRATION_ID", calibration.calibrationId)
-                            }
-                            context.startActivity(intent)
+        item {
+            ExpandableSection("Incomplete Calibrations") {
+                CalibrationList(
+                    calibrations = unfinishedCalibrations,
+                    status = "Incomplete",
+                    customerNameCache = customerNameCache,
+                    onItemClick = { calibration ->
+                        val intent = Intent(
+                            context,
+                            MetalDetectorConveyorCalibrationActivity::class.java
+                        ).apply {
+                            putExtra("CALIBRATION_ID", calibration.calibrationId)
                         }
-                    )
-                }
+
+                        context.startActivity(intent)
+                    }
+                )
             }
-
-            item { Spacer(modifier = Modifier.height(16.dp)) }
-
-            item {
-                ExpandableSection(title = "Pending Calibrations for Upload", initiallyExpanded = false) {
-                    CalibrationList(
-                        calibrations = pendingCalibrations,
-                        status = "Pending",
-                        customerNameCache = customerNameCache,
-                        onItemClick = { calibration ->
-                            coroutineScope.launch {
-                                if (!isNetworkAvailable(context)) {
-                                    snackbarHostState.showSnackbar("No internet connection. Unable to upload.")
-                                    return@launch
-                                }
-
-                                if (calibration.cloudSystemId == 0) {
-                                    snackbarHostState.showSnackbar("No matching system found. Add this system to the cloud first.")
-                                    return@launch
-                                }
-
-                                val csvFile = File(
-                                    context.filesDir,
-                                    "calibration_data_${calibration.calibrationId}.csv"
-                                )
-
-                                val success = CsvUploader.uploadCsvFile(
-                                    csvFile = csvFile,
-                                    apiService = apiService,
-                                    fileName = calibration.calibrationId
-                                )
-
-                                if (success) {
-                                    dao.updateIsSynced(calibration.calibrationId, true)
-                                    snackbarHostState.showSnackbar("Upload successful!")
-                                } else {
-                                    snackbarHostState.showSnackbar("Upload failed.")
-                                }
-                            }
-                        }
-                    )
-                }
-            }
-
-            item { Spacer(modifier = Modifier.height(16.dp)) }
-
-            item {
-                ExpandableSection(title = "Completed Calibrations", initiallyExpanded = false) {
-                    CalibrationList(
-                        calibrations = completedCalibrations,
-                        status = "Completed",
-                        customerNameCache = customerNameCache,
-                        onItemClick = { /* no-op for now */ }
-                    )
-                }
-            }
-
-            item { Spacer(modifier = Modifier.height(16.dp)) }
         }
+
+        item { Spacer(Modifier.height(16.dp)) }
+
+        item {
+            ExpandableSection("Pending Calibrations for Upload") {
+
+                CalibrationList(
+                    calibrations = pendingCalibrations,
+                    status = "Pending",
+                    customerNameCache = customerNameCache,
+                    onItemClick = { calibration ->
+
+                        coroutineScope.launch(Dispatchers.IO) {
+
+                            if (!isNetworkAvailable(context)) {
+                                snackbarHostState.showSnackbar("No internet connection.")
+                                return@launch
+                            }
+
+                            if (calibration.cloudSystemId == 0) {
+                                snackbarHostState.showSnackbar("No matching cloud system.")
+                                return@launch
+                            }
+
+                            val csvFile = File(
+                                context.filesDir,
+                                "calibration_data_${calibration.calibrationId}.csv"
+                            )
+
+                            val success = CsvUploader.uploadCsvFile(
+                                csvFile = csvFile,
+                                apiService = apiService,
+                                fileName = calibration.calibrationId
+                            )
+
+                            if (success) {
+                                dao.updateIsSynced(calibration.calibrationId, true)
+                                snackbarHostState.showSnackbar("Upload successful!")
+                            } else {
+                                snackbarHostState.showSnackbar("Upload failed.")
+                            }
+                        }
+                    }
+                )
+            }
+        }
+
+        item { Spacer(Modifier.height(16.dp)) }
+
+        item {
+            ExpandableSection("Completed Calibrations") {
+                CalibrationList(
+                    calibrations = completedCalibrations,
+                    status = "Completed",
+                    customerNameCache = customerNameCache,
+                    onItemClick = {}
+                )
+            }
+        }
+
+        item { Spacer(Modifier.height(16.dp)) }
     }
 }
+
 
 @Composable
 private fun CalibrationList(

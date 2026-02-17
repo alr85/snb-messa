@@ -1,14 +1,17 @@
 package com.example.mecca
 
-import android.R.attr.visible
+
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
@@ -20,8 +23,10 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
@@ -35,6 +40,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -47,8 +54,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
@@ -59,7 +68,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.mecca.calibrationViewModels.CustomerViewModel
 import com.example.mecca.calibrationViewModels.NoticeViewModel
+import com.example.mecca.network.NetworkMonitor
 import com.example.mecca.network.isNetworkAvailable
+import com.example.mecca.network.rememberIsOffline
 import com.example.mecca.repositories.CustomerRepository
 import com.example.mecca.repositories.NoticeRepository
 import com.example.mecca.repositories.UserRepository
@@ -67,6 +78,7 @@ import com.example.mecca.screens.LoginScreen
 import com.example.mecca.ui.theme.AppNavGraph
 import com.example.mecca.util.SyncPreferences
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.map
 
 
 class MainActivity : ComponentActivity() {
@@ -284,35 +296,35 @@ fun SyncUsersScreen(
 }
 
 
-
+data class NavigationBarItem(
+    val title: String,
+    val selectedIcon: ImageVector,
+    val unselectedIcon: ImageVector
+)
 
 @Composable
 fun OfflineBanner(
-    isOffline: Boolean,
-    modifier: Modifier = Modifier
+    isOffline: Boolean
 ) {
 
     AnimatedVisibility(
-        modifier = modifier
-            .shadow(4.dp)
-            .zIndex(1f),
         visible = isOffline,
-        enter = fadeIn(animationSpec = tween(400)) + slideInVertically(
-            initialOffsetY = { -it } // slide down from top
-        ),
-        exit = fadeOut(animationSpec = tween(400)) + slideOutVertically(
-            targetOffsetY = { -it } // slide back up
-        )
+        enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
+        exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
+
     ) {
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFFB71C1C)) // Deep red
-                .padding(vertical = 6.dp),
+                .animateContentSize()
+                .background(Color(0xFFB71C1C))
+                .padding(vertical = 6.dp)
+                .heightIn(min = 32.dp), // prevents micro layout jump
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Offline mode: changes will require synchronising when network is available.",
+                text = "Offline mode",
                 color = Color.White,
                 style = MaterialTheme.typography.bodyMedium
             )
@@ -323,11 +335,8 @@ fun OfflineBanner(
 
 
 
-data class NavigationBarItem(
-    val title: String,
-    val selectedIcon: ImageVector,
-    val unselectedIcon: ImageVector
-)
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -338,25 +347,75 @@ fun MyApp(
     noticeViewModel: NoticeViewModel
 ) {
 
+    /*
+        NavController drives the entire app navigation.
+        There should be ONE of these at the root of your app.
+     */
     val navController = rememberNavController()
+
+    /*
+        Chrome ViewModel controls GLOBAL UI:
+        - Top bar
+        - Menu button
+        - Back button
+        etc.
+
+        Screens should NOT control global UI anymore.
+     */
     val chromeVm: AppChromeViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+
     val context = LocalContext.current
+
+    /*
+        Observe the TopBar state once.
+        NEVER collect the same flow multiple times in Compose.
+     */
     val topBarState by chromeVm.topBarState.collectAsState()
+
+    /*
+        Observe navigation changes so we can update the TopBar automatically.
+        This removes the need for setTopBar() calls inside screens.
+     */
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val route = navBackStackEntry?.destination?.route
 
 
+    // ---------------------------------------------------------
+    // GLOBAL SNACKBAR HOST
+    // ---------------------------------------------------------
+    /*
+        One snackbar host for the entire app.
 
-    var isOffline by remember { mutableStateOf(false) }
+        Avoid putting snack bars inside screens — it leads to
+        nested scaffolds and layout chaos.
+     */
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    // Network watcher
-    LaunchedEffect(Unit) {
-        while (true) {
-            isOffline = !isNetworkAvailable(context)
-            delay(3000)
-        }
-    }
 
+
+    // ---------------------------------------------------------
+    // OFFLINE STATE
+    // ---------------------------------------------------------
+    val networkMonitor = remember { NetworkMonitor(context) }
+
+    val isOffline by networkMonitor
+        .observe()
+        .map { !it }
+        .collectAsState(initial = false)
+
+
+    OfflineBanner(isOffline = isOffline)
+
+
+
+    // ---------------------------------------------------------
+    // TOP BAR AUTO-UPDATES BASED ON ROUTE
+    // ---------------------------------------------------------
+    /*
+
+        Navigation drives chrome.
+        Screens no longer fight over it.
+     */
     LaunchedEffect(route) {
         chromeVm.setTopBar(
             chromeVm.topBarForRoute(route)
@@ -364,6 +423,10 @@ fun MyApp(
     }
 
 
+
+    // ---------------------------------------------------------
+    // BOTTOM NAVIGATION ITEMS
+    // ---------------------------------------------------------
     val items = listOf(
         NavigationBarItem("Service", Icons.Filled.Build, Icons.Default.Build),
         NavigationBarItem("Messages", Icons.Filled.MailOutline, Icons.Default.MailOutline),
@@ -372,8 +435,22 @@ fun MyApp(
 
     var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
 
+
+
+    // =========================================================
+    // ROOT SCAFFOLD (THE ONLY ONE IN THE APP)
+    // =========================================================
     Scaffold(
 
+        /*
+            Global snackbar lives here.
+         */
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
+
+
+        // ---------------- TOP BAR ----------------
         topBar = {
             MyTopAppBar(
                 navController = navController,
@@ -384,6 +461,8 @@ fun MyApp(
             )
         },
 
+
+        // ---------------- BOTTOM BAR ----------------
         bottomBar = {
             NavigationBar(containerColor = Color.LightGray) {
 
@@ -415,24 +494,40 @@ fun MyApp(
 
     ) { innerPadding ->
 
-        Box(
+
+        // =====================================================
+        // CONTENT LAYER
+        // =====================================================
+        /*
+
+            NavHost = main content
+
+         */
+        Column(
             modifier = Modifier
-                .padding(innerPadding)
+                .padding(innerPadding) // accounts for top & bottom bars
                 .fillMaxSize()
         ) {
+            OfflineBanner(isOffline = isOffline)
 
-            AppNavGraph(
-                navController = navController,
-                db = db,
-                userViewModel = userViewModel,
-                customerViewModel = customerViewModel,
-                noticeViewModel = noticeViewModel,
-                chromeVm = chromeVm
-            )
 
-            OfflineBanner(
-                isOffline = isOffline,
-                modifier = Modifier.align(Alignment.TopCenter))
+            // ---------------- MAIN NAVIGATION ----------------
+
+            Box(
+                modifier = Modifier.weight(1f)
+            ){
+                AppNavGraph(
+                    navController = navController,
+                    db = db,
+                    userViewModel = userViewModel,
+                    customerViewModel = customerViewModel,
+                    noticeViewModel = noticeViewModel,
+                    chromeVm = chromeVm,
+                    snackbarHostState = snackbarHostState // optional but recommended
+                )
+            }
+
         }
     }
 }
+

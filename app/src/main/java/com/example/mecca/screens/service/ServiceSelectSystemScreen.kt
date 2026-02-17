@@ -6,10 +6,12 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,7 +29,6 @@ import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.Navigation
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -35,12 +36,11 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,66 +61,70 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.navigation.NavHostController
 import com.example.mecca.AppChromeViewModel
-import com.example.mecca.AppDatabase
 import com.example.mecca.FetchResult
 import com.example.mecca.R
-import com.example.mecca.TopBarState
 import com.example.mecca.dataClasses.MetalDetectorWithFullDetails
 import com.example.mecca.repositories.MetalDetectorSystemsRepository
-import com.example.mecca.util.InAppLogger
 import kotlinx.coroutines.launch
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ServiceSelectSystemScreen(
     navController: NavHostController,
-    db: AppDatabase, // <- unused currently (warning). Remove if you don’t need it.
     repository: MetalDetectorSystemsRepository,
     customerID: Int,
     customerName: String,
     customerPostcode: String,
+    snackbarHostState: SnackbarHostState,
     chromeVm: AppChromeViewModel
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
-    val metalDetectorsCalibrationsList =
-        remember { mutableStateOf<List<MetalDetectorWithFullDetails>>(emptyList()) }
-
-    val coroutineScope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
+    // Screen state
+    var systems by remember { mutableStateOf<List<MetalDetectorWithFullDetails>>(emptyList()) }
+    var isRefreshing by remember { mutableStateOf(false) }
 
     // Bottom sheet menu state
     var showMenu by rememberSaveable { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    // Load machines when screen loads
+    // Load machines when customer changes
     LaunchedEffect(customerID) {
-        metalDetectorsCalibrationsList.value = getMetalDetectors(repository, customerID)
+        systems = getMetalDetectors(repository, customerID)
+    }
+
+    /**
+     * MENU BUTTON WIRING
+     *
+     * Your top bar lives in the root scaffold (MyApp).
+     * The route controls whether the menu icon is visible.
+     * This screen ONLY provides the click action (open bottom sheet).
+     *
+     * DisposableEffect ensures we clean up when leaving the screen,
+     * so menu actions don’t leak into other screens.
+     */
+    DisposableEffect(Unit) {
+        chromeVm.setMenuAction { showMenu = true }
+        onDispose {
+            chromeVm.setMenuAction(null)
+        }
     }
 
     val scrollState = rememberScrollState()
 
-    chromeVm.setTopBar(
-        TopBarState(
-            title = "Select a System",
-            showBack = true,
-            showCall = false,
-            showMenu = true,
-            onMenuClick = {
-                InAppLogger.d("MENU CLICKED")
-                showMenu = true }
-        )
-    )
+    // ========= UI =========
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .verticalScroll(scrollState)
+            .padding(16.dp)
+    ) {
 
-    Scaffold(
-
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
-    ) { paddingValues ->
-
-        // Modern menu bottom sheet
+        // ---- Bottom sheet menu ----
         if (showMenu) {
-            val sheetBg = Color.White // or MaterialTheme.colorScheme.background if you want dark-mode friendly
+            val sheetBg = Color.White
 
             ModalBottomSheet(
                 onDismissRequest = { showMenu = false },
@@ -134,7 +138,11 @@ fun ServiceSelectSystemScreen(
                     colors = ListItemDefaults.colors(containerColor = sheetBg),
                     modifier = Modifier.clickable {
                         showMenu = false
-                        navController.navigate("AddNewMetalDetectorScreen/$customerID/$customerName")
+
+                        // ⚠️ Customer names can contain spaces / symbols, so encode them.
+                        val encodedName = Uri.encode(customerName)
+
+                        navController.navigate("AddNewMetalDetectorScreen/$customerID/$encodedName")
                     }
                 )
 
@@ -159,7 +167,7 @@ fun ServiceSelectSystemScreen(
                     colors = ListItemDefaults.colors(containerColor = sheetBg)
                 )
 
-                Divider()
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                 ListItem(
                     headlineContent = { Text("Navigate to Site") },
@@ -169,7 +177,8 @@ fun ServiceSelectSystemScreen(
                     modifier = Modifier.clickable {
                         showMenu = false
                         try {
-                            val gmmIntentUri = "google.navigation:q=${Uri.encode(customerPostcode)}".toUri()
+                            val gmmIntentUri =
+                                "google.navigation:q=${Uri.encode(customerPostcode)}".toUri()
                             val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
                                 setPackage("com.google.android.apps.maps")
                             }
@@ -188,141 +197,141 @@ fun ServiceSelectSystemScreen(
                     colors = ListItemDefaults.colors(containerColor = sheetBg),
                     modifier = Modifier.clickable {
                         showMenu = false
-                        coroutineScope.launch {
-                            val ok = syncMetalDetectors(repository)
-                            if (ok) {
-                                metalDetectorsCalibrationsList.value =
-                                    getMetalDetectors(repository, customerID)
-                            } else {
-                                snackbarHostState.showSnackbar("Sync failed. Please try again.")
+                        if (isRefreshing) return@clickable
+
+                        scope.launch {
+                            isRefreshing = true
+                            try {
+                                val ok = syncMetalDetectors(repository)
+                                if (ok) {
+                                    systems = getMetalDetectors(repository, customerID)
+                                } else {
+                                    snackbarHostState.showSnackbar("Sync failed. Please try again.")
+                                }
+                            } finally {
+                                isRefreshing = false
                             }
                         }
                     }
                 )
 
-                Box(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
             }
+        }
+
+        // ---- Main content ----
+        val filteredSystems = remember(systems) {
+            systems.sortedBy { it.serialNumber }
+        }
+
+        Text(
+            text = "Metal Detectors",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
+        ) {
+            items(
+                items = filteredSystems,
+                key = { it.id }
+            ) { mdSystem ->
+                SystemCard(
+                    mdSystem = mdSystem,
+                    onClick = {
+                        navController.navigate("MetalDetectorConveyorSystemScreen/${mdSystem.id}")
+                    }
+                )
+            }
+        }
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+
+        ComingSoonRow("Checkweighers")
+        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+        ComingSoonRow("X-Ray Systems")
+        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+        ComingSoonRow("Static Scales")
+    }
+}
+
+@Composable
+private fun SystemCard(
+    mdSystem: MetalDetectorWithFullDetails,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .padding(8.dp)
+            .clickable { onClick() }
+            .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(8.dp))
+            .width(180.dp)
+    ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = mdSystem.serialNumber,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .align(Alignment.CenterStart),
+                textAlign = TextAlign.Center,
+                fontSize = 16.sp
+            )
+
+            Icon(
+                imageVector = if (mdSystem.isSynced) Icons.Default.CloudDone else Icons.Default.CloudOff,
+                contentDescription = if (mdSystem.isSynced) "Synced to cloud" else "Not synced to cloud",
+                tint = if (mdSystem.isSynced) Color.Green else Color.Red,
+                modifier = Modifier
+                    .size(20.dp)
+                    .align(Alignment.TopEnd)
+                    .padding(top = 8.dp, end = 8.dp)
+            )
         }
 
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+                .fillMaxWidth()
+                .height(120.dp)
+                .padding(8.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Column(
+            Image(
+                painter = when (mdSystem.systemTypeId) {
+                    1 -> painterResource(id = R.drawable.belt_straight)
+                    2 -> painterResource(id = R.drawable.pipe_straight)
+                    3 -> painterResource(id = R.drawable.drop_straight)
+                    4 -> painterResource(id = R.drawable.pharma)
+                    else -> painterResource(id = R.drawable.belt_straight)
+                },
+                contentDescription = null,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
-                    .verticalScroll(scrollState)
-            ) {
-
-
-                val filteredSystems = metalDetectorsCalibrationsList.value.sortedBy { it.serialNumber }
-                Log.d("DEBUG", "UNFiltered Systems: ${metalDetectorsCalibrationsList.value}")
-                Log.d("DEBUG", "Filtered Systems: $filteredSystems")
-
-                Text(
-                    text = "Metal Detectors",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-
-
-                LazyRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-                ) {
-                    items(filteredSystems) { mdSystem ->
-                        Column(
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .clickable {
-                                    // Navigate directly, no selectedSystem trap
-                                    navController.navigate("MetalDetectorConveyorSystemScreen/${mdSystem.id}")
-                                }
-                                .border(
-                                    BorderStroke(1.dp, Color.Gray),
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .clip(RoundedCornerShape(8.dp))
-                                .width(180.dp)
-                        ) {
-                            Box(modifier = Modifier.fillMaxWidth()) {
-                                Text(
-                                    text = mdSystem.serialNumber,
-                                    modifier = Modifier
-                                        .padding(8.dp)
-                                        .align(Alignment.CenterStart),
-                                    textAlign = TextAlign.Center,
-                                    fontSize = 16.sp
-                                )
-
-                                Icon(
-                                    imageVector = if (mdSystem.isSynced) Icons.Default.CloudDone else Icons.Default.CloudOff,
-                                    contentDescription = if (mdSystem.isSynced) "Synced to cloud" else "Not synced to cloud",
-                                    tint = if (mdSystem.isSynced) Color.Green else Color.Red,
-                                    modifier = Modifier
-                                        .size(20.dp)
-                                        .align(Alignment.TopEnd)
-                                        .padding(top = 8.dp, end = 8.dp)
-                                )
-                            }
-
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(120.dp)
-                                    .padding(8.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Image(
-                                    painter = when (mdSystem.systemTypeId) {
-                                        1 -> painterResource(id = R.drawable.belt_straight)
-                                        2 -> painterResource(id = R.drawable.pipe_straight)
-                                        3 -> painterResource(id = R.drawable.drop_straight)
-                                        4 -> painterResource(id = R.drawable.pharma)
-                                        else -> painterResource(id = R.drawable.belt_straight)
-                                    },
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .clip(RoundedCornerShape(8.dp)),
-                                    contentScale = ContentScale.Crop
-                                )
-                            }
-
-                            Text(
-                                text = mdSystem.modelDescription,
-                                modifier = Modifier
-                                    .padding(8.dp)
-                                    .fillMaxWidth(),
-                                textAlign = TextAlign.Center,
-                                fontSize = 14.sp
-                            )
-
-                            Text(
-                                text = mdSystem.lastLocation,
-                                modifier = Modifier
-                                    .padding(8.dp)
-                                    .fillMaxWidth(),
-                                textAlign = TextAlign.Center,
-                                fontSize = 14.sp
-                            )
-                        }
-                    }
-                }
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-
-                ComingSoonRow("Checkweighers")
-                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-                ComingSoonRow("X-Ray Systems")
-                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-                ComingSoonRow("Static Scales")
-
-            }
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Crop
+            )
         }
+
+        Text(
+            text = mdSystem.modelDescription,
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            fontSize = 14.sp
+        )
+
+        Text(
+            text = mdSystem.lastLocation,
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            fontSize = 14.sp
+        )
     }
 }
 
@@ -340,84 +349,72 @@ private fun ComingSoonRow(title: String) {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-
     }
 }
 
+/**
+ * Sync unsynced systems up to the cloud, then pull down the latest systems.
+ * Returns true if the overall operation succeeded.
+ *
+ * NOTE: This function does network + DB work, so call it from a coroutine.
+ */
 private suspend fun syncMetalDetectors(
     repository: MetalDetectorSystemsRepository
 ): Boolean {
     Log.d("SyncMetalDetectors", "Starting sync of metal detectors")
 
-    // Get a list of unsynced systems
     val unsyncedSystems = repository.getMetalDetectorUsingCloudId(null)
         .filter { !it.isSynced }
-    val unsyncedCount = unsyncedSystems.count()
-    Log.d("SyncMetalDetectors", "Unsynced Metal Detectors: $unsyncedCount")
+
+    Log.d("SyncMetalDetectors", "Unsynced Metal Detectors: ${unsyncedSystems.size}")
 
     var overallSuccess = true
 
     // Upload unsynced systems
-    if (unsyncedCount > 0) {
-        unsyncedSystems.forEach { mdSystem ->
-            val newCloudId = repository.addMetalDetectorToCloud(
-                customerID = mdSystem.customerId,
-                serialNumber = mdSystem.serialNumber,
-                apertureWidth = mdSystem.apertureWidth,
-                apertureHeight = mdSystem.apertureHeight,
-                systemTypeId = mdSystem.systemTypeId,
-                modelId = mdSystem.modelId,
-                lastLocation = mdSystem.lastLocation,
-                calibrationInterval = mdSystem.calibrationInterval
-            )
+    for (mdSystem in unsyncedSystems) {
+        val newCloudId = repository.addMetalDetectorToCloud(
+            customerID = mdSystem.customerId,
+            serialNumber = mdSystem.serialNumber,
+            apertureWidth = mdSystem.apertureWidth,
+            apertureHeight = mdSystem.apertureHeight,
+            systemTypeId = mdSystem.systemTypeId,
+            modelId = mdSystem.modelId,
+            lastLocation = mdSystem.lastLocation,
+            calibrationInterval = mdSystem.calibrationInterval
+        )
 
-            if (newCloudId != null) {
-                Log.d("SyncMetalDetectors", "Upload successful for system: ${mdSystem.serialNumber}, Cloud ID: $newCloudId")
-
-                // Attempt to update the sync status in the local database
-                when (repository.updateSyncStatus(mdSystem.tempId, true, newCloudId)) {
-                    is FetchResult.Success -> {
-                        Log.d("SyncMetalDetectors", "Local update successful for system: ${mdSystem.serialNumber}")
-                    }
-                    is FetchResult.Failure -> {
-                        Log.e("SyncMetalDetectors", "Failed to update local sync status for system: ${mdSystem.serialNumber}")
-                        overallSuccess = false // Mark overall success as false if updating fails
-                    }
+        if (newCloudId != null) {
+            when (repository.updateSyncStatus(mdSystem.tempId, true, newCloudId)) {
+                is FetchResult.Success -> Log.d("SyncMetalDetectors", "Local update OK: ${mdSystem.serialNumber}")
+                is FetchResult.Failure -> {
+                    Log.e("SyncMetalDetectors", "Local update FAILED: ${mdSystem.serialNumber}")
+                    overallSuccess = false
                 }
-            } else {
-                Log.e("SyncMetalDetectors", "Failed to upload system: ${mdSystem.serialNumber}")
-                overallSuccess = false // Mark overall success as false if uploading fails
             }
+        } else {
+            Log.e("SyncMetalDetectors", "Upload FAILED: ${mdSystem.serialNumber}")
+            overallSuccess = false
         }
     }
 
-    // Sync local database with the cloud (only if all unsynced uploads were successful)
+    // Pull latest cloud data down
     if (overallSuccess) {
         when (val result = repository.fetchAndStoreMdSystems()) {
-            is FetchResult.Success -> {
-                Log.d("SyncMetalDetectors", "Full database sync successful: ${result.message}")
-            }
+            is FetchResult.Success -> Log.d("SyncMetalDetectors", "Full sync OK: ${result.message}")
             is FetchResult.Failure -> {
-                Log.e("SyncMetalDetectors", "Full database sync failed: ${result.errorMessage}")
-                overallSuccess = false // Mark overall success as false if sync fails
+                Log.e("SyncMetalDetectors", "Full sync FAILED: ${result.errorMessage}")
+                overallSuccess = false
             }
         }
-    }
-
-    if (overallSuccess) {
-        Log.d("SyncMetalDetectors", "Sync operation completed successfully")
-    } else {
-        Log.e("SyncMetalDetectors", "Sync operation completed with errors")
     }
 
     return overallSuccess
 }
 
-suspend fun getMetalDetectors(
+private suspend fun getMetalDetectors(
     repository: MetalDetectorSystemsRepository,
     customerID: Int
 ): List<MetalDetectorWithFullDetails> {
-    // Update the local list after successful sync
     return repository.getMetalDetectorUsingCloudId(null)
         .filter { it.customerId == customerID }
 }

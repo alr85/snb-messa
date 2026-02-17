@@ -27,6 +27,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -69,10 +70,10 @@ fun AddNewMetalDetectorScreen(
     mdSystemsRepository: MetalDetectorSystemsRepository,
     customerID: Int,
     customerName: String,
-    chromeVm: AppChromeViewModel
+    snackbarHostState: SnackbarHostState
+
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
     val keyboardController = LocalSoftwareKeyboardController.current
     val context = LocalContext.current
 
@@ -94,49 +95,40 @@ fun AddNewMetalDetectorScreen(
 
     val scrollState = rememberScrollState()
 
-    // Load dropdown options
-    LaunchedEffect(Unit) {
-        coroutineScope.launch {
-            systemTypes = systemTypeRepository.getSystemTypesFromDb()
-                .filter { it.systemType.contains("MD", ignoreCase = true) }
+    LaunchedEffect(true) {
 
-            mdModels = mdModelsRepository.getMdModelsFromDb()
+        systemTypes = systemTypeRepository.getSystemTypesFromDb()
+            .filter { it.systemType.contains("MD", ignoreCase = true) }
 
-            Log.d("DatabaseDebug", "System types: $systemTypes")
-            Log.d("DatabaseDebug", "MdModels: $mdModels")
+        mdModels = mdModelsRepository.getMdModelsFromDb()
+    }
+
+    val isFormValid by remember(
+        serialNumber,
+        apertureWidth,
+        apertureHeight,
+        selectedSystemType,
+        selectedMdModel,
+        lastLocation
+    ) {
+        derivedStateOf {
+            serialNumber.isNotBlank() &&
+                    apertureWidth.isNotBlank() &&
+                    apertureHeight.isNotBlank() &&
+                    selectedSystemType != null &&
+                    selectedMdModel != null &&
+                    lastLocation.isNotBlank()
         }
     }
 
-    val isFormValid =
-        serialNumber.isNotBlank() &&
-                apertureWidth.isNotBlank() &&
-                apertureHeight.isNotBlank() &&
-                selectedSystemType != null &&
-                selectedMdModel != null &&
-                lastLocation.isNotBlank()
 
-    LaunchedEffect(Unit) {
-        chromeVm.setTopBar(
-            TopBarState(
-                title = "Add New Metal Detector",
-                showBack = true,
-                showCall = false,
-                showMenu = false
-            )
-        )
-    }
-
-    Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
-    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
                 .background(Color.White)
+                .padding(16.dp)
                 .verticalScroll(scrollState)
-                .imePadding()
-                .padding(16.dp),
+                .imePadding(),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -220,7 +212,7 @@ fun AddNewMetalDetectorScreen(
                     if (!isFormValid || isProcessing) return@Button
 
                     isProcessing = true
-                    coroutineScope.launch {
+                    coroutineScope.launch(Dispatchers.IO) {
                         try {
                             submitNewMdSystem(
                                 context = context,
@@ -255,7 +247,7 @@ fun AddNewMetalDetectorScreen(
             }
         }
     }
-}
+
 
 
 suspend fun submitNewMdSystem(
