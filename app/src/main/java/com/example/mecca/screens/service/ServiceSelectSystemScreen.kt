@@ -1,5 +1,6 @@
 package com.example.mecca.screens.service
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
@@ -9,12 +10,15 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -32,6 +36,7 @@ import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -94,18 +99,6 @@ fun ServiceSelectSystemScreen(
     LaunchedEffect(customerID) {
         systems = getMetalDetectors(repository, customerID)
     }
-
-    /**
-     * MENU BUTTON WIRING
-     *
-     * Your top bar lives in the root scaffold (MyApp).
-     * The route controls whether the menu icon is visible.
-     * This screen ONLY provides the click action (open bottom sheet).
-     *
-     * DisposableEffect ensures we clean up when leaving the screen,
-     * so menu actions don’t leak into other screens.
-     */
-
 
 
     LaunchedEffect(Unit) {
@@ -178,17 +171,8 @@ fun ServiceSelectSystemScreen(
                     colors = ListItemDefaults.colors(containerColor = sheetBg),
                     modifier = Modifier.clickable {
                         showMenu = false
-                        try {
-                            val gmmIntentUri =
-                                "google.navigation:q=${Uri.encode(customerPostcode)}".toUri()
-                            val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
-                                setPackage("com.google.android.apps.maps")
-                            }
-                            context.startActivity(mapIntent)
-                        } catch (e: Exception) {
-                            Log.e("NavigationIntent", "Failed to launch navigation", e)
-                            Toast.makeText(context, "Unable to open Google Maps.", Toast.LENGTH_SHORT).show()
-                        }
+                        navigateToPostcode(context, customerPostcode)
+
                     }
                 )
 
@@ -226,22 +210,50 @@ fun ServiceSelectSystemScreen(
             systems.sortedBy { it.serialNumber }
         }
 
-        Text(
-            text = customerName,
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .padding(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
 
-        Text(
-            text = customerPostcode,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
+                Column(modifier = Modifier.weight(1f)) {
 
-        HorizontalDivider(
-            modifier = Modifier.padding(vertical = 12.dp)
-        )
+                    Text(
+                        text = customerName,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        text = customerPostcode,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                IconButton(
+                    onClick = {
+                        navigateToPostcode(context, customerPostcode)
+                    },
+                    modifier = Modifier.size(56.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Navigation,
+                        contentDescription = "Navigate to site",
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
 
 
         Text(
@@ -438,3 +450,25 @@ private suspend fun getMetalDetectors(
     return repository.getMetalDetectorUsingCloudId(null)
         .filter { it.customerId == customerID }
 }
+
+fun navigateToPostcode(context: Context, postcode: String) {
+    try {
+        val gmmIntentUri =
+            "google.navigation:q=${Uri.encode(postcode)}".toUri()
+
+        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
+            setPackage("com.google.android.apps.maps")
+        }
+
+        context.startActivity(mapIntent)
+
+    } catch (e: Exception) {
+        Log.e("NavigationIntent", "Failed to launch navigation", e)
+        Toast.makeText(
+            context,
+            "Unable to open Google Maps.",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+}
+

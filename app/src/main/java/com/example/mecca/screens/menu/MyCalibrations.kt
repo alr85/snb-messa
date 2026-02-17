@@ -108,7 +108,7 @@ fun MyCalibrationsScreen(
     ) {
 
         item {
-            ExpandableSection("Incomplete Calibrations") {
+            ExpandableSection("Incomplete Calibrations",true) {
                 CalibrationList(
                     calibrations = unfinishedCalibrations,
                     status = "Incomplete",

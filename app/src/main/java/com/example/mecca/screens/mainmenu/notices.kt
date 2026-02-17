@@ -52,7 +52,7 @@ fun NoticesScreen(
         }
     }
 
-    // No Scaffold here. No TopBar setting here. Just content.
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -104,6 +104,8 @@ fun NoticesScreen(
                         dateAdded = notice.dateAdded,
                         isPinned = notice.isPinned
                     )
+
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         }

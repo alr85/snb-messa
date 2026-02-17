@@ -209,17 +209,19 @@ fun MetalDetectorConveyorSystemScreen(
 
     // ---------- Bottom Sheet ----------
     if (showActions) {
+        val sheetBg = Color.White
 
         ModalBottomSheet(
             onDismissRequest = { showActions = false },
             sheetState = sheetState,
-            containerColor = Color.White
+            containerColor = sheetBg
         ) {
 
             ListItem(
                 headlineContent = { Text("Start Calibration", fontWeight = FontWeight.Bold) },
                 supportingContent = { Text("Begin a new calibration") },
                 leadingContent = { Icon(Icons.Default.Tune, null) },
+                colors = ListItemDefaults.colors(containerColor = sheetBg),
                 modifier = Modifier.clickable {
                     showActions = false
                     startCalibration()
@@ -230,6 +232,7 @@ fun MetalDetectorConveyorSystemScreen(
                 headlineContent = { Text("Start Service Call", fontWeight = FontWeight.Bold) },
                 supportingContent = { Text("Coming soon") },
                 leadingContent = { Icon(Icons.Default.Handyman, null) },
+                colors = ListItemDefaults.colors(containerColor = sheetBg),
                 modifier = Modifier.clickable {
                     showActions = false
 
@@ -247,6 +250,7 @@ fun MetalDetectorConveyorSystemScreen(
                     headlineContent = { Text("Sync to Cloud", fontWeight = FontWeight.Bold) },
                     supportingContent = { Text("Upload this system") },
                     leadingContent = { Icon(Icons.Default.CloudUpload, null) },
+                    colors = ListItemDefaults.colors(containerColor = sheetBg),
                     modifier = Modifier.clickable {
                         showActions = false
                         scope.launch { syncThisSystem() }
