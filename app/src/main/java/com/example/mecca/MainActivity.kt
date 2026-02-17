@@ -404,10 +404,6 @@ fun MyApp(
         .collectAsState(initial = false)
 
 
-    OfflineBanner(isOffline = isOffline)
-
-
-
     // ---------------------------------------------------------
     // TOP BAR AUTO-UPDATES BASED ON ROUTE
     // ---------------------------------------------------------
@@ -416,8 +412,10 @@ fun MyApp(
         Navigation drives chrome.
         Screens no longer fight over it.
      */
+
+
     LaunchedEffect(route) {
-        chromeVm.setTopBar(
+        chromeVm.applyRouteChrome(
             chromeVm.topBarForRoute(route)
         )
     }
@@ -435,12 +433,12 @@ fun MyApp(
 
     var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
 
-
-
     // =========================================================
     // ROOT SCAFFOLD (THE ONLY ONE IN THE APP)
     // =========================================================
     Scaffold(
+
+
 
         /*
             Global snackbar lives here.
@@ -450,6 +448,8 @@ fun MyApp(
         },
 
 
+
+
         // ---------------- TOP BAR ----------------
         topBar = {
             MyTopAppBar(
@@ -457,6 +457,7 @@ fun MyApp(
                 title = topBarState.title,
                 showBack = topBarState.showBack,
                 showCall = topBarState.showCall,
+                showMenu = topBarState.showMenu,
                 onMenuClick = topBarState.onMenuClick
             )
         },

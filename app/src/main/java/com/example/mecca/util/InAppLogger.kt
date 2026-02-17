@@ -58,15 +58,15 @@ object InAppLogger {
 fun LogConsole(chromeVm: AppChromeViewModel) {
     val logs = remember { mutableStateListOf<Pair<String, InAppLogger.LogLevel>>() }
 
-    LaunchedEffect(Unit) {
-        chromeVm.setTopBar(
-            TopBarState(
-                title = "In App Logger",
-                showBack = true,
-                showCall = false
-            )
-        )
-    }
+//    LaunchedEffect(Unit) {
+//        chromeVm.setTopBar(
+//            TopBarState(
+//                title = "In App Logger",
+//                showBack = true,
+//                showCall = false
+//            )
+//        )
+//    }
 
     DisposableEffect(Unit) {
         val observer: (List<Pair<String, InAppLogger.LogLevel>>) -> Unit = { newList ->

@@ -42,15 +42,15 @@ fun AboutAppScreen(
     val appVersion = getAppVersion()  // Get the app version
     val audiowide = FontFamily(Font(R.font.audiowide))
 
-    LaunchedEffect(Unit) {
-        chromeVm.setTopBar(
-            TopBarState(
-                title = "About",
-                showBack = true,
-                showCall = false
-            )
-        )
-    }
+//    LaunchedEffect(Unit) {
+//        chromeVm.setTopBar(
+//            TopBarState(
+//                title = "About",
+//                showBack = true,
+//                showCall = false
+//            )
+//        )
+//    }
 
     Column(
         modifier = Modifier

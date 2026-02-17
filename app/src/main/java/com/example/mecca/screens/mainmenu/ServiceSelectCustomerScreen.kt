@@ -1,5 +1,6 @@
 package com.example.mecca.screens.mainmenu
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -169,9 +170,13 @@ fun ServiceSelectCustomerScreen(
                         customer = customer,
                         onClick = {
                             keyboardController?.hide()
+                            val encodedName = Uri.encode(customer.name)
+                            val encodedPostcode = Uri.encode(customer.postcode)
+
                             navController.navigate(
-                                "calibrationSearchSystem/${customer.fusionID}/${customer.name}/${customer.postcode}"
+                                "calibrationSearchSystem/${customer.fusionID}/$encodedName/$encodedPostcode"
                             )
+
                         }
                     )
                 }
@@ -207,7 +212,7 @@ private fun CustomerRow(
 
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = customer.name ?: "Unkown Customer",
+                    text = customer.name ?: "Unknown Customer",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface

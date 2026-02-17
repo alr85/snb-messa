@@ -41,7 +41,8 @@ fun MyTopAppBar(
     title: String? = null,
     showBack: Boolean = false,
     showCall: Boolean = true,
-    onMenuClick: (() -> Unit)? = null, // if provided, shows pill menu button on right
+    showMenu: Boolean = false,
+    onMenuClick: (() -> Unit)? = null,
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
     val topAppBarColor = Color(0xFF605F5F)
@@ -96,14 +97,18 @@ fun MyTopAppBar(
         },
         actions = {
             // Optional pill menu button
-            if (onMenuClick != null) {
+            if (showMenu)
+            {
                 Box(
                     modifier = Modifier
                         .height(40.dp)
                         .width(52.dp)
                         .clip(RoundedCornerShape(20.dp))
                         .background(Color.White.copy(alpha = 0.14f)) // subtle "tonal" look on dark app bar
-                        .clickable { onMenuClick() },
+                        .clickable(enabled = onMenuClick != null) {
+                            onMenuClick?.invoke()
+                        }
+                    ,
                     contentAlignment = Alignment.Center
                 ) {
                     // Use whatever icon you want here

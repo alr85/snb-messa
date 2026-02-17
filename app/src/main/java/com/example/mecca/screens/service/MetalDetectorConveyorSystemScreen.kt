@@ -46,8 +46,9 @@ fun MetalDetectorConveyorSystemScreen(
     repositoryModels: MetalDetectorModelsRepository,
     systemId: Int,
     chromeVm: AppChromeViewModel,
-    snackbarHostState: SnackbarHostState // ✅ GLOBAL
-) {
+    snackbarHostState: SnackbarHostState
+
+    ) {
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -83,13 +84,11 @@ fun MetalDetectorConveyorSystemScreen(
      * Root scaffold owns the icon.
      * This screen only supplies the click behaviour.
      */
-    DisposableEffect(Unit) {
+    LaunchedEffect(Unit) {
         chromeVm.setMenuAction { showActions = true }
-
-        onDispose {
-            chromeVm.setMenuAction(null)
-        }
     }
+
+
 
     val formattedLastCalibrationDate =
         runCatching { formatDate(mdSystem?.lastCalibration) }.getOrElse { "Invalid date" }

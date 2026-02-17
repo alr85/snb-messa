@@ -132,15 +132,7 @@ fun AddNewMetalDetectorScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Header
-            Text(
-                    text = "Add New Metal Detector",
-            style = MaterialTheme.typography.bodyLarge,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
-            )
+
 
             LabeledReadOnlyField(
                 label = "Customer",

@@ -55,6 +55,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -104,12 +105,13 @@ fun ServiceSelectSystemScreen(
      * DisposableEffect ensures we clean up when leaving the screen,
      * so menu actions don’t leak into other screens.
      */
-    DisposableEffect(Unit) {
+
+
+
+    LaunchedEffect(Unit) {
         chromeVm.setMenuAction { showMenu = true }
-        onDispose {
-            chromeVm.setMenuAction(null)
-        }
     }
+
 
     val scrollState = rememberScrollState()
 
@@ -223,6 +225,24 @@ fun ServiceSelectSystemScreen(
         val filteredSystems = remember(systems) {
             systems.sortedBy { it.serialNumber }
         }
+
+        Text(
+            text = customerName,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
+
+        Text(
+            text = customerPostcode,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+
+        HorizontalDivider(
+            modifier = Modifier.padding(vertical = 12.dp)
+        )
+
 
         Text(
             text = "Metal Detectors",
