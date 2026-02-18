@@ -28,6 +28,7 @@ runtimeAnnotation = "1.10.3"
 foundation = "1.10.3"
 material3WindowSizeClass = "1.4.0"
 room = "2.8.4"
+bcrypt = "0.10.2"
 
 
 
@@ -73,7 +74,7 @@ accompanist-flowlayout = { module = "com.google.accompanist:accompanist-flowlayo
 androidx-compose-runtime-annotation = { group = "androidx.compose.runtime", name = "runtime-annotation", version.ref = "runtimeAnnotation" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 androidx-compose-material3-window-size-class1 = { group = "androidx.compose.material3", name = "material3-window-size-class", version.ref = "material3WindowSizeClass" }
-
+bcrypt = { module = "at.favre.lib:bcrypt", version.ref = "bcrypt" }
 
 
 [plugins]

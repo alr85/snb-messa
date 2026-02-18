@@ -7,13 +7,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,7 +23,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
@@ -48,29 +44,22 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.mecca.calibrationViewModels.CustomerViewModel
 import com.example.mecca.calibrationViewModels.NoticeViewModel
 import com.example.mecca.network.NetworkMonitor
-import com.example.mecca.network.isNetworkAvailable
-import com.example.mecca.network.rememberIsOffline
 import com.example.mecca.repositories.CustomerRepository
 import com.example.mecca.repositories.NoticeRepository
 import com.example.mecca.repositories.UserRepository
@@ -143,27 +132,11 @@ class MainActivity : ComponentActivity() {
                 // 2. AUTO LOGIN IF SESSION EXISTS
                 //----------------------------------------
 
-                loginStatus || isPersistedLogin -> {
+                loginStatus -> {
 
                     LaunchedEffect(Unit) {
 
-                        // If ViewModel forgot login but prefs say yes → restore session
-                        if (!loginStatus && isPersistedLogin) {
 
-                            val savedUsername = savedCredentials.first
-                            val savedPassword = savedCredentials.second
-
-                            if (!savedUsername.isNullOrBlank() && !savedPassword.isNullOrBlank()) {
-
-                                android.util.Log.d("MESSA DEBUG", "Restoring persisted login")
-
-                                userViewModel.login(
-                                    this@MainActivity,
-                                    savedUsername,
-                                    savedPassword
-                                )
-                            }
-                        }
 
                         // Boot sync (runs once)
                         customerViewModel.syncCustomers()
@@ -188,8 +161,8 @@ class MainActivity : ComponentActivity() {
                         defaultUsername = savedCredentials.first,
                         defaultPassword = savedCredentials.second,
                         loginError = loginError,
-                        onLoginClick = { username, password ->
-                            userViewModel.login(this, username, password)
+                        onLoginClick = { username, password, pin ->
+                            userViewModel.login(this, username, password, pin)
                         }
                     )
                 }

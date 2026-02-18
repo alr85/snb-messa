@@ -105,6 +105,7 @@ dependencies {
     implementation(libs.androidxLifecycleRuntimeCompose)
     implementation(libs.kotlinxCoroutinesCore)
     implementation(libs.accompanist.flowlayout)
+    implementation(libs.bcrypt)
 
     configurations.all {
         exclude(group = "com.intellij", module = "annotations")

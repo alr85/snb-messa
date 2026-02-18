@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Pin
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -55,10 +57,11 @@ fun LoginScreen(
     defaultUsername: String? = null,
     defaultPassword: String? = null,
     loginError: String? = userViewModel.loginError.collectAsState().value, // Pass the error message
-    onLoginClick: (String, String) -> Unit
+    onLoginClick: (String, String, String) -> Unit
 ) {
     var username by remember { mutableStateOf(defaultUsername ?: "") }
     var password by remember { mutableStateOf(defaultPassword ?: "") }
+    var pin by remember { mutableStateOf("") }
 
     val appVersion = getAppVersion()  // Get the app version
     val audiowide = FontFamily(Font(R.font.audiowide))
@@ -134,6 +137,37 @@ fun LoginScreen(
             }
         )
 
+        // PIN Input
+        OutlinedTextField(
+            value = pin,
+            onValueChange = { new ->
+                // keep it digits-only and limit length
+                pin = new.filter { it.isDigit() }.take(6)
+            },
+            label = { Text("PIN") },
+            modifier = Modifier
+                .fillMaxWidth(0.75f) // Adjust width to 90% of the screen
+                .padding(vertical = 8.dp),
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.NumberPassword
+            ),
+            singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color.Red,
+                unfocusedBorderColor = Color.Gray,
+                focusedLabelColor = Color.Red,
+                unfocusedLabelColor = Color.Gray
+            ),
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Key,
+                    contentDescription = "Key Icon"
+                )
+            }
+        )
+
+
 // Password Input
         OutlinedTextField(
             value = password,
@@ -165,8 +199,8 @@ fun LoginScreen(
         // Login Button
         Button(
             onClick = {
-                if (username.isNotBlank() && password.isNotBlank()) {
-                    onLoginClick(username, password)
+                if (username.isNotBlank() && password.isNotBlank() && pin.isNotBlank())  {
+                    onLoginClick(username, password, pin)
                 }
             },
             modifier = Modifier

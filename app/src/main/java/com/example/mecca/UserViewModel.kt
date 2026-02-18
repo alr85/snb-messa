@@ -10,6 +10,7 @@ import com.example.mecca.util.InAppLogger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import at.favre.lib.crypto.bcrypt.BCrypt
 
 class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
 
@@ -23,43 +24,61 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
     // -------------------------------------------------------------------------
     // LOGIN
     // -------------------------------------------------------------------------
-    fun login(context: Context, username: String, password: String?) {
+    fun login(context: Context, username: String, password: String?, pin: String?) {
         viewModelScope.launch {
-            if (username.isEmpty() || password.isNullOrEmpty()) {
-                InAppLogger.d("Username or password is empty. Skipping login.")
+            if (username.isBlank() || password.isNullOrBlank() || pin.isNullOrBlank()) {
                 loginStatus.value = false
+                _loginError.value = "Enter username, password and PIN."
                 return@launch
             }
 
             try {
-                InAppLogger.d("Login started for username: $username")
-                val user = userRepository.getUserByUsername(username)
 
-                if (user != null && user.isActive) {
-                    val generatedPassword = MasterPasswordGenerator.generateWeeklyPassword()
-                    InAppLogger.d("Generated weekly password")
-                   Log.d("MESSA-DEBUG","Generated weekly password: $generatedPassword")
-                    if (password == generatedPassword) {
-                        PreferencesHelper.saveCredentials(context, username, password, user.meaId)
-                        InAppLogger.d("Login successful. Credentials saved.")
-                        loginStatus.value = true
-                        _loginError.value = null
-                        PreferencesHelper.setLoggedIn(context, true)
-                    } else {
-                        InAppLogger.e("Incorrect password for $username. Login failed.")
-                        _loginError.value = "Incorrect username or password."
-                        loginStatus.value = false
-                    }
-                } else {
-                    InAppLogger.e("User not found or inactive: $username")
+                val user = userRepository.getUserByUsername(username)
+                if (user == null || !user.isActive) {
                     _loginError.value = "User not found or inactive. Login failed."
                     loginStatus.value = false
+                    return@launch
                 }
+
+                val generatedPassword = MasterPasswordGenerator.generateWeeklyPassword()
+
+                Log.d("MESSA-DEBUG", "Generated weekly password: $generatedPassword")
+
+                if (password != generatedPassword) {
+                    _loginError.value = "Incorrect username or password."
+                    loginStatus.value = false
+                    return@launch
+                }
+
+                val hash = user.pinHash
+                if (hash.isNullOrBlank()) {
+                    _loginError.value = "PIN not set for this user. Sync or contact admin."
+                    loginStatus.value = false
+                    return@launch
+                }
+
+                if (!verifyPin(pin, hash)) {
+                    InAppLogger.e("Incorrect PIN entered")
+                    _loginError.value = "Incorrect PIN entered"
+                    loginStatus.value = false
+                    return@launch
+                }
+
+                PreferencesHelper.saveCredentials(context, username, password, user.meaId)
+
+                PreferencesHelper.setLoggedIn(context, true)
+
+                InAppLogger.d("Successful login for username: $username")
+
+                _loginError.value = null
+                loginStatus.value = true
+
             } catch (e: Exception) {
-                InAppLogger.e("Error during login: ${e.message}")
                 _loginError.value = "Error during login: ${e.message}"
                 loginStatus.value = false
             }
+
         }
     }
 
@@ -123,5 +142,9 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
                 onResult(null)
             }
         }
+    }
+
+    private fun verifyPin(pin: String, pinHash: String): Boolean {
+        return BCrypt.verifyer().verify(pin.toCharArray(), pinHash).verified
     }
 }

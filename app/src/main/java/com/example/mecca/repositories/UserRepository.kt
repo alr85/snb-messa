@@ -54,6 +54,7 @@ class UserRepository(
                 meaId = u.meaId,
                 fusionId = u.fusionId,
                 username = u.username,
+                pinHash = u.pinHash,
                 isActive = u.isActive,
                 lastSynced = Date()
             )
