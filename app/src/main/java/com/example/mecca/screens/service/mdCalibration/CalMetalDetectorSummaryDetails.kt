@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 
@@ -394,20 +395,24 @@ fun CalMetalDetectorConveyorSummaryDetails(
         Section(title = "Detect Notification") {
             SummaryItem(label = "Detect Notification", value = detectNotificationResult.joinToString(" | "))
             SummaryItem(label = "Engineer Notes", value = viewModel.detectNotificationEngineerNotes.value)
+            SummaryItem(label = "P.V. Result", value = viewModel.detectNotificationTestPvResult.value)
         }
 
 
-        Spacer(modifier = Modifier.weight(22f))
+        Spacer(modifier = Modifier.weight(30f))
 
         Text(
             text = "ATTENTION! YOU MUST INFORM THE CUSTOMER OF ANY DEFECTS OR IF ADJUSTMENTS HAVE BEEN MADE. USE YOUR SERVICE REPORT!",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(bottom = 8.dp)
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp)
         )
 
-        Spacer(modifier = Modifier.weight(22f))
+        Spacer(modifier = Modifier.weight(30f))
 
 
     }

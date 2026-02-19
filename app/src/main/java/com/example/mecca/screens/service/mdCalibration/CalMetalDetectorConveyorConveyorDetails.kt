@@ -57,8 +57,11 @@ fun CalMetalDetectorConveyorConveyorDetails(
             "Air Divert Arm",
             "Air Divert Flap",
             "Electric Divert Arm",
-            "Other"
-        )
+            "Retract Band",
+            "Reverse Belt",
+            "Lift or Drop Table",
+            "Alarm only",
+            "Other")
     }
 
     val handingOptions = remember {

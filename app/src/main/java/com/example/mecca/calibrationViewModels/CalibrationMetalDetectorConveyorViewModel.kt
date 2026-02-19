@@ -3347,12 +3347,16 @@ class CalibrationMetalDetectorConveyorViewModel(
             InAppLogger.d("Updating the last calibration in the local database...")
             // Update local database last calibration date
 
-            val lastCalibrationDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS")
+
+            val lastCalibrationDateTime =
+                LocalDateTime.now().format(formatter)
 
             mdSystemsDAO.updateLastCalibrationDate(
                 systemId.value,
-                lastCalibrationDate
+                lastCalibrationDateTime
             )
+
 
             InAppLogger.d("Syncing with the cloud...")
 
