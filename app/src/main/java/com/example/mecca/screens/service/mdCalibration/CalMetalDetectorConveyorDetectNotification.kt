@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateBinDoorMonitorPvResult
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateDetectNotificationTestPvResult
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.formModules.CalibrationHeader
@@ -82,6 +83,8 @@ fun CalMetalDetectorConveyorDetectNotification(
                         }
 
                         viewModel.setDetectNotificationResult(cleaned)
+
+                        viewModel.autoUpdateDetectNotificationTestPvResult()
                     },
                     helpText = """
                     Select one or more notification results.
@@ -94,23 +97,21 @@ fun CalMetalDetectorConveyorDetectNotification(
 
                 FormSpacer()
 
-                //-----------------------------------------------------
-                // ⭐ PV RESULT (only when required)
-                //-----------------------------------------------------
-//                if (viewModel.pvRequired.value) {
-//                    LabeledFourOptionRadioWithHelp(
-//                        label = "P.V. Result",
-//                        value = viewModel.detectNotificationTestPvResult.value,
-//                        onValueChange = viewModel::autoUpdateDetectNotificationTestPvResult,
-//                        helpText = """
-//                    Auto-Pass rules (when PV required):
-//
-//                    Otherwise auto-fail. You may override manually.
-//                    """.trimIndent()
-//                    )
-//
-//                    FormSpacer()
-//                }
+
+                if (viewModel.pvRequired.value) {
+                    LabeledFourOptionRadioWithHelp(
+                        label = "P.V. Result",
+                        value = viewModel.detectNotificationTestPvResult.value,
+                        onValueChange = viewModel::setDetectNotificationTestPvResult,
+                        helpText = """
+                    Auto-Pass rules (when PV required):
+
+                    Otherwise auto-fail. You may override manually.
+                    """.trimIndent()
+                    )
+
+                    FormSpacer()
+                }
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Comments",

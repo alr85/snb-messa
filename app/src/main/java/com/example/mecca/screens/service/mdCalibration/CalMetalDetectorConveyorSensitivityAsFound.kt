@@ -85,8 +85,8 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
                     firstInputKeyboardType = KeyboardType.Decimal,
                     secondInputKeyboardType = KeyboardType.Decimal,
 
-                    firstMaxLength = 6,
-                    secondMaxLength = 6,
+                    firstMaxLength = 4,
+                    secondMaxLength = 20,
 
                     firstTransform = InputTransforms.decimal,
                     secondTransform = InputTransforms.decimal
@@ -107,8 +107,8 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
                     firstInputKeyboardType = KeyboardType.Decimal,
                     secondInputKeyboardType = KeyboardType.Decimal,
 
-                    firstMaxLength = 6,
-                    secondMaxLength = 6,
+                    firstMaxLength = 4,
+                    secondMaxLength =20,
 
                     firstTransform = InputTransforms.decimal,
                     secondTransform = InputTransforms.decimal
@@ -129,8 +129,8 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
                     firstInputKeyboardType = KeyboardType.Decimal,
                     secondInputKeyboardType = KeyboardType.Decimal,
 
-                    firstMaxLength = 6,
-                    secondMaxLength = 6,
+                    firstMaxLength = 4,
+                    secondMaxLength = 20,
 
                     firstTransform = InputTransforms.decimal,
                     secondTransform = InputTransforms.decimal

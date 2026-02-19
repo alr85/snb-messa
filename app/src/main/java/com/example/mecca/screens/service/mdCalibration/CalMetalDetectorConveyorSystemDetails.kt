@@ -104,6 +104,10 @@ fun CalMetalDetectorConveyorSystemDetails(
             "Air Divert Arm",
             "Air Divert Flap",
             "Electric Divert Arm",
+            "Retract Band",
+            "Reverse Belt",
+            "Lift or Drop Table",
+            "Alarm only",
             "Other")
 
         var selectedOption by remember { mutableStateOf<String?>(null) }
