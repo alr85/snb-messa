@@ -6,10 +6,16 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
@@ -17,6 +23,7 @@ import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledRadioButtonWithHelp
 import com.example.mecca.formModules.LabeledReadOnlyField
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
+import com.example.mecca.formModules.YesNoState
 import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
@@ -30,6 +37,8 @@ fun CalMetalDetectorConveyorCalibrationStart(
     val canPerformCalibration by viewModel.canPerformCalibration
     val reasonForNotCalibrating by viewModel.reasonForNotCalibrating
     val pvRequired by viewModel.pvRequired
+    var showConfirmDialog by remember { mutableStateOf(false) }
+    var pendingValue by remember { mutableStateOf<Boolean?>(null) }
 
     // Pre-fill location once per calibration
     LaunchedEffect(Unit) {
@@ -91,13 +100,19 @@ fun CalMetalDetectorConveyorCalibrationStart(
             FormSpacer()
 
             LabeledRadioButtonWithHelp(
-                label = "Able to Calibrate?",
+                label = "Able to calibrate?",
                 value = canPerformCalibration,
-                onValueChange = { value ->
-                    viewModel.setCanPerformCalibration(value)
-                    if (value) viewModel.setReasonForNotCalibrating("")
+                onValueChange = { newValue ->
+
+                    // Only confirm when changing true -> false
+                    if (canPerformCalibration && !newValue) {
+                        pendingValue = newValue
+                        showConfirmDialog = true
+                    } else {
+                        viewModel.setCanPerformCalibration(newValue)
+                    }
                 },
-                helpText = "Select 'Yes' if calibration can proceed."
+                helpText = "..."
             )
 
             if (!canPerformCalibration) {
@@ -127,4 +142,43 @@ fun CalMetalDetectorConveyorCalibrationStart(
             Spacer(Modifier.height(60.dp))
         }
     }
+    if (showConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showConfirmDialog = false
+                pendingValue = null
+            },
+            title = { Text("Confirm change") },
+            text = {
+                Text("All calibration data will be wiped. Continue?")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        pendingValue?.let {
+                            viewModel.setCanPerformCalibration(it)
+                            viewModel.setAllResultsUtc()
+                        }
+                        showConfirmDialog = false
+                        pendingValue = null
+                    }
+                ) {
+                    Text("Yes, wipe data")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showConfirmDialog = false
+                        pendingValue = null
+                    }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
 }
+
+

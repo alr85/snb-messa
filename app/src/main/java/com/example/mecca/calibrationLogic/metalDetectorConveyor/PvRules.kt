@@ -565,6 +565,19 @@ fun CalibrationMetalDetectorConveyorViewModel.autoUpdateSmePvResult() {
 // Set all PV results to N/A
 // ---------------------------------------------------------
 fun CalibrationMetalDetectorConveyorViewModel.setAllPvResultsNa() {
-    setFerrousTestPvResult("N/A")
     setDetectionSettingPvResult("N/A")
+    setFerrousTestPvResult("N/A")
+    setNonFerrousTestPvResult("N/A")
+    setStainlessTestPvResult("N/A")
+    setSmeTestPvResult("N/A")
+    setInfeedSensorTestPvResult("N/A")
+    setRejectConfirmSensorTestPvResult("N/A")
+    setBinFullSensorTestPvResult("N/A")
+    setLargeMetalTestPvResult("N/A")
+    setBackupSensorTestPvResult("N/A")
+    setAirPressureSensorTestPvResult("N/A")
+    setPackCheckSensorTestPvResult("N/A")
+    setSpeedSensorTestPvResult("N/A")
+    setBinDoorMonitorTestPvResult("N/A")
+    setDetectNotificationTestPvResult("N/A")
 }
