@@ -28,6 +28,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.outlined.Build
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -399,8 +401,8 @@ fun MyApp(
     // BOTTOM NAVIGATION ITEMS
     // ---------------------------------------------------------
     val items = listOf(
-        NavigationBarItem("Service", Icons.Filled.Build, Icons.Default.Build),
-        NavigationBarItem("Messages", Icons.Filled.MailOutline, Icons.Default.MailOutline),
+        NavigationBarItem("Service", Icons.Outlined.Build, Icons.Outlined.Build),
+        NavigationBarItem("Notices", Icons.Outlined.Info, Icons.Outlined.Info),
         NavigationBarItem("More", Icons.Filled.MoreHoriz, Icons.Default.MoreHoriz)
     )
 
