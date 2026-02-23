@@ -56,6 +56,7 @@ class RetailerSensitivitiesRepository(
     }
 
     // You can later add:
-    // suspend fun getFreefallForAperture(d: Double) = db.freefallDao().findByAperture(d)
-    // suspend fun getPipelineForDiameter(d: Double) = db.pipelineDao().findByPipe(d)
+    suspend fun getFreefallForAperture(d: Double) = db.freefallDao().findByAperture(d)
+
+    suspend fun getPipelineForDiameter(d: Double) = db.pipelineDao().findByPipe(d)
 }
