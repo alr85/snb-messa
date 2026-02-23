@@ -3,165 +3,108 @@ package com.example.mecca.activities
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.rememberNavController
 import com.example.mecca.ApiService
 import com.example.mecca.AppDatabase
 import com.example.mecca.RetrofitClient
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModelFactory
+import com.example.mecca.dataClasses.MetalDetectorWithFullDetails
 import com.example.mecca.repositories.MetalDetectorConveyorCalibrationRepository
 import com.example.mecca.repositories.MetalDetectorSystemsRepository
 import com.example.mecca.repositories.RetailerSensitivitiesRepository
 import com.example.mecca.screens.service.mdCalibration.MetalDetectorConveyorCalibrationScreenWrapper
 import com.example.mecca.ui.theme.MyAppTheme
-import com.example.mecca.util.InAppLogger
-
 
 class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
 
-    // Retrieve calibrationId when the activity starts
-    private lateinit var calibrationId: String
-    private var customerId: Int = 0
-    private var systemId: Int = 0
-    private var cloudSystemId: Int = 0
-    private var tempSystemId: Int = 0
-    private var systemTypeId: Int = 0
-    private lateinit var serialNumber: String
-    private lateinit var modelDescription: String
-    private lateinit var customerName: String
-    private lateinit var systemTypeDescription: String
-    private var modelId: Int = 0
-    private var engineerId: Int = 0 // New property for engineerId
-    private var detectionSetting1label: String = ""
-    private var detectionSetting2label: String = ""
-    private var detectionSetting3label: String = ""
-    private var detectionSetting4label: String = ""
-    private var detectionSetting5label: String = ""
-    private var detectionSetting6label: String = ""
+    // DB / DAO
+    private val db by lazy { AppDatabase.getDatabase(applicationContext) }
 
-    private var detectionSetting7label: String = ""
-    private var detectionSetting8label: String = ""
-    private var lastLocation: String = ""
+    private val calibrationDao by lazy { db.metalDetectorConveyorCalibrationDAO() }
+    private val mdModelsDAO by lazy { db.mdModelDao() }
+    private val mdSystemsDAO by lazy { db.mdSystemDAO() }
+    private val systemTypeDAO by lazy { db.systemTypeDAO() }
+    private val customerDAO by lazy { db.customerDao() }
 
+    // API / repos
+    private val apiService: ApiService by lazy { RetrofitClient.instance }
 
-    // Initialize the database and DAO using the AppDatabase instance
-    private val calibrationDao by lazy {
-        AppDatabase.getDatabase(applicationContext).metalDetectorConveyorCalibrationDAO()
-    }
-
-    private val mdModelsDAO by lazy {
-        AppDatabase.getDatabase(applicationContext).mdModelDao()
-    }
-
-    private val mdSystemsDAO by lazy {
-        AppDatabase.getDatabase(applicationContext).mdSystemDAO()
-    }
-
-    private val systemTypeDAO by lazy {
-        AppDatabase.getDatabase(applicationContext).systemTypeDAO()
-    }
-
-    private val customerDAO by lazy {
-        AppDatabase.getDatabase(applicationContext).customerDao()
-    }
-
-    val apiService: ApiService by lazy {
-        RetrofitClient.instance
-    }
-
-    private val repository by lazy {
-        MetalDetectorSystemsRepository(apiService, AppDatabase.getDatabase(applicationContext))
+    private val systemsRepository by lazy {
+        MetalDetectorSystemsRepository(apiService, db)
     }
 
     private val retailerSensitivitiesRepo by lazy {
-        RetailerSensitivitiesRepository(apiService, AppDatabase.getDatabase(applicationContext))
+        RetailerSensitivitiesRepository(apiService, db)
     }
 
     private val calibrationRepository by lazy {
         MetalDetectorConveyorCalibrationRepository(calibrationDao)
     }
 
-
-    // Scoping the ViewModel to the activity
-    private val calibrationViewModel: CalibrationMetalDetectorConveyorViewModel by viewModels {
-        CalibrationMetalDetectorConveyorViewModelFactory(
-            calibrationDao = calibrationDao,
-            repository = repository,
-            mdModelsDAO,
-            mdSystemsDAO,
-            systemTypeDAO,
-            apiService,
-            calibrationId,
-            customerId,
-            systemId,
-            tempSystemId,
-            systemTypeId,
-            cloudSystemId,
-            serialNumber,
-            modelDescription,
-            customerName,
-            systemTypeDescription,
-            modelId,
-            engineerId,
-            customerDAO,
-            detectionSetting1label,
-            detectionSetting2label,
-            detectionSetting3label,
-            detectionSetting4label,
-            detectionSetting5label,
-            detectionSetting6label,
-            detectionSetting7label,
-            detectionSetting8label,
-            lastLocation,
-            retailerSensitivitiesRepo,
-            calibrationRepository
-        )
-    }
+    private lateinit var calibrationViewModel: CalibrationMetalDetectorConveyorViewModel
 
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Retrieve calibrationId from the intent extras
-        calibrationId = intent.getStringExtra("CALIBRATION_ID") ?: ""
-        customerId = intent.getIntExtra("CUSTOMER_ID", 0)
-        systemId = intent.getIntExtra("SYSTEM_ID", 0)
-        systemTypeId = intent.getIntExtra("SYSTEM_TYPE_ID", 0)
-        InAppLogger.d("System Type ID: $systemTypeId")
-        cloudSystemId = intent.getIntExtra("CLOUD_SYSTEM_ID", 0)
-        tempSystemId = intent.getIntExtra("TEMP_SYSTEM_ID", 0)
-        serialNumber = intent.getStringExtra("SERIAL_NUMBER") ?: ""
-        modelDescription = intent.getStringExtra("MODEL_DESCRIPTION") ?: ""
-        customerName = intent.getStringExtra("CUSTOMER_NAME") ?: ""
-        systemTypeDescription = intent.getStringExtra("SYSTEM_TYPE_DESCRIPTION") ?: ""
-        modelId = intent.getIntExtra("MODEL_ID", 0)
-        engineerId = intent.getIntExtra("ENGINEER_ID", 0) // Retrieve the engineerId
-        detectionSetting1label = intent.getStringExtra("DETECTION_SETTING_1_LABEL") ?: ""
-        detectionSetting2label = intent.getStringExtra("DETECTION_SETTING_2_LABEL") ?: ""
-        detectionSetting3label = intent.getStringExtra("DETECTION_SETTING_3_LABEL") ?: ""
-        detectionSetting4label = intent.getStringExtra("DETECTION_SETTING_4_LABEL") ?: ""
-        detectionSetting5label = intent.getStringExtra("DETECTION_SETTING_5_LABEL") ?: ""
-        detectionSetting6label = intent.getStringExtra("DETECTION_SETTING_6_LABEL") ?: ""
-        detectionSetting7label = intent.getStringExtra("DETECTION_SETTING_7_LABEL") ?: ""
-        detectionSetting8label = intent.getStringExtra("DETECTION_SETTING_8_LABEL") ?: ""
-        lastLocation = intent.getStringExtra("LAST_LOCATION") ?: ""
+        // --- Required extras ---
+        val calibrationId = intent.getStringExtra("CALIBRATION_ID")
+            ?: error("Missing CALIBRATION_ID")
 
+        val engineerId = intent.getIntExtra("ENGINEER_ID", 0)
 
-// Set up the UI
+        @Suppress("DEPRECATION")
+        val system = intent.getParcelableExtra<MetalDetectorWithFullDetails>("SYSTEM_FULL_DETAILS")
+            ?: error("Missing SYSTEM_FULL_DETAILS")
 
+        // --- Optional extras (labels) ---
+        val detectionSetting1label = intent.getStringExtra("DETECTION_SETTING_1_LABEL") ?: ""
+        val detectionSetting2label = intent.getStringExtra("DETECTION_SETTING_2_LABEL") ?: ""
+        val detectionSetting3label = intent.getStringExtra("DETECTION_SETTING_3_LABEL") ?: ""
+        val detectionSetting4label = intent.getStringExtra("DETECTION_SETTING_4_LABEL") ?: ""
+        val detectionSetting5label = intent.getStringExtra("DETECTION_SETTING_5_LABEL") ?: ""
+        val detectionSetting6label = intent.getStringExtra("DETECTION_SETTING_6_LABEL") ?: ""
+        val detectionSetting7label = intent.getStringExtra("DETECTION_SETTING_7_LABEL") ?: ""
+        val detectionSetting8label = intent.getStringExtra("DETECTION_SETTING_8_LABEL") ?: ""
 
+        // --- Build VM factory AFTER reading extras ---
+        val factory = CalibrationMetalDetectorConveyorViewModelFactory(
+            calibrationDao = calibrationDao,
+            repository = systemsRepository,
+            mdModelsDAO = mdModelsDAO,
+            mdSystemsDAO = mdSystemsDAO,
+            systemTypeDao = systemTypeDAO,
+            retailerSensitivitiesRepo = retailerSensitivitiesRepo,
+            calibrationRepository = calibrationRepository,
+            customersDao = customerDAO,
+            apiService = apiService,
+            calibrationId = calibrationId,
+            system = system,
+            engineerId = engineerId,
+            detectionSetting1label = detectionSetting1label,
+            detectionSetting2label = detectionSetting2label,
+            detectionSetting3label = detectionSetting3label,
+            detectionSetting4label = detectionSetting4label,
+            detectionSetting5label = detectionSetting5label,
+            detectionSetting6label = detectionSetting6label,
+            detectionSetting7label = detectionSetting7label,
+            detectionSetting8label = detectionSetting8label
+        )
+
+        calibrationViewModel = ViewModelProvider(this, factory)
+            .get(CalibrationMetalDetectorConveyorViewModel::class.java)
+
+        // --- UI ---
         setContent {
             MyAppTheme {
-                // Unique NavController for this activity
                 val navController = rememberNavController()
-
                 val windowSizeClass = calculateWindowSizeClass(this)
 
-                // Calibration-specific navigation graph
                 MetalDetectorConveyorCalibrationScreenWrapper(
                     navController = navController,
                     viewModel = calibrationViewModel,
@@ -169,7 +112,6 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
                     apiService = apiService,
                     windowSizeClass = windowSizeClass
                 )
-
             }
         }
     }

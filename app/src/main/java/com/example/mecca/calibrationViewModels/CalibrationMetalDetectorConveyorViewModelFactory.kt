@@ -8,6 +8,7 @@ import com.example.mecca.daos.MdModelsDAO
 import com.example.mecca.daos.MetalDetectorConveyorCalibrationDAO
 import com.example.mecca.daos.MetalDetectorSystemsDAO
 import com.example.mecca.daos.SystemTypeDAO
+import com.example.mecca.dataClasses.MetalDetectorWithFullDetails
 import com.example.mecca.repositories.MetalDetectorConveyorCalibrationRepository
 import com.example.mecca.repositories.MetalDetectorSystemsRepository
 import com.example.mecca.repositories.RetailerSensitivitiesRepository
@@ -18,20 +19,13 @@ class CalibrationMetalDetectorConveyorViewModelFactory(
     private val mdModelsDAO: MdModelsDAO,
     private val mdSystemsDAO: MetalDetectorSystemsDAO,
     private val systemTypeDao: SystemTypeDAO,
+    private val retailerSensitivitiesRepo: RetailerSensitivitiesRepository,
+    private val calibrationRepository: MetalDetectorConveyorCalibrationRepository,
+    private val customersDao: CustomerDAO,
     private val apiService: ApiService,
     private val calibrationId: String,
-    private val customerId: Int,
-    private val systemId: Int,
-    private val tempSystemId: Int,
-    private val systemTypeId: Int,
-    private val cloudSystemId: Int,
-    private val serialNumber: String,
-    private val modelDescription: String,
-    private val customerName: String,
-    private val systemTypeDescription: String,
-    private val modelId: Int,
-    private val engineerId: Int, // Add engineerId here,
-    private val customersDao: CustomerDAO,
+    private val system: MetalDetectorWithFullDetails,
+    private val engineerId: Int,
     private val detectionSetting1label: String,
     private val detectionSetting2label: String,
     private val detectionSetting3label: String,
@@ -39,10 +33,7 @@ class CalibrationMetalDetectorConveyorViewModelFactory(
     private val detectionSetting5label: String,
     private val detectionSetting6label: String,
     private val detectionSetting7label: String,
-    private val detectionSetting8label: String,
-    private val lastLocation: String,
-    private val retailerSensitivitiesRepo: RetailerSensitivitiesRepository,
-    private val calibrationRepository: MetalDetectorConveyorCalibrationRepository,
+    private val detectionSetting8label: String
 
     ) : ViewModelProvider.Factory {
 
@@ -59,16 +50,7 @@ class CalibrationMetalDetectorConveyorViewModelFactory(
                 systemTypeDAO = systemTypeDao,
                 repository = repository,
                 calibrationId = calibrationId,
-                customerId = customerId,
-                systemId = systemId,
-                cloudSystemId = cloudSystemId,
-                tempSystemId = tempSystemId,
-                systemTypeId = systemTypeId,
-                serialNumber = serialNumber,
-                modelDescription = modelDescription,
-                customerName = customerName,
-                systemTypeDescription = systemTypeDescription,
-                modelId = modelId,
+                system = system,
                 detectionSetting1label = detectionSetting1label,
                 detectionSetting2label = detectionSetting2label,
                 detectionSetting3label = detectionSetting3label,
@@ -77,7 +59,6 @@ class CalibrationMetalDetectorConveyorViewModelFactory(
                 detectionSetting6label = detectionSetting6label,
                 detectionSetting7label = detectionSetting7label,
                 detectionSetting8label = detectionSetting8label,
-                lastLocation = lastLocation,
                 apiService = apiService,
                 retailerSensitivitiesRepo = retailerSensitivitiesRepo
             ) as T

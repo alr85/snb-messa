@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
 
+    id("kotlin-parcelize")
+
     // ✅ Compose compiler plugin (for Kotlin 2.x)
     id("org.jetbrains.kotlin.plugin.compose") version "2.3.0"
 
@@ -85,7 +87,6 @@ dependencies {
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.material3.window.size.class1)
     ksp(libs.androidx.room.compiler)              // ✅ use KSP for code generation
-    implementation(libs.androidx.room.compiler)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.core.i18n)
 
