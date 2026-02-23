@@ -42,6 +42,9 @@ import com.example.mecca.calibrationLogic.metalDetectorConveyor.toSpeedSensorUpd
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toStainlessResultUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toSystemChecklistUpdate
 import com.example.mecca.dataClasses.ConveyorRetailerSensitivitiesEntity
+import com.example.mecca.dataClasses.FreefallThroatRetailerSensitivitiesEntity
+import com.example.mecca.dataClasses.MetalDetectorWithFullDetails
+import com.example.mecca.dataClasses.PipelineRetailerSensitivitiesEntity
 import com.example.mecca.formModules.ConditionState
 import com.example.mecca.formModules.YesNoState
 import com.example.mecca.repositories.MetalDetectorConveyorCalibrationRepository
@@ -60,7 +63,6 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -74,18 +76,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     private val systemTypeDAO: SystemTypeDAO,
     private val customerDAO: CustomerDAO,
     private val repository: MetalDetectorSystemsRepository,
-    calibrationId: String,
-    customerId: Int,
-    systemId: Int,
-    cloudSystemId: Int,
-    tempSystemId: Int,
-    systemTypeId: Int,
-    serialNumber: String,
-    modelDescription: String,
-    customerName: String,
-    systemTypeDescription: String,
-    modelId: Int,
-    detectionSetting1label: String,
+    calibrationId: String, detectionSetting1label: String,
     detectionSetting2label: String,
     detectionSetting3label: String,
     detectionSetting4label: String,
@@ -93,15 +84,12 @@ class CalibrationMetalDetectorConveyorViewModel(
     detectionSetting6label: String,
     detectionSetting7label: String,
     detectionSetting8label: String,
-    lastLocation: String,
     apiService: ApiService,
-    private val retailerSensitivitiesRepo: RetailerSensitivitiesRepository
+    private val retailerSensitivitiesRepo: RetailerSensitivitiesRepository,
+    private val system: MetalDetectorWithFullDetails,
 
 ) : ViewModel() {
 
-    private companion object {
-        const val NOT_CALIBRATED = "UTC"
-    }
 
     init {
         viewModelScope.launch {
@@ -678,13 +666,6 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
 
-
-
-
-
-
-
-
     // -----------------------------------------------------------------------------
 //  DATABASE UPDATE TRIGGERS
 // -----------------------------------------------------------------------------
@@ -1028,36 +1009,36 @@ class CalibrationMetalDetectorConveyorViewModel(
     private val _calibrationId = mutableStateOf(calibrationId)
     val calibrationId: State<String> = _calibrationId
 
-    private val _serialNumber = mutableStateOf(serialNumber)
+    private val _serialNumber = mutableStateOf(system.serialNumber)
     val serialNumber: State<String> = _serialNumber
 
-    private val _customerName = mutableStateOf(customerName)
+    private val _customerName = mutableStateOf(system.customerName)
     val customerName: State<String> = _customerName
 
-    private val _modelDescription = mutableStateOf(modelDescription)
+    private val _modelDescription = mutableStateOf(system.modelDescription)
     val modelDescription: State<String> = _modelDescription
 
-    private val _systemTypeDescription = mutableStateOf(systemTypeDescription)
+    private val _systemTypeDescription = mutableStateOf(system.systemType)
     val systemTypeDescription: State<String> = _systemTypeDescription
 
 
-    private val _customerId = mutableIntStateOf(customerId)
+    private val _customerId = mutableIntStateOf(system.customerId)
     val customerId: State<Int> = _customerId
 
-    private val _systemId = mutableIntStateOf(systemId)
+    private val _systemId = mutableIntStateOf(system.id)
     val systemId: State<Int> = _systemId
 
-    private val _cloudSystemId = mutableIntStateOf(cloudSystemId)
+    private val _cloudSystemId = mutableIntStateOf(system.cloudId ?: 0)
     val cloudSystemId: State<Int> = _cloudSystemId
 
-    private val _tempSystemId = mutableIntStateOf(tempSystemId)
+    private val _tempSystemId = mutableIntStateOf(system.tempId)
     val tempSystemId: State<Int> = _tempSystemId
 
-    private val _systemTypeId = mutableIntStateOf(systemTypeId)
+    private val _systemTypeId = mutableIntStateOf(system.systemTypeId)
     val systemTypeId: State<Int> = _systemTypeId
 
 
-    private val _modelId = mutableIntStateOf(modelId)
+    private val _modelId = mutableIntStateOf(system.modelId ?: 0)
     val modelId: State<Int> = _modelId
 
     private val _calibrationStartTime = mutableStateOf(
@@ -1144,7 +1125,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         _detectionSetting8label.value = newDetectionSetting8label
     }
 
-    private val _lastLocation = mutableStateOf(lastLocation)
+    private val _lastLocation = mutableStateOf(system.lastLocation)
     val lastLocation: State<String> = _lastLocation
 
 
@@ -1256,16 +1237,31 @@ class CalibrationMetalDetectorConveyorViewModel(
     private val _sensitivityData = mutableStateOf<ConveyorRetailerSensitivitiesEntity?>(null)
     val sensitivityData: State<ConveyorRetailerSensitivitiesEntity?> get() = _sensitivityData
 
-    // Function to update product height
-//    fun setProductHeight(newHeight: String) {
-//        _productHeight.value = newHeight
-//    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+
+    private val _pipelineSensitivityData  = mutableStateOf<PipelineRetailerSensitivitiesEntity?>(null)
+
+    val pipelineSensitivityData : State<PipelineRetailerSensitivitiesEntity?> get() = _pipelineSensitivityData
+
+    private val _freefallSensitivityData  = mutableStateOf<FreefallThroatRetailerSensitivitiesEntity?>(null)
+    val freefallSensitivityData : State<FreefallThroatRetailerSensitivitiesEntity?> get() = _freefallSensitivityData
+
+
 
     // Function to set product height and fetch sensitivities
     fun setProductHeight(newHeight: String) {
         _productHeight.value = newHeight
-        val heightMm = newHeight.toDoubleOrNull() ?: return // Handle invalid input
-        fetchSensitivityData(heightMm)
+        if(systemTypeId.value == 1) { //MD Conveyor
+            val heightMm = newHeight.toDoubleOrNull() ?: return // Handle invalid input
+            fetchSensitivityData(heightMm)
+        }
+
+        if(systemTypeId.value == 2) { //MD Pipeline)
+            val aperture = system.apertureHeight
+            fetchPipelineSensitivityData(aperture)
+        }
     }
 
     // Function to fetch sensitivity data
@@ -1273,6 +1269,14 @@ class CalibrationMetalDetectorConveyorViewModel(
         viewModelScope.launch {
             // Fetch sensitivities from repository
             val sensitivities = retailerSensitivitiesRepo.getSensitivitiesByHeight(heightMm)
+            _sensitivityData.value = sensitivities
+        }
+    }
+
+    private fun fetchPipelineSensitivityData(diameterMm: Int) {
+        viewModelScope.launch {
+            // Fetch sensitivities from repository
+            val sensitivities = retailerSensitivitiesRepo.getSensitivitiesByHeight(diameterMm)
             _sensitivityData.value = sensitivities
         }
     }

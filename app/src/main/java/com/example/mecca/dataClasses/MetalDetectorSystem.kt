@@ -1,7 +1,9 @@
 package com.example.mecca.dataClasses
 
+import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.parcelize.Parcelize
 
 // This data class represents the structure of the data returned by the API
 data class MdSystem(
@@ -32,21 +34,6 @@ data class MdSystemCloud(
     val lastLocation: String
 )
 
-// This is for retrieving systems from the cloud
-//data class MdSystemCloudResponse(
-//    val id: Int,
-//    val modelId: Int,
-//    val customerId: Int,
-//    val serialNumber: String,
-//    val apertureWidth: Int,
-//    val apertureHeight: Int,
-//    val lastCalibration: String,
-//    val addedDate: String,
-//    val calibrationInterval: Int,
-//    val systemTypeId: Int,
-//    val lastLocation: String? = null
-//
-//)
 
 
 // This is the entity class that corresponds to the local Room database table
@@ -72,10 +59,11 @@ data class MdSystemLocal(
 
 )
 
+@Parcelize
 data class MetalDetectorWithFullDetails(
     val id: Int,                       // From MdSystems
-    val modelId: Int,                  // From MdSystems
-    val cloudId: Int,                   // From MdSystems
+    val modelId: Int?,                  // From MdSystems
+    val cloudId: Int?,                   // From MdSystems
     val customerId: Int,               // From MdSystems
     val serialNumber: String,          // From MdSystems
     val apertureWidth: Int,            // From MdSystems
@@ -91,6 +79,6 @@ data class MetalDetectorWithFullDetails(
     val customerName: String,
     val fusionID: Int,
     val lastLocation: String
-)
+): Parcelable
 
 

@@ -182,7 +182,7 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
         apertureWidth: Int,
         apertureHeight: Int,
         systemTypeId: Int,
-        modelId: Int,
+        modelId: Int?,
         calibrationInterval: Int,
         lastLocation: String
     ): Int? {

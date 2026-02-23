@@ -55,6 +55,10 @@ class RetailerSensitivitiesRepository(
         return db.conveyorDao().findByHeight(heightMm)
     }
 
+    suspend fun getSensitivitesByAperture(aperture: Double): ConveyorRetailerSensitivitiesEntity? {
+        return db.conveyorDao().findByAperture(aperture)
+    }
+
     // You can later add:
     suspend fun getFreefallForAperture(d: Double) = db.freefallDao().findByAperture(d)
 

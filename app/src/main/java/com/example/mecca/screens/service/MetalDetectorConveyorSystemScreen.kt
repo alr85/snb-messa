@@ -1,7 +1,6 @@
 package com.example.mecca.screens.service
 
 import android.content.Intent
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -106,20 +105,8 @@ fun MetalDetectorConveyorSystemScreen(
 
         val intent = Intent(context, MetalDetectorConveyorCalibrationActivity::class.java).apply {
             putExtra("CALIBRATION_ID", newCalibrationId)
-            putExtra("SYSTEM_ID", system.id)
-            putExtra("CLOUD_SYSTEM_ID", system.cloudId)
-            putExtra("TEMP_SYSTEM_ID", system.tempId)
-            putExtra("SYSTEM_TYPE_ID", system.systemTypeId)
-            putExtra("CUSTOMER_ID", system.fusionID)
-            putExtra("SERIAL_NUMBER", system.serialNumber)
-            putExtra("MODEL_DESCRIPTION", system.modelDescription)
-            putExtra("CUSTOMER_NAME", system.customerName)
-            putExtra("MODEL_ID", system.modelId)
+            putExtra("SYSTEM_FULL_DETAILS", system)
             putExtra("ENGINEER_ID", engineerId ?: 0)
-            putExtra("SYSTEM_TYPE_DESCRIPTION", system.systemType)
-
-            putExtra("LAST_LOCATION", system.lastLocation)
-
             // detection labels
             putExtra("DETECTION_SETTING_1_LABEL", modelDetails?.detectionSetting1)
             putExtra("DETECTION_SETTING_2_LABEL", modelDetails?.detectionSetting2)
@@ -133,6 +120,19 @@ fun MetalDetectorConveyorSystemScreen(
 
         context.startActivity(intent)
     }
+    //            putExtra("SYSTEM_ID", system.id)
+//            putExtra("CLOUD_SYSTEM_ID", system.cloudId)
+//            putExtra("TEMP_SYSTEM_ID", system.tempId)
+//            putExtra("SYSTEM_TYPE_ID", system.systemTypeId)
+//            putExtra("CUSTOMER_ID", system.fusionID)
+//            putExtra("SERIAL_NUMBER", system.serialNumber)
+//            putExtra("MODEL_DESCRIPTION", system.modelDescription)
+//            putExtra("CUSTOMER_NAME", system.customerName)
+//            putExtra("MODEL_ID", system.modelId)
+//            putExtra("LAST_LOCATION", system.lastLocation)
+//            putExtra("SYSTEM_TYPE_DESCRIPTION", system.systemType)
+//
+
 
     suspend fun syncThisSystem() {
 
