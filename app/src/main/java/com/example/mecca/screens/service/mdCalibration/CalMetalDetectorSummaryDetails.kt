@@ -191,15 +191,15 @@ fun CalMetalDetectorConveyorSummaryDetails(
         Section(title = "M&S Sensitivity Requirements") {
             SummaryItem(
                 label = "Ferrous Target",
-                value = "${viewModel.sensitivityData.value?.FerrousTargetMM ?: "N/A"}mm (Max ${viewModel.sensitivityData.value?.FerrousMaxMM ?: "N/A"}mm)"
+                value = "${viewModel.sensitivityData.value?.ferrousTargetMM ?: "N/A"}mm (Max ${viewModel.sensitivityData.value?.ferrousMaxMM ?: "N/A"}mm)"
             )
             SummaryItem(
                 label = "Non-Ferrous Target",
-                value = "${viewModel.sensitivityData.value?.NonFerrousTargetMM ?: "N/A"}mm (Max ${viewModel.sensitivityData.value?.NonFerrousMaxMM ?: "N/A"}mm)"
+                value = "${viewModel.sensitivityData.value?.nonFerrousTargetMM ?: "N/A"}mm (Max ${viewModel.sensitivityData.value?.nonFerrousMaxMM ?: "N/A"}mm)"
             )
             SummaryItem(
                 label = "Stainless Target",
-                value = "${viewModel.sensitivityData.value?.Stainless316TargetMM ?: "N/A"}mm (Max ${viewModel.sensitivityData.value?.Stainless316MaxMM ?: "N/A"}mm)"
+                value = "${viewModel.sensitivityData.value?.stainless316TargetMM ?: "N/A"}mm (Max ${viewModel.sensitivityData.value?.stainless316MaxMM ?: "N/A"}mm)"
             )
         }
 

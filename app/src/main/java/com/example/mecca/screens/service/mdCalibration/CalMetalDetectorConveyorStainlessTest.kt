@@ -91,8 +91,8 @@ fun CalMetalDetectorConveyorStainlessTest(
                     helpText = """
                         Enter the achieved Stainless Steel sensitivity and the certificate number.
                         
-                        M&S Target: ${viewModel.sensitivityData.value?.Stainless316TargetMM}mm
-                        Max Allowed: ${viewModel.sensitivityData.value?.Stainless316MaxMM}mm
+                        M&S Target: ${viewModel.sensitivityData.value?.stainless316TargetMM}mm
+                        Max Allowed: ${viewModel.sensitivityData.value?.stainless316MaxMM}mm
                     """.trimIndent(),
                     firstInputKeyboardType = KeyboardType.Number,
                     secondInputKeyboardType = KeyboardType.Text,

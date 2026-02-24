@@ -45,6 +45,7 @@ import com.example.mecca.dataClasses.ConveyorRetailerSensitivitiesEntity
 import com.example.mecca.dataClasses.FreefallThroatRetailerSensitivitiesEntity
 import com.example.mecca.dataClasses.MetalDetectorWithFullDetails
 import com.example.mecca.dataClasses.PipelineRetailerSensitivitiesEntity
+import com.example.mecca.dataClasses.RetailerSensitivity
 import com.example.mecca.formModules.ConditionState
 import com.example.mecca.formModules.YesNoState
 import com.example.mecca.repositories.MetalDetectorConveyorCalibrationRepository
@@ -154,9 +155,8 @@ class CalibrationMetalDetectorConveyorViewModel(
                     existingCalibration.sensitivityRequirementEngineerNotes
 
 
-                existingCalibration.productHeight
-                    .toDoubleOrNull()
-                    ?.let { fetchSensitivityData(it) }
+                _productHeight.value = existingCalibration.productHeight ?: ""
+                refreshSensitivities()
 
 
 
@@ -1234,52 +1234,56 @@ class CalibrationMetalDetectorConveyorViewModel(
     private val _productHeight = mutableStateOf("")
     val productHeight: State<String> = _productHeight
 
-    private val _sensitivityData = mutableStateOf<ConveyorRetailerSensitivitiesEntity?>(null)
-    val sensitivityData: State<ConveyorRetailerSensitivitiesEntity?> get() = _sensitivityData
-
-
-    //////////////////////////////////////////////////////////////////////////////////////////////
-
-
-    private val _pipelineSensitivityData  = mutableStateOf<PipelineRetailerSensitivitiesEntity?>(null)
-
-    val pipelineSensitivityData : State<PipelineRetailerSensitivitiesEntity?> get() = _pipelineSensitivityData
-
-    private val _freefallSensitivityData  = mutableStateOf<FreefallThroatRetailerSensitivitiesEntity?>(null)
-    val freefallSensitivityData : State<FreefallThroatRetailerSensitivitiesEntity?> get() = _freefallSensitivityData
-
-
-
     // Function to set product height and fetch sensitivities
     fun setProductHeight(newHeight: String) {
         _productHeight.value = newHeight
-        if(systemTypeId.value == 1) { //MD Conveyor
-            val heightMm = newHeight.toDoubleOrNull() ?: return // Handle invalid input
-            fetchSensitivityData(heightMm)
-        }
-
-        if(systemTypeId.value == 2) { //MD Pipeline)
-            val aperture = system.apertureHeight
-            fetchPipelineSensitivityData(aperture)
-        }
+        refreshSensitivities()
     }
 
-    // Function to fetch sensitivity data
-    private fun fetchSensitivityData(heightMm: Double) {
+    private fun refreshSensitivities() {
         viewModelScope.launch {
-            // Fetch sensitivities from repository
-            val sensitivities = retailerSensitivitiesRepo.getSensitivitiesByHeight(heightMm)
-            _sensitivityData.value = sensitivities
+            InAppLogger.d("Refreshing M&S Sensitivities...")
+
+            _sensitivityData.value = when (systemTypeId.value) {
+
+                1 -> {
+                    InAppLogger.d("System type = 1, getting sensitivities by product height...")
+                    val h = productHeight.value.toDoubleOrNull()
+                    InAppLogger.d("Height = $h")
+                    if (h == null) null
+                    else retailerSensitivitiesRepo.getSensitivitiesByHeight(h)
+                }
+
+                2 -> {
+                    InAppLogger.d("System type = 2, getting sensitivities by aperture height...")
+                    val aperture = system.apertureHeight.toDouble()
+                    InAppLogger.d("Aperture = $aperture")
+                    retailerSensitivitiesRepo
+                        .getPipelineSensitivitiesByAperture(aperture)
+                }
+
+                3 -> {
+                    InAppLogger.d("System type = 3, getting sensitivities by aperture height...")
+                    val aperture = system.apertureHeight.toDouble()
+                    InAppLogger.d("Aperture = $aperture")
+                    retailerSensitivitiesRepo
+                        .getFreefallSensitivitiesByAperture(aperture)
+                }
+
+                else -> null
+            }
+
+            InAppLogger.d("Sensitivity result = ${_sensitivityData.value}")
         }
     }
 
-    private fun fetchPipelineSensitivityData(diameterMm: Int) {
-        viewModelScope.launch {
-            // Fetch sensitivities from repository
-            val sensitivities = retailerSensitivitiesRepo.getSensitivitiesByHeight(diameterMm)
-            _sensitivityData.value = sensitivities
-        }
-    }
+    private val _sensitivityData =
+        mutableStateOf<RetailerSensitivity?>(null)
+
+    val sensitivityData: State<RetailerSensitivity?> =
+        _sensitivityData
+
+
 
     private val _productDetailsEngineerNotes = mutableStateOf("")
     val productDetailsEngineerNotes: State<String> = _productDetailsEngineerNotes

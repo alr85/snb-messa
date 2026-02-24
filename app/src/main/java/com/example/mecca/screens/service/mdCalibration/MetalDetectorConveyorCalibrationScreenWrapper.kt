@@ -195,8 +195,8 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
             )
         }
 
-        val isNextEnabled by viewModel.currentScreenNextEnabled.collectAsState()
-
+//        val isNextEnabled by viewModel.currentScreenNextEnabled.collectAsState()
+//
 
         // Bottom navigation buttons
         CalibrationNavigationButtons(

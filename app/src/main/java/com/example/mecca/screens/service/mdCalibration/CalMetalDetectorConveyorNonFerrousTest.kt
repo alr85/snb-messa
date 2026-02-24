@@ -88,8 +88,8 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                     helpText = """
                         Enter the achieved Non-Ferrous sensitivity and the certificate number.
                         
-                        M&S Target: ${viewModel.sensitivityData.value?.NonFerrousTargetMM}mm  
-                        Max Allowed: ${viewModel.sensitivityData.value?.NonFerrousMaxMM}mm
+                        M&S Target: ${viewModel.sensitivityData.value?.nonFerrousTargetMM}mm  
+                        Max Allowed: ${viewModel.sensitivityData.value?.nonFerrousMaxMM}mm
                     """.trimIndent(),
                     firstInputKeyboardType = KeyboardType.Number,
                     secondInputKeyboardType = KeyboardType.Text,

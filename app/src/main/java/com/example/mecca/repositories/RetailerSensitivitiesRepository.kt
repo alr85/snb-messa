@@ -5,6 +5,8 @@ import com.example.mecca.ApiService
 import com.example.mecca.AppDatabase
 import com.example.mecca.FetchResult
 import com.example.mecca.dataClasses.ConveyorRetailerSensitivitiesEntity
+import com.example.mecca.dataClasses.FreefallThroatRetailerSensitivitiesEntity
+import com.example.mecca.dataClasses.PipelineRetailerSensitivitiesEntity
 
 class RetailerSensitivitiesRepository(
     private val api: ApiService,
@@ -55,12 +57,12 @@ class RetailerSensitivitiesRepository(
         return db.conveyorDao().findByHeight(heightMm)
     }
 
-    suspend fun getSensitivitesByAperture(aperture: Double): ConveyorRetailerSensitivitiesEntity? {
-        return db.conveyorDao().findByAperture(aperture)
+    suspend fun getPipelineSensitivitiesByAperture(heightMm: Double): PipelineRetailerSensitivitiesEntity? {
+        return db.pipelineDao().findByHeight(heightMm)
     }
 
-    // You can later add:
-    suspend fun getFreefallForAperture(d: Double) = db.freefallDao().findByAperture(d)
+    suspend fun getFreefallSensitivitiesByAperture(heightMm: Double): FreefallThroatRetailerSensitivitiesEntity? {
+        return db.freefallDao().findByHeight(heightMm)
+    }
 
-    suspend fun getPipelineForDiameter(d: Double) = db.pipelineDao().findByPipe(d)
 }

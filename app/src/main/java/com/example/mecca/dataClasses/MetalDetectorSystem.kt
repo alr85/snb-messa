@@ -22,7 +22,7 @@ data class MdSystem(
 
 // This is for posting new systems to the cloud
 data class MdSystemCloud(
-    val modelId: Int,
+    val modelId: Int?,
     val customerId: Int,
     val serialNumber: String,
     val apertureWidth: Int,
@@ -45,13 +45,13 @@ data class MdSystemLocal(
     @PrimaryKey(autoGenerate = true) var id: Int? = null,
     var cloudId: Int? = null,
     val tempId: Int? = null,
-    val modelId: Int,
+    val modelId: Int?,
     val customerId: Int,
     val serialNumber: String,
     val apertureWidth: Int,
     val apertureHeight: Int,
     val lastCalibration: String,
-    val addedDate:String,
+    val addedDate: String,
     val calibrationInterval: Int,
     val systemTypeId: Int,
     var isSynced: Boolean,

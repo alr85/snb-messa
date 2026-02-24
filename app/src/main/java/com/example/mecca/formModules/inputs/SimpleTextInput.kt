@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.room.parser.Section
 import com.example.mecca.ui.theme.FormInputDisabledBorderColor
 import com.example.mecca.ui.theme.FormInputDisabledContainerColor
 import com.example.mecca.ui.theme.FormInputDisabledLabelColor

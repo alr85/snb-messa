@@ -82,7 +82,7 @@ fun CalibrationMetalDetectorConveyorViewModel.autoUpdateFerrousPvResult() {
 
     val result = evaluatePvResult(
         achievedSensitivityString = sensitivityAsLeftFerrous.value.trim(),
-        maxSensitivity = sensitivityData.value?.FerrousMaxMM,
+        maxSensitivity = sensitivityData.value?.ferrousMaxMM,
         leadingState = detectRejectFerrousLeading.value,
         middleState = detectRejectFerrousMiddle.value,
         trailingState = detectRejectFerrousTrailing.value,
@@ -100,7 +100,7 @@ fun CalibrationMetalDetectorConveyorViewModel.autoUpdateNonFerrousPvResult() {
 
     val result = evaluatePvResult(
         achievedSensitivityString = sensitivityAsLeftNonFerrous.value.trim(),
-        maxSensitivity = sensitivityData.value?.NonFerrousMaxMM,
+        maxSensitivity = sensitivityData.value?.nonFerrousMaxMM,
         leadingState = detectRejectNonFerrousLeading.value,
         middleState = detectRejectNonFerrousMiddle.value,
         trailingState = detectRejectNonFerrousTrailing.value,
@@ -117,7 +117,7 @@ fun CalibrationMetalDetectorConveyorViewModel.autoUpdateStainlessPvResult() {
 
     val result = evaluatePvResult(
         achievedSensitivityString = sensitivityAsLeftStainless.value.trim(),
-        maxSensitivity = sensitivityData.value?.Stainless316MaxMM,
+        maxSensitivity = sensitivityData.value?.stainless316MaxMM,
         leadingState = detectRejectStainlessLeading.value,
         middleState = detectRejectStainlessMiddle.value,
         trailingState = detectRejectStainlessTrailing.value,

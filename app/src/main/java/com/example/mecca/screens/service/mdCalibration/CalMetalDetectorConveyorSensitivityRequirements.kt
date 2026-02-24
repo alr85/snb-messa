@@ -82,8 +82,8 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
                     helpText = """
                         Enter the customer requirement for Ferrous sensitivity
                         
-                        M&S Target: ${sensitivityData?.FerrousTargetMM?.toString() ?: "N/A"} mm
-                        M&S Max: ${sensitivityData?.FerrousMaxMM?.toString() ?: "N/A"} mm
+                        M&S Target: ${sensitivityData?.ferrousTargetMM?.toString() ?: "N/A"} mm
+                        M&S Max: ${sensitivityData?.ferrousMaxMM?.toString() ?: "N/A"} mm
                     """.trimIndent(),
                     keyboardType = KeyboardType.Decimal,
                     maxLength = 4
@@ -98,8 +98,8 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
                     helpText = """
                         Enter the customer requirement for Non-Ferrous sensitivity
                         
-                        M&S Target: ${sensitivityData?.NonFerrousTargetMM?.toString() ?: "N/A"} mm
-                        M&S Max: ${sensitivityData?.NonFerrousMaxMM?.toString() ?: "N/A"} mm
+                        M&S Target: ${sensitivityData?.nonFerrousTargetMM?.toString() ?: "N/A"} mm
+                        M&S Max: ${sensitivityData?.nonFerrousMaxMM?.toString() ?: "N/A"} mm
                     """.trimIndent(),
                     keyboardType = KeyboardType.Decimal,
                     maxLength = 4
@@ -114,8 +114,8 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
                     helpText = """
                         Enter the customer requirement for Stainless Steel sensitivity
                         
-                        M&S Target: ${sensitivityData?.Stainless316TargetMM?.toString() ?: "N/A"} mm
-                        M&S Max: ${sensitivityData?.Stainless316MaxMM?.toString() ?: "N/A"} mm
+                        M&S Target: ${sensitivityData?.stainless316TargetMM?.toString() ?: "N/A"} mm
+                        M&S Max: ${sensitivityData?.stainless316MaxMM?.toString() ?: "N/A"} mm
                     """.trimIndent(),
                     keyboardType = KeyboardType.Decimal,
                     maxLength = 4
@@ -141,8 +141,8 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
 private fun pasteMStargetSensitivities(viewModel: CalibrationMetalDetectorConveyorViewModel) {
     val data = viewModel.sensitivityData.value ?: return
 
-    viewModel.setSensitivityRequirementFerrous(data.FerrousTargetMM.toString())
-    viewModel.setSensitivityRequirementNonFerrous(data.NonFerrousTargetMM.toString())
-    viewModel.setSensitivityRequirementStainless(data.Stainless316TargetMM.toString())
+    viewModel.setSensitivityRequirementFerrous(data.ferrousTargetMM.toString())
+    viewModel.setSensitivityRequirementNonFerrous(data.nonFerrousTargetMM.toString())
+    viewModel.setSensitivityRequirementStainless(data.stainless316TargetMM.toString())
 }
 

@@ -94,8 +94,8 @@ fun CalMetalDetectorConveyorFerrousTest(
                     helpText = """
                         Enter the achieved Ferrous sensitivity and the certificate number.
                         
-                        M&S Target: ${viewModel.sensitivityData.value?.FerrousTargetMM}mm  
-                        Max Allowed: ${viewModel.sensitivityData.value?.FerrousMaxMM}mm
+                        M&S Target: ${viewModel.sensitivityData.value?.ferrousTargetMM}mm  
+                        Max Allowed: ${viewModel.sensitivityData.value?.ferrousMaxMM}mm
                     """.trimIndent(),
                     firstInputKeyboardType = KeyboardType.Decimal,
                     secondInputKeyboardType = KeyboardType.Text,
