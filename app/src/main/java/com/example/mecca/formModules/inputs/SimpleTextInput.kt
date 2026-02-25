@@ -49,6 +49,9 @@ fun SimpleTextInput(
         if (keyboardType == KeyboardType.Text) KeyboardCapitalization.Sentences
         else KeyboardCapitalization.None
 
+    val defaultText = "Enter a value"
+
+
     OutlinedTextField(
         value = value,
         onValueChange = { incoming ->
@@ -64,7 +67,8 @@ fun SimpleTextInput(
 
             onValueChange(processed)
         },
-        label = { Text(label) },
+
+        label = { Text(defaultText) },//{ Text(label) },
         singleLine = singleLine,
         minLines = minLines,
         enabled = !isDisabled,

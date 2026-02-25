@@ -9,7 +9,7 @@ val DisabledInputColor = Color(0xFFBDBDBD)
 
 
 val FormBackground = Color(0xFFFFFFFF)
-val FormWrapperSurface = Color.White//Color(0xFFEDEDED)
+val FormWrapperSurface = Color.White
 val FormWrapperContent = Color.Black //Color(0xFF605F5F)
 
 val FormInputFocusedContainerColor = Color.White

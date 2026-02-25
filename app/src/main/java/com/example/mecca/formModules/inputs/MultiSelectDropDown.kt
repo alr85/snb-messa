@@ -1,15 +1,22 @@
 package com.example.mecca.formModules.inputs
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.Button
@@ -27,11 +34,16 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.mecca.ui.theme.FormInputDisabledBorderColor
 import com.example.mecca.ui.theme.FormInputDisabledContainerColor
@@ -48,7 +60,8 @@ import com.example.mecca.ui.theme.FormInputUnfocusedContainerColor
 import com.example.mecca.ui.theme.FormInputUnfocusedLabelColor
 import com.example.mecca.ui.theme.FormInputUnfocusedPlaceholderColor
 import com.example.mecca.ui.theme.FormInputUnfocusedTextColor
-
+import com.example.mecca.ui.theme.SnbRed
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,9 +76,6 @@ fun MultiSelectDropdown(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    // What to show in the field:
-    // - If you pass a non-blank value, use it (lets you format externally)
-    // - Else join selected options
     val displayText = when {
         isDisabled -> "N/A"
         value.isNotBlank() -> value
@@ -97,19 +107,15 @@ fun MultiSelectDropdown(
                 focusedContainerColor = FormInputFocusedContainerColor,
                 unfocusedContainerColor = FormInputUnfocusedContainerColor,
                 disabledContainerColor = FormInputDisabledContainerColor,
-
                 focusedBorderColor = FormInputFocusedBorderColor,
                 unfocusedBorderColor = FormInputUnfocusedBorderColor,
                 disabledBorderColor = FormInputDisabledBorderColor,
-
                 focusedTextColor = FormInputFocusedTextColor,
                 unfocusedTextColor = FormInputUnfocusedTextColor,
                 disabledTextColor = FormInputDisabledTextColor,
-
                 focusedLabelColor = FormInputFocusedLabelColor,
                 unfocusedLabelColor = FormInputUnfocusedLabelColor,
                 disabledLabelColor = FormInputDisabledLabelColor,
-
                 focusedPlaceholderColor = FormInputFocusedPlaceholderColor,
                 unfocusedPlaceholderColor = FormInputUnfocusedPlaceholderColor,
                 disabledPlaceholderColor = FormInputDisabledPlaceholderColor
@@ -119,47 +125,94 @@ fun MultiSelectDropdown(
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.heightIn(max = 360.dp)
+            modifier = Modifier.heightIn(max = 400.dp)
         ) {
-            options.forEach { option ->
-                val isSelected = option in selectedOptions
+            val scrollState = rememberScrollState()
+            var viewportHeightPx by remember { mutableIntStateOf(0) }
 
-                DropdownMenuItem(
-                    text = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            // Modern, compact selection indicator
-                            if (isSelected) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Check,
-                                    contentDescription = null
-                                )
-                            } else {
-                                // keep alignment consistent when not selected
-                                Spacer(Modifier.size(24.dp))
-                            }
+            // 1. Scrollable List Area
+            // Use heightIn instead of weight to ensure content is measured correctly in the popup
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 300.dp)
+                    .onSizeChanged { viewportHeightPx = it.height }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(scrollState)
+                        .padding(end = 20.dp) // space for scrollbar on right
+                ) {
+                    options.forEach { option ->
+                        val isSelected = option in selectedOptions
 
-                            Spacer(Modifier.width(12.dp))
+                        DropdownMenuItem(
+                            text = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    if (isSelected) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.Check,
+                                            contentDescription = null,
+                                            tint = SnbRed
+                                        )
+                                    } else {
+                                        Spacer(Modifier.size(24.dp))
+                                    }
+                                    Spacer(Modifier.width(12.dp))
+                                    Text(
+                                        text = option,
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                }
+                            },
+                            onClick = {
+                                val newSelection =
+                                    if (isSelected) selectedOptions - option else selectedOptions + option
+                                onSelectionChange(newSelection)
+                            },
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
+                        )
+                    }
+                }
 
-                            Text(
-                                text = option,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
-                    },
-                    onClick = {
-                        val newSelection =
-                            if (isSelected) selectedOptions - option else selectedOptions + option
-                        onSelectionChange(newSelection)
-                        // IMPORTANT: do NOT close menu on each click (multi-select UX)
-                    },
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
-                )
+                // 2. Custom Scrollbar on the RIGHT
+                if (scrollState.maxValue > 0 && viewportHeightPx > 0) {
+                    val density = LocalDensity.current
+                    val maxValue = scrollState.maxValue.toFloat()
+                    val totalContentHeight = (viewportHeightPx + maxValue)
+                    
+                    val thumbHeightPx = (viewportHeightPx.toFloat() / totalContentHeight) * viewportHeightPx.toFloat()
+                    val minThumbPx = with(density) { 30.dp.toPx() }
+                    val finalThumbHeightPx = thumbHeightPx.coerceAtLeast(minThumbPx)
+
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .width(16.dp)
+                            .height(with(density) { viewportHeightPx.toDp() })
+                            .background(Color.Black.copy(alpha = 0.05f))
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .width(4.dp)
+                                .height(with(density) { finalThumbHeightPx.toDp() })
+                                .offset {
+                                    val scrollProgress = scrollState.value.toFloat() / maxValue
+                                    val availableTrackHeight = viewportHeightPx - finalThumbHeightPx
+                                    IntOffset(0, (scrollProgress * availableTrackHeight).roundToInt())
+                                }
+                                .background(SnbRed, RoundedCornerShape(50))
+                        )
+                    }
+                }
             }
 
-            // Optional: Clear / Done row at the bottom (feels very modern)
+            // 3. Sticky Bottom Buttons
             HorizontalDivider()
             Row(
                 modifier = Modifier
