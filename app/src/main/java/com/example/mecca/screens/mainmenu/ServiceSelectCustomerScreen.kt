@@ -27,6 +27,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults.filledTonalIconButtonColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -115,7 +116,11 @@ fun ServiceSelectCustomerScreen(
 
                 FilledTonalIconButton(
                     onClick = { vm.syncCustomers(force = true) },
-                    enabled = !isRefreshing
+                    enabled = !isRefreshing,
+                    colors = filledTonalIconButtonColors(
+                        containerColor = Color.LightGray,
+                        contentColor = Color.Black
+                    )
                 ) {
                     if (isRefreshing) {
                         CircularProgressIndicator(
@@ -170,11 +175,12 @@ fun ServiceSelectCustomerScreen(
                         customer = customer,
                         onClick = {
                             keyboardController?.hide()
-                            val encodedName = Uri.encode(customer.name)
-                            val encodedPostcode = Uri.encode(customer.postcode)
+                            val encodedName = Uri.encode(customer.name ?: "")
+                            val encodedPostcode = Uri.encode(customer.postcode ?: "")
+                            val encodedAddress = Uri.encode(customer.customerCityTown ?: "")
 
                             navController.navigate(
-                                "calibrationSearchSystem/${customer.fusionID}/$encodedName/$encodedPostcode"
+                                "calibrationSearchSystem/${customer.fusionID}/$encodedName/$encodedPostcode/$encodedAddress"
                             )
 
                         }

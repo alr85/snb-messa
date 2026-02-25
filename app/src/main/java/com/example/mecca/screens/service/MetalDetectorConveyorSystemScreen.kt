@@ -1,19 +1,50 @@
 package com.example.mecca.screens.service
 
 import android.content.Intent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandIn
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Handyman
 import androidx.compose.material.icons.filled.Tune
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -32,11 +63,13 @@ import com.example.mecca.repositories.MetalDetectorModelsRepository
 import com.example.mecca.repositories.MetalDetectorSystemsRepository
 import com.example.mecca.ui.theme.DetailItem
 import com.example.mecca.ui.theme.ExpandableSection
+import com.example.mecca.ui.theme.MyAppTheme
+import com.example.mecca.ui.theme.SnbDarkGrey
+import com.example.mecca.ui.theme.SnbRed
 import com.example.mecca.util.InAppLogger
 import com.example.mecca.util.SerialCheckResult
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MetalDetectorConveyorSystemScreen(
     navController: NavHostController,
@@ -46,8 +79,7 @@ fun MetalDetectorConveyorSystemScreen(
     systemId: Int,
     chromeVm: AppChromeViewModel,
     snackbarHostState: SnackbarHostState
-
-    ) {
+) {
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -57,7 +89,6 @@ fun MetalDetectorConveyorSystemScreen(
     var isUploading by remember { mutableStateOf(false) }
 
     var showActions by rememberSaveable { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     suspend fun refresh() {
         mdSystem = repositoryMD
@@ -84,10 +115,8 @@ fun MetalDetectorConveyorSystemScreen(
      * This screen only supplies the click behaviour.
      */
     LaunchedEffect(Unit) {
-        chromeVm.setMenuAction { showActions = true }
+        chromeVm.setMenuAction { showActions = !showActions }
     }
-
-
 
     val formattedLastCalibrationDate =
         runCatching { formatDate(mdSystem?.lastCalibration) }.getOrElse { "Invalid date" }
@@ -120,19 +149,6 @@ fun MetalDetectorConveyorSystemScreen(
 
         context.startActivity(intent)
     }
-    //            putExtra("SYSTEM_ID", system.id)
-//            putExtra("CLOUD_SYSTEM_ID", system.cloudId)
-//            putExtra("TEMP_SYSTEM_ID", system.tempId)
-//            putExtra("SYSTEM_TYPE_ID", system.systemTypeId)
-//            putExtra("CUSTOMER_ID", system.fusionID)
-//            putExtra("SERIAL_NUMBER", system.serialNumber)
-//            putExtra("MODEL_DESCRIPTION", system.modelDescription)
-//            putExtra("CUSTOMER_NAME", system.customerName)
-//            putExtra("MODEL_ID", system.modelId)
-//            putExtra("LAST_LOCATION", system.lastLocation)
-//            putExtra("SYSTEM_TYPE_DESCRIPTION", system.systemType)
-//
-
 
     suspend fun syncThisSystem() {
 
@@ -207,61 +223,6 @@ fun MetalDetectorConveyorSystemScreen(
         }
     }
 
-    // ---------- Bottom Sheet ----------
-    if (showActions) {
-        val sheetBg = Color.White
-
-        ModalBottomSheet(
-            onDismissRequest = { showActions = false },
-            sheetState = sheetState,
-            containerColor = sheetBg
-        ) {
-
-            ListItem(
-                headlineContent = { Text("Start Calibration", fontWeight = FontWeight.Bold) },
-                supportingContent = { Text("Begin a new calibration") },
-                leadingContent = { Icon(Icons.Default.Tune, null) },
-                colors = ListItemDefaults.colors(containerColor = sheetBg),
-                modifier = Modifier.clickable {
-                    showActions = false
-                    startCalibration()
-                }
-            )
-
-            ListItem(
-                headlineContent = { Text("Start Service Call", fontWeight = FontWeight.Bold) },
-                supportingContent = { Text("Coming soon") },
-                leadingContent = { Icon(Icons.Default.Handyman, null) },
-                colors = ListItemDefaults.colors(containerColor = sheetBg),
-                modifier = Modifier.clickable {
-                    showActions = false
-
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Service flow not wired yet.")
-                    }
-                }
-            )
-
-            if (mdSystem?.isSynced == false) {
-
-                HorizontalDivider()
-
-                ListItem(
-                    headlineContent = { Text("Sync to Cloud", fontWeight = FontWeight.Bold) },
-                    supportingContent = { Text("Upload this system") },
-                    leadingContent = { Icon(Icons.Default.CloudUpload, null) },
-                    colors = ListItemDefaults.colors(containerColor = sheetBg),
-                    modifier = Modifier.clickable {
-                        showActions = false
-                        scope.launch { syncThisSystem() }
-                    }
-                )
-            }
-
-            Spacer(Modifier.height(24.dp))
-        }
-    }
-
     // ---------- CONTENT ----------
     Box(Modifier.fillMaxSize()) {
 
@@ -300,7 +261,141 @@ fun MetalDetectorConveyorSystemScreen(
                 }
             }
 
-            item { Spacer(Modifier.height(32.dp)) }
+            item { Spacer(Modifier.height(100.dp)) }
+        }
+
+        // Animated Expressive FAB replacement
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(24.dp),
+            contentAlignment = Alignment.BottomEnd
+        ) {
+            val rotation by animateFloatAsState(
+                targetValue = if (showActions) 45f else 0f,
+                label = "rotation"
+            )
+
+            Column(
+                modifier = Modifier.width(IntrinsicSize.Max),
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Secondary action items that appear above the FAB
+                AnimatedVisibility(
+                    visible = showActions,
+                    enter = fadeIn() + expandIn(expandFrom = Alignment.BottomEnd),
+                    exit = fadeOut() + shrinkOut(shrinkTowards = Alignment.BottomEnd)
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.End,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // Start Calibration
+                        FloatingActionButton(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                showActions = false
+                                startCalibration()
+                            },
+                            containerColor = SnbRed,
+                            contentColor = Color.White,
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Start Calibration",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Icon(Icons.Default.Tune, null, modifier = Modifier.size(24.dp))
+                            }
+                        }
+
+                        // Start Service Call
+                        FloatingActionButton(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                showActions = false
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("Service flow not wired yet.")
+                                }
+                            },
+                            containerColor = SnbRed,
+                            contentColor = Color.White,
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Start Service Call",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Icon(Icons.Default.Handyman, null, modifier = Modifier.size(24.dp))
+                            }
+                        }
+
+                        // Sync to Cloud
+                        if (mdSystem?.isSynced == false) {
+                            FloatingActionButton(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = {
+                                    showActions = false
+                                    scope.launch { syncThisSystem() }
+                                },
+                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Sync to Cloud",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Icon(Icons.Default.CloudUpload, null, modifier = Modifier.size(24.dp))
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Main FAB
+                ExtendedFloatingActionButton(
+                    text = {
+                        Text(
+                            if (showActions) "Close" else "Actions",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null,
+                            modifier = Modifier.rotate(rotation).size(28.dp)
+                        )
+                    },
+                    onClick = { showActions = !showActions },
+                    expanded = !showActions,
+
+                    containerColor = if (showActions) SnbDarkGrey else SnbRed,
+                    contentColor = if (showActions) Color.White else Color.White
+                )
+            }
         }
 
         // Upload overlay

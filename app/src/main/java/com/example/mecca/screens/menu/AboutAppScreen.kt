@@ -1,6 +1,7 @@
 package com.example.mecca.screens.menu
 
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,6 +22,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -62,39 +65,6 @@ fun AboutAppScreen(
     ) {
 
 
-//        Image(
-//            painter = painterResource(id = R.drawable.logo_electronics),
-//            contentScale = ContentScale.Fit, // Ensures the image fits within the bounds
-//            contentDescription = "Company Logo"
-//        )
-
-        Spacer(modifier = Modifier.height(5.dp))
-
-        Text(
-            text = "MESA",
-            color = Color.Black,
-            fontSize = 90.sp, // Adjust font size for "MESSA"
-            fontWeight = FontWeight.Bold, // Optional: make it bold
-            fontFamily = audiowide,
-            maxLines = 1, // Ensure each Text takes only one line
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center // Center-align the text
-        )
-
-
-        Spacer(modifier = Modifier.height(5.dp))
-        Text(
-            text = "v$appVersion",
-            color = Color.Black, // You can use different color for the second line
-            fontSize = 16.sp, // Adjust font size for the description text
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(5.dp))
-
         // Documentation / About Section
         Box(
             modifier = Modifier
@@ -109,9 +79,33 @@ fun AboutAppScreen(
             val scrollState = rememberScrollState()
 
             Column(
-                modifier = Modifier.verticalScroll(scrollState),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(scrollState),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+
+
+                Image(
+                    painter = painterResource(id = R.drawable.mesa),
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    contentScale = ContentScale.Fit, // Ensures the image fits within the bounds
+                    contentDescription = "Company Logo 2"
+                )
+
+
+                Spacer(modifier = Modifier.height(5.dp))
+                Text(
+                    text = "v$appVersion",
+                    color = Color.Black, // You can use different color for the second line
+                    fontSize = 16.sp, // Adjust font size for the description text
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(5.dp))
+
 
                 // Section: About
                 Text(

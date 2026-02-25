@@ -84,18 +84,11 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(5.dp))
 
-        Text(
-            text = "MESA",
-            color = Color.Black,
-            fontSize = 64.sp, // Adjust font size for "MESSA"
-            fontWeight = FontWeight.Bold, // Optional: make it bold
-            fontFamily = audiowide,
-            maxLines = 1, // Ensure each Text takes only one line
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center // Center-align the text
+        Image(
+            painter = painterResource(id = R.drawable.mesa),
+            contentScale = ContentScale.Fit, // Ensures the image fits within the bounds
+            contentDescription = "Company Logo 2"
         )
-
 
         Spacer(modifier = Modifier.height(5.dp))
         Text(

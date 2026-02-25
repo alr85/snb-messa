@@ -5,21 +5,18 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandIn
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -31,28 +28,13 @@ import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.Navigation
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -68,9 +50,10 @@ import com.example.mecca.FetchResult
 import com.example.mecca.R
 import com.example.mecca.dataClasses.MetalDetectorWithFullDetails
 import com.example.mecca.repositories.MetalDetectorSystemsRepository
+import com.example.mecca.ui.theme.SnbDarkGrey
+import com.example.mecca.ui.theme.SnbRed
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ServiceSelectSystemScreen(
     navController: NavHostController,
@@ -78,6 +61,7 @@ fun ServiceSelectSystemScreen(
     customerID: Int,
     customerName: String,
     customerPostcode: String,
+    customerAddress: String,
     snackbarHostState: SnackbarHostState,
     chromeVm: AppChromeViewModel
 ) {
@@ -88,202 +72,257 @@ fun ServiceSelectSystemScreen(
     var systems by remember { mutableStateOf<List<MetalDetectorWithFullDetails>>(emptyList()) }
     var isRefreshing by remember { mutableStateOf(false) }
 
-    // Bottom sheet menu state
+    // Floating action menu state
     var showMenu by rememberSaveable { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     // Load machines when customer changes
     LaunchedEffect(customerID) {
         systems = getMetalDetectors(repository, customerID)
     }
 
-
     LaunchedEffect(Unit) {
-        chromeVm.setMenuAction { showMenu = true }
+        chromeVm.setMenuAction { showMenu = !showMenu }
     }
-
 
     val scrollState = rememberScrollState()
 
     // ========= UI =========
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .verticalScroll(scrollState)
-            .padding(16.dp)
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+                .verticalScroll(scrollState)
+                .padding(16.dp)
+        ) {
 
-        // ---- Bottom sheet menu ----
-        if (showMenu) {
-            val sheetBg = Color.White
+            // ---- Main content ----
+            val filteredSystems = remember(systems) {
+                systems.sortedBy { it.serialNumber }
+            }
 
-            ModalBottomSheet(
-                onDismissRequest = { showMenu = false },
-                sheetState = sheetState,
-                containerColor = sheetBg
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.LightGray)
+                    .padding(12.dp)
             ) {
-                ListItem(
-                    headlineContent = { Text("New Metal Detector") },
-                    leadingContent = { Icon(Icons.Default.Add, contentDescription = null) },
-                    supportingContent = { Text("Add a new metal detector for this customer") },
-                    colors = ListItemDefaults.colors(containerColor = sheetBg),
-                    modifier = Modifier.clickable {
-                        showMenu = false
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
 
-                        // ⚠️ Customer names can contain spaces / symbols, so encode them.
-                        val encodedName = Uri.encode(customerName)
+                    Column(modifier = Modifier.weight(1f)) {
 
-                        navController.navigate("AddNewMetalDetectorScreen/$customerID/$encodedName")
+                        Text(
+                            text = customerName,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Text(
+                            text = "$customerAddress, $customerPostcode",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
-                )
 
-                ListItem(
-                    headlineContent = { Text("New Checkweigher") },
-                    leadingContent = { Icon(Icons.Default.Add, contentDescription = null) },
-                    supportingContent = { Text("Coming soon") },
-                    colors = ListItemDefaults.colors(containerColor = sheetBg)
-                )
-
-                ListItem(
-                    headlineContent = { Text("New Static Scale") },
-                    leadingContent = { Icon(Icons.Default.Add, contentDescription = null) },
-                    supportingContent = { Text("Coming soon") },
-                    colors = ListItemDefaults.colors(containerColor = sheetBg)
-                )
-
-                ListItem(
-                    headlineContent = { Text("New X-Ray") },
-                    leadingContent = { Icon(Icons.Default.Add, contentDescription = null) },
-                    supportingContent = { Text("Coming soon") },
-                    colors = ListItemDefaults.colors(containerColor = sheetBg)
-                )
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-                ListItem(
-                    headlineContent = { Text("Navigate to Site") },
-                    leadingContent = { Icon(Icons.Default.Navigation, contentDescription = null) },
-                    supportingContent = { Text(customerPostcode) },
-                    colors = ListItemDefaults.colors(containerColor = sheetBg),
-                    modifier = Modifier.clickable {
-                        showMenu = false
-                        navigateToPostcode(context, customerPostcode)
-
+                    IconButton(
+                        onClick = {
+                            navigateToPostcode(context, customerPostcode)
+                        },
+                        modifier = Modifier.size(56.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Navigation,
+                            contentDescription = "Navigate to site",
+                            modifier = Modifier.size(32.dp)
+                        )
                     }
-                )
+                }
+            }
 
-                ListItem(
-                    headlineContent = { Text("Refresh Database") },
-                    leadingContent = { Icon(Icons.Default.CloudSync, contentDescription = null) },
-                    supportingContent = { Text("Sync local and cloud systems") },
-                    colors = ListItemDefaults.colors(containerColor = sheetBg),
-                    modifier = Modifier.clickable {
-                        showMenu = false
-                        if (isRefreshing) return@clickable
+            Spacer(modifier = Modifier.height(24.dp))
 
-                        scope.launch {
-                            isRefreshing = true
-                            try {
-                                val ok = syncMetalDetectors(repository)
-                                if (ok) {
-                                    systems = getMetalDetectors(repository, customerID)
-                                } else {
-                                    snackbarHostState.showSnackbar("Sync failed. Please try again.")
+            Text(
+                text = "Metal Detectors",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            ) {
+                items(
+                    items = filteredSystems,
+                    key = { it.id }
+                ) { mdSystem ->
+                    SystemCard(
+                        mdSystem = mdSystem,
+                        onClick = {
+                            navController.navigate("MetalDetectorConveyorSystemScreen/${mdSystem.id}")
+                        }
+                    )
+                }
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+
+            ComingSoonRow("Checkweighers")
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+            ComingSoonRow("X-Ray Systems")
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+            ComingSoonRow("Static Scales")
+
+            // Space at the bottom for the FAB
+            Spacer(modifier = Modifier.height(100.dp))
+        }
+
+        // Animated Expressive FAB replacement
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(24.dp),
+            contentAlignment = Alignment.BottomEnd
+        ) {
+            val rotation by animateFloatAsState(
+                targetValue = if (showMenu) 45f else 0f,
+                label = "rotation"
+            )
+
+            Column(
+                modifier = Modifier.width(IntrinsicSize.Max),
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Secondary action items that appear above the FAB
+                AnimatedVisibility(
+                    visible = showMenu,
+                    enter = fadeIn() + expandIn(expandFrom = Alignment.BottomEnd),
+                    exit = fadeOut() + shrinkOut(shrinkTowards = Alignment.BottomEnd)
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.End,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // New Metal Detector
+                        FloatingActionButton(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                showMenu = false
+                                val encodedName = Uri.encode(customerName)
+                                navController.navigate("AddNewMetalDetectorScreen/$customerID/$encodedName")
+                            },
+                            containerColor = SnbRed,
+                            contentColor = Color.White,
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "New Metal Detector",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Icon(Icons.Default.Add, null, modifier = Modifier.size(24.dp))
+                            }
+                        }
+
+                        // Navigate to Site
+                        FloatingActionButton(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                showMenu = false
+                                navigateToPostcode(context, customerPostcode)
+                            },
+                            containerColor = SnbRed,
+                            contentColor = Color.White,
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Navigate to Site",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Icon(Icons.Default.Navigation, null, modifier = Modifier.size(24.dp))
+                            }
+                        }
+
+                        // Refresh Database
+                        FloatingActionButton(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                showMenu = false
+                                if (isRefreshing) return@FloatingActionButton
+                                scope.launch {
+                                    isRefreshing = true
+                                    try {
+                                        val ok = syncMetalDetectors(repository)
+                                        if (ok) {
+                                            systems = getMetalDetectors(repository, customerID)
+                                        } else {
+                                            snackbarHostState.showSnackbar("Sync failed. Please try again.")
+                                        }
+                                    } finally {
+                                        isRefreshing = false
+                                    }
                                 }
-                            } finally {
-                                isRefreshing = false
+                            },
+                            containerColor = SnbRed,
+                            contentColor = Color.White,
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Refresh Database",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Icon(Icons.Default.CloudSync, null, modifier = Modifier.size(24.dp))
                             }
                         }
                     }
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-        }
-
-        // ---- Main content ----
-        val filteredSystems = remember(systems) {
-            systems.sortedBy { it.serialNumber }
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .padding(12.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                Column(modifier = Modifier.weight(1f)) {
-
-                    Text(
-                        text = customerName,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Text(
-                        text = customerPostcode,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
 
-                IconButton(
-                    onClick = {
-                        navigateToPostcode(context, customerPostcode)
+                // Main FAB
+                ExtendedFloatingActionButton(
+                    text = {
+                        Text(
+                            if (showMenu) "Close" else "Actions",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
                     },
-                    modifier = Modifier.size(56.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Navigation,
-                        contentDescription = "Navigate to site",
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-
-
-        Text(
-            text = "Metal Detectors",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        LazyRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp)
-        ) {
-            items(
-                items = filteredSystems,
-                key = { it.id }
-            ) { mdSystem ->
-                SystemCard(
-                    mdSystem = mdSystem,
-                    onClick = {
-                        navController.navigate("MetalDetectorConveyorSystemScreen/${mdSystem.id}")
-                    }
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null,
+                            modifier = Modifier.rotate(rotation).size(28.dp)
+                        )
+                    },
+                    onClick = { showMenu = !showMenu },
+                    expanded = !showMenu,
+                    containerColor = if (showMenu) SnbDarkGrey else SnbRed,
+                    contentColor = if (showMenu) Color.White else Color.White
                 )
             }
         }
-
-        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-
-        ComingSoonRow("Checkweighers")
-        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-        ComingSoonRow("X-Ray Systems")
-        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-        ComingSoonRow("Static Scales")
     }
 }
 
@@ -468,4 +507,3 @@ fun navigateToPostcode(context: Context, postcode: String) {
         ).show()
     }
 }
-

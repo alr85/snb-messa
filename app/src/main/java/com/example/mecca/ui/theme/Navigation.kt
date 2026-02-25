@@ -116,7 +116,7 @@ fun AppNavGraph(
             )
         }
 
-        composable("calibrationSearchSystem/{customerID}/{customerName}/{customerPostcode}") { backStackEntry ->
+        composable("calibrationSearchSystem/{customerID}/{customerName}/{customerPostcode}/{customerAddress}") { backStackEntry ->
 
             val customerID =
                 backStackEntry.arguments?.getString("customerID")?.toIntOrNull() ?: 0
@@ -127,11 +127,16 @@ fun AppNavGraph(
             val customerPostcode =
                 backStackEntry.arguments?.getString("customerPostcode") ?: ""
 
+            val customerAddress =
+                backStackEntry.arguments?.getString("customerAddress") ?: ""
+
+
             ServiceSelectSystemScreen(
                 navController = navController,
                 customerID = customerID,
                 customerName = customerName,
                 customerPostcode = customerPostcode,
+                customerAddress = customerAddress,
                 repository = repositoryMdSystems,
                 snackbarHostState = snackbarHostState,
                 chromeVm = chromeVm
@@ -163,6 +168,7 @@ fun AppNavGraph(
             MyCalibrationsScreen(
                 dao = dao,
                 customerRepository = repositoryCustomer,
+                systemsRepository = repositoryMdSystems,
                 apiService = apiService,
                 snackbarHostState = snackbarHostState
             )

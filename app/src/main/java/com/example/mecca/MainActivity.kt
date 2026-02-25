@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
@@ -37,6 +38,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -54,6 +56,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -67,6 +70,8 @@ import com.example.mecca.repositories.NoticeRepository
 import com.example.mecca.repositories.UserRepository
 import com.example.mecca.screens.LoginScreen
 import com.example.mecca.ui.theme.AppNavGraph
+import com.example.mecca.ui.theme.SnbDarkGrey
+import com.example.mecca.ui.theme.SnbRed
 import com.example.mecca.util.SyncPreferences
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
@@ -186,7 +191,7 @@ fun SyncUsersScreen(
 ) {
     // Optional: simple auto-retry countdown when there’s an error
     // Useful for “Azure is waking up” without making the user babysit it.
-    var retryInSeconds by remember { mutableIntStateOf(if (message != null) 10 else 0) }
+    var retryInSeconds by remember { mutableIntStateOf(if (message != null) { 10 } else { 0 }) }
 
     LaunchedEffect(message) {
         if (message != null) {
@@ -459,10 +464,23 @@ fun MyApp(
                         icon = {
                             Icon(
                                 imageVector = item.selectedIcon,
-                                contentDescription = item.title
+                                contentDescription = item.title,
+                                modifier = Modifier.size(30.dp)
                             )
                         },
-                        label = { Text(item.title) }
+                        label = {
+                            Text(
+                                item.title,
+                                fontWeight = if (selectedItemIndex == index) FontWeight.Bold else FontWeight.Normal
+                            )
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = SnbRed,
+                            selectedTextColor = Color.Black,
+                            indicatorColor = Color.LightGray,
+                            unselectedIconColor = Color.Black,
+                            unselectedTextColor = Color.Black
+                        )
                     )
                 }
             }
@@ -506,4 +524,3 @@ fun MyApp(
         }
     }
 }
-
