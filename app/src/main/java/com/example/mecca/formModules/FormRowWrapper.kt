@@ -51,6 +51,7 @@ import com.example.mecca.ui.theme.FormInputUnfocusedLabelColor
 import com.example.mecca.ui.theme.FormInputUnfocusedTextColor
 import com.example.mecca.ui.theme.FormWrapperContent
 import com.example.mecca.ui.theme.FormWrapperSurface
+import com.example.mecca.ui.theme.SnbDarkGrey
 import com.example.mecca.ui.theme.SnbRed
 
 
@@ -97,18 +98,18 @@ fun FormRowWrapper(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Text(
-                            text = "N/A",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = if (isNa) SnbRed else Color.Gray
-                        )
+//                        Text(
+//                            text = "N/A",
+//                            style = MaterialTheme.typography.labelSmall,
+//                            color = if (isNa) SnbRed else Color.Gray
+//                        )
                         Switch(
                             checked = isNa,
                             onCheckedChange = { onNaClick() },
                             modifier = Modifier.scale(0.8f),
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = Color.White,
-                                checkedTrackColor = SnbRed,
+                                checkedTrackColor = SnbDarkGrey,
                                 uncheckedThumbColor = Color.White,
                                 uncheckedTrackColor = Color.LightGray
                             )
@@ -147,7 +148,7 @@ fun FormRowWrapperEditableLabel(
     label: String,
     onLabelChange: (String) -> Unit,
     modifier: Modifier = Modifier,
-    naButtonText: String = "N/A",
+    naButtonText: String? = null,
     isDisabled: Boolean = false,
     onNaClick: (() -> Unit)? = null,
     onHelpClick: (() -> Unit)? = null,
@@ -247,18 +248,18 @@ fun FormRowWrapperEditableLabel(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Text(
-                            text = "N/A",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = if (isNa) SnbRed else Color.Gray
-                        )
+//                        Text(
+//                            text = "N/A",
+//                            style = MaterialTheme.typography.labelSmall,
+//                            color = if (isNa) SnbRed else Color.Gray
+//                        )
                         Switch(
                             checked = isNa,
                             onCheckedChange = { onNaClick() },
                             modifier = Modifier.scale(0.8f),
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = Color.White,
-                                checkedTrackColor = SnbRed,
+                                checkedTrackColor = SnbDarkGrey,
                                 uncheckedThumbColor = Color.White,
                                 uncheckedTrackColor = Color.LightGray
                             )

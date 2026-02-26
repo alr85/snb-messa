@@ -72,7 +72,7 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
                         )
                     }
 
-                    FormSpacer()
+                    Spacer(modifier = Modifier.height(6.dp))
                 }
 
                 LabeledTextFieldWithHelp(
@@ -86,7 +86,8 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
                         M&S Max: ${sensitivityData?.ferrousMaxMM?.toString() ?: "N/A"} mm
                     """.trimIndent(),
                     keyboardType = KeyboardType.Decimal,
-                    maxLength = 4
+                    maxLength = 4,
+                    showInputLabel = false
                 )
 
                 FormSpacer()
@@ -102,7 +103,8 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
                         M&S Max: ${sensitivityData?.nonFerrousMaxMM?.toString() ?: "N/A"} mm
                     """.trimIndent(),
                     keyboardType = KeyboardType.Decimal,
-                    maxLength = 4
+                    maxLength = 4,
+                    showInputLabel = false
                 )
 
                 FormSpacer()
@@ -118,7 +120,8 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
                         M&S Max: ${sensitivityData?.stainless316MaxMM?.toString() ?: "N/A"} mm
                     """.trimIndent(),
                     keyboardType = KeyboardType.Decimal,
-                    maxLength = 4
+                    maxLength = 4,
+                    showInputLabel = false
                 )
 
                 FormSpacer()
@@ -129,7 +132,8 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
                     onValueChange = viewModel::setSensitivityRequirementEngineerNotes,
                     helpText = "Enter any notes relevant to this section",
                     isNAToggleEnabled = false,
-                    maxLength = 50
+                    maxLength = 50,
+                    showInputLabel = false
                 )
 
                 Spacer(Modifier.height(60.dp))

@@ -14,7 +14,7 @@ import com.example.mecca.formModules.inputs.SimpleTextInput
 
 @Composable
 fun LabeledTextFieldWithHelp(
-    label: String,
+    label: String = "",
     value: String,
     onValueChange: (String) -> Unit,
     helpText: String,
@@ -25,6 +25,7 @@ fun LabeledTextFieldWithHelp(
     singleLine: Boolean = true,
     transformInput: ((String) -> String)? = null,
     showCounter: Boolean = true,
+    showInputLabel: Boolean = false,
 ) {
     var showHelpDialog by remember { mutableStateOf(false) }
 
@@ -45,7 +46,7 @@ fun LabeledTextFieldWithHelp(
             onValueChange = { raw ->
                 if (!inputDisabled) onValueChange(raw)
             },
-            label = label,
+            label = if (showInputLabel) label else "",
             keyboardType = keyboardType,
             isDisabled = inputDisabled,
             maxLength = maxLength,

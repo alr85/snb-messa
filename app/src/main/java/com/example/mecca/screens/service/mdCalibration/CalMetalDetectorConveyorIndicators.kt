@@ -63,7 +63,7 @@ fun CalMetalDetectorConveyorIndicators(
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
-    // Local helper (no @Composable annotation needed)
+
     @Composable
     fun indicatorRow(
         number: Int,
@@ -78,12 +78,12 @@ fun CalMetalDetectorConveyorIndicators(
             options = colourOptions,
             selectedOption = colour,
             onOptionChange = onColourChange,
-            helpText = "Select a colour. If 'Other' is selected, describe it in the label.",
+            helpText = "Select a colour. If 'Other' is selected, describe it in the label. Indicator 1 is the bottom of a stack",
             inputLabel = "Label",
             inputValue = label,
             onInputValueChange = onLabelChange,
             isNAToggleEnabled = true,
-            inputMaxLength = 15
+            inputMaxLength = 15,
         )
 
     }
@@ -167,7 +167,8 @@ fun CalMetalDetectorConveyorIndicators(
                     onValueChange = viewModel::setIndicatorsEngineerNotes,
                     helpText = "Enter any notes relevant to this section.",
                     isNAToggleEnabled = false,
-                    maxLength = 50
+                    maxLength = 50,
+                    showInputLabel = false
 
                 )
 

@@ -33,7 +33,7 @@ fun SimpleTextInput(
     modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
-    label: String,
+    label: String = "",
     keyboardType: KeyboardType = KeyboardType.Text,
     isDisabled: Boolean = false,
     maxLength: Int? = null,
@@ -49,7 +49,6 @@ fun SimpleTextInput(
         if (keyboardType == KeyboardType.Text) KeyboardCapitalization.Sentences
         else KeyboardCapitalization.None
 
-    val defaultText = "Enter a value"
 
 
     OutlinedTextField(
@@ -68,7 +67,7 @@ fun SimpleTextInput(
             onValueChange(processed)
         },
 
-        label = { Text(defaultText) },//{ Text(label) },
+        label = { Text(label) },
         singleLine = singleLine,
         minLines = minLines,
         enabled = !isDisabled,

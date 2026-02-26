@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.example.mecca.ui.theme.SnbRed
 
 @Composable
 fun AnimatedActionPill(
@@ -46,16 +47,16 @@ fun AnimatedActionPill(
         onClick = onClick,
         interactionSource = interactionSource,
         shape = RoundedCornerShape(50),
-        color = MaterialTheme.colorScheme.primaryContainer,
+        color = SnbRed,
         modifier = Modifier.scale(scale)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
         ) {
-            Icon(icon, contentDescription = text, tint = Color.Black)
+            Icon(icon, contentDescription = text, tint = Color.White)
             Spacer(Modifier.width(6.dp))
-            Text(text, color = Color.Black, style = MaterialTheme.typography.labelLarge)
+            Text(text, color = Color.White, style = MaterialTheme.typography.labelLarge)
         }
     }
 }

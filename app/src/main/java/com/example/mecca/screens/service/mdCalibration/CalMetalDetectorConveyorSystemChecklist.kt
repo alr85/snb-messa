@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -22,15 +22,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,15 +43,7 @@ import com.example.mecca.core.FieldLimits
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.ConditionState
 import com.example.mecca.formModules.inputs.SimpleTextInput
-import com.example.mecca.ui.theme.FormInputDisabledBorderColor
-import com.example.mecca.ui.theme.FormInputDisabledLabelColor
-import com.example.mecca.ui.theme.FormInputDisabledTextColor
-import com.example.mecca.ui.theme.FormInputFocusedBorderColor
-import com.example.mecca.ui.theme.FormInputFocusedLabelColor
-import com.example.mecca.ui.theme.FormInputFocusedTextColor
-import com.example.mecca.ui.theme.FormInputUnfocusedBorderColor
-import com.example.mecca.ui.theme.FormInputUnfocusedLabelColor
-import com.example.mecca.ui.theme.FormInputUnfocusedTextColor
+import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.FormWrapperSurface
 import com.example.mecca.ui.theme.LazyColumnWithScrollbar
 
@@ -244,7 +233,7 @@ private fun ModernChecklistCard(
 
                 IconButton(onClick = { showHelp = true }) {
                     Icon(
-                        imageVector = Icons.Outlined.Info,
+                        imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
                         contentDescription = "Help"
                     )
                 }
@@ -296,6 +285,8 @@ private fun ModernChecklistCard(
                     Text("Add comment")
                 }
             }
+            Spacer(modifier = Modifier.height(6.dp))
+            FormSpacer()
         }
     }
 

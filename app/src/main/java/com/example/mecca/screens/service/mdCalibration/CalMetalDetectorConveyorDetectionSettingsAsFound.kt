@@ -123,7 +123,8 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
                         viewModel.autoUpdateDetectionSettingPvResult()
                     },
                     helpText = "Eg: 'Password protected', 'Key switch', etc.",
-                    maxLength = 18
+                    maxLength = 18,
+                    showInputLabel = false
                 )
 
                 FormSpacer()
@@ -151,7 +152,8 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
                     onValueChange = viewModel::setDetectionSettingAsFoundEngineerNotes,
                     helpText = "Enter any notes relevant to this section.",
                     isNAToggleEnabled = false,
-                    maxLength = 50
+                    maxLength = 50,
+                    showInputLabel = false
                 )
 
                 Spacer(Modifier.height(60.dp))

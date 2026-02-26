@@ -4,12 +4,8 @@
 
 package com.example.mecca.formModules
 
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -18,21 +14,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.mecca.formModules.inputs.SimpleTextInput
-import com.example.mecca.ui.theme.FormInputDisabledBorderColor
-import com.example.mecca.ui.theme.FormInputDisabledLabelColor
-import com.example.mecca.ui.theme.FormInputDisabledTextColor
-import com.example.mecca.ui.theme.FormInputFocusedBorderColor
-import com.example.mecca.ui.theme.FormInputFocusedLabelColor
-import com.example.mecca.ui.theme.FormInputFocusedTextColor
-import com.example.mecca.ui.theme.FormInputUnfocusedBorderColor
-import com.example.mecca.ui.theme.FormInputUnfocusedLabelColor
-import com.example.mecca.ui.theme.FormInputUnfocusedTextColor
 
 @Composable
 fun LabeledTextFieldWithHelpEdit(
@@ -76,13 +60,14 @@ fun LabeledTextFieldWithHelpEdit(
             onValueChange = { raw ->
                 if (!disabled) onValueChange(raw)
             },
-            label = "Value",
+            label = "",
             keyboardType = keyboardType,
             isDisabled = disabled,
             maxLength = maxLength,
             singleLine = singleLine,
             transformInput = transformInput,
-            showCounter = showCounter
+            showCounter = showCounter,
+
         )
 
     }
