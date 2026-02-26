@@ -229,6 +229,7 @@ private fun CustomerRow(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+            Spacer(modifier = Modifier.width(12.dp))
         }
 
         HorizontalDivider(

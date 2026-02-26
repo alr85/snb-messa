@@ -58,7 +58,7 @@ fun CalMetalDetectorConveyorProductDetails(
                     value = description,
                     onValueChange = viewModel::setProductDescription,
                     helpText = "Enter the details of the product.",
-                    maxLength = 18,
+                    maxLength = 20,
                     showInputLabel = false
                 )
 
@@ -80,7 +80,7 @@ fun CalMetalDetectorConveyorProductDetails(
                     value = libraryNumber,
                     onValueChange = viewModel::setProductLibraryNumber,
                     helpText = "Enter the library number / program number used on the metal detector.",
-                    maxLength = 5,
+                    maxLength = 4,
                     showInputLabel = false
                 )
 
@@ -92,7 +92,7 @@ fun CalMetalDetectorConveyorProductDetails(
                     onValueChange = viewModel::setProductLength,
                     helpText = "Enter the length of the product in mm.",
                     keyboardType = KeyboardType.Number,
-                    maxLength = 4,
+                    maxLength = 3,
                     showInputLabel = false
                 )
 
@@ -104,7 +104,7 @@ fun CalMetalDetectorConveyorProductDetails(
                     onValueChange = viewModel::setProductWidth,
                     helpText = "Enter the width of the product in mm.",
                     keyboardType = KeyboardType.Number,
-                    maxLength = 4,
+                    maxLength = 3,
                     showInputLabel = false
                 )
 
@@ -118,7 +118,7 @@ fun CalMetalDetectorConveyorProductDetails(
                     keyboardType = KeyboardType.Number,
                     // PV required => height is mandatory => do NOT allow N/A toggle
                     isNAToggleEnabled = !viewModel.pvRequired.value,
-                    maxLength = 4,
+                    maxLength = 3,
                     showInputLabel = false
                 )
 

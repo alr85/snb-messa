@@ -162,9 +162,11 @@ fun CalMetalDetectorConveyorStainlessTest(
                         },
                         inputMaxLength = 12
                     )
+
+                    FormSpacer()
                 }
 
-               FormSpacer()
+
 
                 //-----------------------------------------------------
                 // PV RESULT (only when required)

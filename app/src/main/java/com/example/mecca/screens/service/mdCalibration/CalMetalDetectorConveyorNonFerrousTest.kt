@@ -157,9 +157,11 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                         },
                         inputMaxLength = 12
                     )
+
+                    FormSpacer()
                 }
 
-                FormSpacer()
+
 
                 // ⭐ PV Result (only when required)
                 if (viewModel.pvRequired.value) {

@@ -266,7 +266,8 @@ private fun ModernChecklistCard(
                         maxLength = FieldLimits.CHECKLIST_COMMENTS,
                         transformInput = null,
                         isDisabled = false,
-                        minLines = 2
+                        minLines = 2,
+
                     )
 
 

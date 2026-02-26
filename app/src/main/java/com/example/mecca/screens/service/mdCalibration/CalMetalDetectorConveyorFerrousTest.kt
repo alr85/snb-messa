@@ -165,9 +165,11 @@ fun CalMetalDetectorConveyorFerrousTest(
                         },
                         inputMaxLength = 12,
                     )
+
+                    FormSpacer()
                 }
 
-                FormSpacer()
+
 
                 //-----------------------------------------------------
                 //  PV Result (if required)

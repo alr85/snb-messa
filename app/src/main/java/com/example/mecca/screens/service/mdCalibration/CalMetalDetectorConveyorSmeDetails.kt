@@ -237,9 +237,11 @@ fun CalMetalDetectorConveyorSmeDetails(
                         isNAToggleEnabled = true,
                         maxLength = 25
                     )
+
+                    FormSpacer()
                 }
 
-                FormSpacer()
+
 
                 if (viewModel.pvRequired.value) {
                     LabeledFourOptionRadioWithHelp(

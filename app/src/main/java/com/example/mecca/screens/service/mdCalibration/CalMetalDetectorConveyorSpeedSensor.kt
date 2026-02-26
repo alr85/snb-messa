@@ -142,11 +142,11 @@ fun CalMetalDetectorConveyorSpeedSensor(
                         isNAToggleEnabled = false
                     )
 
+                    FormSpacer()
 
 
                     if (testMethod == "Other") {
 
-                        FormSpacer()
 
                         LabeledTextFieldWithHelp(
                             label = "Other Test Method",
@@ -159,9 +159,11 @@ fun CalMetalDetectorConveyorSpeedSensor(
                             isNAToggleEnabled = false,
                             maxLength = 12
                         )
+
+                        FormSpacer()
+
                     }
 
-                    FormSpacer()
 
                     LabeledMultiSelectDropdownWithHelp(
                         label = "Test Result",
@@ -212,9 +214,11 @@ fun CalMetalDetectorConveyorSpeedSensor(
                         helpText = "Is a controlled restart required after a fault?",
                         isNAToggleEnabled = false
                     )
+
+                    FormSpacer()
                 }
 
-                FormSpacer()
+
 
                 //-----------------------------------------------------
                 // ⭐ PV RESULT (only when required)

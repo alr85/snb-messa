@@ -67,7 +67,7 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
                     value = productPeakSignalAsFound,
                     onValueChange = viewModel::setProductPeakSignalAsFound,
                     helpText = "Enter the 'As Found' peak signal from the product alone.",
-                    maxLength = 10
+                    maxLength = 15
                 )
 
                 FormSpacer()

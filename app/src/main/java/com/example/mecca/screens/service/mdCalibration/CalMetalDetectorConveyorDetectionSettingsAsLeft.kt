@@ -105,7 +105,7 @@ fun CalMetalDetectorConveyorDetectionSettingsAsLeft(
                             }
                         },
                         helpText = "",
-                        maxLength = 18
+                        maxLength = 15
                     )
 
                     FormSpacer()

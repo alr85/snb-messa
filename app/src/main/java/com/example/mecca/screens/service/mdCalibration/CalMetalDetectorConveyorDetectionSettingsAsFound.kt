@@ -109,7 +109,7 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
                         value = valueState.value,
                         onValueChange = { valueSetters[index](it) },
                         helpText = "Enter the detection setting value. Tap the label to rename.",
-                        maxLength = 18
+                        maxLength = 15
                     )
 
                     FormSpacer()
@@ -123,7 +123,7 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
                         viewModel.autoUpdateDetectionSettingPvResult()
                     },
                     helpText = "Eg: 'Password protected', 'Key switch', etc.",
-                    maxLength = 18,
+                    maxLength = 25,
                     showInputLabel = false
                 )
 
