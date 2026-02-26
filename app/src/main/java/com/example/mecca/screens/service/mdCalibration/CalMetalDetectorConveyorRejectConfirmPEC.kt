@@ -167,6 +167,8 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                             isNAToggleEnabled = false,
                             maxLength = 12
                         )
+
+                        FormSpacer()
                     }
 
                     LabeledMultiSelectDropdownWithHelp(
@@ -234,9 +236,10 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                         helpText = "Select one option from the dropdown.",
                         isNAToggleEnabled = false
                     )
+
+                    FormSpacer()
                 }
 
-                FormSpacer()
 
                 //-----------------------------------------------------
                 // ⭐ PV RESULT (only when required)

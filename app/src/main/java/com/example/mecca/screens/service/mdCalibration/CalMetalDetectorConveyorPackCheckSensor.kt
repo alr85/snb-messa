@@ -152,9 +152,11 @@ fun CalMetalDetectorConveyorPackCheckSensor(
                             isNAToggleEnabled = false,
                             maxLength = 12
                         )
+
+                        FormSpacer()
                     }
 
-                    FormSpacer()
+
 
                     LabeledMultiSelectDropdownWithHelp(
                         label = "Test Result",
@@ -204,9 +206,11 @@ fun CalMetalDetectorConveyorPackCheckSensor(
                         helpText = "Does the fault require a controlled restart after reset?",
                         isNAToggleEnabled = false
                     )
+
+                    FormSpacer()
                 }
 
-                FormSpacer()
+
 
                 //-----------------------------------------------------
                 // ⭐ PV RESULT (only when required)

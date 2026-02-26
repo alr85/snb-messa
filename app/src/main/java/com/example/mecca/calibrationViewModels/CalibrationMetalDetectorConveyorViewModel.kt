@@ -342,6 +342,7 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _infeedSensorFitted.value = existingCalibration.infeedSensorFitted.toYesNoState()
                 _infeedSensorDetail.value = existingCalibration.infeedSensorDetail
                 _infeedSensorTestMethod.value = existingCalibration.infeedSensorTestMethod
+                _infeedSensorTestMethodOther.value = existingCalibration.infeedSensorTestMethodOther
                 _infeedSensorTestResult.value = existingCalibration.infeedSensorTestResult
                     .removeSurrounding("[", "]")
                     .split(",")
@@ -358,21 +359,35 @@ class CalibrationMetalDetectorConveyorViewModel(
 
                 _rejectConfirmSensorFitted.value =
                     existingCalibration.rejectConfirmSensorFitted.toYesNoState()
+
                 _rejectConfirmSensorDetail.value = existingCalibration.rejectConfirmSensorDetail
+
                 _rejectConfirmSensorTestMethod.value =
                     existingCalibration.rejectConfirmSensorTestMethod
+
+                _rejectConfirmSensorTestMethodOther.value =
+                    existingCalibration.rejectConfirmSensorTestMethodOther
+
+
                 _rejectConfirmSensorTestResult.value =
                     existingCalibration.rejectConfirmSensorTestResult
                         .removeSurrounding("[", "]")
                         .split(",")
                         .map { it.trim() }
                         .filter { it.isNotBlank() }
+
+                _rejectConfirmSensorStopPosition.value =
+                    existingCalibration.rejectConfirmSensorStopPosition
+
                 _rejectConfirmSensorLatched.value =
                     existingCalibration.rejectConfirmSensorLatched.toYesNoState()
+
                 _rejectConfirmSensorCR.value =
                     existingCalibration.rejectConfirmSensorCR.toYesNoState()
+
                 _rejectConfirmSensorEngineerNotes.value =
                     existingCalibration.rejectConfirmSensorEngineerNotes
+
                 _rejectConfirmSensorTestPvResult.value =
                     existingCalibration.rejectConfirmSensorTestPvResult
 
@@ -380,6 +395,7 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _binFullSensorFitted.value = existingCalibration.binFullSensorFitted.toYesNoState()
                 _binFullSensorDetail.value = existingCalibration.binFullSensorDetail
                 _binFullSensorTestMethod.value = existingCalibration.binFullSensorTestMethod
+                _binFullSensorTestMethodOther.value = existingCalibration.binFullSensorTestMethodOther
                 _binFullSensorTestResult.value = existingCalibration.binFullSensorTestResult
                     .removeSurrounding("[", "]")
                     .split(",")
@@ -407,6 +423,8 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _backupSensorEngineerNotes.value = existingCalibration.backupSensorEngineerNotes
                 _backupSensorTestPvResult.value = existingCalibration.backupSensorTestPvResult
 
+                _backupSensorTestMethodOther.value = existingCalibration.backupSensorTestMethodOther
+
 
 
                 _airPressureSensorFitted.value =
@@ -429,6 +447,10 @@ class CalibrationMetalDetectorConveyorViewModel(
                     existingCalibration.airPressureSensorEngineerNotes
                 _airPressureSensorTestPvResult.value =
                     existingCalibration.airPressureSensorTestPvResult
+                _airPressureSensorTestMethodOther.value =
+                    existingCalibration.airPressureSensorTestMethodOther
+
+
 
 
 
@@ -436,6 +458,8 @@ class CalibrationMetalDetectorConveyorViewModel(
                     existingCalibration.packCheckSensorFitted.toYesNoState()
                 _packCheckSensorDetail.value = existingCalibration.packCheckSensorDetail
                 _packCheckSensorTestMethod.value = existingCalibration.packCheckSensorTestMethod
+                _packCheckSensorTestMethodOther.value =
+                    existingCalibration.packCheckSensorTestMethodOther
                 _packCheckSensorTestResult.value = existingCalibration.packCheckSensorTestResult
                     .removeSurrounding("[", "]")
                     .split(",")
@@ -454,6 +478,7 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _speedSensorFitted.value = existingCalibration.speedSensorFitted.toYesNoState()
                 _speedSensorDetail.value = existingCalibration.speedSensorDetail
                 _speedSensorTestMethod.value = existingCalibration.speedSensorTestMethod
+                _speedSensorTestMethodOther.value = existingCalibration.speedSensorTestMethodOther
                 _speedSensorTestResult.value = existingCalibration.speedSensorTestResult
                     .removeSurrounding("[", "]")
                     .split(",")

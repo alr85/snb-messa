@@ -41,6 +41,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
@@ -339,24 +340,26 @@ private fun SystemCard(
             .clip(RoundedCornerShape(8.dp))
             .width(180.dp)
     ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             Text(
                 text = mdSystem.serialNumber,
-                modifier = Modifier
-                    .padding(8.dp)
-                    .align(Alignment.CenterStart),
-                textAlign = TextAlign.Center,
-                fontSize = 16.sp
+                modifier = Modifier.weight(1f),
+                fontSize = 16.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
 
             Icon(
                 imageVector = if (mdSystem.isSynced) Icons.Default.CloudDone else Icons.Default.CloudOff,
                 contentDescription = if (mdSystem.isSynced) "Synced to cloud" else "Not synced to cloud",
                 tint = if (mdSystem.isSynced) Color.Green else Color.Red,
-                modifier = Modifier
-                    .size(20.dp)
-                    .align(Alignment.TopEnd)
-                    .padding(top = 8.dp, end = 8.dp)
+                modifier = Modifier.size(20.dp)
             )
         }
 
@@ -389,7 +392,9 @@ private fun SystemCard(
                 .padding(8.dp)
                 .fillMaxWidth(),
             textAlign = TextAlign.Center,
-            fontSize = 14.sp
+            fontSize = 14.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
 
         Text(
@@ -398,7 +403,9 @@ private fun SystemCard(
                 .padding(8.dp)
                 .fillMaxWidth(),
             textAlign = TextAlign.Center,
-            fontSize = 14.sp
+            fontSize = 14.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }

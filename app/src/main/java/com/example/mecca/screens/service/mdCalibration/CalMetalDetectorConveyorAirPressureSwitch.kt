@@ -153,9 +153,10 @@ fun CalMetalDetectorConveyorAirPressureSensor(
                             isNAToggleEnabled = false,
                             maxLength = 12
                         )
+                        FormSpacer()
                     }
 
-                    FormSpacer()
+
 
                     LabeledMultiSelectDropdownWithHelp(
                         label = "Test Result",
@@ -206,9 +207,10 @@ fun CalMetalDetectorConveyorAirPressureSensor(
                         helpText = "Is a controlled restart required after the fault condition?",
                         isNAToggleEnabled = false
                     )
+                    FormSpacer()
                 }
 
-                FormSpacer()
+
 
                 //-----------------------------------------------------
                 // ⭐ PV RESULT (only when required)

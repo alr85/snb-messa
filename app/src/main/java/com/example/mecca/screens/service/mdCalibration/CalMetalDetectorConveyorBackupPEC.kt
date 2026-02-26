@@ -138,6 +138,8 @@ fun CalMetalDetectorConveyorBackupPEC(
                         isNAToggleEnabled = false
                     )
 
+                    FormSpacer()
+
                     if (testMethod == "Other") {
                         LabeledTextFieldWithHelp(
                             label = "Other Test Method",
@@ -154,7 +156,7 @@ fun CalMetalDetectorConveyorBackupPEC(
                         FormSpacer()
                     }
 
-                    FormSpacer()
+
 
                     LabeledMultiSelectDropdownWithHelp(
                         label = "Test Result",
@@ -208,9 +210,11 @@ fun CalMetalDetectorConveyorBackupPEC(
                         helpText = "Is a controlled restart required after a fault?",
                         isNAToggleEnabled = false
                     )
+
+                    FormSpacer()
                 }
 
-                FormSpacer()
+
 
                 //-----------------------------------------------------
                 // ⭐ PV RESULT (only when required)
@@ -234,10 +238,10 @@ fun CalMetalDetectorConveyorBackupPEC(
                         Otherwise auto-fail. You may override manually.
                     """.trimIndent()
                     )
-                    FormSpacer()
+
                 }
 
-
+                FormSpacer()
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Comments",

@@ -161,9 +161,11 @@ fun CalMetalDetectorConveyorInfeedPEC(
                             isNAToggleEnabled = false,
                             maxLength = 12
                         )
+
+                        FormSpacer()
                     }
 
-                    FormSpacer()
+
 
                     LabeledMultiSelectDropdownWithHelp(
                         label = "Test Result",
@@ -218,9 +220,10 @@ fun CalMetalDetectorConveyorInfeedPEC(
                         helpText = "Is a controlled restart required after a fault?",
                         isNAToggleEnabled = false
                     )
+
+                    FormSpacer()
                 }
 
-                FormSpacer()
 
                 // -----------------------------------------------------
                 // ⭐ PV RESULT (only when required)

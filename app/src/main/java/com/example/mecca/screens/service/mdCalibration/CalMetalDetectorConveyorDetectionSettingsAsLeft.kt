@@ -82,7 +82,7 @@ fun CalMetalDetectorConveyorDetectionSettingsAsLeft(
                     )
                 }
 
-                FormSpacer()
+                Spacer(modifier = Modifier.height(8.dp))
 
                 // Detection setting fields
                 labelStates.indices.forEach { index ->

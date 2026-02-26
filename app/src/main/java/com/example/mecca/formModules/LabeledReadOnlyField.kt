@@ -38,7 +38,9 @@ fun LabeledReadOnlyField(
             colors = OutlinedTextFieldDefaults.colors(
                 disabledBorderColor = Color.Gray,
                 disabledTextColor = Color.Unspecified,
-                disabledLabelColor = Color.Gray
+                disabledLabelColor = Color.Gray,
+                unfocusedContainerColor = Color.LightGray,
+                focusedContainerColor = Color.LightGray,
             )
         )
     }
