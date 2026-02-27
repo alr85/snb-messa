@@ -42,7 +42,7 @@ interface ApiService {
     suspend fun getSystemTypes(): Response<List<SystemType>>
 
     @POST("MdSystems")
-    suspend fun postMdSystem(@Body newMdSystem: MdSystemLocal): Response<MdSystemLocal>
+    suspend fun postMdSystem(@Body newMdSystem: MdSystemCloud): Response<MdSystem>
 
     @GET("MdSystems/checkSerialNumberExists/{serialNumber}")
     suspend fun checkSerialNumberExists(

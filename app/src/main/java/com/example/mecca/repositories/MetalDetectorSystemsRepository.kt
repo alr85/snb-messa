@@ -31,6 +31,13 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
     // Function to fetch data from the API and store it in the database
     suspend fun fetchAndStoreMdSystems(): FetchResult {
 
+        InAppLogger.d("Checking for unsynced systems...")
+
+        val pendingCount = db.mdSystemDAO().countSystemsNeedingUpload()
+        if (pendingCount > 0) {
+            return FetchResult.Failure("Unsynced systems exist ($pendingCount). Sync them before downloading.")
+        }
+
         InAppLogger.d("Fetching MD systems...")
 
         try {
@@ -278,6 +285,128 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
         } else {
             db.mdSystemDAO().updateIsSynced(false, cloudId, localId)
             InAppLogger.d("📴 Offline: local update only, marked unsynced")
+        }
+    }
+
+    suspend fun uploadUnsyncedSystems(context: Context): FetchResult {
+
+        InAppLogger.d("uploadUnsyncedSystems() called")
+
+
+        val dao = db.mdSystemDAO()
+        val pending = dao.getSystemsNeedingUpload()
+
+        if (pending.isEmpty()) return FetchResult.Success("No unsynced systems to upload.")
+
+        if (!isNetworkAvailable(context)) {
+            return FetchResult.Failure("Offline. ${pending.size} unsynced system(s) exist. Sync before downloading.")
+        }
+
+        var uploaded = 0
+        val blocked = mutableListOf<String>()
+        val failed = mutableListOf<String>()
+
+        for (sys in pending) {
+            val serial = sys.serialNumber
+
+            // If it already has a cloudId, just push an update
+            val cloudId = sys.cloudId
+            if (cloudId != null && cloudId != 0) {
+                try {
+                    val systemCloud = MdSystemCloud(
+                        modelId = sys.modelId,
+                        customerId = sys.customerId,
+                        serialNumber = sys.serialNumber,
+                        apertureWidth = sys.apertureWidth,
+                        apertureHeight = sys.apertureHeight,
+                        lastCalibration = sys.lastCalibration,
+                        addedDate = sys.addedDate,
+                        calibrationInterval = sys.calibrationInterval,
+                        systemTypeId = sys.systemTypeId,
+                        lastLocation = sys.lastLocation
+                    )
+
+                    val resp = apiService.updateMdSystem(cloudId, systemCloud)
+                    if (resp.isSuccessful) {
+                        // mark synced by cloudId/localId (your DAO supports this)
+                        dao.updateIsSynced(true, cloudId, sys.id)
+                        uploaded++
+                    } else {
+                        failed += "$serial (update failed ${resp.code()})"
+                    }
+                } catch (e: Exception) {
+                    failed += "$serial (update exception: ${e.message})"
+                }
+                continue
+            }
+
+            // No cloudId: attempt POST if serial doesn't exist
+            val exists = try {
+                apiService.checkSerialNumberExists(serial)
+            } catch (e: Exception) {
+                failed += "$serial (serial check failed: ${e.message})"
+                continue
+            }
+
+            if (exists) {
+                // We can't link to the correct cloud row without an endpoint that returns the ID.
+                blocked += "$serial (exists in cloud, id unknown)"
+                continue
+            }
+
+            // Serial not found: safe to POST
+            try {
+                val postResp = apiService.postMdSystem(
+                    MdSystemLocal(
+                        // Important: don't send local auto id/temp fields unless your API ignores them safely.
+                        // But your API currently accepts MdSystemLocal, so we'll fill required fields.
+                        cloudId = null,
+                        tempId = sys.tempId,
+                        modelId = sys.modelId,
+                        customerId = sys.customerId,
+                        serialNumber = sys.serialNumber,
+                        apertureWidth = sys.apertureWidth,
+                        apertureHeight = sys.apertureHeight,
+                        lastCalibration = sys.lastCalibration,
+                        addedDate = sys.addedDate,
+                        calibrationInterval = sys.calibrationInterval,
+                        systemTypeId = sys.systemTypeId,
+                        isSynced = true,
+                        lastLocation = sys.lastLocation
+                    )
+                )
+
+                if (postResp.isSuccessful) {
+                    val newCloudId = postResp.body()?.cloudId ?: postResp.body()?.id
+                    // Your POST returns MdSystemLocal. Depending on your API, the id might come back as id or cloudId.
+                    // We’ll handle either.
+
+                    if (newCloudId != null && newCloudId != 0 && sys.tempId != null) {
+                        dao.updateSyncStatus(isSynced = true, tempId = sys.tempId, newCloudId = newCloudId)
+                        uploaded++
+                    } else {
+                        failed += "$serial (posted but no cloud id returned)"
+                    }
+                } else {
+                    failed += "$serial (post failed ${postResp.code()})"
+                }
+            } catch (e: Exception) {
+                failed += "$serial (post exception: ${e.message})"
+            }
+        }
+
+        return when {
+            failed.isEmpty() && blocked.isEmpty() ->
+                FetchResult.Success("Uploaded/updated $uploaded system(s).")
+
+            else -> {
+                val msg = buildString {
+                    append("Uploaded/updated $uploaded system(s). ")
+                    if (blocked.isNotEmpty()) append("Blocked: ${blocked.joinToString()}. ")
+                    if (failed.isNotEmpty()) append("Failed: ${failed.joinToString()}.")
+                }
+                FetchResult.Failure(msg)
+            }
         }
     }
 }

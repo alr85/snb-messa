@@ -83,7 +83,7 @@ fun CalMetalDetectorConveyorIndicators(
             inputValue = label,
             onInputValueChange = onLabelChange,
             isNAToggleEnabled = true,
-            inputMaxLength = 15,
+            inputMaxLength = 18,
         )
 
     }

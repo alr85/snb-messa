@@ -83,13 +83,13 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
                     helpText = "Enter the Ferrous sensitivity & peak signals (Leading / Middle / Trailing).",
                     isNAToggleEnabled = true,
                     firstInputKeyboardType = KeyboardType.Decimal,
-                    secondInputKeyboardType = KeyboardType.Decimal,
+                    secondInputKeyboardType = KeyboardType.Text,
 
                     firstMaxLength = 4,
-                    secondMaxLength = 20,
+                    secondMaxLength = 25,
 
                     firstTransform = InputTransforms.decimal,
-                    secondTransform = InputTransforms.decimal
+
                 )
 
                 FormSpacer()
@@ -105,13 +105,12 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
                     helpText = "Enter the Non-Ferrous sensitivity & peak signals.",
                     isNAToggleEnabled = true,
                     firstInputKeyboardType = KeyboardType.Decimal,
-                    secondInputKeyboardType = KeyboardType.Decimal,
-
+                    secondInputKeyboardType = KeyboardType.Text,
                     firstMaxLength = 4,
                     secondMaxLength =20,
 
                     firstTransform = InputTransforms.decimal,
-                    secondTransform = InputTransforms.decimal
+
                 )
 
                 FormSpacer()
@@ -127,13 +126,12 @@ fun CalMetalDetectorConveyorSensitivityAsFound(
                     helpText = "Enter the Stainless Steel sensitivity & peak signals.",
                     isNAToggleEnabled = true,
                     firstInputKeyboardType = KeyboardType.Decimal,
-                    secondInputKeyboardType = KeyboardType.Decimal,
+                    secondInputKeyboardType = KeyboardType.Text,
 
                     firstMaxLength = 4,
                     secondMaxLength = 20,
 
                     firstTransform = InputTransforms.decimal,
-                    secondTransform = InputTransforms.decimal
                 )
 
                 FormSpacer()

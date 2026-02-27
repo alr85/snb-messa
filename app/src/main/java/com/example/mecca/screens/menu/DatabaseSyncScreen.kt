@@ -44,6 +44,7 @@ import com.example.mecca.repositories.SystemTypeRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.compose.ui.platform.LocalContext
 
 private enum class SyncStatus {
     Idle, Running, Success, Failure
@@ -69,7 +70,9 @@ fun DatabaseSyncScreen(
     snackbarHostState: SnackbarHostState
 ) {
 
-    val tasks: List<SyncTask> = remember {
+    val context = LocalContext.current
+
+    val tasks: List<SyncTask> = remember(context) {
         listOf(
             SyncTask("Customers") {
                 when (val r = repositoryCustomer.fetchAndStoreCustomers()) {
@@ -85,6 +88,12 @@ fun DatabaseSyncScreen(
             },
             SyncTask("Metal Detector Models") {
                 when (val r = repositoryMdModels.fetchAndStoreMdModels()) {
+                    is FetchResult.Success -> r.message
+                    is FetchResult.Failure -> "Failed: ${r.errorMessage}"
+                }
+            },
+            SyncTask("Upload Unsynced MD Systems") {
+                when (val r = repositoryMdSystems.uploadUnsyncedSystems(context)) {
                     is FetchResult.Success -> r.message
                     is FetchResult.Failure -> "Failed: ${r.errorMessage}"
                 }
@@ -133,7 +142,7 @@ fun DatabaseSyncScreen(
         taskStates = taskStates.toMutableMap().apply { put(name, state) }
     }
 
-    suspend fun runSingleTask(task: SyncTask) {
+    suspend fun runSingleTask(task: SyncTask): Boolean {
 
         withContext(Dispatchers.Main) {
             setTaskState(task.name, TaskUiState(SyncStatus.Running, "Syncing..."))
@@ -142,18 +151,15 @@ fun DatabaseSyncScreen(
         val msg = runCatching { task.run() }
             .getOrElse { "Failed: ${it.message ?: it.javaClass.simpleName}" }
 
-        val status =
-            if (msg.startsWith("Failed", true)) SyncStatus.Failure
-            else SyncStatus.Success
+        val isFailure = msg.startsWith("Failed", true)
+        val status = if (isFailure) SyncStatus.Failure else SyncStatus.Success
 
         withContext(Dispatchers.Main) {
-
             setTaskState(task.name, TaskUiState(status, msg))
-
-            if (status == SyncStatus.Failure) {
-                snackbarHostState.showSnackbar("${task.name} failed")
-            }
+            if (isFailure) snackbarHostState.showSnackbar("${task.name} failed")
         }
+
+        return !isFailure
     }
 
     Column(
@@ -200,11 +206,18 @@ fun DatabaseSyncScreen(
 
                                     withContext(Dispatchers.Main) {
                                         currentIndex = i
-                                        overallMessage =
-                                            "Syncing ${i + 1}/$total: ${task.name}"
+                                        overallMessage = "Syncing ${i + 1}/$total: ${task.name}"
                                     }
 
-                                    runSingleTask(task)
+                                    val ok = runSingleTask(task)
+
+                                    if (!ok) {
+                                        withContext(Dispatchers.Main) {
+                                            overallMessage = "Stopped: ${task.name} failed"
+                                            isSyncingAll = false
+                                        }
+                                        return@launch
+                                    }
 
                                     withContext(Dispatchers.Main) {
                                         currentIndex = i + 1

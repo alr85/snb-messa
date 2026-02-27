@@ -114,10 +114,24 @@ interface MetalDetectorSystemsDAO {
     @Query("SELECT * FROM MdSystems WHERE cloudId = :cloudId LIMIT 1")
     suspend fun getSystemByCloudId(cloudId: Int): MdSystemLocal?
 
-    @Query("SELECT * FROM MdSystems WHERE cloudId = :localId LIMIT 1")
+    @Query("SELECT * FROM MdSystems WHERE id = :localId LIMIT 1")
     suspend fun getSystemByLocalId(localId: Int): MdSystemLocal?
 
     @Query("SELECT * FROM MdSystems WHERE tempId = :tempId LIMIT 1")
     suspend fun getSystemByTempId(tempId: Int): MdSystemLocal?
+
+    @Query("SELECT * FROM MdSystems WHERE isSynced = 0 OR cloudId = 0")
+    suspend fun getUnsyncedOrNoCloudId(): List<MdSystemLocal>
+
+    @Query("SELECT * FROM MdSystems WHERE isSynced = 0 OR cloudId IS NULL OR cloudId = 0")
+    suspend fun getSystemsNeedingUpload(): List<MdSystemLocal>
+
+    @Query("SELECT COUNT(*) FROM MdSystems WHERE isSynced = 0 OR cloudId IS NULL OR cloudId = 0")
+    suspend fun countSystemsNeedingUpload(): Int
+
+
+
+
+
 
 }

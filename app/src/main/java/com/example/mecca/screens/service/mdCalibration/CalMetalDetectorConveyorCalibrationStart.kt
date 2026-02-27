@@ -94,7 +94,7 @@ fun CalMetalDetectorConveyorCalibrationStart(
                 onValueChange = viewModel::setNewLocation,
                 helpText = "Edit if the system has moved.",
                 isNAToggleEnabled = false,
-                maxLength = 12,
+                maxLength = 20,
                 showInputLabel = false
             )
 
@@ -116,6 +116,8 @@ fun CalMetalDetectorConveyorCalibrationStart(
                 helpText = "..."
             )
 
+            FormSpacer()
+
             if (!canPerformCalibration) {
                 Spacer(Modifier.height(8.dp))
 
@@ -128,9 +130,11 @@ fun CalMetalDetectorConveyorCalibrationStart(
                     maxLength = 50,
                     showInputLabel = false
                 )
+
+                FormSpacer()
             }
 
-            FormSpacer()
+
 
             if (canPerformCalibration) {
                 LabeledRadioButtonWithHelp(

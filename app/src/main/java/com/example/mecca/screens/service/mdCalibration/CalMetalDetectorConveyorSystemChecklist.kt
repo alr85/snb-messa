@@ -263,7 +263,7 @@ private fun ModernChecklistCard(
                         onValueChange = model.onCommentsChange,
                         label = if (commentsRequired) "Comments (required)" else "Comments",
                         singleLine = false,
-                        maxLength = FieldLimits.CHECKLIST_COMMENTS,
+                        maxLength = 30,
                         transformInput = null,
                         isDisabled = false,
                         minLines = 2,
