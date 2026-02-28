@@ -2,6 +2,7 @@ package com.example.mecca.dataClasses
 
 import android.os.Parcelable
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
 
@@ -13,7 +14,7 @@ data class MdSystem(
     val serialNumber: String,
     val apertureWidth: Int,
     val apertureHeight: Int,
-    val lastCalibration: String,
+    val lastCalibration: String?,
     val addedDate: String,
     val calibrationInterval: Int,
     val systemTypeId: Int,
@@ -27,7 +28,7 @@ data class MdSystemCloud(
     val serialNumber: String,
     val apertureWidth: Int,
     val apertureHeight: Int,
-    val lastCalibration: String,
+    val lastCalibration: String?,
     val addedDate: String,
     val calibrationInterval: Int,
     val systemTypeId: Int,
@@ -40,7 +41,10 @@ data class MdSystemCloud(
 // What it does: Represents a table in the local Room database. Each field in the class corresponds to a column in the table.
 // How it interacts: This class is used to define the structure of data that will be stored in the database.
 
-@Entity(tableName = "MdSystems")
+@Entity(
+    tableName = "MdSystems",
+    indices = [Index(value = ["serialNumber"], unique = true)]
+)
 data class MdSystemLocal(
     @PrimaryKey(autoGenerate = true) var id: Int? = null,
     var cloudId: Int? = null,
@@ -50,7 +54,7 @@ data class MdSystemLocal(
     val serialNumber: String,
     val apertureWidth: Int,
     val apertureHeight: Int,
-    val lastCalibration: String,
+    var lastCalibration: String?,
     val addedDate: String,
     val calibrationInterval: Int,
     val systemTypeId: Int,
@@ -68,7 +72,7 @@ data class MetalDetectorWithFullDetails(
     val serialNumber: String,          // From MdSystems
     val apertureWidth: Int,            // From MdSystems
     val apertureHeight: Int,           // From MdSystems
-    val lastCalibration: String,       // From MdSystems
+    val lastCalibration: String?,       // From MdSystems
     val addedDate: String,             // From MdSystems
     val calibrationInterval: Int,      // From MdSystems
     val systemTypeId: Int,               //FromMdSystems
@@ -80,5 +84,3 @@ data class MetalDetectorWithFullDetails(
     val fusionID: Int,
     val lastLocation: String
 ): Parcelable
-
-

@@ -30,71 +30,57 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
 
     // Function to fetch data from the API and store it in the database
     suspend fun fetchAndStoreMdSystems(): FetchResult {
-
-        InAppLogger.d("Checking for unsynced systems...")
-
-        val pendingCount = db.mdSystemDAO().countSystemsNeedingUpload()
-        if (pendingCount > 0) {
-            return FetchResult.Failure("Unsynced systems exist ($pendingCount). Sync them before downloading.")
-        }
-
-        InAppLogger.d("Fetching MD systems...")
+        InAppLogger.d("fetchAndStoreMdSystems() called")
 
         try {
             val response = apiService.getMdSystems()
-            InAppLogger.d("API call to fetch MD systems complete. response = $response")
-
             if (response.isSuccessful) {
                 val apiMdSystems = response.body()
-                //InAppLogger.d("API call successful. body = $apiMdSystems")
 
                 if (apiMdSystems != null) {
-                    try {
-                        db.mdSystemDAO().deleteAllMdSystems()
-                        InAppLogger.d("Cleared local MD systems database")
-                    } catch (e: Exception) {
-                        val errorMessage = "Error clearing MD systems database: ${e.message}"
-                        InAppLogger.e(errorMessage)
-                        return FetchResult.Failure(errorMessage)
-                    }
+                    val dao = db.mdSystemDAO()
+                    
+                    // 1) Get all local systems that are NOT synced yet (unsynced/no cloudId)
+                    val unsyncedSystems = dao.getSystemsNeedingUpload()
+                    InAppLogger.d("Preserving ${unsyncedSystems.size} unsynced systems.")
 
-                    val mdSystemsLocal = apiMdSystems.mapIndexed { _, apiMdSystems ->
+                    // 2) Delete ONLY synced systems from local DB
+                    dao.deleteSyncedMdSystems() 
+                    InAppLogger.d("Cleared synced MD systems from local database")
+
+                    // 3) Map API data to local entities
+                    val mdSystemsLocal = apiMdSystems.map { apiSystem ->
                         MdSystemLocal(
-                            modelId = apiMdSystems.modelId,
-                            cloudId = apiMdSystems.id,
-                            customerId = apiMdSystems.customerId,
-                            serialNumber = apiMdSystems.serialNumber,
-                            apertureWidth = apiMdSystems.apertureWidth,
-                            apertureHeight = apiMdSystems.apertureHeight,
-                            lastCalibration = apiMdSystems.lastCalibration,
-                            addedDate = apiMdSystems.addedDate,
-                            calibrationInterval = apiMdSystems.calibrationInterval,
-                            systemTypeId = apiMdSystems.systemTypeId,
+                            modelId = apiSystem.modelId,
+                            cloudId = apiSystem.id,
+                            customerId = apiSystem.customerId,
+                            serialNumber = apiSystem.serialNumber,
+                            apertureWidth = apiSystem.apertureWidth,
+                            apertureHeight = apiSystem.apertureHeight,
+                            lastCalibration = apiSystem.lastCalibration,
+                            addedDate = apiSystem.addedDate,
+                            calibrationInterval = apiSystem.calibrationInterval,
+                            systemTypeId = apiSystem.systemTypeId,
                             tempId = 0,
                             isSynced = true,
-                            lastLocation = apiMdSystems.lastLocation
+                            lastLocation = apiSystem.lastLocation
                         )
                     }
 
-                    //InAppLogger.d("Systems to be inserted into the local database: $mdSystemsLocal")
-                    db.mdSystemDAO().insertMdSystem(mdSystemsLocal)
-                    InAppLogger.d("Systems successfully inserted into the local database.")
+                    // 4) Insert the fresh cloud data (synced)
+                    dao.insertMdSystem(mdSystemsLocal)
+                    InAppLogger.d("Cloud systems inserted into local database.")
 
                     return FetchResult.Success("Metal Detector Sync Complete")
                 } else {
-                    val errorMessage = "No data found."
-                    InAppLogger.e(errorMessage)
-                    return FetchResult.Failure(errorMessage)
+                    return FetchResult.Failure("No data found from server.")
                 }
             } else {
-                val errorMessage = "Error: ${response.code()}, Message: ${response.message()}"
-                InAppLogger.e(errorMessage)
-                return FetchResult.Failure(errorMessage)
+                return FetchResult.Failure("Error: ${response.code()}, Message: ${response.message()}")
             }
         } catch (e: Exception) {
-            val errorMessage = "Exception occurred: ${e.message}"
-            InAppLogger.e(errorMessage)
-            return FetchResult.Failure(errorMessage)
+            InAppLogger.e("Exception occurred: ${e.message}")
+            return FetchResult.Failure("Sync failed: ${e.message}")
         }
     }
 
@@ -196,22 +182,21 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
         val today = LocalDateTime.now()
         val todayString = today.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
 
-        val newMetalDetector = MdSystemLocal(
+        val systemCloud = MdSystemCloud(
+            modelId = modelId,
             customerId = customerID,
             serialNumber = serialNumber,
             apertureWidth = apertureWidth,
             apertureHeight = apertureHeight,
             systemTypeId = systemTypeId,
-            modelId = modelId,
             addedDate = todayString,
             calibrationInterval = calibrationInterval,
             lastCalibration = "",
-            isSynced = true,
             lastLocation = lastLocation
         )
 
         try {
-            val response = apiService.postMdSystem(newMetalDetector)
+            val response = apiService.postMdSystem(systemCloud)
             InAppLogger.d("Calling API... Response: ${response.code()}")
 
             if (response.isSuccessful) {
@@ -240,19 +225,12 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
             else -> null
         }
 
-        InAppLogger.d("System retrieved: $system")
-
-
         if (system == null) {
             InAppLogger.e("System not found locally")
             return
         }
 
-        InAppLogger.d("Checking network availability...")
-
-
         if (isNetworkAvailable(context) && cloudId != null) {
-            InAppLogger.d("Network available, attempting cloud sync with cloudId=$cloudId")
             val systemCloud = MdSystemCloud(
                 modelId = system.modelId,
                 customerId = system.customerId,
@@ -267,31 +245,25 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
             )
 
             try {
-
-
                 val response = apiService.updateMdSystem(cloudId, systemCloud)
                 if (response.isSuccessful) {
                     db.mdSystemDAO().updateIsSynced(true, cloudId, localId)
                     InAppLogger.d("Cloud sync success for cloud ID=$cloudId")
                 } else {
-                    val body = response.errorBody()?.string()
-                    InAppLogger.e("Cloud sync failed: ${response.code()} body = $body")
+                    InAppLogger.e("Cloud sync failed: ${response.code()}")
                     db.mdSystemDAO().updateIsSynced(false, cloudId, localId)
-
                 }
             } catch (e: Exception) {
                 InAppLogger.e("Exception during cloud sync: ${e.message}")
             }
         } else {
             db.mdSystemDAO().updateIsSynced(false, cloudId, localId)
-            InAppLogger.d("📴 Offline: local update only, marked unsynced")
+            InAppLogger.d("📴 Offline: local update only")
         }
     }
 
     suspend fun uploadUnsyncedSystems(context: Context): FetchResult {
-
         InAppLogger.d("uploadUnsyncedSystems() called")
-
 
         val dao = db.mdSystemDAO()
         val pending = dao.getSystemsNeedingUpload()
@@ -299,19 +271,18 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
         if (pending.isEmpty()) return FetchResult.Success("No unsynced systems to upload.")
 
         if (!isNetworkAvailable(context)) {
-            return FetchResult.Failure("Offline. ${pending.size} unsynced system(s) exist. Sync before downloading.")
+            return FetchResult.Failure("Offline. Sync aborted.")
         }
 
         var uploaded = 0
-        val blocked = mutableListOf<String>()
         val failed = mutableListOf<String>()
 
         for (sys in pending) {
             val serial = sys.serialNumber
-
-            // If it already has a cloudId, just push an update
             val cloudId = sys.cloudId
+
             if (cloudId != null && cloudId != 0) {
+                // UPDATE existing
                 try {
                     val systemCloud = MdSystemCloud(
                         modelId = sys.modelId,
@@ -325,43 +296,26 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
                         systemTypeId = sys.systemTypeId,
                         lastLocation = sys.lastLocation
                     )
-
                     val resp = apiService.updateMdSystem(cloudId, systemCloud)
                     if (resp.isSuccessful) {
-                        // mark synced by cloudId/localId (your DAO supports this)
                         dao.updateIsSynced(true, cloudId, sys.id)
                         uploaded++
                     } else {
-                        failed += "$serial (update failed ${resp.code()})"
+                        failed += "$serial (update failed)"
                     }
                 } catch (e: Exception) {
-                    failed += "$serial (update exception: ${e.message})"
+                    failed += "$serial (update error: ${e.message})"
                 }
-                continue
-            }
+            } else {
+                // POST new
+                try {
+                    val exists = apiService.checkSerialNumberExists(serial)
+                    if (exists) {
+                        failed += "$serial (already in cloud)"
+                        continue
+                    }
 
-            // No cloudId: attempt POST if serial doesn't exist
-            val exists = try {
-                apiService.checkSerialNumberExists(serial)
-            } catch (e: Exception) {
-                failed += "$serial (serial check failed: ${e.message})"
-                continue
-            }
-
-            if (exists) {
-                // We can't link to the correct cloud row without an endpoint that returns the ID.
-                blocked += "$serial (exists in cloud, id unknown)"
-                continue
-            }
-
-            // Serial not found: safe to POST
-            try {
-                val postResp = apiService.postMdSystem(
-                    MdSystemLocal(
-                        // Important: don't send local auto id/temp fields unless your API ignores them safely.
-                        // But your API currently accepts MdSystemLocal, so we'll fill required fields.
-                        cloudId = null,
-                        tempId = sys.tempId,
+                    val systemCloud = MdSystemCloud(
                         modelId = sys.modelId,
                         customerId = sys.customerId,
                         serialNumber = sys.serialNumber,
@@ -371,42 +325,28 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
                         addedDate = sys.addedDate,
                         calibrationInterval = sys.calibrationInterval,
                         systemTypeId = sys.systemTypeId,
-                        isSynced = true,
                         lastLocation = sys.lastLocation
                     )
-                )
 
-                if (postResp.isSuccessful) {
-                    val newCloudId = postResp.body()?.cloudId ?: postResp.body()?.id
-                    // Your POST returns MdSystemLocal. Depending on your API, the id might come back as id or cloudId.
-                    // We’ll handle either.
-
-                    if (newCloudId != null && newCloudId != 0 && sys.tempId != null) {
-                        dao.updateSyncStatus(isSynced = true, tempId = sys.tempId, newCloudId = newCloudId)
-                        uploaded++
+                    val postResp = apiService.postMdSystem(systemCloud)
+                    if (postResp.isSuccessful) {
+                        val newCloudId = postResp.body()?.id
+                        if (newCloudId != null && sys.tempId != null) {
+                            dao.updateSyncStatus(isSynced = true, tempId = sys.tempId, newCloudId = newCloudId)
+                            uploaded++
+                        } else {
+                            failed += "$serial (no ID returned)"
+                        }
                     } else {
-                        failed += "$serial (posted but no cloud id returned)"
+                        failed += "$serial (post failed: ${postResp.code()})"
                     }
-                } else {
-                    failed += "$serial (post failed ${postResp.code()})"
+                } catch (e: Exception) {
+                    failed += "$serial (post error: ${e.message})"
                 }
-            } catch (e: Exception) {
-                failed += "$serial (post exception: ${e.message})"
             }
         }
 
-        return when {
-            failed.isEmpty() && blocked.isEmpty() ->
-                FetchResult.Success("Uploaded/updated $uploaded system(s).")
-
-            else -> {
-                val msg = buildString {
-                    append("Uploaded/updated $uploaded system(s). ")
-                    if (blocked.isNotEmpty()) append("Blocked: ${blocked.joinToString()}. ")
-                    if (failed.isNotEmpty()) append("Failed: ${failed.joinToString()}.")
-                }
-                FetchResult.Failure(msg)
-            }
-        }
+        return if (failed.isEmpty()) FetchResult.Success("Uploaded $uploaded system(s).")
+        else FetchResult.Failure("Uploaded $uploaded. Failed: ${failed.joinToString()}")
     }
 }

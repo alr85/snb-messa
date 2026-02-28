@@ -6,6 +6,7 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -15,6 +16,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,6 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Button
@@ -48,7 +51,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -60,12 +65,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.mecca.calibrationViewModels.CustomerViewModel
 import com.example.mecca.calibrationViewModels.NoticeViewModel
 import com.example.mecca.network.NetworkMonitor
 import com.example.mecca.repositories.CustomerRepository
+import com.example.mecca.repositories.MetalDetectorSystemsRepository
 import com.example.mecca.repositories.NoticeRepository
 import com.example.mecca.repositories.UserRepository
 import com.example.mecca.screens.LoginScreen
@@ -73,8 +80,11 @@ import com.example.mecca.ui.theme.AppNavGraph
 import com.example.mecca.ui.theme.SnbDarkGrey
 import com.example.mecca.ui.theme.SnbRed
 import com.example.mecca.util.SyncPreferences
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class MainActivity : ComponentActivity() {
@@ -82,6 +92,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var userViewModel: UserViewModel
     private lateinit var customerViewModel: CustomerViewModel
     private lateinit var noticeViewModel: NoticeViewModel
+    private lateinit var mdSystemsRepository: MetalDetectorSystemsRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,6 +115,7 @@ class MainActivity : ComponentActivity() {
         val userRepository = UserRepository(db.userDao(), apiService)
         val customerRepository = CustomerRepository(apiService, db, syncPrefs)
         val noticeRepository = NoticeRepository(apiService, db)
+        mdSystemsRepository = MetalDetectorSystemsRepository(apiService, db)
 
         // ViewModels
         userViewModel = UserViewModel(userRepository)
@@ -154,7 +166,8 @@ class MainActivity : ComponentActivity() {
                         db = db,
                         userViewModel = userViewModel,
                         customerViewModel = customerViewModel,
-                        noticeViewModel = noticeViewModel
+                        noticeViewModel = noticeViewModel,
+                        mdSystemsRepository = mdSystemsRepository
                     )
                 }
 
@@ -284,30 +297,47 @@ data class NavigationBarItem(
 
 @Composable
 fun OfflineBanner(
-    isOffline: Boolean
+    isOffline: Boolean,
+    isSyncing: Boolean
 ) {
+    val showBanner = isOffline || isSyncing
+    val backgroundColor by animateColorAsState(
+        targetValue = if (isOffline) Color(0xFFB71C1C) else Color(0xFF2E7D32),
+        label = "bannerColor"
+    )
 
     AnimatedVisibility(
-        visible = isOffline,
+        visible = showBanner,
         enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
         exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
-
     ) {
-
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .animateContentSize()
-                .background(Color(0xFFB71C1C))
+                .background(backgroundColor)
                 .padding(vertical = 6.dp)
-                .heightIn(min = 32.dp), // prevents micro layout jump
+                .heightIn(min = 32.dp),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "Offline mode",
-                color = Color.White,
-                style = MaterialTheme.typography.bodyMedium
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (isSyncing) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp
+                    )
+                }
+                Text(
+                    text = if (isOffline) "Offline mode" else "Back online - Syncing data...",
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
@@ -324,7 +354,8 @@ fun MyApp(
     db: AppDatabase,
     userViewModel: UserViewModel,
     customerViewModel: CustomerViewModel,
-    noticeViewModel: NoticeViewModel
+    noticeViewModel: NoticeViewModel,
+    mdSystemsRepository: MetalDetectorSystemsRepository
 ) {
 
     /*
@@ -345,6 +376,7 @@ fun MyApp(
     val chromeVm: AppChromeViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     /*
         Observe the TopBar state once.
@@ -382,6 +414,41 @@ fun MyApp(
         .observe()
         .map { !it }
         .collectAsState(initial = false)
+
+    var isSyncingBackground by remember { mutableStateOf(false) }
+
+    // AUTO-SYNC when coming back online
+    LaunchedEffect(isOffline) {
+        if (!isOffline) {
+            // We just transitioned from Offline -> Online
+            // Don't sync immediately on first launch if already online
+            // (The LaunchedEffect(Unit) above handles boot sync)
+            
+            // Wait a moment for connection to stabilize
+            delay(2000)
+            
+            isSyncingBackground = true
+            scope.launch(Dispatchers.IO) {
+                try {
+                    // Priority 1: Push any local changes to cloud
+                    mdSystemsRepository.uploadUnsyncedSystems(context)
+                    
+                    // Priority 2: Pull latest data down
+                    mdSystemsRepository.fetchAndStoreMdSystems()
+                    customerViewModel.syncCustomers()
+                    noticeViewModel.syncNotices()
+                    
+                    withContext(Dispatchers.Main) {
+                        snackbarHostState.showSnackbar("Background sync complete")
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("Sync", "Background sync failed", e)
+                } finally {
+                    isSyncingBackground = false
+                }
+            }
+        }
+    }
 
 
     // ---------------------------------------------------------
@@ -502,7 +569,7 @@ fun MyApp(
                 .padding(innerPadding) // accounts for top & bottom bars
                 .fillMaxSize()
         ) {
-            OfflineBanner(isOffline = isOffline)
+            OfflineBanner(isOffline = isOffline, isSyncing = isSyncingBackground)
 
 
             // ---------------- MAIN NAVIGATION ----------------
