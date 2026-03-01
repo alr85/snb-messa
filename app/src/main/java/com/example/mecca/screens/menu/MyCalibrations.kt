@@ -35,19 +35,15 @@ import androidx.compose.ui.unit.dp
 import com.example.mecca.ApiService
 import com.example.mecca.PreferencesHelper
 import com.example.mecca.daos.MetalDetectorConveyorCalibrationDAO
-import com.example.mecca.network.isNetworkAvailable
 import com.example.mecca.repositories.CustomerRepository
 import com.example.mecca.repositories.MetalDetectorSystemsRepository
+import com.example.mecca.repositories.MetalDetectorConveyorCalibrationRepository
 import com.example.mecca.activities.MetalDetectorConveyorCalibrationActivity
 import com.example.mecca.dataClasses.MetalDetectorConveyorCalibrationLocal
 import com.example.mecca.formatDate
 import com.example.mecca.ui.theme.ExpandableSection
-import com.example.mecca.util.CsvUploader
 import com.example.mecca.util.InAppLogger
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.File
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,6 +52,7 @@ fun MyCalibrationsScreen(
     dao: MetalDetectorConveyorCalibrationDAO,
     customerRepository: CustomerRepository,
     systemsRepository: MetalDetectorSystemsRepository,
+    calibrationRepository: MetalDetectorConveyorCalibrationRepository,
     apiService: ApiService,
     snackbarHostState: SnackbarHostState
 ) {
@@ -165,36 +162,9 @@ fun MyCalibrationsScreen(
                             uploadingCalibrationIds = uploadingCalibrationIds + calibration.calibrationId
                             
                             try {
-                                val success = withContext(Dispatchers.IO) {
-                                    if (!isNetworkAvailable(context)) {
-                                        return@withContext null // Signal no network
-                                    }
-
-                                    if (calibration.cloudSystemId == 0) {
-                                        return@withContext false // Signal missing system
-                                    }
-
-                                    val csvFile = File(
-                                        context.filesDir,
-                                        "calibration_data_${calibration.calibrationId}.csv"
-                                    )
-
-                                    CsvUploader.uploadCsvFile(
-                                        csvFile = csvFile,
-                                        apiService = apiService,
-                                        fileName = calibration.calibrationId
-                                    )
-                                }
-
-                                when (success) {
-                                    null -> snackbarHostState.showSnackbar("No internet connection.")
-                                    false -> snackbarHostState.showSnackbar("No matching cloud system.")
-                                    true -> {
-                                        dao.updateIsSynced(calibration.calibrationId, true)
-                                        snackbarHostState.showSnackbar("Upload successful!")
-                                    }
-                                    else -> snackbarHostState.showSnackbar("Upload failed.")
-                                }
+                                // USE THE SHARED BULLETPROOF LOGIC
+                                val result = calibrationRepository.uploadUnsyncedCalibrations(context, apiService)
+                                snackbarHostState.showSnackbar(result.toString())
                             } catch (e: Exception) {
                                 snackbarHostState.showSnackbar("An error occurred during upload.")
                             } finally {

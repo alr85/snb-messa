@@ -73,12 +73,14 @@ import com.example.mecca.calibrationViewModels.NoticeViewModel
 import com.example.mecca.network.NetworkMonitor
 import com.example.mecca.repositories.CustomerRepository
 import com.example.mecca.repositories.MetalDetectorSystemsRepository
+import com.example.mecca.repositories.MetalDetectorConveyorCalibrationRepository
 import com.example.mecca.repositories.NoticeRepository
 import com.example.mecca.repositories.UserRepository
 import com.example.mecca.screens.LoginScreen
 import com.example.mecca.ui.theme.AppNavGraph
 import com.example.mecca.ui.theme.SnbDarkGrey
 import com.example.mecca.ui.theme.SnbRed
+import com.example.mecca.util.InAppLogger
 import com.example.mecca.util.SyncPreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -93,6 +95,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var customerViewModel: CustomerViewModel
     private lateinit var noticeViewModel: NoticeViewModel
     private lateinit var mdSystemsRepository: MetalDetectorSystemsRepository
+    private lateinit var calibrationRepository: MetalDetectorConveyorCalibrationRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -116,6 +119,7 @@ class MainActivity : ComponentActivity() {
         val customerRepository = CustomerRepository(apiService, db, syncPrefs)
         val noticeRepository = NoticeRepository(apiService, db)
         mdSystemsRepository = MetalDetectorSystemsRepository(apiService, db)
+        calibrationRepository = MetalDetectorConveyorCalibrationRepository(db.metalDetectorConveyorCalibrationDAO())
 
         // ViewModels
         userViewModel = UserViewModel(userRepository)
@@ -167,7 +171,8 @@ class MainActivity : ComponentActivity() {
                         userViewModel = userViewModel,
                         customerViewModel = customerViewModel,
                         noticeViewModel = noticeViewModel,
-                        mdSystemsRepository = mdSystemsRepository
+                        mdSystemsRepository = mdSystemsRepository,
+                        calibrationRepository = calibrationRepository
                     )
                 }
 
@@ -355,7 +360,8 @@ fun MyApp(
     userViewModel: UserViewModel,
     customerViewModel: CustomerViewModel,
     noticeViewModel: NoticeViewModel,
-    mdSystemsRepository: MetalDetectorSystemsRepository
+    mdSystemsRepository: MetalDetectorSystemsRepository,
+    calibrationRepository: MetalDetectorConveyorCalibrationRepository
 ) {
 
     /*
@@ -420,21 +426,30 @@ fun MyApp(
     // AUTO-SYNC when coming back online
     LaunchedEffect(isOffline) {
         if (!isOffline) {
-            // We just transitioned from Offline -> Online
-            // Don't sync immediately on first launch if already online
-            // (The LaunchedEffect(Unit) above handles boot sync)
-            
-            // Wait a moment for connection to stabilize
+            // Wait 2 seconds for signal stability
             delay(2000)
             
             isSyncingBackground = true
             scope.launch(Dispatchers.IO) {
                 try {
-                    // Priority 1: Push any local changes to cloud
+                    val app = context.applicationContext as MyApplication
+                    val apiService = app.apiService
+
+                    // 1. UPLOAD MACHINES FIRST (Creates cloud IDs & links calibrations)
+                    InAppLogger.d("BACKGROUND SYNC: Step 1 - Uploading Machines...")
                     mdSystemsRepository.uploadUnsyncedSystems(context)
                     
-                    // Priority 2: Pull latest data down
+                    // 2. REFRESH MACHINE DATABASE (Resolves cloud IDs for machines already on server)
+                    // This now also resolving ID linking for pending calibrations.
+                    InAppLogger.d("BACKGROUND SYNC: Step 2 - Pulling latest machine data...")
                     mdSystemsRepository.fetchAndStoreMdSystems()
+                    
+                    // 3. UPLOAD CALIBRATIONS (Now they definitely have cloudSystemIds and fresh CSVs)
+                    InAppLogger.d("BACKGROUND SYNC: Step 3 - Uploading Calibrations...")
+                    calibrationRepository.uploadUnsyncedCalibrations(context, apiService)
+                    
+                    // 4. REFRESH OTHER DATA
+                    InAppLogger.d("BACKGROUND SYNC: Step 4 - Refreshing other data...")
                     customerViewModel.syncCustomers()
                     noticeViewModel.syncNotices()
                     
@@ -442,7 +457,7 @@ fun MyApp(
                         snackbarHostState.showSnackbar("Background sync complete")
                     }
                 } catch (e: Exception) {
-                    android.util.Log.e("Sync", "Background sync failed", e)
+                    InAppLogger.e("Background Sync Failed: ${e.message}")
                 } finally {
                     isSyncingBackground = false
                 }
@@ -584,7 +599,9 @@ fun MyApp(
                     customerViewModel = customerViewModel,
                     noticeViewModel = noticeViewModel,
                     chromeVm = chromeVm,
-                    snackbarHostState = snackbarHostState // optional but recommended
+                    snackbarHostState = snackbarHostState, // optional but recommended
+                    repositoryMdSystems = mdSystemsRepository,
+                    calibrationRepository = calibrationRepository
                 )
             }
 

@@ -6,6 +6,7 @@ import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandIn
 import androidx.compose.animation.fadeIn
@@ -69,17 +70,12 @@ fun ServiceSelectSystemScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    // Screen state
-    var systems by remember { mutableStateOf<List<MetalDetectorWithFullDetails>>(emptyList()) }
+    // Screen state - REACTIVE OBSERVATION
+    val systems by repository.observeMetalDetectorsByCustomerId(customerID).collectAsState(initial = emptyList())
     var isRefreshing by remember { mutableStateOf(false) }
 
     // Floating action menu state
     var showMenu by rememberSaveable { mutableStateOf(false) }
-
-    // Load machines when customer changes
-    LaunchedEffect(customerID) {
-        systems = getMetalDetectors(repository, customerID)
-    }
 
     LaunchedEffect(Unit) {
         chromeVm.setMenuAction { showMenu = !showMenu }
@@ -270,12 +266,7 @@ fun ServiceSelectSystemScreen(
                                 scope.launch {
                                     isRefreshing = true
                                     try {
-                                        val ok = syncMetalDetectors(repository)
-                                        if (ok) {
-                                            systems = getMetalDetectors(repository, customerID)
-                                        } else {
-                                            snackbarHostState.showSnackbar("Sync failed. Please try again.")
-                                        }
+                                        syncMetalDetectors(context, repository)
                                     } finally {
                                         isRefreshing = false
                                     }
@@ -332,6 +323,11 @@ private fun SystemCard(
     mdSystem: MetalDetectorWithFullDetails,
     onClick: () -> Unit
 ) {
+    val syncColor by animateColorAsState(
+        targetValue = if (mdSystem.isSynced) Color.Green else Color.Red,
+        label = "syncStatusColor"
+    )
+
     Column(
         modifier = Modifier
             .padding(8.dp)
@@ -358,7 +354,7 @@ private fun SystemCard(
             Icon(
                 imageVector = if (mdSystem.isSynced) Icons.Default.CloudDone else Icons.Default.CloudOff,
                 contentDescription = if (mdSystem.isSynced) "Synced to cloud" else "Not synced to cloud",
-                tint = if (mdSystem.isSynced) Color.Green else Color.Red,
+                tint = syncColor,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -429,69 +425,20 @@ private fun ComingSoonRow(title: String) {
 
 /**
  * Sync unsynced systems up to the cloud, then pull down the latest systems.
- * Returns true if the overall operation succeeded.
- *
- * NOTE: This function does network + DB work, so call it from a coroutine.
  */
 private suspend fun syncMetalDetectors(
+    context: Context,
     repository: MetalDetectorSystemsRepository
 ): Boolean {
     Log.d("SyncMetalDetectors", "Starting sync of metal detectors")
 
-    val unsyncedSystems = repository.getMetalDetectorUsingCloudId(null)
-        .filter { !it.isSynced }
-
-    Log.d("SyncMetalDetectors", "Unsynced Metal Detectors: ${unsyncedSystems.size}")
-
-    var overallSuccess = true
-
-    // Upload unsynced systems
-    for (mdSystem in unsyncedSystems) {
-        val newCloudId = repository.addMetalDetectorToCloud(
-            customerID = mdSystem.customerId,
-            serialNumber = mdSystem.serialNumber,
-            apertureWidth = mdSystem.apertureWidth,
-            apertureHeight = mdSystem.apertureHeight,
-            systemTypeId = mdSystem.systemTypeId,
-            modelId = mdSystem.modelId,
-            lastLocation = mdSystem.lastLocation,
-            calibrationInterval = mdSystem.calibrationInterval
-        )
-
-        if (newCloudId != null) {
-            when (repository.updateSyncStatus(mdSystem.tempId, true, newCloudId)) {
-                is FetchResult.Success -> Log.d("SyncMetalDetectors", "Local update OK: ${mdSystem.serialNumber}")
-                is FetchResult.Failure -> {
-                    Log.e("SyncMetalDetectors", "Local update FAILED: ${mdSystem.serialNumber}")
-                    overallSuccess = false
-                }
-            }
-        } else {
-            Log.e("SyncMetalDetectors", "Upload FAILED: ${mdSystem.serialNumber}")
-            overallSuccess = false
-        }
-    }
-
+    // Use uploadUnsyncedSystems from repository which is now "bulletproof"
+    repository.uploadUnsyncedSystems(context)
+    
     // Pull latest cloud data down
-    if (overallSuccess) {
-        when (val result = repository.fetchAndStoreMdSystems()) {
-            is FetchResult.Success -> Log.d("SyncMetalDetectors", "Full sync OK: ${result.message}")
-            is FetchResult.Failure -> {
-                Log.e("SyncMetalDetectors", "Full sync FAILED: ${result.errorMessage}")
-                overallSuccess = false
-            }
-        }
-    }
+    val fetchResult = repository.fetchAndStoreMdSystems()
 
-    return overallSuccess
-}
-
-private suspend fun getMetalDetectors(
-    repository: MetalDetectorSystemsRepository,
-    customerID: Int
-): List<MetalDetectorWithFullDetails> {
-    return repository.getMetalDetectorUsingCloudId(null)
-        .filter { it.customerId == customerID }
+    return fetchResult is FetchResult.Success
 }
 
 fun navigateToPostcode(context: Context, postcode: String) {

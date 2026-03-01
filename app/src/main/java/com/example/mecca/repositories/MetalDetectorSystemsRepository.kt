@@ -10,9 +10,11 @@ import com.example.mecca.dataClasses.MdSystemLocal
 import com.example.mecca.dataClasses.MetalDetectorWithFullDetails
 import com.example.mecca.util.InAppLogger
 import com.example.mecca.util.SerialCheckResult
+import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.random.Random
+import androidx.room.withTransaction
 
 class MetalDetectorSystemsRepository(private val apiService: ApiService, private val db: AppDatabase) {
 
@@ -28,58 +30,91 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
         return FetchResult.Success("Sync Status Updated")
     }
 
-    // Function to fetch data from the API and store it in the database
+    /**
+     * REACTIVE: Returns a Flow that emits the latest list of machines for a customer
+     * whenever the local database changes.
+     */
+    fun observeMetalDetectorsByCustomerId(customerId: Int): Flow<List<MetalDetectorWithFullDetails>> {
+        return db.mdSystemDAO().observeMetalDetectorsWithFullDetailsByCustomerId(customerId)
+    }
+
+    /**
+     * ATOMIC MERGE SYNC (Pull Phase)
+     * Fetches fresh cloud data and merges it into local DB using a transaction.
+     */
     suspend fun fetchAndStoreMdSystems(): FetchResult {
         InAppLogger.d("fetchAndStoreMdSystems() called")
 
         try {
             val response = apiService.getMdSystems()
             if (response.isSuccessful) {
-                val apiMdSystems = response.body()
+                val apiMdSystems = response.body() ?: emptyList()
+                val dao = db.mdSystemDAO()
+                val calibrationDao = db.metalDetectorConveyorCalibrationDAO()
 
-                if (apiMdSystems != null) {
-                    val dao = db.mdSystemDAO()
+                // Execute the entire update inside a database transaction
+                db.withTransaction {
+                    val cloudIds = apiMdSystems.map { it.id }
                     
-                    // 1) Get all local systems that are NOT synced yet (unsynced/no cloudId)
-                    val unsyncedSystems = dao.getSystemsNeedingUpload()
-                    InAppLogger.d("Preserving ${unsyncedSystems.size} unsynced systems.")
+                    // Map local records by serial to avoid repeated DB queries in loop
+                    val localMap = dao.getAllMdSystems().associateBy { it.serialNumber }
+                    
+                    for (cloudSys in apiMdSystems) {
+                        val localMatch = localMap[cloudSys.serialNumber]
+                        
+                        // Link calibrations if we're discovering a Cloud ID for a local system
+                        if (localMatch != null && localMatch.cloudId != cloudSys.id) {
+                            InAppLogger.d("Linking calibrations for machine ${cloudSys.serialNumber} to new Cloud ID: ${cloudSys.id}")
+                            calibrationDao.updateCalibrationWithCloudId(localMatch.tempId, cloudSys.id)
+                        }
 
-                    // 2) Delete ONLY synced systems from local DB
-                    dao.deleteSyncedMdSystems() 
-                    InAppLogger.d("Cleared synced MD systems from local database")
+                        // DATE PROTECTION: 
+                        // If cloud has a default/old date but local has a real one, keep local date.
+                        // Cloud defaults usually look like "1900-01-01..."
+                        val isCloudDateInvalid = cloudSys.lastCalibration == null || 
+                                               cloudSys.lastCalibration.startsWith("1900") ||
+                                               cloudSys.lastCalibration.isBlank()
+                        
+                        val isLocalDateValid = localMatch?.lastCalibration != null && 
+                                             localMatch.lastCalibration != "-" && 
+                                             !localMatch.lastCalibration!!.startsWith("1900")
 
-                    // 3) Map API data to local entities
-                    val mdSystemsLocal = apiMdSystems.map { apiSystem ->
-                        MdSystemLocal(
-                            modelId = apiSystem.modelId,
-                            cloudId = apiSystem.id,
-                            customerId = apiSystem.customerId,
-                            serialNumber = apiSystem.serialNumber,
-                            apertureWidth = apiSystem.apertureWidth,
-                            apertureHeight = apiSystem.apertureHeight,
-                            lastCalibration = apiSystem.lastCalibration,
-                            addedDate = apiSystem.addedDate,
-                            calibrationInterval = apiSystem.calibrationInterval,
-                            systemTypeId = apiSystem.systemTypeId,
-                            tempId = 0,
+                        val finalLastCalibration = if (isCloudDateInvalid && isLocalDateValid) {
+                            localMatch!!.lastCalibration
+                        } else {
+                            cloudSys.lastCalibration
+                        }
+
+                        val entity = MdSystemLocal(
+                            id = localMatch?.id, 
+                            cloudId = cloudSys.id,
+                            tempId = localMatch?.tempId ?: 0, 
+                            modelId = cloudSys.modelId,
+                            customerId = cloudSys.customerId,
+                            serialNumber = cloudSys.serialNumber,
+                            apertureWidth = cloudSys.apertureWidth,
+                            apertureHeight = cloudSys.apertureHeight,
+                            lastCalibration = finalLastCalibration,
+                            addedDate = cloudSys.addedDate,
+                            calibrationInterval = cloudSys.calibrationInterval,
+                            systemTypeId = cloudSys.systemTypeId,
                             isSynced = true,
-                            lastLocation = apiSystem.lastLocation
+                            lastLocation = cloudSys.lastLocation
                         )
+                        
+                        dao.insertNewMdSystem(entity)
                     }
 
-                    // 4) Insert the fresh cloud data (synced)
-                    dao.insertMdSystem(mdSystemsLocal)
-                    InAppLogger.d("Cloud systems inserted into local database.")
-
-                    return FetchResult.Success("Metal Detector Sync Complete")
-                } else {
-                    return FetchResult.Failure("No data found from server.")
+                    // Remove local records that were synced but are no longer in the cloud response
+                    dao.deleteSyncedSystemsNotIn(cloudIds)
                 }
+
+                return FetchResult.Success("Metal Detector Sync Complete")
             } else {
-                return FetchResult.Failure("Error: ${response.code()}, Message: ${response.message()}")
+                return FetchResult.Failure("Server error: ${response.code()}")
             }
         } catch (e: Exception) {
-            InAppLogger.e("Exception occurred: ${e.message}")
+            InAppLogger.e("Atomic Sync Exception: ${e.message}")
             return FetchResult.Failure("Sync failed: ${e.message}")
         }
     }
@@ -247,7 +282,9 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
             try {
                 val response = apiService.updateMdSystem(cloudId, systemCloud)
                 if (response.isSuccessful) {
-                    db.mdSystemDAO().updateIsSynced(true, cloudId, localId)
+                    db.withTransaction {
+                        db.mdSystemDAO().updateIsSynced(true, cloudId, localId)
+                    }
                     InAppLogger.d("Cloud sync success for cloud ID=$cloudId")
                 } else {
                     InAppLogger.e("Cloud sync failed: ${response.code()}")
@@ -311,7 +348,7 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
                 try {
                     val exists = apiService.checkSerialNumberExists(serial)
                     if (exists) {
-                        failed += "$serial (already in cloud)"
+                        uploaded++ 
                         continue
                     }
 
@@ -321,10 +358,10 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
                         serialNumber = sys.serialNumber,
                         apertureWidth = sys.apertureWidth,
                         apertureHeight = sys.apertureHeight,
-                        lastCalibration = sys.lastCalibration,
+                        systemTypeId = sys.systemTypeId,
                         addedDate = sys.addedDate,
                         calibrationInterval = sys.calibrationInterval,
-                        systemTypeId = sys.systemTypeId,
+                        lastCalibration = sys.lastCalibration, // PUSH LOCAL DATE TO CLOUD
                         lastLocation = sys.lastLocation
                     )
 
@@ -332,7 +369,11 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
                     if (postResp.isSuccessful) {
                         val newCloudId = postResp.body()?.id
                         if (newCloudId != null && sys.tempId != null) {
-                            dao.updateSyncStatus(isSynced = true, tempId = sys.tempId, newCloudId = newCloudId)
+                            db.withTransaction {
+                                dao.updateSyncStatus(isSynced = true, tempId = sys.tempId, newCloudId = newCloudId)
+                                // Link any local calibrations to this new Cloud ID
+                                db.metalDetectorConveyorCalibrationDAO().updateCalibrationWithCloudId(sys.tempId, newCloudId)
+                            }
                             uploaded++
                         } else {
                             failed += "$serial (no ID returned)"

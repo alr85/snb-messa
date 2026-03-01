@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Update
 import com.example.mecca.dataClasses.MdSystemLocal
 import com.example.mecca.dataClasses.MetalDetectorWithFullDetails
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface MetalDetectorSystemsDAO {
@@ -16,6 +17,9 @@ interface MetalDetectorSystemsDAO {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertNewMdSystem(mdSystems: MdSystemLocal)
+
+    @Query("SELECT * FROM MdSystems")
+    suspend fun getAllMdSystems(): List<MdSystemLocal>
 
     @Query("DELETE FROM MdSystems")
     suspend fun deleteAllMdSystems()
@@ -85,6 +89,36 @@ interface MetalDetectorSystemsDAO {
         """
     )
     suspend fun getMetalDetectorsWithFullDetailsUsingLocalId(systemId: Int?): List<MetalDetectorWithFullDetails>
+
+    @Query(
+        """
+        SELECT 
+            MdSystems.id, 
+            MdSystems.cloudId,
+            MdSystems.modelId, 
+            MdSystems.customerId, 
+            MdSystems.serialNumber, 
+            MdSystems.apertureWidth, 
+            MdSystems.apertureHeight, 
+            MdSystems.lastCalibration, 
+            MdSystems.addedDate, 
+            MdSystems.calibrationInterval,
+            MdSystems.systemTypeId,
+            MdSystems.tempId,
+            MdSystems.isSynced,
+            MdSystems.lastLocation,
+            customer.fusionID,
+            MdModels.modelDescription,
+            systemTypes.systemType,
+            customer.name AS customerName
+        FROM MdSystems
+        JOIN MdModels ON MdSystems.modelId = MdModels.meaId
+        JOIN systemTypes ON MdSystems.systemTypeId = systemTypes.id
+        JOIN customer ON MdSystems.customerId = customer.fusionID
+        WHERE MdSystems.customerId = :customerId
+        """
+    )
+    fun observeMetalDetectorsWithFullDetailsByCustomerId(customerId: Int): Flow<List<MetalDetectorWithFullDetails>>
 
     @Query("SELECT * FROM MdSystems WHERE isSynced = 0")
     suspend fun getUnsyncedMdSystems(): List<MdSystemLocal>

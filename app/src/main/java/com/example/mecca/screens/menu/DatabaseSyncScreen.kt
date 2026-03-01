@@ -92,7 +92,7 @@ fun DatabaseSyncScreen(
                     is FetchResult.Failure -> "Failed: ${r.errorMessage}"
                 }
             },
-            SyncTask("Upload Unsynced MD Systems") {
+            SyncTask("Upload offline MD Systems") {
                 when (val r = repositoryMdSystems.uploadUnsyncedSystems(context)) {
                     is FetchResult.Success -> r.message
                     is FetchResult.Failure -> "Failed: ${r.errorMessage}"
@@ -104,19 +104,19 @@ fun DatabaseSyncScreen(
                     is FetchResult.Failure -> "Failed: ${r.errorMessage}"
                 }
             },
-            SyncTask("M&S Conveyor Targets") {
+            SyncTask("M&S Target Sensitivities (Conveyor)") {
                 when (val r = detectionRepo.fetchAndStoreConveyor()) {
                     is FetchResult.Success -> r.message
                     is FetchResult.Failure -> "Failed: ${r.errorMessage}"
                 }
             },
-            SyncTask("M&S Freefall Targets") {
+            SyncTask("M&S Target Sensitivities (Freefall)") {
                 when (val r = detectionRepo.fetchAndStoreFreefall()) {
                     is FetchResult.Success -> r.message
                     is FetchResult.Failure -> "Failed: ${r.errorMessage}"
                 }
             },
-            SyncTask("M&S Pipeline Targets") {
+            SyncTask("M&S Target Sensitivities (Pipeline)") {
                 when (val r = detectionRepo.fetchAndStorePipeline()) {
                     is FetchResult.Success -> r.message
                     is FetchResult.Failure -> "Failed: ${r.errorMessage}"

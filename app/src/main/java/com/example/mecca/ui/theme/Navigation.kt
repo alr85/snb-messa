@@ -17,6 +17,7 @@ import com.example.mecca.calibrationViewModels.NoticeViewModel
 import com.example.mecca.repositories.CustomerRepository
 import com.example.mecca.repositories.MetalDetectorModelsRepository
 import com.example.mecca.repositories.MetalDetectorSystemsRepository
+import com.example.mecca.repositories.MetalDetectorConveyorCalibrationRepository
 import com.example.mecca.repositories.RetailerSensitivitiesRepository
 import com.example.mecca.repositories.SystemTypeRepository
 import com.example.mecca.screens.mainmenu.HomeScreen
@@ -41,14 +42,11 @@ fun AppNavGraph(
     noticeViewModel: NoticeViewModel,
     db: AppDatabase,
     chromeVm: AppChromeViewModel,
-    snackbarHostState: SnackbarHostState
-)
- {
-
+    snackbarHostState: SnackbarHostState,
+    repositoryMdSystems: MetalDetectorSystemsRepository,
+    calibrationRepository: MetalDetectorConveyorCalibrationRepository // Add this parameter
+) {
     val apiService = RetrofitClient.instance
-
-    val repositoryMdSystems =
-        MetalDetectorSystemsRepository(apiService, db)
 
     val repositorySystemTypes =
         SystemTypeRepository(apiService, db)
@@ -169,6 +167,7 @@ fun AppNavGraph(
                 dao = dao,
                 customerRepository = repositoryCustomer,
                 systemsRepository = repositoryMdSystems,
+                calibrationRepository = calibrationRepository, // Passed here
                 apiService = apiService,
                 snackbarHostState = snackbarHostState
             )
