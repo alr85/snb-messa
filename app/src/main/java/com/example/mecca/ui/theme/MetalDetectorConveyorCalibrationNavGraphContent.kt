@@ -19,10 +19,12 @@ import com.example.mecca.screens.service.mdCalibration.CalMetalDetectorConveyorD
 import com.example.mecca.screens.service.mdCalibration.CalMetalDetectorConveyorDetectionSettingsAsFound
 import com.example.mecca.screens.service.mdCalibration.CalMetalDetectorConveyorDetectionSettingsAsLeft
 import com.example.mecca.screens.service.mdCalibration.CalMetalDetectorConveyorFerrousTest
+import com.example.mecca.screens.service.mdCalibration.CalMetalDetectorConveyorFerrousTestAsFound
 import com.example.mecca.screens.service.mdCalibration.CalMetalDetectorConveyorIndicators
 import com.example.mecca.screens.service.mdCalibration.CalMetalDetectorConveyorInfeedPEC
 import com.example.mecca.screens.service.mdCalibration.CalMetalDetectorConveyorLargeMetalTest
 import com.example.mecca.screens.service.mdCalibration.CalMetalDetectorConveyorNonFerrousTest
+import com.example.mecca.screens.service.mdCalibration.CalMetalDetectorConveyorNonFerrousTestAsFound
 import com.example.mecca.screens.service.mdCalibration.CalMetalDetectorConveyorPackCheckSensor
 import com.example.mecca.screens.service.mdCalibration.CalMetalDetectorConveyorProductDetails
 import com.example.mecca.screens.service.mdCalibration.CalMetalDetectorConveyorRejectConfirmPEC
@@ -32,6 +34,7 @@ import com.example.mecca.screens.service.mdCalibration.CalMetalDetectorConveyorS
 import com.example.mecca.screens.service.mdCalibration.CalMetalDetectorConveyorSmeDetails
 import com.example.mecca.screens.service.mdCalibration.CalMetalDetectorConveyorSpeedSensor
 import com.example.mecca.screens.service.mdCalibration.CalMetalDetectorConveyorStainlessTest
+import com.example.mecca.screens.service.mdCalibration.CalMetalDetectorConveyorStainlessTestAsFound
 import com.example.mecca.screens.service.mdCalibration.CalMetalDetectorConveyorSummary
 import com.example.mecca.screens.service.mdCalibration.CalMetalDetectorConveyorSystemChecklist
 
@@ -79,11 +82,30 @@ fun MetalDetectorConveyorCalibrationNavGraphContent(
             }
         }
 
-        composable("CalMetalDetectorConveyorSensitivityAsFound") {
+//        composable("CalMetalDetectorConveyorSensitivityAsFound") {
+//            onScreenChanged {
+//                CalMetalDetectorConveyorSensitivityAsFound(viewModel)
+//            }
+//        }
+
+        composable("CalMetalDetectorConveyorFerrousTestAsFound") {
             onScreenChanged {
-                CalMetalDetectorConveyorSensitivityAsFound(viewModel)
+                CalMetalDetectorConveyorFerrousTestAsFound(viewModel)
             }
         }
+
+        composable("CalMetalDetectorConveyorNonFerrousTestAsFound") {
+            onScreenChanged {
+                CalMetalDetectorConveyorNonFerrousTestAsFound(viewModel)
+            }
+        }
+
+        composable("CalMetalDetectorConveyorStainlessTestAsFound") {
+            onScreenChanged {
+                CalMetalDetectorConveyorStainlessTestAsFound(viewModel)
+            }
+        }
+
 
         // -------------------- METAL TESTS --------------------
         composable("CalMetalDetectorConveyorFerrousTest") {

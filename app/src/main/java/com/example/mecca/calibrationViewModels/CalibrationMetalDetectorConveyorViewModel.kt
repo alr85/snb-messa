@@ -621,17 +621,71 @@ class CalibrationMetalDetectorConveyorViewModel(
     // endregion
 
 
+    // Ferrous As Found
 
-    fun disableFerrousTest(){
-        _sampleCertificateNumberFerrous.value = "N/A"
-        _detectRejectFerrousLeading.value = YesNoState.NA
-        _detectRejectFerrousMiddle.value = YesNoState.NA
-        _detectRejectFerrousTrailing.value = YesNoState.NA
-        _peakSignalFerrousLeading.value = "N/A"
-        _peakSignalFerrousMiddle.value = "N/A"
-        _peakSignalFerrousTrailing.value = "N/A"
-        _ferrousTestPvResult.value = "N/A"
+    fun enableFerrousAsFound(){
+        _sampleCertificateNumberAsFoundFerrous.value = ""
+        _detectRejectAsFoundFerrousLeading.value = YesNoState.NO
+        _detectRejectAsFoundFerrousMiddle.value = YesNoState.NO
+        _detectRejectAsFoundFerrousTrailing.value = YesNoState.NO
+        _peakSignalAsFoundFerrousLeading.value = ""
+        _peakSignalAsFoundFerrousMiddle.value = ""
+        _peakSignalAsFoundFerrousTrailing.value = ""
     }
+    fun disableFerrousAsFound(){
+        _sampleCertificateNumberAsFoundFerrous.value = "N/A"
+        _detectRejectAsFoundFerrousLeading.value = YesNoState.NA
+        _detectRejectAsFoundFerrousMiddle.value = YesNoState.NA
+        _detectRejectAsFoundFerrousTrailing.value = YesNoState.NA
+        _peakSignalAsFoundFerrousLeading.value = "N/A"
+        _peakSignalAsFoundFerrousMiddle.value = "N/A"
+        _peakSignalAsFoundFerrousTrailing.value = "N/A"
+    }
+
+    // Non-Ferrous As Found
+
+    fun enableNonFerrousAsFound(){
+        _sampleCertificateNumberAsFoundNonFerrous.value = ""
+        _detectRejectAsFoundNonFerrousLeading.value = YesNoState.NO
+        _detectRejectAsFoundNonFerrousMiddle.value = YesNoState.NO
+        _detectRejectAsFoundNonFerrousTrailing.value = YesNoState.NO
+        _peakSignalAsFoundNonFerrousLeading.value = ""
+        _peakSignalAsFoundNonFerrousMiddle.value = ""
+        _peakSignalAsFoundNonFerrousTrailing.value = ""
+    }
+    fun disableNonFerrousAsFound(){
+        _sampleCertificateNumberAsFoundNonFerrous.value = "N/A"
+        _detectRejectAsFoundNonFerrousLeading.value = YesNoState.NA
+        _detectRejectAsFoundNonFerrousMiddle.value = YesNoState.NA
+        _detectRejectAsFoundNonFerrousTrailing.value = YesNoState.NA
+        _peakSignalAsFoundNonFerrousLeading.value = "N/A"
+        _peakSignalAsFoundNonFerrousMiddle.value = "N/A"
+        _peakSignalAsFoundNonFerrousTrailing.value = "N/A"
+    }
+
+    // Stainless As Found
+
+    fun enableStainlessAsFound(){
+        _sampleCertificateNumberAsFoundStainless.value = ""
+        _detectRejectAsFoundStainlessLeading.value = YesNoState.NO
+        _detectRejectAsFoundStainlessMiddle.value = YesNoState.NO
+        _detectRejectAsFoundStainlessTrailing.value = YesNoState.NO
+        _peakSignalAsFoundStainlessLeading.value = ""
+        _peakSignalAsFoundStainlessMiddle.value = ""
+        _peakSignalAsFoundStainlessTrailing.value = ""
+    }
+    fun disableStainlessAsFound(){
+        _sampleCertificateNumberAsFoundStainless.value = "N/A"
+        _detectRejectAsFoundStainlessLeading.value = YesNoState.NA
+        _detectRejectAsFoundStainlessMiddle.value = YesNoState.NA
+        _detectRejectAsFoundStainlessTrailing.value = YesNoState.NA
+        _peakSignalAsFoundStainlessLeading.value = "N/A"
+        _peakSignalAsFoundStainlessMiddle.value = "N/A"
+        _peakSignalAsFoundStainlessTrailing.value = "N/A"
+    }
+
+
+    // Ferrous As Left
 
     fun enableFerrousTest(){
         _sampleCertificateNumberFerrous.value = ""
@@ -644,6 +698,19 @@ class CalibrationMetalDetectorConveyorViewModel(
         _ferrousTestPvResult.value = ""
     }
 
+    fun disableFerrousTest(){
+        _sampleCertificateNumberFerrous.value = "N/A"
+        _detectRejectFerrousLeading.value = YesNoState.NA
+        _detectRejectFerrousMiddle.value = YesNoState.NA
+        _detectRejectFerrousTrailing.value = YesNoState.NA
+        _peakSignalFerrousLeading.value = "N/A"
+        _peakSignalFerrousMiddle.value = "N/A"
+        _peakSignalFerrousTrailing.value = "N/A"
+        _ferrousTestPvResult.value = "N/A"
+    }
+
+
+
     fun disableNonFerrousTest(){
         _sampleCertificateNumberNonFerrous.value = "N/A"
         _detectRejectNonFerrousLeading.value = YesNoState.NA
@@ -654,6 +721,8 @@ class CalibrationMetalDetectorConveyorViewModel(
         _peakSignalNonFerrousTrailing.value = "N/A"
         _nonFerrousTestPvResult.value = "N/A"
     }
+
+
 
     fun enableNonFerrousTest(){
         _sampleCertificateNumberNonFerrous.value = ""
@@ -1462,13 +1531,6 @@ class CalibrationMetalDetectorConveyorViewModel(
         _sensitivityAccessRestriction.value = newSensitivityAccessRestriction
     }
 
-    private val _sensitivityAsFoundFerrous = mutableStateOf("")
-    val sensitivityAsFoundFerrous: State<String> = _sensitivityAsFoundFerrous
-
-
-    fun setSensitivityAsFoundFerrous(newSensitivityAsFoundFerrous: String) {
-        _sensitivityAsFoundFerrous.value = newSensitivityAsFoundFerrous
-    }
 
     private val _sensitivityAsFoundFerrousPeakSignal = mutableStateOf("")
     val sensitivityAsFoundFerrousPeakSignal: State<String> = _sensitivityAsFoundFerrousPeakSignal
@@ -1478,13 +1540,6 @@ class CalibrationMetalDetectorConveyorViewModel(
         _sensitivityAsFoundFerrousPeakSignal.value = newSensitivityAsFoundFerrousPeakSignal
     }
 
-    private val _sensitivityAsFoundNonFerrous = mutableStateOf("")
-    val sensitivityAsFoundNonFerrous: State<String> = _sensitivityAsFoundNonFerrous
-
-
-    fun setSensitivityAsFoundNonFerrous(newSensitivityAsFoundNonFerrous: String) {
-        _sensitivityAsFoundNonFerrous.value = newSensitivityAsFoundNonFerrous
-    }
 
     private val _sensitivityAsFoundNonFerrousPeakSignal = mutableStateOf("")
     val sensitivityAsFoundNonFerrousPeakSignal: State<String> =
@@ -1495,13 +1550,6 @@ class CalibrationMetalDetectorConveyorViewModel(
         _sensitivityAsFoundNonFerrousPeakSignal.value = newSensitivityAsFoundNonFerrousPeakSignal
     }
 
-    private val _sensitivityAsFoundStainless = mutableStateOf("")
-    val sensitivityAsFoundStainless: State<String> = _sensitivityAsFoundStainless
-
-
-    fun setSensitivityAsFoundStainless(newSensitivityAsFoundStainless: String) {
-        _sensitivityAsFoundStainless.value = newSensitivityAsFoundStainless
-    }
 
     private val _sensitivityAsFoundStainlessPeakSignal = mutableStateOf("")
     val sensitivityAsFoundStainlessPeakSignal: State<String> =
@@ -1527,6 +1575,229 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun setSensitivityAsFoundEngineerNotes(newValue: String) {
         _sensitivityAsFoundEngineerNotes.value = newValue
     }
+
+    //------------------------------------------------------------------Ferrous Sensitivity As Found
+
+
+    private val _sensitivityAsFoundFerrous = mutableStateOf("")
+    val sensitivityAsFoundFerrous: State<String> = _sensitivityAsFoundFerrous
+
+
+    fun setSensitivityAsFoundFerrous(value: String) {
+        _sensitivityAsFoundFerrous.value = value}
+
+
+    // Sample Certificate Number
+    private val _sampleCertificateNumberAsFoundFerrous = mutableStateOf("")
+    val sampleCertificateNumberAsFoundFerrous: State<String> = _sampleCertificateNumberAsFoundFerrous
+
+
+    fun setSampleCertificateNumberAsFoundFerrous(newSampleCertificateNumberAsFoundFerrous: String) {
+        _sampleCertificateNumberAsFoundFerrous.value = newSampleCertificateNumberAsFoundFerrous
+    }
+
+    // Leading edge detection & signal
+    private val _detectRejectAsFoundFerrousLeading = mutableStateOf(YesNoState.NO)
+    val detectRejectAsFoundFerrousLeading: State<YesNoState> = _detectRejectAsFoundFerrousLeading
+
+    fun setDetectRejectAsFoundFerrousLeading(newValue: YesNoState) {
+        _detectRejectAsFoundFerrousLeading.value = newValue
+    }
+
+    private val _peakSignalAsFoundFerrousLeading = mutableStateOf("")
+    val peakSignalAsFoundFerrousLeading: State<String> = _peakSignalAsFoundFerrousLeading
+
+    fun setPeakSignalAsFoundFerrousLeading(newPeakSignalAsFoundFerrousLeading: String) {
+        _peakSignalAsFoundFerrousLeading.value = newPeakSignalAsFoundFerrousLeading
+    }
+
+    // Middle detection & signal
+    private val _detectRejectAsFoundFerrousMiddle = mutableStateOf(YesNoState.NO)
+    val detectRejectAsFoundFerrousMiddle: State<YesNoState> = _detectRejectAsFoundFerrousMiddle
+
+    fun setDetectRejectAsFoundFerrousMiddle(newValue: YesNoState) {
+        _detectRejectAsFoundFerrousMiddle.value = newValue
+    }
+
+    private val _peakSignalAsFoundFerrousMiddle = mutableStateOf("")
+    val peakSignalAsFoundFerrousMiddle: State<String> = _peakSignalAsFoundFerrousMiddle
+
+    fun setPeakSignalAsFoundFerrousMiddle(newPeakSignalAsFoundFerrousMiddle: String) {
+        _peakSignalAsFoundFerrousMiddle.value = newPeakSignalAsFoundFerrousMiddle
+    }
+
+    // Trailing edge detection & signal
+
+    private val _detectRejectAsFoundFerrousTrailing = mutableStateOf(YesNoState.NO)
+    val detectRejectAsFoundFerrousTrailing: State<YesNoState> = _detectRejectAsFoundFerrousTrailing
+
+    fun setDetectRejectAsFoundFerrousTrailing(newValue: YesNoState) {
+        _detectRejectAsFoundFerrousTrailing.value = newValue
+    }
+
+    private val _peakSignalAsFoundFerrousTrailing = mutableStateOf("")
+    val peakSignalAsFoundFerrousTrailing: State<String> = _peakSignalAsFoundFerrousTrailing
+
+    fun setPeakSignalAsFoundFerrousTrailing(newPeakSignalAsFoundFerrousTrailing: String) {
+        _peakSignalAsFoundFerrousTrailing.value = newPeakSignalAsFoundFerrousTrailing
+    }
+
+    private val _ferrousTestAsFoundEngineerNotes = mutableStateOf("")
+    val ferrousTestAsFoundEngineerNotes: State<String> = _ferrousTestAsFoundEngineerNotes
+
+
+    fun setFerrousTestAsFoundEngineerNotes(newValue: String) {
+        _ferrousTestAsFoundEngineerNotes.value = newValue
+    }
+
+//------------------------------------------------------------------Non Ferrous Sensitivity As Found
+
+
+    private val _sensitivityAsFoundNonFerrous = mutableStateOf("")
+    val sensitivityAsFoundNonFerrous: State<String> = _sensitivityAsFoundNonFerrous
+
+
+    fun setSensitivityAsFoundNonFerrous(value: String) {
+        _sensitivityAsFoundNonFerrous.value = value}
+
+
+    // Sample Certificate Number
+    private val _sampleCertificateNumberAsFoundNonFerrous = mutableStateOf("")
+    val sampleCertificateNumberAsFoundNonFerrous: State<String> = _sampleCertificateNumberAsFoundNonFerrous
+
+
+    fun setSampleCertificateNumberAsFoundNonFerrous(newSampleCertificateNumberAsFoundNonFerrous: String) {
+        _sampleCertificateNumberAsFoundNonFerrous.value = newSampleCertificateNumberAsFoundNonFerrous
+    }
+
+    // Leading edge detection & signal
+    private val _detectRejectAsFoundNonFerrousLeading = mutableStateOf(YesNoState.NO)
+    val detectRejectAsFoundNonFerrousLeading: State<YesNoState> = _detectRejectAsFoundNonFerrousLeading
+
+    fun setDetectRejectAsFoundNonFerrousLeading(newValue: YesNoState) {
+        _detectRejectAsFoundNonFerrousLeading.value = newValue
+    }
+
+    private val _peakSignalAsFoundNonFerrousLeading = mutableStateOf("")
+    val peakSignalAsFoundNonFerrousLeading: State<String> = _peakSignalAsFoundNonFerrousLeading
+
+    fun setPeakSignalAsFoundNonFerrousLeading(newPeakSignalAsFoundNonFerrousLeading: String) {
+        _peakSignalAsFoundNonFerrousLeading.value = newPeakSignalAsFoundNonFerrousLeading
+    }
+
+    // Middle detection & signal
+    private val _detectRejectAsFoundNonFerrousMiddle = mutableStateOf(YesNoState.NO)
+    val detectRejectAsFoundNonFerrousMiddle: State<YesNoState> = _detectRejectAsFoundNonFerrousMiddle
+
+    fun setDetectRejectAsFoundNonFerrousMiddle(newValue: YesNoState) {
+        _detectRejectAsFoundNonFerrousMiddle.value = newValue
+    }
+
+    private val _peakSignalAsFoundNonFerrousMiddle = mutableStateOf("")
+    val peakSignalAsFoundNonFerrousMiddle: State<String> = _peakSignalAsFoundNonFerrousMiddle
+
+    fun setPeakSignalAsFoundNonFerrousMiddle(newPeakSignalAsFoundNonFerrousMiddle: String) {
+        _peakSignalAsFoundNonFerrousMiddle.value = newPeakSignalAsFoundNonFerrousMiddle
+    }
+
+    // Trailing edge detection & signal
+
+    private val _detectRejectAsFoundNonFerrousTrailing = mutableStateOf(YesNoState.NO)
+    val detectRejectAsFoundNonFerrousTrailing: State<YesNoState> = _detectRejectAsFoundNonFerrousTrailing
+
+    fun setDetectRejectAsFoundNonFerrousTrailing(newValue: YesNoState) {
+        _detectRejectAsFoundNonFerrousTrailing.value = newValue
+    }
+
+    private val _peakSignalAsFoundNonFerrousTrailing = mutableStateOf("")
+    val peakSignalAsFoundNonFerrousTrailing: State<String> = _peakSignalAsFoundNonFerrousTrailing
+
+    fun setPeakSignalAsFoundNonFerrousTrailing(newPeakSignalAsFoundNonFerrousTrailing: String) {
+        _peakSignalAsFoundNonFerrousTrailing.value = newPeakSignalAsFoundNonFerrousTrailing
+    }
+
+    private val _nonFerrousTestAsFoundEngineerNotes = mutableStateOf("")
+    val nonFerrousTestAsFoundEngineerNotes: State<String> = _nonFerrousTestAsFoundEngineerNotes
+
+
+    fun setNonFerrousTestAsFoundEngineerNotes(newValue: String) {
+        _nonFerrousTestAsFoundEngineerNotes.value = newValue
+    }
+
+    //----------------------------------------------------------------Stainless Sensitivity As Found
+
+
+    private val _sensitivityAsFoundStainless = mutableStateOf("")
+    val sensitivityAsFoundStainless: State<String> = _sensitivityAsFoundStainless
+
+
+    fun setSensitivityAsFoundStainless(value: String) {
+        _sensitivityAsFoundStainless.value = value}
+
+
+    // Sample Certificate Number
+    private val _sampleCertificateNumberAsFoundStainless = mutableStateOf("")
+    val sampleCertificateNumberAsFoundStainless: State<String> = _sampleCertificateNumberAsFoundStainless
+
+
+    fun setSampleCertificateNumberAsFoundStainless(newSampleCertificateNumberAsFoundStainless: String) {
+        _sampleCertificateNumberAsFoundStainless.value = newSampleCertificateNumberAsFoundStainless
+    }
+
+    // Leading edge detection & signal
+    private val _detectRejectAsFoundStainlessLeading = mutableStateOf(YesNoState.NO)
+    val detectRejectAsFoundStainlessLeading: State<YesNoState> = _detectRejectAsFoundStainlessLeading
+
+    fun setDetectRejectAsFoundStainlessLeading(newValue: YesNoState) {
+        _detectRejectAsFoundStainlessLeading.value = newValue
+    }
+
+    private val _peakSignalAsFoundStainlessLeading = mutableStateOf("")
+    val peakSignalAsFoundStainlessLeading: State<String> = _peakSignalAsFoundStainlessLeading
+
+    fun setPeakSignalAsFoundStainlessLeading(newPeakSignalAsFoundStainlessLeading: String) {
+        _peakSignalAsFoundStainlessLeading.value = newPeakSignalAsFoundStainlessLeading
+    }
+
+    // Middle detection & signal
+    private val _detectRejectAsFoundStainlessMiddle = mutableStateOf(YesNoState.NO)
+    val detectRejectAsFoundStainlessMiddle: State<YesNoState> = _detectRejectAsFoundStainlessMiddle
+
+    fun setDetectRejectAsFoundStainlessMiddle(newValue: YesNoState) {
+        _detectRejectAsFoundStainlessMiddle.value = newValue
+    }
+
+    private val _peakSignalAsFoundStainlessMiddle = mutableStateOf("")
+    val peakSignalAsFoundStainlessMiddle: State<String> = _peakSignalAsFoundStainlessMiddle
+
+    fun setPeakSignalAsFoundStainlessMiddle(newPeakSignalAsFoundStainlessMiddle: String) {
+        _peakSignalAsFoundStainlessMiddle.value = newPeakSignalAsFoundStainlessMiddle
+    }
+
+    // Trailing edge detection & signal
+
+    private val _detectRejectAsFoundStainlessTrailing = mutableStateOf(YesNoState.NO)
+    val detectRejectAsFoundStainlessTrailing: State<YesNoState> = _detectRejectAsFoundStainlessTrailing
+
+    fun setDetectRejectAsFoundStainlessTrailing(newValue: YesNoState) {
+        _detectRejectAsFoundStainlessTrailing.value = newValue
+    }
+
+    private val _peakSignalAsFoundStainlessTrailing = mutableStateOf("")
+    val peakSignalAsFoundStainlessTrailing: State<String> = _peakSignalAsFoundStainlessTrailing
+
+    fun setPeakSignalAsFoundStainlessTrailing(newPeakSignalAsFoundStainlessTrailing: String) {
+        _peakSignalAsFoundStainlessTrailing.value = newPeakSignalAsFoundStainlessTrailing
+    }
+
+    private val _stainlessTestAsFoundEngineerNotes = mutableStateOf("")
+    val stainlessTestAsFoundEngineerNotes: State<String> = _stainlessTestAsFoundEngineerNotes
+
+
+    fun setStainlessTestAsFoundEngineerNotes(newValue: String) {
+        _stainlessTestAsFoundEngineerNotes.value = newValue
+    }
+
 
     //--------------------------------------------------------------------Ferrous Sensitivity Result
 

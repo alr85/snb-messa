@@ -1,18 +1,14 @@
 package com.example.mecca.screens.service.mdCalibration
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ContentPasteGo
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,7 +24,6 @@ import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateFerrousPvResult
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.core.InputTransforms
-import com.example.mecca.formModules.AnimatedActionPill
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
@@ -40,35 +35,38 @@ import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CalMetalDetectorConveyorFerrousTest(
+fun CalMetalDetectorConveyorStainlessTestAsFound(
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
     // Pull state from VM
-    val sensitivityAsLeftFerrous by viewModel.sensitivityAsLeftFerrous
-    val sampleCertificateNumberFerrous by viewModel.sampleCertificateNumberFerrous
+    val sensitivityAsFoundStainless by viewModel.sensitivityAsFoundStainless
+    val sampleCert by viewModel.sampleCertificateNumberAsFoundStainless
 
-    val peakSignalLeading by viewModel.peakSignalFerrousLeading
-    val peakSignalMiddle by viewModel.peakSignalFerrousMiddle
-    val peakSignalTrailing by viewModel.peakSignalFerrousTrailing
+    val peakLeading by viewModel.peakSignalAsFoundStainlessLeading
+    val peakMiddle by viewModel.peakSignalAsFoundStainlessMiddle
+    val peakTrailing by viewModel.peakSignalAsFoundStainlessTrailing
 
-    val detectLeading by viewModel.detectRejectFerrousLeading
-    val detectMiddle by viewModel.detectRejectFerrousMiddle
-    val detectTrailing by viewModel.detectRejectFerrousTrailing
+    val detectLeading by viewModel.detectRejectAsFoundStainlessLeading
+    val detectMiddle by viewModel.detectRejectAsFoundStainlessMiddle
+    val detectTrailing by viewModel.detectRejectAsFoundStainlessTrailing
 
-    val engineerNotes by viewModel.ferrousTestEngineerNotes
+    val notes by viewModel.stainlessTestAsFoundEngineerNotes
+
+
+
 
     // Sensitivity Warning Logic
-    val customerReq = viewModel.sensitivityRequirementFerrous.value.replace(",", ".").toDoubleOrNull() ?: 0.0
-    val achieved = sensitivityAsLeftFerrous.replace(",", ".").toDoubleOrNull() ?: 0.0
+    val customerReq = viewModel.sensitivityRequirementStainless.value.replace(",", ".").toDoubleOrNull() ?: 0.0
+    val achieved = sensitivityAsFoundStainless.replace(",", ".").toDoubleOrNull() ?: 0.0
     val isSensitivityWarning = achieved > customerReq && achieved > 0.0 && customerReq > 0.0
 
     // Validation
     val isNextStepEnabled =
-        sensitivityAsLeftFerrous.isNotBlank() &&
-                sampleCertificateNumberFerrous.isNotBlank() &&
-                (detectLeading != YesNoState.YES || peakSignalLeading.isNotBlank()) &&
-                (detectMiddle != YesNoState.YES || peakSignalMiddle.isNotBlank()) &&
-                (detectTrailing != YesNoState.YES || peakSignalTrailing.isNotBlank())
+        sensitivityAsFoundStainless.isNotBlank() &&
+                sampleCert.isNotBlank() &&
+                (detectLeading != YesNoState.YES || peakLeading.isNotBlank()) &&
+                (detectMiddle != YesNoState.YES || peakMiddle.isNotBlank()) &&
+                (detectTrailing != YesNoState.YES || peakTrailing.isNotBlank())
 
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
@@ -76,7 +74,7 @@ fun CalMetalDetectorConveyorFerrousTest(
 
     Column(Modifier.fillMaxSize()) {
 
-        CalibrationHeader("Ferrous Sensitivity (As Left)")
+        CalibrationHeader("Stainless Sensitivity (As Found)")
 
         ScrollableWithScrollbar(
             modifier = Modifier
@@ -84,17 +82,6 @@ fun CalMetalDetectorConveyorFerrousTest(
             contentPadding = PaddingValues(horizontal = 16.dp),
         ) {
             Column {
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    AnimatedActionPill(
-                        text = "Copy from ‘As Found’",
-                        icon = Icons.Outlined.ContentPasteGo,
-                        onClick = { copyFerrousTestAsFoundToAsLeft(viewModel) }
-                    )
-                }
 
                 Spacer(Modifier.height(6.dp))
 
@@ -104,29 +91,28 @@ fun CalMetalDetectorConveyorFerrousTest(
                 LabeledTwoTextInputsWithHelp(
                     label = "Achieved Sensitivity & Certificate",
                     firstInputLabel = "Size",
-                    firstInputValue = sensitivityAsLeftFerrous,
+                    firstInputValue = sensitivityAsFoundStainless,
                     onFirstInputValueChange = {
-                        viewModel.setSensitivityAsLeftFerrous(it)
+                        viewModel.setSensitivityAsFoundStainless(it)
 
                         if (it == "N/A") {
-                            viewModel.disableFerrousTest()
+                            viewModel.disableStainlessAsFound()
                         } else {
-                            viewModel.enableFerrousTest()
+                            viewModel.enableStainlessAsFound()
                         }
-                        viewModel.autoUpdateFerrousPvResult()
+
                     },
                     secondInputLabel = "Cert No.",
-                    secondInputValue = sampleCertificateNumberFerrous,
+                    secondInputValue = sampleCert,
                     onSecondInputValueChange = { newValue ->
-                        viewModel.setSampleCertificateNumberFerrous(newValue)
-                        viewModel.autoUpdateFerrousPvResult()
+                        viewModel.setSampleCertificateNumberAsFoundStainless(newValue)
                     },
                     helpText = """
-                        Enter the achieved Ferrous sensitivity and the certificate number.
+                        Enter the achieved Stainless sensitivity and the certificate number.
                         
-                        Customer Requirement: ${viewModel.sensitivityRequirementFerrous.value}mm
-                        M&S Target: ${viewModel.sensitivityData.value?.ferrousTargetMM}mm  
-                        Max Allowed: ${viewModel.sensitivityData.value?.ferrousMaxMM}mm
+                        Customer Requirement: ${viewModel.sensitivityRequirementStainless.value}mm
+                        M&S Target: ${viewModel.sensitivityData.value?.stainless316TargetMM}mm  
+                        Max Allowed: ${viewModel.sensitivityData.value?.stainless316MaxMM}mm
                     """.trimIndent(),
                     firstInputKeyboardType = KeyboardType.Decimal,
                     secondInputKeyboardType = KeyboardType.Text,
@@ -157,21 +143,19 @@ fun CalMetalDetectorConveyorFerrousTest(
                 //-----------------------------------------------------
                 //  If N/A – skip test section
                 //-----------------------------------------------------
-                if (sensitivityAsLeftFerrous != "N/A") {
+                if (sensitivityAsFoundStainless != "N/A") {
 
                     LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
                         label = "Detected & Rejected (Leading)",
                         currentState = detectLeading,
                         onStateChange = {
-                            viewModel.setDetectRejectFerrousLeading(it)
-                            viewModel.autoUpdateFerrousPvResult()
+                            viewModel.setDetectRejectAsFoundStainlessLeading(it)
                         },
                         helpText = "Leading-edge test result & signal.",
                         inputLabel = "Produced Signal",
-                        inputValue = peakSignalLeading,
+                        inputValue = peakLeading,
                         onInputValueChange = {
-                            viewModel.setPeakSignalFerrousLeading(it)
-                            viewModel.autoUpdateFerrousPvResult()
+                            viewModel.setPeakSignalAsFoundStainlessLeading(it)
                         },
                         inputMaxLength = 12,
                     )
@@ -182,15 +166,13 @@ fun CalMetalDetectorConveyorFerrousTest(
                         label = "Detected & Rejected (Middle)",
                         currentState = detectMiddle,
                         onStateChange = {
-                            viewModel.setDetectRejectFerrousMiddle(it)
-                            viewModel.autoUpdateFerrousPvResult()
+                            viewModel.setDetectRejectAsFoundStainlessMiddle(it)
                         },
                         helpText = "Middle test result & signal.",
                         inputLabel = "Produced Signal",
-                        inputValue = peakSignalMiddle,
+                        inputValue = peakMiddle,
                         onInputValueChange = {
-                            viewModel.setPeakSignalFerrousMiddle(it)
-                            viewModel.autoUpdateFerrousPvResult()
+                            viewModel.setPeakSignalAsFoundStainlessMiddle(it)
                         },
                         inputMaxLength = 12,
                     )
@@ -201,15 +183,13 @@ fun CalMetalDetectorConveyorFerrousTest(
                         label = "Detected & Rejected (Trailing)",
                         currentState = detectTrailing,
                         onStateChange = {
-                            viewModel.setDetectRejectFerrousTrailing(it)
-                            viewModel.autoUpdateFerrousPvResult()
+                            viewModel.setDetectRejectAsFoundStainlessTrailing(it)
                         },
                         helpText = "Trailing-edge test result & signal.",
                         inputLabel = "Produced Signal",
-                        inputValue = peakSignalTrailing,
+                        inputValue = peakTrailing,
                         onInputValueChange = {
-                            viewModel.setPeakSignalFerrousTrailing(it)
-                            viewModel.autoUpdateFerrousPvResult()
+                            viewModel.setPeakSignalAsFoundStainlessTrailing(it)
                         },
                         inputMaxLength = 12,
                     )
@@ -220,40 +200,13 @@ fun CalMetalDetectorConveyorFerrousTest(
                 }
 
 
-
-                //-----------------------------------------------------
-                //  PV Result (if required)
-                //-----------------------------------------------------
-                if (viewModel.pvRequired.value) {
-                    LabeledFourOptionRadioWithHelp(
-                        label = "P.V. Result",
-                        value = viewModel.ferrousTestPvResult.value,
-                        onValueChange = viewModel::setFerrousTestPvResult,
-                        helpText = """
-                            Auto-Pass rules:
-                            • Achieved sensitivity ≤ Max Allowed
-                            • Certificate No. entered
-                            • All three detection tests = Yes
-                            • All produced signals entered
-                            
-                            Otherwise auto-fail. You may override manually.
-                        """.trimIndent(),
-                        showNotFittedOption = false,
-                        notFittedEnabled = false
-                    )
-
-                    FormSpacer()
-                }
-
-
-
                 //-----------------------------------------------------
                 //  Engineer Notes
                 //-----------------------------------------------------
                 LabeledTextFieldWithHelp(
                     label = "Engineer Notes",
-                    value = engineerNotes,
-                    onValueChange = viewModel::setFerrousTestEngineerNotes,
+                    value = notes,
+                    onValueChange = viewModel::setStainlessTestAsFoundEngineerNotes,
                     helpText = "Relevant notes for this section.",
                     isNAToggleEnabled = false,
                     maxLength = 50,
@@ -263,11 +216,4 @@ fun CalMetalDetectorConveyorFerrousTest(
             }
         }
     }
-
-}
-
-
-fun copyFerrousTestAsFoundToAsLeft(viewModel: CalibrationMetalDetectorConveyorViewModel) {
-    viewModel.setDetectionSettingAsLeft1(viewModel.detectionSettingAsFound1.value)
-
 }
