@@ -3029,13 +3029,54 @@ class CalibrationMetalDetectorConveyorViewModel(
     //endregion
 
 
+    suspend fun finaliseCalibrationAndUpload(
+        context: Context,
+        apiService: ApiService,
+        onResult: (String) -> Unit
+    ) {
+        try {
+            _isUploading.value = true
 
+            // 1. End calibration (Await this so the CSV has the end date)
+            InAppLogger.d("Updating the calibration end time...")
+            val endUpdate = toCalibrationEndUpdate()
+            calibrationRepository.updateCalibrationEnd(endUpdate) // Call repository directly (assuming it's suspend)
 
+            // 2. Update local database last calibration date
+            InAppLogger.d("Updating the last calibration in the local database...")
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS")
+            val lastCalibrationDateTime = LocalDateTime.now().format(formatter)
 
+            mdSystemsDAO.updateLastCalibrationDate(
+                systemId.value,
+                lastCalibrationDateTime
+            )
 
+            // 3. Sync system details with the cloud
+            InAppLogger.d("Syncing with the cloud...")
+            repository.updateSystem(
+                context = context,
+                cloudId = cloudSystemId.value,
+                localId = systemId.value,
+                tempId = tempSystemId.value
+            )
 
-
-
+            // 4. Generate + upload CSV
+            val csvSuccess = createAndUploadCsv(context, calibrationId.value, apiService)
+            if (csvSuccess) {
+                onResult("✅ Calibration completed and uploaded to the cloud.")
+                InAppLogger.d("Calibration completed and uploaded to the cloud.")
+            } else {
+                onResult("⚠️ Calibration completed, but NOT uploaded to the cloud. Please try again later.")
+                InAppLogger.d("Calibration completed, but NOT uploaded to the cloud.")
+            }
+        } catch (e: Exception) {
+            InAppLogger.e("Error finishing calibration: ${e.message}")
+            onResult("❌ An error occurred while finishing calibration. Please try again.")
+        } finally {
+            _isUploading.value = false
+        }
+    }
 
 
     //---------------------------------------------------------------------------CSV File Processing
@@ -3331,18 +3372,14 @@ class CalibrationMetalDetectorConveyorViewModel(
                 // Check if file exists and is not empty
                 if (csvFile.exists() && csvFile.length() > 0) {
                     InAppLogger.d("CSV file written successfully: ${csvFile.absolutePath}")
-                    _isUploading.value = false
                     csvFile  // Return the file on success
                 } else {
                     InAppLogger.d("CSV file was either empty or does not exist.")
-                    _isUploading.value = false
                     null  // Return null if the file is empty
-
                 }
             } catch (e: IOException) {
                 e.printStackTrace()
                 InAppLogger.e("Error writing CSV file: ${e.message}")
-                _isUploading.value = false
                 null  // Return null on any exception
             }
         }
@@ -3606,55 +3643,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     }
 
-    suspend fun finaliseCalibrationAndUpload(
-        context: Context,
-        apiService: ApiService,
-        onResult: (String) -> Unit
-    ) {
-        try {
-            // End calibration
-            InAppLogger.d("Updating the calibration end time...")
-            updateCalibrationEnd()
 
-
-            InAppLogger.d("Updating the last calibration in the local database...")
-            // Update local database last calibration date
-
-            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS")
-
-            val lastCalibrationDateTime =
-                LocalDateTime.now().format(formatter)
-
-            mdSystemsDAO.updateLastCalibrationDate(
-                systemId.value,
-                lastCalibrationDateTime
-            )
-
-
-            InAppLogger.d("Syncing with the cloud...")
-
-            // Try syncing with the cloud
-            repository.updateSystem(
-                context = context,
-                cloudId = cloudSystemId.value,
-                localId = systemId.value,
-                tempId = tempSystemId.value
-            )
-
-            // Generate + upload CSV
-            val csvSuccess = createAndUploadCsv(context, calibrationId.value, apiService)
-            if (csvSuccess) {
-                onResult("✅ Calibration completed and uploaded to the cloud.")
-                InAppLogger.d("Calibration completed and uploaded to the cloud.")
-            } else {
-                onResult("⚠️ Calibration completed, but NOT uploaded to the cloud. Please try again later.")
-                InAppLogger.d("Calibration completed, but NOT uploaded to the cloud.")
-            }
-        } catch (e: Exception) {
-            InAppLogger.e("Error finishing calibration: ${e.message}")
-            onResult("❌ An error occurred while finishing calibration. Please try again.")
-        }
-    }
 
 
 }

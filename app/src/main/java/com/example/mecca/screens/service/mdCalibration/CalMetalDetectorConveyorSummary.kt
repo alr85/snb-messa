@@ -184,7 +184,7 @@ fun CalMetalDetectorConveyorSummary(
                         Checkbox(
                             checked = engineerConfirmed,
                             onCheckedChange = { engineerConfirmed = it },
-                            enabled = allSectionsVerified
+                            enabled = allSectionsVerified && !isUploading
                         )
 
                         Spacer(modifier = Modifier.width(8.dp))
@@ -203,7 +203,7 @@ fun CalMetalDetectorConveyorSummary(
             // Finish button
             item {
                 OutlinedButton(
-                    enabled = engineerConfirmed && allSectionsVerified,
+                    enabled = engineerConfirmed && allSectionsVerified && !isUploading,
                     onClick = {
                         InAppLogger.d("Finish button clicked")
                         val oldLocation = viewModel.lastLocation.value.trim()
@@ -267,7 +267,7 @@ fun CalMetalDetectorConveyorSummary(
         if (showLocationChangeDialog) {
             val candidate = pendingLocationCandidate
             AlertDialog(
-                onDismissRequest = { showLocationChangeDialog = false },
+                onDismissRequest = { if (!isUploading) showLocationChangeDialog = false },
                 title = { Text("Confirm Location Change") },
                 text = {
                     Text(
@@ -277,22 +277,28 @@ fun CalMetalDetectorConveyorSummary(
                     )
                 },
                 confirmButton = {
-                    TextButton(onClick = {
-                        showLocationChangeDialog = false
-                        coroutineScope.launch {
-                            viewModel.setNewLocation(candidate!!)          // keep VM consistent
-                            viewModel.updateSystemLocationLocally()        // your existing impl
-                            viewModel.finaliseCalibrationAndUpload(context, apiService) { message ->
-                                dialogMessage = message
-                                showResultDialog = true
+                    TextButton(
+                        enabled = !isUploading,
+                        onClick = {
+                            showLocationChangeDialog = false
+                            coroutineScope.launch {
+                                viewModel.setNewLocation(candidate!!)          // keep VM consistent
+                                viewModel.updateSystemLocationLocally()        // your existing impl
+                                viewModel.finaliseCalibrationAndUpload(context, apiService) { message ->
+                                    dialogMessage = message
+                                    showResultDialog = true
+                                }
                             }
                         }
-                    }) {
+                    ) {
                         Text("Yes")
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showLocationChangeDialog = false }) {
+                    TextButton(
+                        enabled = !isUploading,
+                        onClick = { showLocationChangeDialog = false }
+                    ) {
                         Text("No")
                     }
                 }
