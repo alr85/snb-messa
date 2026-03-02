@@ -164,6 +164,8 @@ fun CalMetalDetectorConveyorStainlessTest(
                     )
 
                     FormSpacer()
+
+
                 }
 
 
@@ -188,9 +190,11 @@ fun CalMetalDetectorConveyorStainlessTest(
                         showNotFittedOption = false,
                         notFittedEnabled = false
                     )
+
+                    FormSpacer()
                 }
 
-               FormSpacer()
+
 
                 //-----------------------------------------------------
                 // Notes

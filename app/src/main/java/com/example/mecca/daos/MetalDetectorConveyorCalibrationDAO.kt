@@ -128,6 +128,14 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "detectionSettingAsFound6 = :detectionSettingAsFound6," +
                 "detectionSettingAsFound7 = :detectionSettingAsFound7," +
                 "detectionSettingAsFound8 = :detectionSettingAsFound8," +
+                "detectionSetting1label = :detectionSetting1label, " +
+                "detectionSetting2label = :detectionSetting2label, " +
+                "detectionSetting3label = :detectionSetting3label, " +
+                "detectionSetting4label = :detectionSetting4label," +
+                "detectionSetting5label = :detectionSetting5label," +
+                "detectionSetting6label = :detectionSetting6label," +
+                "detectionSetting7label = :detectionSetting7label," +
+                "detectionSetting8label = :detectionSetting8label," +
                 "sensitivityAccessRestriction = :sensitivityAccessRestriction," +
                 "detectionSettingPvResult = :detectionSettingPvResult," +
                 "detectionSettingAsFoundEngineerNotes = :detectionSettingAsFoundEngineerNotes " +
@@ -142,6 +150,14 @@ interface MetalDetectorConveyorCalibrationDAO {
         detectionSettingAsFound6: String,
         detectionSettingAsFound7: String,
         detectionSettingAsFound8: String,
+        detectionSetting1label: String,
+        detectionSetting2label: String,
+        detectionSetting3label: String,
+        detectionSetting4label: String,
+        detectionSetting5label: String,
+        detectionSetting6label: String,
+        detectionSetting7label: String,
+        detectionSetting8label: String,
         sensitivityAccessRestriction: String,
         detectionSettingPvResult: String,
         detectionSettingAsFoundEngineerNotes: String,

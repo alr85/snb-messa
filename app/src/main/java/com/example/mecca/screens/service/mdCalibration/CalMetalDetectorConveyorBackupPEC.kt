@@ -239,9 +239,11 @@ fun CalMetalDetectorConveyorBackupPEC(
                     """.trimIndent()
                     )
 
+                    FormSpacer()
+
                 }
 
-                FormSpacer()
+
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Comments",

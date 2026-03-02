@@ -12,31 +12,8 @@ import com.example.mecca.formModules.YesNoState
  * Pass / Fail / N/A status of various PV (Performance Validation)
  * checks during calibration.
  *
- * These rules used to sit inside the main ViewModel, mixed in
- * with state variables, database calls, UI triggers, and general
- * chaos. Now they live here, where:
- *
- *   • The logic is easy to find
- *   • The rules are easy to modify
- *   • The ViewModel isn’t clogged with decision trees
- *   • Unit testing is far simpler
- *
- * Each function here is an *extension function* on the
- * CalibrationMetalDetectorConveyorViewModel. This allows the
- * logic to behave as if it were part of the ViewModel, without
- * actually bloating the ViewModel file itself.
- *
- * In short:
- *   The ViewModel notifies *when* a PV result needs updating.
- *   This file decides *what* the result should be.
- *
- * If you’re debugging:
- *   – Check that the state values feeding into these rules
- *     (e.g., YES/NO/NA or peak signals) are correct
- *   – Check that the ViewModel is actually calling the rule
- *   – Remember these rules won't override manual user choices
- *     unless explicitly written to do so
- *
+ * These rules sit as extension functions on the ViewModel to keep
+ * the main ViewModel file lean and focused on UI state.
  * ---------------------------------------------------------------
  */
 
@@ -45,6 +22,11 @@ import com.example.mecca.formModules.YesNoState
 // Detection Setting PV Logic
 // ---------------------------------------------------------
 fun CalibrationMetalDetectorConveyorViewModel.autoUpdateDetectionSettingPvResult() {
+    if (!pvRequired.value) {
+        setDetectionSettingPvResult("N/A")
+        return
+    }
+
     val value = sensitivityAccessRestriction.value.trim()
 
     when {
@@ -64,8 +46,13 @@ fun CalibrationMetalDetectorConveyorViewModel.autoUpdateDetectionSettingPvResult
 // ---------------------------------------------------------
 fun CalibrationMetalDetectorConveyorViewModel.autoUpdateDetectNotificationTestPvResult() {
 
-    val passes =
-        detectNotificationTestPvResult.value.isNotBlank() && detectNotificationTestPvResult.value != "No Result"
+    if (!pvRequired.value) {
+        setDetectNotificationTestPvResult("N/A")
+        return
+    }
+
+    val results = detectNotificationResult.value
+    val passes = results.isNotEmpty() && "No Result" !in results
 
 
     setDetectNotificationTestPvResult(
@@ -79,6 +66,10 @@ fun CalibrationMetalDetectorConveyorViewModel.autoUpdateDetectNotificationTestPv
 // ---------------------------------------------------------
 
 fun CalibrationMetalDetectorConveyorViewModel.autoUpdateFerrousPvResult() {
+    if (!pvRequired.value) {
+        setFerrousTestPvResult("N/A")
+        return
+    }
 
     val result = evaluatePvResult(
         achievedSensitivityString = sensitivityAsLeftFerrous.value.trim(),
@@ -97,6 +88,10 @@ fun CalibrationMetalDetectorConveyorViewModel.autoUpdateFerrousPvResult() {
 
 
 fun CalibrationMetalDetectorConveyorViewModel.autoUpdateNonFerrousPvResult() {
+    if (!pvRequired.value) {
+        setNonFerrousTestPvResult("N/A")
+        return
+    }
 
     val result = evaluatePvResult(
         achievedSensitivityString = sensitivityAsLeftNonFerrous.value.trim(),
@@ -114,6 +109,10 @@ fun CalibrationMetalDetectorConveyorViewModel.autoUpdateNonFerrousPvResult() {
 }
 
 fun CalibrationMetalDetectorConveyorViewModel.autoUpdateStainlessPvResult() {
+    if (!pvRequired.value) {
+        setStainlessTestPvResult("N/A")
+        return
+    }
 
     val result = evaluatePvResult(
         achievedSensitivityString = sensitivityAsLeftStainless.value.trim(),
@@ -147,7 +146,7 @@ fun evaluatePvResult(
         return "N/A"
     }
 
-    val achievedDouble = achievedSensitivityString.toDoubleOrNull()
+    val achievedDouble = achievedSensitivityString.replace(",", ".").toDoubleOrNull()
         ?: return "Fail"   // invalid number means fail
 
     val retailerSensitivityAchieved =
@@ -526,16 +525,16 @@ fun CalibrationMetalDetectorConveyorViewModel.autoUpdateSmePvResult() {
         }
     }
 
-    // --- Engineer sizes (swap these to your actual fields) ---
-    val engFerrous = sensitivityAsLeftFerrous.value.normalisedSize()       // OR sensitivityAsLeftFerrous.value
-    val engNonFerrous = sensitivityAsLeftNonFerrous.value.normalisedSize() // OR sensitivityAsLeftNonFerrous.value
-    val engStainless = sensitivityAsLeftStainless.value.normalisedSize()   // OR sensitivityAsLeftStainless.value
+    // --- Engineer sizes ---
+    val engF = sensitivityAsLeftFerrous.value.normalisedSize().toDoubleOrNull() ?: 99.0
+    val engNF = sensitivityAsLeftNonFerrous.value.normalisedSize().toDoubleOrNull() ?: 99.0
+    val engS = sensitivityAsLeftStainless.value.normalisedSize().toDoubleOrNull() ?: 99.0
 
 
     // --- Operator sizes ---
-    val opFerrous = operatorTestResultFerrous.value.normalisedSize()
-    val opNonFerrous = operatorTestResultNonFerrous.value.normalisedSize()
-    val opStainless = operatorTestResultStainless.value.normalisedSize()
+    val opF = operatorTestResultFerrous.value.normalisedSize().toDoubleOrNull() ?: 99.0
+    val opNF = operatorTestResultNonFerrous.value.normalisedSize().toDoubleOrNull() ?: 99.0
+    val opS = operatorTestResultStainless.value.normalisedSize().toDoubleOrNull() ?: 99.0
 
 
     val allFieldsPresent =
@@ -550,10 +549,8 @@ fun CalibrationMetalDetectorConveyorViewModel.autoUpdateSmePvResult() {
                 operatorTestResultCertNumberStainless.value.isNotBlank() &&
                 operatorTestResultCertNumberLargeMetal.value.isNotBlank()
 
-    val sizesMatch =
-        opFerrous >= engFerrous &&
-                opNonFerrous >= engNonFerrous &&
-                opStainless >= engStainless
+    // Operator achieved size must be equal or smaller (better) than engineer achieved size
+    val sizesMatch = opF <= engF && opNF <= engNF && opS <= engS
 
     setSmeTestPvResult(if (allFieldsPresent && sizesMatch) "Pass" else "Fail")
 }

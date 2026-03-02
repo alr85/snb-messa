@@ -1,6 +1,7 @@
 package com.example.mecca.screens.service.mdCalibration
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -8,8 +9,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,12 +31,14 @@ import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorV
 @Composable
 fun CalMetalDetectorConveyorSummaryDetails(
     viewModel: CalibrationMetalDetectorConveyorViewModel,
+    isConfirmationMode: Boolean = false,
+    confirmedSections: Map<String, Boolean> = emptyMap(),
+    onSectionConfirmChange: (String, Boolean) -> Unit = { _, _ -> }
 ) {
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            //.verticalScroll(scrollState)
             .padding(16.dp)
             .background(Color.White)
     ) {
@@ -47,7 +52,13 @@ fun CalMetalDetectorConveyorSummaryDetails(
 
         // Helper function to display a section
         @Composable
-        fun Section(title: String, content: @Composable ColumnScope.() -> Unit) {
+        fun Section(
+            title: String, 
+            forceShowCheckbox: Boolean = true, // default true, set false to hide
+            content: @Composable ColumnScope.() -> Unit
+        ) {
+            val isConfirmed = confirmedSections[title] ?: false
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -58,71 +69,72 @@ fun CalMetalDetectorConveyorSummaryDetails(
                     text = title,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = if (isConfirmationMode && forceShowCheckbox && !isConfirmed) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
                 // Section content
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.elevatedCardElevation(4.dp)
+                    elevation = CardDefaults.elevatedCardElevation(4.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isConfirmationMode && forceShowCheckbox && isConfirmed) Color(0xFFF1F8E9) else MaterialTheme.colorScheme.surfaceVariant
+                    )
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
                         content = content
                     )
+
+                    if (isConfirmationMode && forceShowCheckbox) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
+                                .clickable { onSectionConfirmChange(title, !isConfirmed) }
+                                .padding(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(
+                                checked = isConfirmed,
+                                onCheckedChange = null // Handled by Row click for a larger tap target
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "I have verified the $title values",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
                 }
             }
         }
 
+        // Collect all StateFlows properly
         val infeedSensorTestResult by viewModel.infeedSensorTestResult.collectAsState()
         val rejectConfirmSensorTestResult by viewModel.rejectConfirmSensorTestResult.collectAsState()
         val binFullSensorTestResult by viewModel.binFullSensorTestResult.collectAsState()
         val backupSensorTestResult by viewModel.backupSensorTestResult.collectAsState()
         val airPressureSensorTestResult by viewModel.airPressureSensorTestResult.collectAsState()
+        val packCheckSensorTestResult by viewModel.packCheckSensorTestResult.collectAsState()
         val speedSensorTestResult by viewModel.speedSensorTestResult.collectAsState()
         val binDoorOpenIndication by viewModel.binDoorOpenIndication.collectAsState()
         val binDoorUnlockedIndication by viewModel.binDoorUnlockedIndication.collectAsState()
         val binDoorTimeoutResult by viewModel.binDoorTimeoutResult.collectAsState()
         val detectNotificationResult by viewModel.detectNotificationResult.collectAsState()
-
-//        "MetalDetectorConveyorCalibrationStart/{calibrationId}",
-//        "CalMetalDetectorConveyorConveyorDetails",
-//        "CalMetalDetectorConveyorSystemChecklist",
-//        "CalMetalDetectorConveyorIndicators",
-//        "CalMetalDetectorConveyorProductDetails",
-//        "CalMetalDetectorConveyorSensitivityRequirements",
-//        "CalMetalDetectorConveyorDetectionSettingsAsFound",
-//        "CalMetalDetectorConveyorSensitivityAsFound",
-//        "CalMetalDetectorConveyorFerrousTest",
-//        "CalMetalDetectorConveyorNonFerrousTest",
-//        "CalMetalDetectorConveyorStainlessTest",
-//        "CalMetalDetectorConveyorSmeDetails",
-//        "CalMetalDetectorConveyorDetectionSettingsAsLeft",
-//        "CalMetalDetectorConveyorRejectSettings",
-//        "CalMetalDetectorConveyorInfeedPEC",
-//        "CalMetalDetectorConveyorLargeMetalTest",
-//        "CalMetalDetectorConveyorRejectConfirmPEC",
-//        "CalMetalDetectorConveyorBinFullPEC",
-//        "CalMetalDetectorConveyorBackupPEC",
-//        "CalMetalDetectorConveyorAirPressureSensor",
-//        "CalMetalDetectorConveyorPackCheckSensor",
-//        "CalMetalDetectorConveyorSpeedSensor",
-//        "CalMetalDetectorConveyorBinDoorMonitor",
-//        "CalMetalDetectorConveyorDetectNotification",
-//        "CalMetalDetectorConveyorSummary"
+        val sensitivityData by viewModel.sensitivityData
 
 
         // --- ORDERED TO MATCH NAV LIST ---
 
-        Section(title = "Calibration Details") {
+        Section(title = "Calibration Details", forceShowCheckbox = false) {
             SummaryItem(label = "Calibration ID", value = viewModel.calibrationId.value)
             SummaryItem(label = "Engineer ID", value = viewModel.engineerId.toString())
             SummaryItem(label = "Calibration Start Time", value = viewModel.calibrationStartTime.value)
         }
 
 
-// MetalDetectorConveyorCalibrationStart
         Section(title = "System Details") {
             SummaryItem(label = "Customer Name", value = viewModel.customerName.value)
             SummaryItem(label = "Model Description", value = viewModel.modelDescription.value)
@@ -130,296 +142,287 @@ fun CalMetalDetectorConveyorSummaryDetails(
             SummaryItem(label = "System Location", value = viewModel.lastLocation.value)
             SummaryItem(label = "New Location", value = viewModel.newLocation.value)
             SummaryItem(label = "PV required", value = if (viewModel.pvRequired.value) "Yes" else "No")
+            SummaryItem(label = "Able to calibrate?", value = if (viewModel.canPerformCalibration.value) "Yes" else "No")
+            
+            if (!viewModel.canPerformCalibration.value) {
+                SummaryItem(label = "Reason for not calibrating", value = viewModel.reasonForNotCalibrating.value)
+            }
         }
 
-// CalMetalDetectorConveyorConveyorDetails (no section in your summary yet)
+        // Only show the detailed calibration data if the engineer was ABLE to calibrate
+        if (viewModel.canPerformCalibration.value) {
 
-        Section(title = "Conveyor Details") {
-            SummaryItem(label = "In-feed Belt Height", value = viewModel.infeedBeltHeight.value)
-            SummaryItem(label = "Out-feed Belt Height", value = viewModel.outfeedBeltHeight.value)
-            SummaryItem(label = "Conveyor Length", value = viewModel.conveyorLength.value)
-            SummaryItem(label = "Conveyor Handing", value = viewModel.conveyorHanding.value)
-            SummaryItem(label = "Belt Speed", value = viewModel.beltSpeed.value)
-            SummaryItem(label = "Reject System", value = viewModel.rejectDevice.value)
-            SummaryItem(label = "Engineer Notes", value = viewModel.conveyorDetailsEngineerNotes.value)
+            Section(title = "Conveyor Details") {
+                SummaryItem(label = "In-feed Belt Height", value = viewModel.infeedBeltHeight.value)
+                SummaryItem(label = "Out-feed Belt Height", value = viewModel.outfeedBeltHeight.value)
+                SummaryItem(label = "Conveyor Length", value = viewModel.conveyorLength.value)
+                SummaryItem(label = "Conveyor Handing", value = viewModel.conveyorHanding.value)
+                SummaryItem(label = "Belt Speed", value = viewModel.beltSpeed.value)
+                SummaryItem(label = "Reject System", value = viewModel.rejectDevice.value)
+                SummaryItem(label = "Engineer Notes", value = viewModel.conveyorDetailsEngineerNotes.value)
+            }
+
+            Section(title = "System Checklist") {
+                SummaryItem(label = "Conveyor Belt", value = viewModel.beltCondition.value.toString())
+                SummaryItem(label = "Conveyor Belt Comments", value = viewModel.beltConditionComments.value)
+                SummaryItem(label = "Guarding", value = viewModel.guardCondition.value.toString())
+                SummaryItem(label = "Conveyor Comments", value = viewModel.guardConditionComments.value)
+                SummaryItem(label = "Safety Circuit", value = viewModel.safetyCircuitCondition.value.toString())
+                SummaryItem(label = "Safety Circuit Comments", value = viewModel.safetyCircuitConditionComments.value)
+                SummaryItem(label = "Detector Lining, gaskets and seals", value = viewModel.linerCondition.value.toString())
+                SummaryItem(label = "Detector Lining, gaskets and seals Comments", value = viewModel.linerConditionComments.value)
+                SummaryItem(label = "Screws and Fittings", value = viewModel.screwsCondition.value.toString())
+                SummaryItem(label = "Screws and Fittings Comments", value = viewModel.screwsConditionComments.value)
+                SummaryItem(label = "Engineer Notes", value = viewModel.systemChecklistEngineerNotes.value)
+            }
+
+            Section(title = "Indicators") {
+                SummaryItem(label = "Indicator 6 colour", value = viewModel.indicator6colour.value)
+                SummaryItem(label = "Indicator 6 label", value = viewModel.indicator6label.value)
+                SummaryItem(label = "Indicator 5 colour", value = viewModel.indicator5colour.value)
+                SummaryItem(label = "Indicator 5 label", value = viewModel.indicator5label.value)
+                SummaryItem(label = "Indicator 4 colour", value = viewModel.indicator4colour.value)
+                SummaryItem(label = "Indicator 4 label", value = viewModel.indicator4label.value)
+                SummaryItem(label = "Indicator 3 colour", value = viewModel.indicator3colour.value)
+                SummaryItem(label = "Indicator 3 label", value = viewModel.indicator3label.value)
+                SummaryItem(label = "Indicator 2 colour", value = viewModel.indicator2colour.value)
+                SummaryItem(label = "Indicator 2 label", value = viewModel.indicator2label.value)
+                SummaryItem(label = "Indicator 1 colour", value = viewModel.indicator1colour.value)
+                SummaryItem(label = "Indicator 1 label", value = viewModel.indicator1label.value)
+                SummaryItem(label = "Engineer Notes", value = viewModel.indicatorsEngineerNotes.value)
+            }
+
+            Section(title = "Product Details") {
+                SummaryItem(label = "Product Description", value = viewModel.productDescription.value)
+                SummaryItem(label = "Product Library Reference", value = viewModel.productLibraryReference.value)
+                SummaryItem(label = "Product Library Number", value = viewModel.productLibraryNumber.value)
+                SummaryItem(label = "Product Length", value = viewModel.productLength.value)
+                SummaryItem(label = "Product Width", value = viewModel.productWidth.value)
+                SummaryItem(label = "Product Height", value = viewModel.productHeight.value)
+                SummaryItem(label = "Engineer Notes", value = viewModel.productDetailsEngineerNotes.value)
+            }
+
+            Section(title = "M&S Sensitivity Requirements") {
+                SummaryItem(
+                    label = "Ferrous Target",
+                    value = "${sensitivityData?.ferrousTargetMM ?: "N/A"}mm (Max ${sensitivityData?.ferrousMaxMM ?: "N/A"}mm)"
+                )
+                SummaryItem(
+                    label = "Non-Ferrous Target",
+                    value = "${sensitivityData?.nonFerrousTargetMM ?: "N/A"}mm (Max ${sensitivityData?.nonFerrousMaxMM ?: "N/A"}mm)"
+                )
+                SummaryItem(
+                    label = "Stainless Target",
+                    value = "${sensitivityData?.stainless316TargetMM ?: "N/A"}mm (Max ${sensitivityData?.stainless316MaxMM ?: "N/A"}mm)"
+                )
+            }
+
+            Section(title = "Customer Sensitivity Requirements") {
+                SummaryItem(label = "Ferrous Requirement", value = viewModel.sensitivityRequirementFerrous.value)
+                SummaryItem(label = "Non-Ferrous Requirement", value = viewModel.sensitivityRequirementNonFerrous.value)
+                SummaryItem(label = "Stainless Requirement", value = viewModel.sensitivityRequirementStainless.value)
+                SummaryItem(label = "Engineer Notes", value = viewModel.sensitivityRequirementEngineerNotes.value)
+            }
+
+            Section(title = "Detection Settings (As Found)") {
+                SummaryItem(label = viewModel.detectionSetting1label.value, value = viewModel.detectionSettingAsFound1.value)
+                SummaryItem(label = viewModel.detectionSetting2label.value, value = viewModel.detectionSettingAsFound2.value)
+                SummaryItem(label = viewModel.detectionSetting3label.value, value = viewModel.detectionSettingAsFound3.value)
+                SummaryItem(label = viewModel.detectionSetting4label.value, value = viewModel.detectionSettingAsFound4.value)
+                SummaryItem(label = viewModel.detectionSetting5label.value, value = viewModel.detectionSettingAsFound5.value)
+                SummaryItem(label = viewModel.detectionSetting6label.value, value = viewModel.detectionSettingAsFound6.value)
+                SummaryItem(label = viewModel.detectionSetting7label.value, value = viewModel.detectionSettingAsFound7.value)
+                SummaryItem(label = viewModel.detectionSetting8label.value, value = viewModel.detectionSettingAsFound8.value)
+                SummaryItem(label = "Access Restriction", value = viewModel.sensitivityAccessRestriction.value)
+                SummaryItem(label = "P.V. Result", value = viewModel.detectionSettingPvResult.value)
+                SummaryItem(label = "Engineer Notes", value = viewModel.detectionSettingAsFoundEngineerNotes.value)
+            }
+
+            Section(title = "Sensitivities As Found") {
+                SummaryItem(label = "Ferrous Sensitivity", value = viewModel.sensitivityAsFoundFerrous.value)
+                SummaryItem(label = "Non-Ferrous Sensitivity", value = viewModel.sensitivityAsFoundNonFerrous.value)
+                SummaryItem(label = "Stainless Sensitivity", value = viewModel.sensitivityAsFoundStainless.value)
+                SummaryItem(label = "Product Peak Signal", value = viewModel.productPeakSignalAsFound.value)
+                SummaryItem(label = "Engineer Notes", value = viewModel.sensitivityAsFoundEngineerNotes.value)
+            }
+
+            Section(title = "Ferrous Sensitivity (As Left)") {
+                SummaryItem(label = "Ferrous Sensitivity", value = viewModel.sensitivityAsLeftFerrous.value)
+                SummaryItem(label = "Sample Certificate Number", value = viewModel.sampleCertificateNumberFerrous.value)
+                SummaryItem(label = "Detect/Reject Leading", value = "${viewModel.detectRejectFerrousLeading.value} (${viewModel.peakSignalFerrousLeading.value})")
+                SummaryItem(label = "Detect/Reject Middle", value = "${viewModel.detectRejectFerrousMiddle.value} (${viewModel.peakSignalFerrousMiddle.value})")
+                SummaryItem(label = "Detect/Reject Trailing", value = "${viewModel.detectRejectFerrousTrailing.value} (${viewModel.peakSignalFerrousTrailing.value})")
+                SummaryItem(label = "P.V. Result", value = viewModel.ferrousTestPvResult.value)
+                SummaryItem(label = "Engineer Notes", value = viewModel.ferrousTestEngineerNotes.value)
+            }
+
+            Section(title = "Non-Ferrous Sensitivity (As Left)") {
+                SummaryItem(label = "Non-Ferrous Sensitivity", value = viewModel.sensitivityAsLeftNonFerrous.value)
+                SummaryItem(label = "Sample Certificate Number", value = viewModel.sampleCertificateNumberNonFerrous.value)
+                SummaryItem(label = "Detect/Reject Leading", value = "${viewModel.detectRejectNonFerrousLeading.value} (${viewModel.peakSignalNonFerrousLeading.value})")
+                SummaryItem(label = "Detect/Reject Middle", value = "${viewModel.detectRejectNonFerrousMiddle.value} (${viewModel.peakSignalNonFerrousMiddle.value})")
+                SummaryItem(label = "Detect/Reject Trailing", value = "${viewModel.detectRejectNonFerrousTrailing.value} (${viewModel.peakSignalNonFerrousTrailing.value})")
+                SummaryItem(label = "P.V. Result", value = viewModel.nonFerrousTestPvResult.value)
+                SummaryItem(label = "Engineer Notes", value = viewModel.nonFerrousTestEngineerNotes.value)
+            }
+
+            Section(title = "Stainless Sensitivity (As Left)") {
+                SummaryItem(label = "Stainless Sensitivity", value = viewModel.sensitivityAsLeftStainless.value)
+                SummaryItem(label = "Sample Certificate Number", value = viewModel.sampleCertificateNumberStainless.value)
+                SummaryItem(label = "Detect/Reject Leading", value = "${viewModel.detectRejectStainlessLeading.value} (${viewModel.peakSignalStainlessLeading.value})")
+                SummaryItem(label = "Detect/Reject Middle", value = "${viewModel.detectRejectStainlessMiddle.value} (${viewModel.peakSignalStainlessMiddle.value})")
+                SummaryItem(label = "Detect/Reject Trailing", value = "${viewModel.detectRejectStainlessTrailing.value} (${viewModel.peakSignalStainlessTrailing.value})")
+                SummaryItem(label = "P.V. Result", value = viewModel.stainlessTestPvResult.value)
+                SummaryItem(label = "Engineer Notes", value = viewModel.stainlessTestEngineerNotes.value)
+            }
+
+            Section(title = "Operator Test") {
+                SummaryItem(label = "Operator Test Witnessed", value = viewModel.operatorTestWitnessed.value.toString())
+                SummaryItem(label = "Operator Name", value = viewModel.operatorName.value)
+                SummaryItem(label = "Ferrous Cert", value = viewModel.operatorTestResultCertNumberFerrous.value)
+                SummaryItem(label = "Ferrous Result", value = viewModel.operatorTestResultFerrous.value)
+                SummaryItem(label = "Non-Ferrous Cert", value = viewModel.operatorTestResultCertNumberNonFerrous.value)
+                SummaryItem(label = "Non-Ferrous Result", value = viewModel.operatorTestResultNonFerrous.value)
+                SummaryItem(label = "Stainless Cert", value = viewModel.operatorTestResultCertNumberStainless.value)
+                SummaryItem(label = "Stainless Result", value = viewModel.operatorTestResultStainless.value)
+                SummaryItem(label = "Large Metal Cert", value = viewModel.operatorTestResultCertNumberLargeMetal.value)
+                SummaryItem(label = "Large Metal Result", value = viewModel.operatorTestResultLargeMetal.value)
+                SummaryItem(label = "SME Name", value = viewModel.smeName.value)
+                SummaryItem(label = "Engineer Notes", value = viewModel.smeEngineerNotes.value)
+                SummaryItem(label = "P.V. Result", value = viewModel.smeTestPvResult.value)
+            }
+
+            Section(title = "Detection Settings (As Left)") {
+                SummaryItem(label = viewModel.detectionSetting1label.value, value = viewModel.detectionSettingAsLeft1.value)
+                SummaryItem(label = viewModel.detectionSetting2label.value, value = viewModel.detectionSettingAsLeft2.value)
+                SummaryItem(label = viewModel.detectionSetting3label.value, value = viewModel.detectionSettingAsLeft3.value)
+                SummaryItem(label = viewModel.detectionSetting4label.value, value = viewModel.detectionSettingAsLeft4.value)
+                SummaryItem(label = viewModel.detectionSetting5label.value, value = viewModel.detectionSettingAsLeft5.value)
+                SummaryItem(label = viewModel.detectionSetting6label.value, value = viewModel.detectionSettingAsLeft6.value)
+                SummaryItem(label = viewModel.detectionSetting7label.value, value = viewModel.detectionSettingAsLeft7.value)
+                SummaryItem(label = viewModel.detectionSetting8label.value, value = viewModel.detectionSettingAsLeft8.value)
+                SummaryItem(label = "Engineer Notes", value = viewModel.detectionSettingAsLeftEngineerNotes.value)
+            }
+
+            Section(title = "Reject Settings") {
+                SummaryItem(label = "Reject Synchronisation", value = viewModel.rejectSynchronisationSetting.value.toString())
+                SummaryItem(label = "Synchronisation Detail", value = viewModel.rejectSynchronisationDetail.value)
+                SummaryItem(label = "Reject Delay", value = "${viewModel.rejectDelaySetting.value} ${viewModel.rejectDelayUnits.value}")
+                SummaryItem(label = "Reject Duration", value = "${viewModel.rejectDurationSetting.value} ${viewModel.rejectDurationUnits.value}")
+                SummaryItem(label = "Confirm Window", value = "${viewModel.rejectConfirmWindowSetting.value} ${viewModel.rejectConfirmWindowUnits.value}")
+                SummaryItem(label = "Engineer Notes", value = viewModel.rejectSettingsEngineerNotes.value)
+            }
+
+            Section(title = "Infeed PEC") {
+                SummaryItem(label = "Fitted", value = viewModel.infeedSensorFitted.value.toString())
+                SummaryItem(label = "Detail", value = viewModel.infeedSensorDetail.value)
+                SummaryItem(label = "Test Method", value = "${viewModel.infeedSensorTestMethod.value} ${viewModel.infeedSensorTestMethodOther.value}")
+                SummaryItem(label = "Test Result", value = infeedSensorTestResult.joinToString(", "))
+                SummaryItem(label = "Latched", value = viewModel.infeedSensorLatched.value.toString())
+                SummaryItem(label = "Critical", value = viewModel.infeedSensorCR.value.toString())
+                SummaryItem(label = "P.V. Result", value = viewModel.infeedSensorTestPvResult.value)
+                SummaryItem(label = "Engineer Notes", value = viewModel.infeedSensorEngineerNotes.value)
+            }
+
+            Section(title = "Large Metal Test") {
+                SummaryItem(label = "Result", value = viewModel.detectRejectLargeMetal.value.toString())
+                SummaryItem(label = "Cert Number", value = viewModel.sampleCertificateNumberLargeMetal.value)
+                SummaryItem(label = "P.V. Result", value = viewModel.largeMetalTestPvResult.value)
+                SummaryItem(label = "Engineer Notes", value = viewModel.largeMetalTestEngineerNotes.value)
+            }
+
+            Section(title = "Reject Confirm PEC") {
+                SummaryItem(label = "Fitted", value = viewModel.rejectConfirmSensorFitted.value.toString())
+                SummaryItem(label = "Detail", value = viewModel.rejectConfirmSensorDetail.value)
+                SummaryItem(label = "Test Method", value = "${viewModel.rejectConfirmSensorTestMethod.value} ${viewModel.rejectConfirmSensorTestMethodOther.value}")
+                SummaryItem(label = "Test Result", value = rejectConfirmSensorTestResult.joinToString(", "))
+                SummaryItem(label = "Stop Position", value = viewModel.rejectConfirmSensorStopPosition.value)
+                SummaryItem(label = "Latched", value = viewModel.rejectConfirmSensorLatched.value.toString())
+                SummaryItem(label = "Critical", value = viewModel.rejectConfirmSensorCR.value.toString())
+                SummaryItem(label = "P.V. Result", value = viewModel.rejectConfirmSensorTestPvResult.value)
+                SummaryItem(label = "Engineer Notes", value = viewModel.rejectConfirmSensorEngineerNotes.value)
+            }
+
+            Section(title = "Bin Full PEC") {
+                SummaryItem(label = "Fitted", value = viewModel.binFullSensorFitted.value.toString())
+                SummaryItem(label = "Detail", value = viewModel.binFullSensorDetail.value)
+                SummaryItem(label = "Test Method", value = "${viewModel.binFullSensorTestMethod.value} ${viewModel.binFullSensorTestMethodOther.value}")
+                SummaryItem(label = "Test Result", value = binFullSensorTestResult.joinToString(", "))
+                SummaryItem(label = "Latched", value = viewModel.binFullSensorLatched.value.toString())
+                SummaryItem(label = "Critical", value = viewModel.binFullSensorCR.value.toString())
+                SummaryItem(label = "P.V. Result", value = viewModel.binFullSensorTestPvResult.value)
+                SummaryItem(label = "Engineer Notes", value = viewModel.binFullSensorEngineerNotes.value)
+            }
+
+            Section(title = "Backup PEC") {
+                SummaryItem(label = "Fitted", value = viewModel.backupSensorFitted.value.toString())
+                SummaryItem(label = "Detail", value = viewModel.backupSensorDetail.value)
+                SummaryItem(label = "Test Method", value = "${viewModel.backupSensorTestMethod.value} ${viewModel.backupSensorTestMethodOther.value}")
+                SummaryItem(label = "Test Result", value = backupSensorTestResult.joinToString(", "))
+                SummaryItem(label = "Latched", value = viewModel.backupSensorLatched.value.toString())
+                SummaryItem(label = "Critical", value = viewModel.backupSensorCR.value.toString())
+                SummaryItem(label = "P.V. Result", value = viewModel.backupSensorTestPvResult.value)
+                SummaryItem(label = "Engineer Notes", value = viewModel.backupSensorEngineerNotes.value)
+            }
+
+            Section(title = "Air Pressure Sensor") {
+                SummaryItem(label = "Fitted", value = viewModel.airPressureSensorFitted.value.toString())
+                SummaryItem(label = "Detail", value = viewModel.airPressureSensorDetail.value)
+                SummaryItem(label = "Test Method", value = "${viewModel.airPressureSensorTestMethod.value} ${viewModel.airPressureSensorTestMethodOther.value}")
+                SummaryItem(label = "Test Result", value = airPressureSensorTestResult.joinToString(", "))
+                SummaryItem(label = "Latched", value = viewModel.airPressureSensorLatched.value.toString())
+                SummaryItem(label = "Critical", value = viewModel.airPressureSensorCR.value.toString())
+                SummaryItem(label = "P.V. Result", value = viewModel.airPressureSensorTestPvResult.value)
+                SummaryItem(label = "Engineer Notes", value = viewModel.airPressureSensorEngineerNotes.value)
+            }
+
+            Section(title = "Pack Check Sensor") {
+                SummaryItem(label = "Fitted", value = viewModel.packCheckSensorFitted.value.toString())
+                SummaryItem(label = "Detail", value = viewModel.packCheckSensorDetail.value)
+                SummaryItem(label = "Test Method", value = "${viewModel.packCheckSensorTestMethod.value} ${viewModel.packCheckSensorTestMethodOther.value}")
+                SummaryItem(label = "Test Result", value = packCheckSensorTestResult.joinToString(", "))
+                SummaryItem(label = "Latched", value = viewModel.packCheckSensorLatched.value.toString())
+                SummaryItem(label = "Critical", value = viewModel.packCheckSensorCR.value.toString())
+                SummaryItem(label = "P.V. Result", value = viewModel.packCheckSensorTestPvResult.value)
+                SummaryItem(label = "Engineer Notes", value = viewModel.packCheckSensorEngineerNotes.value)
+            }
+
+            Section(title = "Speed Sensor") {
+                SummaryItem(label = "Fitted", value = viewModel.speedSensorFitted.value.toString())
+                SummaryItem(label = "Detail", value = viewModel.speedSensorDetail.value)
+                SummaryItem(label = "Test Method", value = "${viewModel.speedSensorTestMethod.value} ${viewModel.speedSensorTestMethodOther.value}")
+                SummaryItem(label = "Test Result", value = speedSensorTestResult.joinToString(", "))
+                SummaryItem(label = "Latched", value = viewModel.speedSensorLatched.value.toString())
+                SummaryItem(label = "Critical", value = viewModel.speedSensorCR.value.toString())
+                SummaryItem(label = "P.V. Result", value = viewModel.speedSensorTestPvResult.value)
+                SummaryItem(label = "Engineer Notes", value = viewModel.speedSensorEngineerNotes.value)
+            }
+
+            Section(title = "Bin Door Monitor") {
+                SummaryItem(label = "Fitted", value = viewModel.binDoorMonitorFitted.value.toString())
+                SummaryItem(label = "Detail", value = viewModel.binDoorMonitorDetail.value)
+                SummaryItem(label = "Status As Found", value = viewModel.binDoorStatusAsFound.value)
+                SummaryItem(label = "Open Indication", value = binDoorOpenIndication.joinToString(", "))
+                SummaryItem(label = "Unlocked Indication", value = binDoorUnlockedIndication.joinToString(", "))
+                SummaryItem(label = "Timeout Timer", value = viewModel.binDoorTimeoutTimer.value)
+                SummaryItem(label = "Timeout Result", value = binDoorTimeoutResult.joinToString(", "))
+                SummaryItem(label = "Latched", value = viewModel.binDoorLatched.value.toString())
+                SummaryItem(label = "Critical", value = viewModel.binDoorCR.value.toString())
+                SummaryItem(label = "P.V. Result", value = viewModel.binDoorMonitorTestPvResult.value)
+                SummaryItem(label = "Engineer Notes", value = viewModel.binDoorEngineerNotes.value)
+            }
+
+            Section(title = "Detect Notification") {
+                SummaryItem(label = "Result", value = detectNotificationResult.joinToString(", "))
+                SummaryItem(label = "P.V. Result", value = viewModel.detectNotificationTestPvResult.value)
+                SummaryItem(label = "Engineer Notes", value = viewModel.detectNotificationEngineerNotes.value)
+            }
         }
-
-// CalMetalDetectorConveyorSystemChecklist
-        Section(title = "System Checklist") {
-            SummaryItem(label = "Conveyor Belt", value = viewModel.beltCondition.value.toString())
-            SummaryItem(label = "Conveyor Belt Comments", value = viewModel.beltConditionComments.value)
-            SummaryItem(label = "Guarding", value = viewModel.guardCondition.value.toString())
-            SummaryItem(label = "Conveyor Comments", value = viewModel.guardConditionComments.value)
-            SummaryItem(label = "Safety Circuit", value = viewModel.safetyCircuitCondition.value.toString())
-            SummaryItem(label = "Safety Circuit Comments", value = viewModel.safetyCircuitConditionComments.value)
-            SummaryItem(label = "Detector Lining, gaskets and seals", value = viewModel.linerCondition.value.toString())
-            SummaryItem(label = "Detector Lining, gaskets and seals Comments", value = viewModel.linerConditionComments.value)
-            SummaryItem(label = "Screws and Fittings", value = viewModel.screwsCondition.value.toString())
-            SummaryItem(label = "Screws and Fittings Comments", value = viewModel.screwsConditionComments.value)
-            SummaryItem(label = "Engineer Notes", value = viewModel.systemChecklistEngineerNotes.value)
-        }
-
-// CalMetalDetectorConveyorIndicators
-        Section(title = "Indicators") {
-            SummaryItem(label = "Indicator 6 colour", value = viewModel.indicator6colour.value)
-            SummaryItem(label = "Indicator 6 label", value = viewModel.indicator6label.value)
-            SummaryItem(label = "Indicator 5 colour", value = viewModel.indicator5colour.value)
-            SummaryItem(label = "Indicator 5 label", value = viewModel.indicator5label.value)
-            SummaryItem(label = "Indicator 4 colour", value = viewModel.indicator4colour.value)
-            SummaryItem(label = "Indicator 4 label", value = viewModel.indicator4label.value)
-            SummaryItem(label = "Indicator 3 colour", value = viewModel.indicator3colour.value)
-            SummaryItem(label = "Indicator 3 label", value = viewModel.indicator3label.value)
-            SummaryItem(label = "Indicator 2 colour", value = viewModel.indicator2colour.value)
-            SummaryItem(label = "Indicator 2 label", value = viewModel.indicator2label.value)
-            SummaryItem(label = "Indicator 1 colour", value = viewModel.indicator1colour.value)
-            SummaryItem(label = "Indicator 1 label", value = viewModel.indicator1label.value)
-            SummaryItem(label = "Engineer Notes", value = viewModel.indicatorsEngineerNotes.value)
-        }
-
-// CalMetalDetectorConveyorProductDetails
-        Section(title = "Product Details") {
-            SummaryItem(label = "Product Description", value = viewModel.productDescription.value)
-            SummaryItem(label = "Product Library Reference", value = viewModel.productLibraryReference.value)
-            SummaryItem(label = "Product Library Number", value = viewModel.productLibraryNumber.value)
-            SummaryItem(label = "Product Length", value = viewModel.productLength.value)
-            SummaryItem(label = "Product Width", value = viewModel.productWidth.value)
-            SummaryItem(label = "Product Height", value = viewModel.productHeight.value)
-            SummaryItem(label = "Engineer Notes", value = viewModel.productDetailsEngineerNotes.value)
-        }
-
-// CalMetalDetectorConveyorSensitivityRequirements
-        Section(title = "M&S Sensitivity Requirements") {
-            SummaryItem(
-                label = "Ferrous Target",
-                value = "${viewModel.sensitivityData.value?.ferrousTargetMM ?: "N/A"}mm (Max ${viewModel.sensitivityData.value?.ferrousMaxMM ?: "N/A"}mm)"
-            )
-            SummaryItem(
-                label = "Non-Ferrous Target",
-                value = "${viewModel.sensitivityData.value?.nonFerrousTargetMM ?: "N/A"}mm (Max ${viewModel.sensitivityData.value?.nonFerrousMaxMM ?: "N/A"}mm)"
-            )
-            SummaryItem(
-                label = "Stainless Target",
-                value = "${viewModel.sensitivityData.value?.stainless316TargetMM ?: "N/A"}mm (Max ${viewModel.sensitivityData.value?.stainless316MaxMM ?: "N/A"}mm)"
-            )
-        }
-
-        Section(title = "Customer Sensitivity Requirements") {
-            SummaryItem(label = "Ferrous Requirement", value = viewModel.sensitivityRequirementFerrous.value)
-            SummaryItem(label = "Non-Ferrous Requirement", value = viewModel.sensitivityRequirementNonFerrous.value)
-            SummaryItem(label = "Stainless Requirement", value = viewModel.sensitivityRequirementStainless.value)
-            SummaryItem(label = "Engineer Notes", value = viewModel.sensitivityRequirementEngineerNotes.value)
-        }
-
-// CalMetalDetectorConveyorDetectionSettingsAsFound
-        Section(title = "Detection Settings (As Found)") {
-            SummaryItem(label = viewModel.detectionSetting1label.value, value = viewModel.detectionSettingAsFound1.value)
-            SummaryItem(label = viewModel.detectionSetting2label.value, value = viewModel.detectionSettingAsFound2.value)
-            SummaryItem(label = viewModel.detectionSetting3label.value, value = viewModel.detectionSettingAsFound3.value)
-            SummaryItem(label = viewModel.detectionSetting4label.value, value = viewModel.detectionSettingAsFound4.value)
-            SummaryItem(label = viewModel.detectionSetting5label.value, value = viewModel.detectionSettingAsFound5.value)
-            SummaryItem(label = viewModel.detectionSetting6label.value, value = viewModel.detectionSettingAsFound6.value)
-            SummaryItem(label = viewModel.detectionSetting7label.value, value = viewModel.detectionSettingAsFound7.value)
-            SummaryItem(label = viewModel.detectionSetting8label.value, value = viewModel.detectionSettingAsFound8.value)
-            SummaryItem(label = "Access Restriction", value = viewModel.sensitivityAccessRestriction.value)
-            SummaryItem(label = "P.V. Result", value = viewModel.detectionSettingPvResult.value)
-            SummaryItem(label = "Engineer Notes", value = viewModel.detectionSettingAsFoundEngineerNotes.value)
-        }
-
-// CalMetalDetectorConveyorSensitivityAsFound
-        Section(title = "Sensitivities As Found") {
-            SummaryItem(label = "Ferrous Sensitivity", value = viewModel.sensitivityAsFoundFerrous.value)
-            SummaryItem(label = "Non-Ferrous Sensitivity", value = viewModel.sensitivityAsFoundNonFerrous.value)
-            SummaryItem(label = "Stainless Sensitivity", value = viewModel.sensitivityAsFoundStainless.value)
-            SummaryItem(label = "Product Peak Signal", value = viewModel.productPeakSignalAsFound.value)
-            SummaryItem(label = "Engineer Notes", value = viewModel.sensitivityAsFoundEngineerNotes.value)
-        }
-
-// Ferrous / Non-Ferrous / Stainless tests (as left)
-        Section(title = "Ferrous Sensitivity (As Left)") {
-            SummaryItem(label = "Ferrous Sensitivity", value = viewModel.sensitivityAsLeftFerrous.value)
-            SummaryItem(label = "Sample Certificate Number", value = viewModel.sampleCertificateNumberFerrous.value)
-            SummaryItem(label = "Detect/Reject Leading", value = "${viewModel.detectRejectFerrousLeading.value} (${viewModel.peakSignalFerrousLeading.value})")
-            SummaryItem(label = "Detect/Reject Middle", value = "${viewModel.detectRejectFerrousMiddle.value} (${viewModel.peakSignalFerrousMiddle.value})")
-            SummaryItem(label = "Detect/Reject Trailing", value = "${viewModel.detectRejectFerrousTrailing.value} (${viewModel.peakSignalFerrousTrailing.value})")
-            SummaryItem(label = "P.V. Result", value = viewModel.ferrousTestPvResult.value)
-            SummaryItem(label = "Engineer Notes", value = viewModel.ferrousTestEngineerNotes.value)
-        }
-
-        Section(title = "Non-Ferrous Sensitivity (As Left)") {
-            SummaryItem(label = "Non-Ferrous Sensitivity", value = viewModel.sensitivityAsLeftNonFerrous.value)
-            SummaryItem(label = "Sample Certificate Number", value = viewModel.sampleCertificateNumberNonFerrous.value)
-            SummaryItem(label = "Detect/Reject Leading", value = viewModel.detectRejectNonFerrousLeading.value.toString())
-            SummaryItem(label = "Detect/Reject Middle", value = viewModel.detectRejectNonFerrousMiddle.value.toString())
-            SummaryItem(label = "Detect/Reject Trailing", value = viewModel.detectRejectNonFerrousTrailing.value.toString())
-            SummaryItem(label = "P.V. Result", value = viewModel.nonFerrousTestPvResult.value)
-            SummaryItem(label = "Engineer Notes", value = viewModel.nonFerrousTestEngineerNotes.value)
-        }
-
-        Section(title = "Stainless Sensitivity (As Left)") {
-            SummaryItem(label = "Stainless Sensitivity", value = viewModel.sensitivityAsLeftStainless.value)
-            SummaryItem(label = "Sample Certificate Number", value = viewModel.sampleCertificateNumberStainless.value)
-            SummaryItem(label = "Detect/Reject Leading", value = viewModel.detectRejectStainlessLeading.value.toString())
-            SummaryItem(label = "Detect/Reject Middle", value = viewModel.detectRejectStainlessMiddle.value.toString())
-            SummaryItem(label = "Detect/Reject Trailing", value = viewModel.detectRejectStainlessTrailing.value.toString())
-            SummaryItem(label = "P.V. Result", value = viewModel.stainlessTestPvResult.value)
-            SummaryItem(label = "Engineer Notes", value = viewModel.stainlessTestEngineerNotes.value)
-        }
-
-// CalMetalDetectorConveyorSmeDetails
-        Section(title = "Operator Test") {
-            SummaryItem(label = "Operator Test Witnessed", value = viewModel.operatorTestWitnessed.value.toString())
-            SummaryItem(label = "Operator Name", value = viewModel.operatorName.value)
-            SummaryItem(label = "Ferrous Sample Size", value = viewModel.operatorTestResultFerrous.value)
-            SummaryItem(label = "Ferrous Certificate Number", value = viewModel.operatorTestResultCertNumberFerrous.value)
-            SummaryItem(label = "Non-Ferrous Sample Size", value = viewModel.operatorTestResultNonFerrous.value)
-            SummaryItem(label = "Non-Ferrous Certificate Number", value = viewModel.operatorTestResultCertNumberNonFerrous.value)
-            SummaryItem(label = "Stainless Sample Size", value = viewModel.operatorTestResultStainless.value)
-            SummaryItem(label = "Stainless Certificate Number", value = viewModel.operatorTestResultCertNumberStainless.value)
-            SummaryItem(label = "Large Metal Sample Size", value = viewModel.operatorTestResultLargeMetal.value)
-            SummaryItem(label = "Large Metal Certificate Number", value = viewModel.operatorTestResultCertNumberLargeMetal.value)
-            SummaryItem(label = "On-Site SME", value = viewModel.smeName.value)
-            SummaryItem(label = "P.V. result", value = viewModel.smeTestPvResult.value)
-            SummaryItem(label = "Engineer Notes", value = viewModel.smeEngineerNotes.value)
-        }
-
-// CalMetalDetectorConveyorDetectionSettingsAsLeft
-        Section(title = "Detection Settings (As Left)") {
-            SummaryItem(label = viewModel.detectionSetting1label.value, value = viewModel.detectionSettingAsLeft1.value)
-            SummaryItem(label = viewModel.detectionSetting2label.value, value = viewModel.detectionSettingAsLeft2.value)
-            SummaryItem(label = viewModel.detectionSetting3label.value, value = viewModel.detectionSettingAsLeft3.value)
-            SummaryItem(label = viewModel.detectionSetting4label.value, value = viewModel.detectionSettingAsLeft4.value)
-            SummaryItem(label = viewModel.detectionSetting5label.value, value = viewModel.detectionSettingAsLeft5.value)
-            SummaryItem(label = viewModel.detectionSetting6label.value, value = viewModel.detectionSettingAsLeft6.value)
-            SummaryItem(label = viewModel.detectionSetting7label.value, value = viewModel.detectionSettingAsLeft7.value)
-            SummaryItem(label = viewModel.detectionSetting8label.value, value = viewModel.detectionSettingAsLeft8.value)
-            SummaryItem(label = "Engineer Notes", value = viewModel.detectionSettingAsLeftEngineerNotes.value)
-        }
-
-// CalMetalDetectorConveyorRejectSettings
-        Section(title = "Reject Settings") {
-            SummaryItem(label = "Reject Synchronisation", value = viewModel.rejectSynchronisationSetting.value.toString())
-            SummaryItem(label = "Reject Synchronisation Details", value = viewModel.rejectSynchronisationDetail.value)
-            SummaryItem(label = "Reject Delay", value = viewModel.rejectDelaySetting.value)
-            SummaryItem(label = "Reject Confirm Window", value = viewModel.rejectConfirmWindowSetting.value)
-            SummaryItem(label = "Engineer Notes", value = viewModel.rejectSettingsEngineerNotes.value)
-        }
-
-// CalMetalDetectorConveyorInfeedPEC
-        Section(title = "In-feed sensor") {
-            SummaryItem(label = "Infeed Sensor Fitted", value = viewModel.infeedSensorFitted.value.toString())
-            SummaryItem(label = "Infeed Sensor Detail", value = viewModel.infeedSensorDetail.value)
-            SummaryItem(label = "Infeed Sensor Test method", value = viewModel.infeedSensorTestMethod.value)
-            SummaryItem(label = "Infeed Sensor Test result", value = infeedSensorTestResult.joinToString(" | "))
-            SummaryItem(label = "Infeed Sensor Fault Latched", value = viewModel.infeedSensorLatched.value.toString())
-            SummaryItem(label = "Infeed Sensor Fault Controlled Restart", value = viewModel.infeedSensorCR.value.toString())
-            SummaryItem(label = "Engineer Notes", value = viewModel.infeedSensorEngineerNotes.value)
-        }
-
-// CalMetalDetectorConveyorLargeMetalTest
-        Section(title = "Large Metal (20mm) Test") {
-            SummaryItem(label = "Sample Certificate Number", value = viewModel.sampleCertificateNumberLargeMetal.value)
-            SummaryItem(label = "Detect/Reject", value = viewModel.detectRejectLargeMetal.value.toString())
-            SummaryItem(label = "Engineer Notes", value = viewModel.largeMetalTestEngineerNotes.value)
-        }
-
-// CalMetalDetectorConveyorRejectConfirmPEC
-        Section(title = "Reject Confirm Sensor") {
-            SummaryItem(label = "Reject Confirm Sensor Fitted", value = viewModel.rejectConfirmSensorFitted.value.toString())
-            SummaryItem(label = "Reject Confirm Sensor Detail", value = viewModel.rejectConfirmSensorDetail.value)
-            SummaryItem(label = "Reject Confirm Sensor Test method", value = viewModel.rejectConfirmSensorTestMethod.value)
-            SummaryItem(label = "Reject Confirm Sensor Test result", value = rejectConfirmSensorTestResult.joinToString(" | "))
-            SummaryItem(label = "Reject Confirm Sensor Fault Latched", value = viewModel.rejectConfirmSensorLatched.value.toString())
-            SummaryItem(label = "Reject Confirm Sensor Fault Controlled Restart", value = viewModel.rejectConfirmSensorCR.value.toString())
-            SummaryItem(label = "Engineer Notes", value = viewModel.rejectConfirmSensorEngineerNotes.value)
-        }
-
-// CalMetalDetectorConveyorBinFullPEC
-        Section(title = "Bin Full Sensor") {
-            SummaryItem(label = "Bin Full Sensor Fitted", value = viewModel.binFullSensorFitted.value.toString())
-            SummaryItem(label = "Bin Full Sensor Detail", value = viewModel.binFullSensorDetail.value)
-            SummaryItem(label = "Bin Full Sensor Test method", value = viewModel.binFullSensorTestMethod.value)
-            SummaryItem(label = "Bin Full Sensor Test result", value = binFullSensorTestResult.joinToString(" | "))
-            SummaryItem(label = "Bin Full Sensor Fault Latched", value = viewModel.binFullSensorLatched.value.toString())
-            SummaryItem(label = "Bin Full Sensor Fault Controlled Restart", value = viewModel.binFullSensorCR.value.toString())
-            SummaryItem(label = "Engineer Notes", value = viewModel.binFullSensorEngineerNotes.value)
-        }
-
-// CalMetalDetectorConveyorBackupPEC
-        Section(title = "Backup Sensor") {
-            SummaryItem(label = "Backup Sensor Fitted", value = viewModel.backupSensorFitted.value.toString())
-            SummaryItem(label = "Backup Sensor Detail", value = viewModel.backupSensorDetail.value)
-            SummaryItem(label = "Backup Sensor Test method", value = viewModel.backupSensorTestMethod.value)
-            SummaryItem(label = "Backup Sensor Test result", value = backupSensorTestResult.joinToString(" | "))
-            SummaryItem(label = "Backup Sensor Fault Latched", value = viewModel.backupSensorLatched.value.toString())
-            SummaryItem(label = "Backup Sensor Fault Controlled Restart", value = viewModel.backupSensorCR.value.toString())
-            SummaryItem(label = "Engineer Notes", value = viewModel.backupSensorEngineerNotes.value)
-        }
-
-// CalMetalDetectorConveyorAirPressureSensor
-        Section(title = "Air Pressure Sensor") {
-            SummaryItem(label = "Air Pressure Sensor Fitted", value = viewModel.airPressureSensorFitted.value.toString())
-            SummaryItem(label = "Air Pressure Sensor Detail", value = viewModel.airPressureSensorDetail.value)
-            SummaryItem(label = "Air Pressure Sensor Test method", value = viewModel.airPressureSensorTestMethod.value)
-            SummaryItem(label = "Air Pressure Sensor Test result", value = airPressureSensorTestResult.joinToString(" | "))
-            SummaryItem(label = "Air Pressure Sensor Fault Latched", value = viewModel.airPressureSensorLatched.value.toString())
-            SummaryItem(label = "Air Pressure Sensor Fault Controlled Restart", value = viewModel.airPressureSensorCR.value.toString())
-            SummaryItem(label = "Engineer Notes", value = viewModel.airPressureSensorEngineerNotes.value)
-        }
-
-// CalMetalDetectorConveyorSpeedSensor
-        Section(title = "Speed Sensor") {
-            SummaryItem(label = "Speed Sensor Fitted", value = viewModel.speedSensorFitted.value.toString())
-            SummaryItem(label = "Speed Sensor Detail", value = viewModel.speedSensorDetail.value)
-            SummaryItem(label = "Speed Sensor Test method", value = viewModel.speedSensorTestMethod.value)
-            SummaryItem(label = "Speed Sensor Test result", value = speedSensorTestResult.joinToString(" | "))
-            SummaryItem(label = "Speed Sensor Fault Latched", value = viewModel.speedSensorLatched.value.toString())
-            SummaryItem(label = "Speed Sensor Fault Controlled Restart", value = viewModel.speedSensorCR.value.toString())
-            SummaryItem(label = "Engineer Notes", value = viewModel.speedSensorEngineerNotes.value)
-        }
-
-// CalMetalDetectorConveyorBinDoorMonitor
-        Section(title = "Bin Door Monitor") {
-            SummaryItem(label = "Bin Door Monitor Fitted", value = viewModel.binDoorMonitorFitted.value.toString())
-            SummaryItem(label = "Bin Door Monitor Details", value = viewModel.binDoorMonitorDetail.value)
-            SummaryItem(label = "Bin Door Monitor Status As Found", value = viewModel.binDoorStatusAsFound.value)
-            SummaryItem(label = "Bin Door Monitor Open Indication", value = binDoorOpenIndication.joinToString(" | "))
-            SummaryItem(label = "Bin Door Monitor Unlocked Indication", value = binDoorUnlockedIndication.joinToString(" | "))
-            SummaryItem(label = "Bin Door Monitor Timeout Value", value = viewModel.binDoorTimeoutTimer.value)
-            SummaryItem(label = "Bin Door Monitor Timeout Result", value = binDoorTimeoutResult.joinToString(" | "))
-            SummaryItem(label = "Bin Door Monitor Fault Latched", value = viewModel.binDoorLatched.value.toString())
-            SummaryItem(label = "Bin Door Monitor Fault Controlled Restart", value = viewModel.binDoorCR.value.toString())
-            SummaryItem(label = "Engineer Notes", value = viewModel.binDoorEngineerNotes.value)
-        }
-
-// CalMetalDetectorConveyorDetectNotification
-        Section(title = "Detect Notification") {
-            SummaryItem(label = "Detect Notification", value = detectNotificationResult.joinToString(" | "))
-            SummaryItem(label = "Engineer Notes", value = viewModel.detectNotificationEngineerNotes.value)
-            SummaryItem(label = "P.V. Result", value = viewModel.detectNotificationTestPvResult.value)
-        }
-
-
-        Spacer(modifier = Modifier.weight(30f))
-
-        Text(
-            text = "ATTENTION! YOU MUST INFORM THE CUSTOMER OF ANY DEFECTS OR IF ADJUSTMENTS HAVE BEEN MADE. USE YOUR SERVICE REPORT!",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp)
-        )
-
-        Spacer(modifier = Modifier.weight(30f))
-
-
     }
 }
 
 @Composable
-fun SummaryItem(label: String, value: String?) {
+fun SummaryItem(label: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -428,15 +431,15 @@ fun SummaryItem(label: String, value: String?) {
     ) {
         Text(
             text = "$label:",
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.weight(1.5f)
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(1f)
         )
         Text(
-            text = value ?: "N/A",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.weight(2f)
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.weight(1f),
+            textAlign = TextAlign.End
         )
     }
 }

@@ -46,6 +46,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.screens.service.mdCalibration.CalMetalDetectorConveyorSummaryDetails
 import com.example.mecca.ui.theme.FormBackground
+import com.example.mecca.ui.theme.SnbRed
 
 @Suppress("AssignedValueIsNeverRead", "AssignedValueIsNeverRead", "AssignedValueIsNeverRead",
     "AssignedValueIsNeverRead", "AssignedValueIsNeverRead", "AssignedValueIsNeverRead",
@@ -148,14 +149,19 @@ fun CalibrationBanner(
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         // ---------------- Progress Bar ----------------
         LinearProgressIndicator(
             progress = { progress },        // progress now comes from the wrapper
+            color = SnbRed,
+            trackColor = Color.LightGray,
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { showDetailsDialog = true }
+                .height(12.dp)
+
+
         )
     }
 

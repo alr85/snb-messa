@@ -21,7 +21,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -40,9 +39,9 @@ import kotlin.math.roundToInt
 fun ScrollableWithScrollbar(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    scrollbarWidth: Dp = 4.dp,
+    scrollbarWidth: Dp = 10.dp, // Thicker default
     thumbHeight: Dp = 48.dp,
-    scrollbarColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.55f),
+    scrollbarColor: Color = Color(0xFFFF0000), // Pure vibrant red
     content: @Composable ColumnScope.() -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -55,7 +54,7 @@ fun ScrollableWithScrollbar(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)
-                .padding(end = 12.dp) // space for the thumb
+                .padding(end = 16.dp) // space for the thumb area
                 .verticalScroll(scrollState)
         ) {
             content()
@@ -68,15 +67,14 @@ fun ScrollableWithScrollbar(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .fillMaxHeight()
-                    .width(scrollbarWidth)
-                    .padding(vertical = 8.dp)
+                    .width(scrollbarWidth + 4.dp) // container is wider than thumb to prevent cropping
+                    .padding(vertical = 8.dp, horizontal = 2.dp) // horizontal padding centers the thumb and prevents edge clipping
             ) {
                 val availablePx = with(density) {
                     (maxHeight - thumbHeight).toPx().coerceAtLeast(0f)
                 }
 
                 // Safe fraction (no divide-by-zero, no NaN)
-
                 val scrollFraction by remember(scrollState, maxScroll) {
                     derivedStateOf {
                         if (maxScroll > 0) {
@@ -86,14 +84,12 @@ fun ScrollableWithScrollbar(
                         }
                     }
                 }
-                val fraction = scrollFraction
 
-
-                val offsetPx = (availablePx * fraction).coerceIn(0f, availablePx)
+                val offsetPx = (availablePx * scrollFraction).coerceIn(0f, availablePx)
 
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .fillMaxWidth() // occupies the space within the 2dp side padding
                         .height(thumbHeight)
                         .offset { IntOffset(0, offsetPx.roundToInt()) }
                         .background(scrollbarColor, RoundedCornerShape(50))
@@ -108,9 +104,9 @@ fun ScrollableWithScrollbar(
 fun LazyColumnWithScrollbar(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    scrollbarWidth: Dp = 4.dp,
+    scrollbarWidth: Dp = 10.dp, // Thicker default
     thumbHeight: Dp = 48.dp,
-    scrollbarColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.55f),
+    scrollbarColor: Color = Color(0xFFFF0000), // Pure vibrant red
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     content: LazyListScope.() -> Unit
 ) {
@@ -124,7 +120,7 @@ fun LazyColumnWithScrollbar(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)
-                .padding(end = 12.dp),
+                .padding(end = 16.dp), // space for the thumb area
             verticalArrangement = verticalArrangement,
         ) {
             content()
@@ -135,8 +131,8 @@ fun LazyColumnWithScrollbar(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .fillMaxHeight()
-                .width(scrollbarWidth)
-                .padding(vertical = 8.dp)
+                .width(scrollbarWidth + 4.dp)
+                .padding(vertical = 8.dp, horizontal = 2.dp)
         ) {
             val availableHeightPx = with(density) {
                 (maxHeight - thumbHeight).toPx().coerceAtLeast(0f)

@@ -282,9 +282,11 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                         helpText = "Is a controlled restart required after a fault?",
                         isNAToggleEnabled = false
                     )
+
+                    FormSpacer()
                 }
 
-                FormSpacer()
+
 
                 //-----------------------------------------------------
                 // ⭐ PV RESULT (only when required)
@@ -311,9 +313,11 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                         Otherwise auto-fail. You may override manually.
                     """.trimIndent()
                     )
+
+                    FormSpacer()
                 }
 
-                FormSpacer()
+
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Comments",

@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -69,6 +70,57 @@ fun CalMetalDetectorConveyorSummary(
 
     var engineerConfirmed by remember { mutableStateOf(false) }
 
+    // Track confirmed sections
+    val confirmedSections = remember { mutableStateMapOf<String, Boolean>() }
+
+    // Define the list of required sections that must be checked
+    // Note: These must match the titles used in CalMetalDetectorConveyorSummaryDetails
+    val requiredSections = remember(viewModel.canPerformCalibration.value) {
+        val list = mutableListOf<String>()
+        
+        // System Details is always required as it includes location info
+        list.add("System Details")
+        
+        // If they can calibrate, we require all subsequent sections.
+        // If they cannot calibrate, they only saw the start screen, so they only verify identity/location.
+        if (viewModel.canPerformCalibration.value) {
+            list.addAll(listOf(
+                "Conveyor Details",
+                "System Checklist",
+                "Indicators",
+                "Product Details",
+                "M&S Sensitivity Requirements",
+                "Customer Sensitivity Requirements",
+                "Detection Settings (As Found)",
+                "Sensitivities As Found",
+                "Ferrous Sensitivity (As Left)",
+                "Non-Ferrous Sensitivity (As Left)",
+                "Stainless Sensitivity (As Left)",
+                "Operator Test",
+                "Detection Settings (As Left)",
+                "Reject Settings",
+                "Infeed PEC",
+                "Large Metal Test",
+                "Reject Confirm PEC",
+                "Bin Full PEC",
+                "Backup PEC",
+                "Air Pressure Sensor",
+                "Pack Check Sensor",
+                "Speed Sensor",
+                "Bin Door Monitor",
+                "Detect Notification"
+            ))
+        }
+        list
+    }
+
+    val allSectionsVerified = requiredSections.all { confirmedSections[it] == true }
+
+    // Auto-reset signature if verification is retracted
+    LaunchedEffect(allSectionsVerified) {
+        if (!allSectionsVerified) engineerConfirmed = false
+    }
+
     // Next enabled
     val isNextStepEnabled = false
 
@@ -89,21 +141,41 @@ fun CalMetalDetectorConveyorSummary(
 
             // Summary info
             item {
-                CalMetalDetectorConveyorSummaryDetails(viewModel = viewModel)
+                CalMetalDetectorConveyorSummaryDetails(
+                    viewModel = viewModel,
+                    isConfirmationMode = true,
+                    confirmedSections = confirmedSections,
+                    onSectionConfirmChange = { section, confirmed ->
+                        confirmedSections[section] = confirmed
+                    }
+                )
             }
 
             item {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .background(
+                            if (allSectionsVerified) MaterialTheme.colorScheme.surfaceVariant 
+                            else MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
+                        )
                         .padding(16.dp)
                 ) {
 
                     Text(
                         text = "Engineer Declaration",
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
+                        color = if (allSectionsVerified) MaterialTheme.colorScheme.onSurface 
+                                else MaterialTheme.colorScheme.error
                     )
+
+                    if (!allSectionsVerified) {
+                        Text(
+                            text = "Please verify all required sections above before signing.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -111,14 +183,17 @@ fun CalMetalDetectorConveyorSummary(
 
                         Checkbox(
                             checked = engineerConfirmed,
-                            onCheckedChange = { engineerConfirmed = it }
+                            onCheckedChange = { engineerConfirmed = it },
+                            enabled = allSectionsVerified
                         )
 
                         Spacer(modifier = Modifier.width(8.dp))
 
                         Text(
                             text = "I confirm this calibration has been completed in accordance with company procedures and that the recorded information is accurate to the best of my knowledge. This digital confirmation is equivalent to a handwritten signature.",
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (allSectionsVerified) MaterialTheme.colorScheme.onSurface 
+                                    else Color.Gray
                         )
                     }
                 }
@@ -128,7 +203,7 @@ fun CalMetalDetectorConveyorSummary(
             // Finish button
             item {
                 OutlinedButton(
-                    enabled = engineerConfirmed,
+                    enabled = engineerConfirmed && allSectionsVerified,
                     onClick = {
                         InAppLogger.d("Finish button clicked")
                         val oldLocation = viewModel.lastLocation.value.trim()

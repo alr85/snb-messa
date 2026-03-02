@@ -242,9 +242,10 @@ fun CalMetalDetectorConveyorSpeedSensor(
                         Otherwise auto-fail. You may override manually.
                     """.trimIndent()
                     )
+                    FormSpacer()
                 }
 
-                FormSpacer()
+
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Comments",

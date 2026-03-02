@@ -79,12 +79,12 @@ fun CalMetalDetectorConveyorLargeMetalTest(
             Column {
 
                 LabeledTriStateSwitchWithHelp(
-                    label = "Det. & Rej. OK",
+                    label = "Detected & Rejected OK",
                     currentState = dr,
                     onStateChange = { newState ->
                         viewModel.setDetectRejectLargeMetal(newState)
 
-                        // Optional but sensible: auto-fill fields for N/A
+                        // Optional but sensible: autofill fields for N/A
                         if (newState == YesNoState.NA) {
                             viewModel.setSampleCertificateNumberLargeMetal("N/A")
                         } else if (certNo == "N/A") {

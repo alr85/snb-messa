@@ -239,6 +239,7 @@ fun CalMetalDetectorConveyorSmeDetails(
                     )
 
                     FormSpacer()
+
                 }
 
 
@@ -263,9 +264,11 @@ fun CalMetalDetectorConveyorSmeDetails(
                         showNotFittedOption = false,
                         notFittedEnabled = false
                     )
+
+                    FormSpacer()
                 }
 
-                FormSpacer()
+
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Comments",

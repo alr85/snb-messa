@@ -60,7 +60,7 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
             Column {
 
                 // Paste M&S targets button (centred)
-                if (pvRequired && sensitivityData != null) {
+                if (pvRequired) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center

@@ -232,6 +232,8 @@ private fun CustomerRow(
             Spacer(modifier = Modifier.width(12.dp))
         }
 
+        Spacer(modifier = Modifier.height(12.dp))
+
         HorizontalDivider(
             modifier = Modifier.padding(start = 52.dp), // inset divider aligns after icon
             thickness = 1.dp,
