@@ -122,7 +122,7 @@ fun MyCalibrationsScreen(
 
                             if (system == null) {
                                 InAppLogger.e("Could not find system details for calibration: ${calibration.calibrationId}")
-                                snackbarHostState.showSnackbar("Error: System details missing.")
+                                snackbarHostState.showSnackbar("⚠️ Error: System details missing.")
                                 return@launch
                             }
 
@@ -166,7 +166,7 @@ fun MyCalibrationsScreen(
                                 val result = calibrationRepository.uploadUnsyncedCalibrations(context, apiService)
                                 snackbarHostState.showSnackbar(result.toString())
                             } catch (e: Exception) {
-                                snackbarHostState.showSnackbar("An error occurred during upload.")
+                                snackbarHostState.showSnackbar("⚠️ An error occurred during upload.")
                             } finally {
                                 uploadingCalibrationIds = uploadingCalibrationIds - calibration.calibrationId
                             }

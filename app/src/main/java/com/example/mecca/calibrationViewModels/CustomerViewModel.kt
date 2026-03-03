@@ -39,11 +39,11 @@ class CustomerViewModel(
 
             val message = when (result) {
                 is FetchResult.Success ->
-                    if (force) "Customer list refreshed"
-                    else result.message
+                    if (force) "✅ Customer list refreshed"
+                    else "✅ ${result.message}"
 
                 is FetchResult.Failure ->
-                    result.errorMessage
+                    "⚠️ ${result.errorMessage}"
             }
 
             _events.tryEmit(message)
@@ -52,4 +52,3 @@ class CustomerViewModel(
         }
     }
 }
-

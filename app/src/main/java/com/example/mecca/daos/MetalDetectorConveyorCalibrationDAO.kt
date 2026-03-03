@@ -166,31 +166,114 @@ interface MetalDetectorConveyorCalibrationDAO {
 
 
     // Save Sensitivities As Found to database
+//    @Query(
+//        "UPDATE MetalDetectorConveyorCalibrations " +
+//                "SET sensitivityAsFoundFerrous = :sensitivityAsFoundFerrous, " +
+//                "sensitivityAsFoundFerrousPeakSignal = :sensitivityAsFoundFerrousPeakSignal, " +
+//                "sensitivityAsFoundNonFerrous = :sensitivityAsFoundNonFerrous, " +
+//                "sensitivityAsFoundNonFerrousPeakSignal = :sensitivityAsFoundNonFerrousPeakSignal, " +
+//                "sensitivityAsFoundStainless = :sensitivityAsFoundStainless," +
+//                "sensitivityAsFoundStainlessPeakSignal = :sensitivityAsFoundStainlessPeakSignal," +
+//                "productPeakSignalAsFound = :productPeakSignalAsFound," +
+//                "sensitivityAsFoundEngineerNotes = :sensitivityAsFoundEngineerNotes " +
+//                "WHERE calibrationId = :calibrationId"
+//    )
+//    suspend fun updateSensitivitiesAsFound(
+//        sensitivityAsFoundFerrous: String,
+//        sensitivityAsFoundFerrousPeakSignal: String,
+//        sensitivityAsFoundNonFerrous: String,
+//        sensitivityAsFoundNonFerrousPeakSignal: String,
+//        sensitivityAsFoundStainless: String,
+//        sensitivityAsFoundStainlessPeakSignal: String,
+//        productPeakSignalAsFound: String,
+//        sensitivityAsFoundEngineerNotes: String,
+//        calibrationId: String
+//    )
+
+    // Save Ferrous As Found to database
     @Query(
         "UPDATE MetalDetectorConveyorCalibrations " +
                 "SET sensitivityAsFoundFerrous = :sensitivityAsFoundFerrous, " +
-                "sensitivityAsFoundFerrousPeakSignal = :sensitivityAsFoundFerrousPeakSignal, " +
-                "sensitivityAsFoundNonFerrous = :sensitivityAsFoundNonFerrous, " +
-                "sensitivityAsFoundNonFerrousPeakSignal = :sensitivityAsFoundNonFerrousPeakSignal, " +
-                "sensitivityAsFoundStainless = :sensitivityAsFoundStainless," +
-                "sensitivityAsFoundStainlessPeakSignal = :sensitivityAsFoundStainlessPeakSignal," +
-                "productPeakSignalAsFound = :productPeakSignalAsFound," +
-                "sensitivityAsFoundEngineerNotes = :sensitivityAsFoundEngineerNotes " +
+                "sampleCertificateNumberAsFoundFerrous = :sampleCertificateNumberAsFoundFerrous, " +
+                "detectRejectAsFoundFerrousLeading = :detectRejectAsFoundFerrousLeading, " +
+                "detectRejectAsFoundFerrousLeadingPeakSignal = :detectRejectAsFoundFerrousLeadingPeakSignal," +
+                "detectRejectAsFoundFerrousMiddle = :detectRejectAsFoundFerrousMiddle," +
+                "detectRejectAsFoundFerrousMiddlePeakSignal = :detectRejectAsFoundFerrousMiddlePeakSignal, " +
+                "detectRejectAsFoundFerrousTrailing = :detectRejectAsFoundFerrousTrailing," +
+                "detectRejectAsFoundFerrousTrailingPeakSignal = :detectRejectAsFoundFerrousTrailingPeakSignal," +
+                "ferrousAsFoundEngineerNotes = :ferrousAsFoundEngineerNotes " +
                 "WHERE calibrationId = :calibrationId"
     )
-    suspend fun updateSensitivitiesAsFound(
+    suspend fun updateFerrousAsFound(
         sensitivityAsFoundFerrous: String,
-        sensitivityAsFoundFerrousPeakSignal: String,
-        sensitivityAsFoundNonFerrous: String,
-        sensitivityAsFoundNonFerrousPeakSignal: String,
-        sensitivityAsFoundStainless: String,
-        sensitivityAsFoundStainlessPeakSignal: String,
-        productPeakSignalAsFound: String,
-        sensitivityAsFoundEngineerNotes: String,
+        sampleCertificateNumberAsFoundFerrous: String,
+        detectRejectAsFoundFerrousLeading: String,
+        detectRejectAsFoundFerrousLeadingPeakSignal: String,
+        detectRejectAsFoundFerrousMiddle: String,
+        detectRejectAsFoundFerrousMiddlePeakSignal: String,
+        detectRejectAsFoundFerrousTrailing: String,
+        detectRejectAsFoundFerrousTrailingPeakSignal: String,
+        ferrousAsFoundEngineerNotes: String,
         calibrationId: String
     )
 
-    // Save Ferrous Result As Found to database
+    // Save Non-Ferrous As Found to database
+    @Query(
+        "UPDATE MetalDetectorConveyorCalibrations " +
+                "SET sensitivityAsFoundNonFerrous = :sensitivityAsFoundNonFerrous, " +
+                "sampleCertificateNumberAsFoundNonFerrous = :sampleCertificateNumberAsFoundNonFerrous, " +
+                "detectRejectAsFoundNonFerrousLeading = :detectRejectAsFoundNonFerrousLeading, " +
+                "detectRejectAsFoundNonFerrousLeadingPeakSignal = :detectRejectAsFoundNonFerrousLeadingPeakSignal," +
+                "detectRejectAsFoundNonFerrousMiddle = :detectRejectAsFoundNonFerrousMiddle," +
+                "detectRejectAsFoundNonFerrousMiddlePeakSignal = :detectRejectAsFoundNonFerrousMiddlePeakSignal, " +
+                "detectRejectAsFoundNonFerrousTrailing = :detectRejectAsFoundNonFerrousTrailing," +
+                "detectRejectAsFoundNonFerrousTrailingPeakSignal = :detectRejectAsFoundNonFerrousTrailingPeakSignal," +
+                "nonFerrousAsFoundEngineerNotes = :nonFerrousAsFoundEngineerNotes " +
+                "WHERE calibrationId = :calibrationId"
+    )
+    suspend fun updateNonFerrousAsFound(
+        sensitivityAsFoundNonFerrous: String,
+        sampleCertificateNumberAsFoundNonFerrous: String,
+        detectRejectAsFoundNonFerrousLeading: String,
+        detectRejectAsFoundNonFerrousLeadingPeakSignal: String,
+        detectRejectAsFoundNonFerrousMiddle: String,
+        detectRejectAsFoundNonFerrousMiddlePeakSignal: String,
+        detectRejectAsFoundNonFerrousTrailing: String,
+        detectRejectAsFoundNonFerrousTrailingPeakSignal: String,
+        nonFerrousAsFoundEngineerNotes: String,
+        calibrationId: String
+    )
+
+    // Save Stainless As Found to database
+    @Query(
+        "UPDATE MetalDetectorConveyorCalibrations " +
+                "SET sensitivityAsFoundStainless = :sensitivityAsFoundStainless, " +
+                "sampleCertificateNumberAsFoundStainless = :sampleCertificateNumberAsFoundStainless, " +
+                "detectRejectAsFoundStainlessLeading = :detectRejectAsFoundStainlessLeading, " +
+                "detectRejectAsFoundStainlessLeadingPeakSignal = :detectRejectAsFoundStainlessLeadingPeakSignal," +
+                "detectRejectAsFoundStainlessMiddle = :detectRejectAsFoundStainlessMiddle," +
+                "detectRejectAsFoundStainlessMiddlePeakSignal = :detectRejectAsFoundStainlessMiddlePeakSignal, " +
+                "detectRejectAsFoundStainlessTrailing = :detectRejectAsFoundStainlessTrailing," +
+                "detectRejectAsFoundStainlessTrailingPeakSignal = :detectRejectAsFoundStainlessTrailingPeakSignal," +
+                "stainlessAsFoundEngineerNotes = :stainlessAsFoundEngineerNotes " +
+                "WHERE calibrationId = :calibrationId"
+    )
+    suspend fun updateStainlessAsFound(
+        sensitivityAsFoundStainless: String,
+        sampleCertificateNumberAsFoundStainless: String,
+        detectRejectAsFoundStainlessLeading: String,
+        detectRejectAsFoundStainlessLeadingPeakSignal: String,
+        detectRejectAsFoundStainlessMiddle: String,
+        detectRejectAsFoundStainlessMiddlePeakSignal: String,
+        detectRejectAsFoundStainlessTrailing: String,
+        detectRejectAsFoundStainlessTrailingPeakSignal: String,
+        stainlessAsFoundEngineerNotes: String,
+        calibrationId: String
+    )
+
+
+
+    // Save Ferrous Result As Left to database
     @Query(
         "UPDATE MetalDetectorConveyorCalibrations " +
                 "SET sensitivityAsLeftFerrous = :sensitivityAsLeftFerrous, " +
@@ -219,7 +302,36 @@ interface MetalDetectorConveyorCalibrationDAO {
         calibrationId: String
     )
 
-    // Save Stainless As Found to database
+    // Save Non Ferrous Result  as Left to database
+    @Query(
+        "UPDATE MetalDetectorConveyorCalibrations " +
+                "SET sensitivityAsLeftNonFerrous = :sensitivityAsLeftNonFerrous, " +
+                "sampleCertificateNumberNonFerrous = :sampleCertificateNumberNonFerrous, " +
+                "detectRejectNonFerrousLeading = :detectRejectNonFerrousLeading, " +
+                "detectRejectNonFerrousLeadingPeakSignal = :detectRejectNonFerrousLeadingPeakSignal," +
+                "detectRejectNonFerrousMiddle = :detectRejectNonFerrousMiddle," +
+                "detectRejectNonFerrousMiddlePeakSignal = :detectRejectNonFerrousMiddlePeakSignal, " +
+                "detectRejectNonFerrousTrailing = :detectRejectNonFerrousTrailing," +
+                "detectRejectNonFerrousTrailingPeakSignal = :detectRejectNonFerrousTrailingPeakSignal," +
+                "nonFerrousTestEngineerNotes = :nonFerrousTestEngineerNotes, " +
+                "nonFerrousTestPvResult = :nonFerrousTestPvResult " +
+                "WHERE calibrationId = :calibrationId"
+    )
+    suspend fun updateNonFerrousResult(
+        sensitivityAsLeftNonFerrous: String,
+        sampleCertificateNumberNonFerrous: String,
+        detectRejectNonFerrousLeading: String,
+        detectRejectNonFerrousLeadingPeakSignal: String,
+        detectRejectNonFerrousMiddle: String,
+        detectRejectNonFerrousMiddlePeakSignal: String,
+        detectRejectNonFerrousTrailing: String,
+        detectRejectNonFerrousTrailingPeakSignal: String,
+        nonFerrousTestEngineerNotes: String,
+        nonFerrousTestPvResult: String,
+        calibrationId: String
+    )
+
+    // Save Stainless As Left to database
     @Query(
         "UPDATE MetalDetectorConveyorCalibrations " +
                 "SET sensitivityAsLeftStainless = :sensitivityAsLeftStainless, " +
@@ -248,34 +360,7 @@ interface MetalDetectorConveyorCalibrationDAO {
         calibrationId: String
     )
 
-    // Save Non Ferrous Result As Found to database
-    @Query(
-        "UPDATE MetalDetectorConveyorCalibrations " +
-                "SET sensitivityAsLeftNonFerrous = :sensitivityAsLeftNonFerrous, " +
-                "sampleCertificateNumberNonFerrous = :sampleCertificateNumberNonFerrous, " +
-                "detectRejectNonFerrousLeading = :detectRejectNonFerrousLeading, " +
-                "detectRejectNonFerrousLeadingPeakSignal = :detectRejectNonFerrousLeadingPeakSignal," +
-                "detectRejectNonFerrousMiddle = :detectRejectNonFerrousMiddle," +
-                "detectRejectNonFerrousMiddlePeakSignal = :detectRejectNonFerrousMiddlePeakSignal, " +
-                "detectRejectNonFerrousTrailing = :detectRejectNonFerrousTrailing," +
-                "detectRejectNonFerrousTrailingPeakSignal = :detectRejectNonFerrousTrailingPeakSignal," +
-                "nonFerrousTestEngineerNotes = :nonFerrousTestEngineerNotes, " +
-                "nonFerrousTestPvResult = :nonFerrousTestPvResult " +
-                "WHERE calibrationId = :calibrationId"
-    )
-    suspend fun updateNonFerrousResult(
-        sensitivityAsLeftNonFerrous: String,
-        sampleCertificateNumberNonFerrous: String,
-        detectRejectNonFerrousLeading: String,
-        detectRejectNonFerrousLeadingPeakSignal: String,
-        detectRejectNonFerrousMiddle: String,
-        detectRejectNonFerrousMiddlePeakSignal: String,
-        detectRejectNonFerrousTrailing: String,
-        detectRejectNonFerrousTrailingPeakSignal: String,
-        nonFerrousTestEngineerNotes: String,
-        nonFerrousTestPvResult: String,
-        calibrationId: String
-    )
+
 
     // Save Detection Setting As Left to database
     @Query(

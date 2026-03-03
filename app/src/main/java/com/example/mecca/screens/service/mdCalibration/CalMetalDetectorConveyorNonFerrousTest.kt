@@ -1,14 +1,18 @@
 package com.example.mecca.screens.service.mdCalibration
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ContentPasteGo
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -21,6 +25,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateNonFerrousPvResult
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
+import com.example.mecca.formModules.AnimatedActionPill
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
@@ -76,6 +81,19 @@ fun CalMetalDetectorConveyorNonFerrousTest(
             contentPadding = PaddingValues(16.dp),
         ) {
             Column {
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    AnimatedActionPill(
+                        text = "Copy from ‘As Found’",
+                        icon = Icons.Outlined.ContentPasteGo,
+                        onClick = { copyNonFerrousTestAsFoundToAsLeft(viewModel) }
+                    )
+                }
+
+                Spacer(Modifier.height(6.dp))
 
                 // ⭐ Combined row (Achieved + Cert)
                 LabeledTwoTextInputsWithHelp(
@@ -232,4 +250,17 @@ fun CalMetalDetectorConveyorNonFerrousTest(
             }
         }
     }
+}
+
+fun copyNonFerrousTestAsFoundToAsLeft(viewModel: CalibrationMetalDetectorConveyorViewModel) {
+    viewModel.setSensitivityAsLeftNonFerrous(viewModel.sensitivityAsFoundNonFerrous.value)
+    viewModel.setSampleCertificateNumberNonFerrous(viewModel.sampleCertificateNumberAsFoundNonFerrous.value)
+    viewModel.setDetectRejectNonFerrousLeading(viewModel.detectRejectAsFoundNonFerrousLeading.value)
+    viewModel.setPeakSignalNonFerrousLeading(viewModel.peakSignalAsFoundNonFerrousLeading.value)
+    viewModel.setDetectRejectNonFerrousMiddle(viewModel.detectRejectAsFoundNonFerrousMiddle.value)
+    viewModel.setPeakSignalNonFerrousMiddle(viewModel.peakSignalAsFoundNonFerrousMiddle.value)
+    viewModel.setDetectRejectNonFerrousTrailing(viewModel.detectRejectAsFoundNonFerrousTrailing.value)
+    viewModel.setPeakSignalNonFerrousTrailing(viewModel.peakSignalAsFoundNonFerrousTrailing.value)
+
+
 }

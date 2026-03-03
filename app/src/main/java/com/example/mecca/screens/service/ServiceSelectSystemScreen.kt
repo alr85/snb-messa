@@ -266,7 +266,12 @@ fun ServiceSelectSystemScreen(
                                 scope.launch {
                                     isRefreshing = true
                                     try {
-                                        syncMetalDetectors(context, repository)
+                                        val success = syncMetalDetectors(context, repository)
+                                        if (success) {
+                                            Toast.makeText(context, "Database refreshed successfully.", Toast.LENGTH_SHORT).show()
+                                        } else {
+                                            Toast.makeText(context, "Refresh failed. Using local data.", Toast.LENGTH_SHORT).show()
+                                        }
                                     } finally {
                                         isRefreshing = false
                                     }
@@ -416,7 +421,7 @@ private fun ComingSoonRow(title: String) {
         )
 
         Text(
-            text = "Coming soon",
+            text = title + " coming soon",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -456,7 +461,7 @@ fun navigateToPostcode(context: Context, postcode: String) {
         Log.e("NavigationIntent", "Failed to launch navigation", e)
         Toast.makeText(
             context,
-            "Unable to open Google Maps.",
+            "❌ Unable to open Google Maps. Please check if it's installed.",
             Toast.LENGTH_SHORT
         ).show()
     }

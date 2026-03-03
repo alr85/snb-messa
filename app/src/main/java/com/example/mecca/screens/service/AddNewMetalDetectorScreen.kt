@@ -252,7 +252,7 @@ suspend fun submitNewMdSystem(
     // Ask cloud if online; else check local cache
     when (val status = mdSystemsRepository.checkSerialNumberStatus(context, serialNumber)) {
         SerialCheckResult.Exists -> {
-            snackbarHostState.showSnackbar("This serial number was found in the cloud database - unable to create new system.")
+            snackbarHostState.showSnackbar("⚠️ This serial number was found in the cloud database - unable to create new system.")
             InAppLogger.d("Serial already exists in cloud - Abort.")
             return
         }
@@ -272,7 +272,7 @@ suspend fun submitNewMdSystem(
             )
         }
         SerialCheckResult.ExistsLocalOffline -> {
-            snackbarHostState.showSnackbar("Offline: serial exists locally. Cannot create.")
+            snackbarHostState.showSnackbar("⚠️ Offline: serial exists locally. Cannot create.")
             return
         }
         SerialCheckResult.NotFoundLocalOffline -> {
@@ -290,7 +290,7 @@ suspend fun submitNewMdSystem(
             )
         }
         is SerialCheckResult.Error -> {
-            snackbarHostState.showSnackbar("Couldn’t verify serial: ${status.message ?: "network error"}")
+            snackbarHostState.showSnackbar("⚠️ Couldn’t verify serial: ${status.message ?: "network error"}")
             return
         }
     }

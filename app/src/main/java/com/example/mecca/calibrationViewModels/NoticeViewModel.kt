@@ -35,8 +35,8 @@ class NoticeViewModel(
             val result = repository.fetchAndStoreNotices(force)
 
             val message = when (result) {
-                is FetchResult.Success -> "Notices updated"
-                is FetchResult.Failure -> result.errorMessage
+                is FetchResult.Success -> "✅ Notices updated"
+                is FetchResult.Failure -> "⚠️ ${result.errorMessage}"
             }
 
             _events.tryEmit(message)
@@ -46,4 +46,3 @@ class NoticeViewModel(
     }
 
 }
-

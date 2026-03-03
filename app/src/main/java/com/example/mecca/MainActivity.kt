@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.MailOutline
@@ -40,6 +42,7 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -451,10 +454,13 @@ fun MyApp(
                     noticeViewModel.syncNotices()
                     
                     withContext(Dispatchers.Main) {
-                        snackbarHostState.showSnackbar("Background sync complete")
+                        snackbarHostState.showSnackbar("✅ Background sync complete")
                     }
                 } catch (e: Exception) {
                     InAppLogger.e("Background Sync Failed: ${e.message}")
+                    withContext(Dispatchers.Main) {
+                        snackbarHostState.showSnackbar("⚠️ Background sync failed: ${e.message}")
+                    }
                 } finally {
                     isSyncingBackground = false
                 }
@@ -503,7 +509,19 @@ fun MyApp(
             Global snackbar lives here.
          */
         snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState)
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.padding(bottom = 12.dp)
+            ) { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = SnbDarkGrey,
+                    contentColor = Color.White,
+                    actionColor = SnbRed,
+                    shape = RoundedCornerShape(24.dp),
+                    modifier = Modifier.padding(12.dp)
+                )
+            }
         },
 
 

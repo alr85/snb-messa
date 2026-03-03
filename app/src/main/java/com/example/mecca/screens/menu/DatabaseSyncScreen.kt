@@ -156,7 +156,7 @@ fun DatabaseSyncScreen(
 
         withContext(Dispatchers.Main) {
             setTaskState(task.name, TaskUiState(status, msg))
-            if (isFailure) snackbarHostState.showSnackbar("${task.name} failed")
+            if (isFailure) snackbarHostState.showSnackbar("⚠️ ${task.name} failed")
         }
 
         return !isFailure
@@ -227,7 +227,7 @@ fun DatabaseSyncScreen(
                                 withContext(Dispatchers.Main) {
                                     overallMessage = "Sync complete"
                                     isSyncingAll = false
-                                    snackbarHostState.showSnackbar("Database sync complete")
+                                    snackbarHostState.showSnackbar("✅ Database sync complete")
                                 }
                             }
                         },

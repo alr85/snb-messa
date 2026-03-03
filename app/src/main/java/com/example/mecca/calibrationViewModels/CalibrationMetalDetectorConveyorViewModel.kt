@@ -25,11 +25,13 @@ import com.example.mecca.calibrationLogic.metalDetectorConveyor.toDetectNotifica
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toDetectionSettingAsLeftUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toDetectionSettingLabelsUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toDetectionSettingsAsFoundUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toFerrousAsFoundUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toFerrousResultUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toIndicatorsUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toInfeedSensorUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toLargeMetalResultUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toNewCalibrationInsert
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toNonFerrousAsFoundUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toNonFerrousResultUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toOperatorTestUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toPackCheckSensorUpdate
@@ -39,6 +41,7 @@ import com.example.mecca.calibrationLogic.metalDetectorConveyor.toRejectSettings
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toSensitivitiesAsFoundUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toSensitivityRequirementsUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toSpeedSensorUpdate
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.toStainlessAsFoundUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toStainlessResultUpdate
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.toSystemChecklistUpdate
 import com.example.mecca.dataClasses.ConveyorRetailerSensitivitiesEntity
@@ -120,7 +123,6 @@ class CalibrationMetalDetectorConveyorViewModel(
 
                 _serialNumber.value = existingCalibration.serialNumber
                 _isSynced.value = existingCalibration.isSynced
-                _serialNumber.value = existingCalibration.serialNumber
                 _modelId.intValue = existingCalibration.modelId
                 _customerId.intValue = existingCalibration.customerId
                 _systemId.intValue = existingCalibration.systemId
@@ -155,17 +157,13 @@ class CalibrationMetalDetectorConveyorViewModel(
                     existingCalibration.sensitivityRequirementEngineerNotes
 
 
-                _productHeight.value = existingCalibration.productHeight ?: ""
-                refreshSensitivities()
-
-
-
                 _productDescription.value = existingCalibration.productDescription
                 _productLibraryReference.value = existingCalibration.productLibraryReference
                 _productLibraryNumber.value = existingCalibration.productLibraryNumber
                 _productLength.value = existingCalibration.productLength
                 _productWidth.value = existingCalibration.productWidth
-                _productHeight.value = existingCalibration.productHeight
+                _productHeight.value = existingCalibration.productHeight ?: ""
+                refreshSensitivities()
                 _productDetailsEngineerNotes.value = existingCalibration.productDetailsEngineerNotes
 
                 _sensitivityAccessRestriction.value = existingCalibration.sensitivityAccessRestriction
@@ -177,27 +175,108 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _detectionSettingAsFound6.value = existingCalibration.detectionSettingAsFound6
                 _detectionSettingAsFound7.value = existingCalibration.detectionSettingAsFound7
                 _detectionSettingAsFound8.value = existingCalibration.detectionSettingAsFound8
-
                 _detectionSettingPvResult.value = existingCalibration.detectionSettingPvResult
-
-
-
                 _detectionSettingAsFoundEngineerNotes.value =
                     existingCalibration.detectionSettingAsFoundEngineerNotes
 
-                _sensitivityAsFoundFerrous.value = existingCalibration.sensitivityAsFoundFerrous
-                _sensitivityAsFoundFerrousPeakSignal.value =
-                    existingCalibration.sensitivityAsFoundFerrousPeakSignal
+
+
+                _sensitivityAsFoundFerrous.value =
+                    existingCalibration.sensitivityAsFoundFerrous
+
+                _sampleCertificateNumberAsFoundFerrous.value =
+                    existingCalibration.sampleCertificateNumberAsFoundFerrous
+
+                _detectRejectAsFoundFerrousLeading.value =
+                    existingCalibration.detectRejectAsFoundFerrousLeading.toYesNoState()
+
+                _peakSignalAsFoundFerrousLeading.value =
+                        existingCalibration.detectRejectAsFoundFerrousLeadingPeakSignal
+
+                _detectRejectAsFoundFerrousMiddle.value =
+                    existingCalibration.detectRejectAsFoundFerrousMiddle.toYesNoState()
+
+                _peakSignalAsFoundFerrousMiddle.value =
+                    existingCalibration.detectRejectAsFoundFerrousMiddlePeakSignal
+
+                _detectRejectAsFoundFerrousTrailing.value =
+                    existingCalibration.detectRejectAsFoundFerrousTrailing.toYesNoState()
+
+                _peakSignalAsFoundFerrousTrailing.value =
+                    existingCalibration.detectRejectAsFoundFerrousTrailingPeakSignal
+
+                _ferrousTestEngineerNotes.value =
+                    existingCalibration.ferrousTestEngineerNotes
+
+
                 _sensitivityAsFoundNonFerrous.value =
                     existingCalibration.sensitivityAsFoundNonFerrous
-                _sensitivityAsFoundNonFerrousPeakSignal.value =
-                    existingCalibration.sensitivityAsFoundNonFerrousPeakSignal
-                _sensitivityAsFoundStainless.value = existingCalibration.sensitivityAsFoundStainless
-                _sensitivityAsFoundStainlessPeakSignal.value =
-                    existingCalibration.sensitivityAsFoundStainlessPeakSignal
-                _productPeakSignalAsFound.value = existingCalibration.productPeakSignalAsFound
-                _sensitivityAsFoundEngineerNotes.value =
-                    existingCalibration.sensitivityAsFoundEngineerNotes
+
+                _sampleCertificateNumberAsFoundNonFerrous.value =
+                    existingCalibration.sampleCertificateNumberAsFoundNonFerrous
+
+                _detectRejectAsFoundNonFerrousLeading.value =
+                    existingCalibration.detectRejectAsFoundNonFerrousLeading.toYesNoState()
+
+                _peakSignalAsFoundNonFerrousLeading.value =
+                    existingCalibration.detectRejectAsFoundNonFerrousLeadingPeakSignal
+
+                _detectRejectAsFoundNonFerrousMiddle.value =
+                    existingCalibration.detectRejectAsFoundNonFerrousMiddle.toYesNoState()
+
+                _peakSignalAsFoundNonFerrousMiddle.value =
+                    existingCalibration.detectRejectAsFoundNonFerrousMiddlePeakSignal
+
+                _detectRejectAsFoundNonFerrousTrailing.value =
+                    existingCalibration.detectRejectAsFoundNonFerrousTrailing.toYesNoState()
+
+                _peakSignalAsFoundNonFerrousTrailing.value =
+                    existingCalibration.detectRejectAsFoundNonFerrousTrailingPeakSignal
+
+                _nonFerrousTestEngineerNotes.value =
+                    existingCalibration.nonFerrousTestEngineerNotes
+
+
+                _sensitivityAsFoundStainless.value =
+                    existingCalibration.sensitivityAsFoundStainless
+
+                _sampleCertificateNumberAsFoundStainless.value =
+                    existingCalibration.sampleCertificateNumberAsFoundStainless
+
+                _detectRejectAsFoundStainlessLeading.value =
+                    existingCalibration.detectRejectAsFoundStainlessLeading.toYesNoState()
+
+                _peakSignalAsFoundStainlessLeading.value =
+                    existingCalibration.detectRejectAsFoundStainlessLeadingPeakSignal
+
+                _detectRejectAsFoundStainlessMiddle.value =
+                    existingCalibration.detectRejectAsFoundStainlessMiddle.toYesNoState()
+
+                _peakSignalAsFoundStainlessMiddle.value =
+                    existingCalibration.detectRejectAsFoundStainlessMiddlePeakSignal
+
+                _detectRejectAsFoundStainlessTrailing.value =
+                    existingCalibration.detectRejectAsFoundStainlessTrailing.toYesNoState()
+
+                _peakSignalAsFoundStainlessTrailing.value =
+                    existingCalibration.detectRejectAsFoundStainlessTrailingPeakSignal
+
+                _stainlessTestEngineerNotes.value =
+                    existingCalibration.stainlessTestEngineerNotes
+//                _sensitivityAsFoundFerrousPeakSignal.value =
+//                    existingCalibration.sensitivityAsFoundFerrousPeakSignal
+//                _sensitivityAsFoundNonFerrous.value =
+//                    existingCalibration.sensitivityAsFoundNonFerrous
+//                _sensitivityAsFoundNonFerrousPeakSignal.value =
+//                    existingCalibration.sensitivityAsFoundNonFerrousPeakSignal
+//                _sensitivityAsFoundStainless.value =
+//                    existingCalibration.sensitivityAsFoundStainless
+//                _sensitivityAsFoundStainlessPeakSignal.value =
+//                    existingCalibration.sensitivityAsFoundStainlessPeakSignal
+//                _productPeakSignalAsFound.value =
+//                    existingCalibration.productPeakSignalAsFound
+//                _sensitivityAsFoundEngineerNotes.value =
+//                    existingCalibration.sensitivityAsFoundEngineerNotes
 
 
                 _sensitivityAsLeftFerrous.value = existingCalibration.sensitivityAsLeftFerrous
@@ -814,6 +893,16 @@ class CalibrationMetalDetectorConveyorViewModel(
             "CalMetalDetectorConveyorSensitivityAsFound" ->
                 updateSensitivitiesAsFound()
 
+            "CalMetalDetectorConveyorFerrousTestAsFound" ->
+                updateFerrousSensitivitiesAsFound()
+
+            "CalMetalDetectorConveyorNonFerrousTestAsFound" ->
+                updateNonFerrousSensitivitiesAsFound()
+
+
+            "CalMetalDetectorConveyorStainlessTestAsFound" ->
+                updateStainlessSensitivitiesAsFound()
+
             "CalMetalDetectorConveyorFerrousTest" ->
                 updateFerrousResult()
 
@@ -925,6 +1014,30 @@ class CalibrationMetalDetectorConveyorViewModel(
 
         viewModelScope.launch {
             calibrationRepository.updateSensitivitiesAsFound(update)
+        }
+    }
+
+    fun updateFerrousSensitivitiesAsFound() {
+        val update = toFerrousAsFoundUpdate()
+
+        viewModelScope.launch {
+            calibrationRepository.updateFerrousSensitivitiesAsFound(update)
+        }
+    }
+
+    fun updateNonFerrousSensitivitiesAsFound() {
+        val update = toNonFerrousAsFoundUpdate()
+
+        viewModelScope.launch {
+            calibrationRepository.updateNonFerrousSensitivitiesAsFound(update)
+        }
+    }
+
+    fun updateStainlessSensitivitiesAsFound() {
+        val update = toStainlessAsFoundUpdate()
+
+        viewModelScope.launch {
+            calibrationRepository.updateStainlessSensitivitiesAsFound(update)
         }
     }
 
@@ -3429,13 +3542,13 @@ class CalibrationMetalDetectorConveyorViewModel(
                     row.sensitivityRequirementEngineerNotes,
                     row.sensitivityAccessRestriction,
                     row.sensitivityAsFoundFerrous,
-                    row.sensitivityAsFoundFerrousPeakSignal,
+//                    row.sensitivityAsFoundFerrousPeakSignal,
                     row.sensitivityAsFoundNonFerrous,
-                    row.sensitivityAsFoundNonFerrousPeakSignal,
+ //                  row.sensitivityAsFoundNonFerrousPeakSignal,
                     row.sensitivityAsFoundStainless,
-                    row.sensitivityAsFoundStainlessPeakSignal,
-                    row.productPeakSignalAsFound,
-                    row.sensitivityAsFoundEngineerNotes,
+ //                   row.sensitivityAsFoundStainlessPeakSignal,
+//                    row.productPeakSignalAsFound,
+ //                   row.sensitivityAsFoundEngineerNotes,
                     row.sensitivityAsLeftFerrous,
                     row.sampleCertificateNumberFerrous,
                     row.detectRejectFerrousLeading,

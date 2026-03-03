@@ -268,6 +268,14 @@ fun CalMetalDetectorConveyorFerrousTest(
 
 
 fun copyFerrousTestAsFoundToAsLeft(viewModel: CalibrationMetalDetectorConveyorViewModel) {
-    viewModel.setDetectionSettingAsLeft1(viewModel.detectionSettingAsFound1.value)
+    viewModel.setSensitivityAsLeftFerrous(viewModel.sensitivityAsFoundFerrous.value)
+    viewModel.setSampleCertificateNumberFerrous(viewModel.sampleCertificateNumberAsFoundFerrous.value)
+    viewModel.setDetectRejectFerrousLeading(viewModel.detectRejectAsFoundFerrousLeading.value)
+    viewModel.setPeakSignalFerrousLeading(viewModel.peakSignalAsFoundFerrousLeading.value)
+    viewModel.setDetectRejectFerrousMiddle(viewModel.detectRejectAsFoundFerrousMiddle.value)
+    viewModel.setPeakSignalFerrousMiddle(viewModel.peakSignalAsFoundFerrousMiddle.value)
+    viewModel.setDetectRejectFerrousTrailing(viewModel.detectRejectAsFoundFerrousTrailing.value)
+    viewModel.setPeakSignalFerrousTrailing(viewModel.peakSignalAsFoundFerrousTrailing.value)
+
 
 }

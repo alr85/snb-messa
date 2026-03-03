@@ -1,20 +1,32 @@
 package com.example.mecca.screens.service.mdCalibration
 
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ContentPasteGo
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateStainlessPvResult
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
+import com.example.mecca.formModules.AnimatedActionPill
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
@@ -42,6 +54,11 @@ fun CalMetalDetectorConveyorStainlessTest(
 
     val notes by viewModel.stainlessTestEngineerNotes
 
+    // Sensitivity Warning Logic
+    val customerReq = viewModel.sensitivityRequirementStainless.value.replace(",", ".").toDoubleOrNull() ?: 0.0
+    val achieved = sensitivity.replace(",", ".").toDoubleOrNull() ?: 0.0
+    val isSensitivityWarning = achieved > customerReq && achieved > 0.0 && customerReq > 0.0
+
     // Validation for Next
     val isNextStepEnabled =
         sensitivity.isNotBlank() &&
@@ -64,6 +81,19 @@ fun CalMetalDetectorConveyorStainlessTest(
             contentPadding = PaddingValues(16.dp),
         ) {
             Column {
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    AnimatedActionPill(
+                        text = "Copy from ‘As Found’",
+                        icon = Icons.Outlined.ContentPasteGo,
+                        onClick = { copyStainlessTestAsFoundToAsLeft(viewModel) }
+                    )
+                }
+
+                Spacer(Modifier.height(6.dp))
 
                 //-----------------------------------------------------
                 // Combined: Achieved Sensitivity + Certificate
@@ -100,6 +130,23 @@ fun CalMetalDetectorConveyorStainlessTest(
                     firstMaxLength = 4,
                     secondMaxLength = 12
                 )
+
+                if (isSensitivityWarning) {
+                    Spacer(Modifier.height(4.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.errorContainer, MaterialTheme.shapes.small)
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = "⚠️ Achieved sensitivity ($achieved mm) is worse than Customer Requirement ($customerReq mm).",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
 
                FormSpacer()
 
@@ -212,4 +259,17 @@ fun CalMetalDetectorConveyorStainlessTest(
             }
         }
     }
+}
+
+fun copyStainlessTestAsFoundToAsLeft(viewModel: CalibrationMetalDetectorConveyorViewModel) {
+    viewModel.setSensitivityAsLeftStainless(viewModel.sensitivityAsFoundNonFerrous.value)
+    viewModel.setSampleCertificateNumberStainless(viewModel.sampleCertificateNumberAsFoundStainless.value)
+    viewModel.setDetectRejectStainlessLeading(viewModel.detectRejectAsFoundStainlessLeading.value)
+    viewModel.setPeakSignalStainlessLeading(viewModel.peakSignalAsFoundStainlessLeading.value)
+    viewModel.setDetectRejectStainlessMiddle(viewModel.detectRejectAsFoundStainlessMiddle.value)
+    viewModel.setPeakSignalStainlessMiddle(viewModel.peakSignalAsFoundStainlessMiddle.value)
+    viewModel.setDetectRejectStainlessTrailing(viewModel.detectRejectAsFoundStainlessTrailing.value)
+    viewModel.setPeakSignalStainlessTrailing(viewModel.peakSignalAsFoundStainlessTrailing.value)
+
+
 }

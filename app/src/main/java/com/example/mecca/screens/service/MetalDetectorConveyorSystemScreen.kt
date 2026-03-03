@@ -166,7 +166,7 @@ fun MetalDetectorConveyorSystemScreen(
                     tempId = system.tempId
                 )
 
-                snackbarHostState.showSnackbar("System updated successfully.")
+                snackbarHostState.showSnackbar("✅ System updated successfully.")
                 refresh()
                 return
             }
@@ -175,7 +175,7 @@ fun MetalDetectorConveyorSystemScreen(
                 repositoryMD.checkSerialNumberStatus(context, system.serialNumber)) {
 
                 SerialCheckResult.Exists ->
-                    snackbarHostState.showSnackbar("Serial already exists in cloud.")
+                    snackbarHostState.showSnackbar("⚠️ Serial already exists in cloud.")
 
                 SerialCheckResult.NotFound -> {
 
@@ -196,27 +196,27 @@ fun MetalDetectorConveyorSystemScreen(
 
                         repositoryMD.fetchAndStoreMdSystems()
 
-                        snackbarHostState.showSnackbar("System added to cloud.")
+                        snackbarHostState.showSnackbar("✅ System added to cloud.")
                         navController.popBackStack()
                     } else {
-                        snackbarHostState.showSnackbar("Failed to add system.")
+                        snackbarHostState.showSnackbar("⚠️ Failed to add system.")
                     }
                 }
 
                 SerialCheckResult.ExistsLocalOffline ->
-                    snackbarHostState.showSnackbar("Offline: serial exists locally.")
+                    snackbarHostState.showSnackbar("⚠️ Offline: serial exists locally.")
 
                 SerialCheckResult.NotFoundLocalOffline ->
-                    snackbarHostState.showSnackbar("No network. Sync later.")
+                    snackbarHostState.showSnackbar("⚠️ No network. Sync later.")
 
                 is SerialCheckResult.Error ->
-                    snackbarHostState.showSnackbar("Error: ${status.message}")
+                    snackbarHostState.showSnackbar("⚠️ Error: ${status.message}")
             }
 
         } catch (e: Exception) {
 
             InAppLogger.e("Sync crashed: ${e.message}")
-            snackbarHostState.showSnackbar("Sync failed.")
+            snackbarHostState.showSnackbar("⚠️ Sync failed.")
 
         } finally {
             isUploading = false
@@ -323,7 +323,7 @@ fun MetalDetectorConveyorSystemScreen(
                             onClick = {
                                 showActions = false
                                 scope.launch {
-                                    snackbarHostState.showSnackbar("Service flow not wired yet.")
+                                    snackbarHostState.showSnackbar("⚠️ Service flow not wired yet.")
                                 }
                             },
                             containerColor = SnbRed,

@@ -41,7 +41,7 @@ import com.example.mecca.dataClasses.UserEntity
         NoticeLocal::class
 
     ],
-    version = 53,
+    version = 54,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

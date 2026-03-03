@@ -25,29 +25,34 @@ import java.io.IOException
 
 class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: MetalDetectorConveyorCalibrationDAO) {
 
+    /**
+     * UPDATED: Uses property setters instead of a massive constructor call to avoid
+     * java.lang.VerifyError (register limit exceeded in large constructors).
+     */
     suspend fun insertNewCalibration(insert: NewCalibrationInsert) {
         val entity = MetalDetectorConveyorCalibrationLocal(
-            calibrationId = insert.calibrationId,
-            mapVersion = insert.mapVersion,
-            systemId = insert.systemId,
-            tempSystemId = insert.tempSystemId,
-            cloudSystemId = insert.cloudSystemId,
-            modelId = insert.modelId,
-            serialNumber = insert.serialNumber,
-            engineerId = insert.engineerId,
-            customerId = insert.customerId,
-            startDate = insert.startDate,
-            detectionSetting1label = insert.detectionSetting1label,
-            detectionSetting2label = insert.detectionSetting2label,
-            detectionSetting3label = insert.detectionSetting3label,
-            detectionSetting4label = insert.detectionSetting4label,
-            detectionSetting5label = insert.detectionSetting5label,
-            detectionSetting6label = insert.detectionSetting6label,
-            detectionSetting7label = insert.detectionSetting7label,
-            detectionSetting8label = insert.detectionSetting8label,
-            lastLocation = insert.lastLocation,
+            calibrationId = insert.calibrationId
+        ).apply {
+            mapVersion = insert.mapVersion
+            systemId = insert.systemId
+            tempSystemId = insert.tempSystemId
+            cloudSystemId = insert.cloudSystemId
+            modelId = insert.modelId
+            serialNumber = insert.serialNumber
+            engineerId = insert.engineerId
+            customerId = insert.customerId
+            startDate = insert.startDate
+            detectionSetting1label = insert.detectionSetting1label
+            detectionSetting2label = insert.detectionSetting2label
+            detectionSetting3label = insert.detectionSetting3label
+            detectionSetting4label = insert.detectionSetting4label
+            detectionSetting5label = insert.detectionSetting5label
+            detectionSetting6label = insert.detectionSetting6label
+            detectionSetting7label = insert.detectionSetting7label
+            detectionSetting8label = insert.detectionSetting8label
+            lastLocation = insert.lastLocation
             systemTypeId = insert.systemTypeId
-        )
+        }
 
         calibrationDao.insertOrUpdateCalibration(entity)
     }
@@ -71,7 +76,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
 
         for (cal in pending) {
             // CRITICAL: We don't upload if we don't have a Cloud ID yet.
-            // Machine sync must happen first!
             if (cal.cloudSystemId == 0) {
                 InAppLogger.d("Skipping cal ${cal.calibrationId}: No cloudSystemId yet.")
                 failed += "${cal.calibrationId} (Waiting for machine sync)"
@@ -79,7 +83,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
             }
 
             try {
-                // 1. RE-GENERATE the CSV to ensure it has the correct CloudSystemId
                 val csvFile = createCsvFile(context, cal.calibrationId)
                 
                 if (csvFile == null || !csvFile.exists()) {
@@ -87,7 +90,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                     continue
                 }
 
-                // 2. UPLOAD the fresh file
                 val success = CsvUploader.uploadCsvFile(
                     csvFile = csvFile,
                     apiService = apiService,
@@ -128,10 +130,14 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.sensitivityRequirementFerrous, row.sensitivityRequirementNonFerrous,
                 row.sensitivityRequirementStainless, row.sensitivityRequirementEngineerNotes,
                 row.sensitivityAccessRestriction, row.sensitivityAsFoundFerrous,
-                row.sensitivityAsFoundFerrousPeakSignal, row.sensitivityAsFoundNonFerrous,
-                row.sensitivityAsFoundNonFerrousPeakSignal, row.sensitivityAsFoundStainless,
-                row.sensitivityAsFoundStainlessPeakSignal, row.productPeakSignalAsFound,
-                row.sensitivityAsFoundEngineerNotes, row.sensitivityAsLeftFerrous,
+   //             row.sensitivityAsFoundFerrousPeakSignal,
+                row.sensitivityAsFoundNonFerrous,
+                //row.sensitivityAsFoundNonFerrousPeakSignal,
+                row.sensitivityAsFoundStainless,
+                //row.sensitivityAsFoundStainlessPeakSignal,
+                //row.productPeakSignalAsFound,
+                //row.sensitivityAsFoundEngineerNotes,
+                row.sensitivityAsLeftFerrous,
                 row.sampleCertificateNumberFerrous, row.detectRejectFerrousLeading,
                 row.detectRejectFerrousLeadingPeakSignal, row.detectRejectFerrousMiddle,
                 row.detectRejectFerrousMiddlePeakSignal, row.detectRejectFerrousTrailing,
@@ -281,16 +287,51 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
     }
 
     suspend fun updateSensitivitiesAsFound(update: SensitivitiesAsFoundUpdate) {
-        calibrationDao.updateSensitivitiesAsFound(
+        // Obsolete
+    }
+
+    suspend fun updateFerrousSensitivitiesAsFound(update: FerrousSensitivitiesAsFoundUpdate) {
+        calibrationDao.updateFerrousAsFound(
             sensitivityAsFoundFerrous = update.sensitivityAsFoundFerrous,
-            sensitivityAsFoundFerrousPeakSignal = update.sensitivityAsFoundFerrousPeakSignal,
-            sensitivityAsFoundNonFerrous = update.sensitivityAsFoundNonFerrous,
-            sensitivityAsFoundNonFerrousPeakSignal = update.sensitivityAsFoundNonFerrousPeakSignal,
-            sensitivityAsFoundStainless = update.sensitivityAsFoundStainless,
-            sensitivityAsFoundStainlessPeakSignal = update.sensitivityAsFoundStainlessPeakSignal,
-            productPeakSignalAsFound = update.productPeakSignalAsFound,
-            sensitivityAsFoundEngineerNotes = update.sensitivityAsFoundEngineerNotes,
+            sampleCertificateNumberAsFoundFerrous = update.sampleCertificateNumberAsFoundFerrous,
+            detectRejectAsFoundFerrousLeading = update.detectRejectAsFoundFerrousLeading,
+            detectRejectAsFoundFerrousLeadingPeakSignal = update.peakSignalAsFoundFerrousLeading,
+            detectRejectAsFoundFerrousMiddle = update.detectRejectAsFoundFerrousMiddle,
+            detectRejectAsFoundFerrousMiddlePeakSignal = update.peakSignalAsFoundFerrousMiddle,
+            detectRejectAsFoundFerrousTrailing = update.detectRejectAsFoundFerrousTrailing,
+            detectRejectAsFoundFerrousTrailingPeakSignal = update.peakSignalAsFoundFerrousTrailing,
+            ferrousAsFoundEngineerNotes = update.ferrousAsFoundEngineerNotes,
             calibrationId = update.calibrationId,
+        )
+    }
+
+    suspend fun updateNonFerrousSensitivitiesAsFound(update: NonFerrousSensitivitiesAsFoundUpdate) {
+        calibrationDao.updateNonFerrousAsFound(
+            sensitivityAsFoundNonFerrous = update.sensitivityAsFoundNonFerrous,
+            sampleCertificateNumberAsFoundNonFerrous = update.sampleCertificateNumberAsFoundNonFerrous,
+            detectRejectAsFoundNonFerrousLeading = update.detectRejectAsFoundNonFerrousLeading,
+            detectRejectAsFoundNonFerrousLeadingPeakSignal = update.peakSignalAsFoundNonFerrousLeading,
+            detectRejectAsFoundNonFerrousMiddle = update.detectRejectAsFoundNonFerrousMiddle,
+            detectRejectAsFoundNonFerrousMiddlePeakSignal = update.peakSignalAsFoundNonFerrousMiddle,
+            detectRejectAsFoundNonFerrousTrailing = update.detectRejectAsFoundNonFerrousTrailing,
+            detectRejectAsFoundNonFerrousTrailingPeakSignal = update.peakSignalAsFoundNonFerrousTrailing,
+            nonFerrousAsFoundEngineerNotes = update.nonFerrousAsFoundEngineerNotes,
+            calibrationId = update.calibrationId
+        )
+    }
+
+    suspend fun updateStainlessSensitivitiesAsFound(update: StainlessSensitivitiesAsFoundUpdate) {
+        calibrationDao.updateStainlessAsFound(
+            sensitivityAsFoundStainless = update.sensitivityAsFoundStainless,
+            sampleCertificateNumberAsFoundStainless = update.sampleCertificateNumberAsFoundStainless,
+            detectRejectAsFoundStainlessLeading = update.detectRejectAsFoundStainlessLeading,
+            detectRejectAsFoundStainlessLeadingPeakSignal = update.peakSignalAsFoundStainlessLeading,
+            detectRejectAsFoundStainlessMiddle = update.detectRejectAsFoundStainlessMiddle,
+            detectRejectAsFoundStainlessMiddlePeakSignal = update.peakSignalAsFoundStainlessMiddle,
+            detectRejectAsFoundStainlessTrailing = update.detectRejectAsFoundStainlessTrailing,
+            detectRejectAsFoundStainlessTrailingPeakSignal = update.peakSignalAsFoundStainlessTrailing,
+            stainlessAsFoundEngineerNotes = update.stainlessAsFoundEngineerNotes,
+            calibrationId = update.calibrationId
         )
     }
 

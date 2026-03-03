@@ -1,5 +1,7 @@
 package com.example.mecca.screens.service.mdCalibration
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
@@ -30,6 +33,7 @@ import com.example.mecca.ui.theme.ScrollableWithScrollbar
 fun CalMetalDetectorConveyorSensitivityRequirements(
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
+    val context = LocalContext.current
     val ferrous by viewModel.sensitivityRequirementFerrous
     val nonFerrous by viewModel.sensitivityRequirementNonFerrous
     val stainless by viewModel.sensitivityRequirementStainless
@@ -68,7 +72,7 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
                         AnimatedActionPill(
                             text = "Paste M&S Targets",
                             icon = Icons.Outlined.ContentPasteGo,
-                            onClick = { pasteMStargetSensitivities(viewModel) }
+                            onClick = { pasteMStargetSensitivities(context, viewModel) }
                         )
                     }
 
@@ -142,11 +146,14 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
     }
 }
 
-private fun pasteMStargetSensitivities(viewModel: CalibrationMetalDetectorConveyorViewModel) {
-    val data = viewModel.sensitivityData.value ?: return
+private fun pasteMStargetSensitivities(context: Context, viewModel: CalibrationMetalDetectorConveyorViewModel) {
+    val data = viewModel.sensitivityData.value
+    if (data == null) {
+        Toast.makeText(context, "⚠️ No M&S sensitivity targets found for this system.", Toast.LENGTH_SHORT).show()
+        return
+    }
 
     viewModel.setSensitivityRequirementFerrous(data.ferrousTargetMM.toString())
     viewModel.setSensitivityRequirementNonFerrous(data.nonFerrousTargetMM.toString())
     viewModel.setSensitivityRequirementStainless(data.stainless316TargetMM.toString())
 }
-

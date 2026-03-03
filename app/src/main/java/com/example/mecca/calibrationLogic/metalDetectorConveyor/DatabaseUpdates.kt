@@ -11,42 +11,6 @@ import java.time.format.DateTimeFormatter
  * ---------------------------------------------------------------
  *
  * This file exists to keep the ViewModel clean and sane.
- *
- * Every calibration "update" operation in the app follows the
- * same basic pattern:
- *
- *   1. Read a bunch of UI state values from the ViewModel
- *   2. Convert that state into a simple data object
- *   3. Pass that data object to the repository, which calls Room
- *
- * Previously, all of these steps were hard-coded inside the
- * 3000+ line ViewModel, which made the file impossible to read,
- * maintain, or safely modify.
- *
- * These small mapper functions:
- *
- *   • Group related update fields into clear data classes
- *   • Provide extension functions on the ViewModel that build
- *     those update objects cleanly
- *   • Centralise all calibration DB write logic in one place
- *   • Avoid repeating long parameter lists across the project
- *   • Make adding new fields or refactoring existing ones far
- *     easier (only update the mapper here)
- *
- * In short:
- *   The ViewModel should describe *what* is being updated.
- *   This file describes *how* the update data is constructed.
- *   The repository handles *where* it gets stored.
- *
- * If you’re reading this because something broke:
- *   – Check that the ViewModel imports the correct mapper
- *   – Check that the update payload matches the DAO call
- *   – Check the repository function for mismatched fields
- *
- * Otherwise, enjoy the fact that this logic is no longer buried
- * somewhere between 3000 lines of unrelated state handling.
- *
- * ---------------------------------------------------------------
  */
 
 
@@ -101,9 +65,6 @@ fun CalibrationMetalDetectorConveyorViewModel.toNewCalibrationInsert(): NewCalib
         lastLocation = lastLocation.value
     )
 }
-
-
-
 
 data class CalibrationStartUpdate(
     val newLocation: String,
@@ -240,10 +201,10 @@ fun CalibrationMetalDetectorConveyorViewModel.toDetectionSettingsAsFoundUpdate()
 }
 
 //-------------------------------------------------------------------------------------------------
-// SENSITIVITIES (AS FOUND)
+// SENSITIVITIES (AS FOUND) - Individual Screens
 //-------------------------------------------------------------------------------------------------
 
-
+// Grouped update kept for fallback/summary if needed, but individual ones below are primary
 data class SensitivitiesAsFoundUpdate(
     val sensitivityAsFoundFerrous: String,
     val sensitivityAsFoundFerrousPeakSignal: String,
@@ -272,10 +233,93 @@ fun CalibrationMetalDetectorConveyorViewModel.toSensitivitiesAsFoundUpdate()
     )
 }
 
-//-------------------------------------------------------------------------------------------------
-// FERROUS TEST RESULTS
-//-------------------------------------------------------------------------------------------------
+data class FerrousSensitivitiesAsFoundUpdate(
+    val sensitivityAsFoundFerrous: String,
+    val sampleCertificateNumberAsFoundFerrous: String,
+    val detectRejectAsFoundFerrousLeading: String,
+    val peakSignalAsFoundFerrousLeading: String,
+    val detectRejectAsFoundFerrousMiddle: String,
+    val peakSignalAsFoundFerrousMiddle: String,
+    val detectRejectAsFoundFerrousTrailing: String,
+    val peakSignalAsFoundFerrousTrailing: String,
+    val ferrousAsFoundEngineerNotes: String,
+    val calibrationId: String
+)
 
+fun CalibrationMetalDetectorConveyorViewModel.toFerrousAsFoundUpdate(): FerrousSensitivitiesAsFoundUpdate {
+    return FerrousSensitivitiesAsFoundUpdate(
+        sensitivityAsFoundFerrous = sensitivityAsFoundFerrous.value,
+        sampleCertificateNumberAsFoundFerrous = sampleCertificateNumberAsFoundFerrous.value,
+        detectRejectAsFoundFerrousLeading = detectRejectAsFoundFerrousLeading.value.toString(),
+        peakSignalAsFoundFerrousLeading = peakSignalAsFoundFerrousLeading.value,
+        detectRejectAsFoundFerrousMiddle = detectRejectAsFoundFerrousMiddle.value.toString(),
+        peakSignalAsFoundFerrousMiddle = peakSignalAsFoundFerrousMiddle.value,
+        detectRejectAsFoundFerrousTrailing = detectRejectAsFoundFerrousTrailing.value.toString(),
+        peakSignalAsFoundFerrousTrailing = peakSignalAsFoundFerrousTrailing.value,
+        ferrousAsFoundEngineerNotes = ferrousTestAsFoundEngineerNotes.value,
+        calibrationId = calibrationId.value
+    )
+}
+
+data class NonFerrousSensitivitiesAsFoundUpdate(
+    val sensitivityAsFoundNonFerrous: String,
+    val sampleCertificateNumberAsFoundNonFerrous: String,
+    val detectRejectAsFoundNonFerrousLeading: String,
+    val peakSignalAsFoundNonFerrousLeading: String,
+    val detectRejectAsFoundNonFerrousMiddle: String,
+    val peakSignalAsFoundNonFerrousMiddle: String,
+    val detectRejectAsFoundNonFerrousTrailing: String,
+    val peakSignalAsFoundNonFerrousTrailing: String,
+    val nonFerrousAsFoundEngineerNotes: String,
+    val calibrationId: String
+)
+
+fun CalibrationMetalDetectorConveyorViewModel.toNonFerrousAsFoundUpdate(): NonFerrousSensitivitiesAsFoundUpdate {
+    return NonFerrousSensitivitiesAsFoundUpdate(
+        sensitivityAsFoundNonFerrous = sensitivityAsFoundNonFerrous.value,
+        sampleCertificateNumberAsFoundNonFerrous = sampleCertificateNumberAsFoundNonFerrous.value,
+        detectRejectAsFoundNonFerrousLeading = detectRejectAsFoundNonFerrousLeading.value.toString(),
+        peakSignalAsFoundNonFerrousLeading = peakSignalAsFoundNonFerrousLeading.value,
+        detectRejectAsFoundNonFerrousMiddle = detectRejectAsFoundNonFerrousMiddle.value.toString(),
+        peakSignalAsFoundNonFerrousMiddle = peakSignalAsFoundNonFerrousMiddle.value,
+        detectRejectAsFoundNonFerrousTrailing = detectRejectAsFoundNonFerrousTrailing.value.toString(),
+        peakSignalAsFoundNonFerrousTrailing = peakSignalAsFoundNonFerrousTrailing.value,
+        nonFerrousAsFoundEngineerNotes = nonFerrousTestAsFoundEngineerNotes.value,
+        calibrationId = calibrationId.value
+    )
+}
+
+data class StainlessSensitivitiesAsFoundUpdate(
+    val sensitivityAsFoundStainless: String,
+    val sampleCertificateNumberAsFoundStainless: String,
+    val detectRejectAsFoundStainlessLeading: String,
+    val peakSignalAsFoundStainlessLeading: String,
+    val detectRejectAsFoundStainlessMiddle: String,
+    val peakSignalAsFoundStainlessMiddle: String,
+    val detectRejectAsFoundStainlessTrailing: String,
+    val peakSignalAsFoundStainlessTrailing: String,
+    val stainlessAsFoundEngineerNotes: String,
+    val calibrationId: String
+)
+
+fun CalibrationMetalDetectorConveyorViewModel.toStainlessAsFoundUpdate(): StainlessSensitivitiesAsFoundUpdate {
+    return StainlessSensitivitiesAsFoundUpdate(
+        sensitivityAsFoundStainless = sensitivityAsFoundStainless.value,
+        sampleCertificateNumberAsFoundStainless = sampleCertificateNumberAsFoundStainless.value,
+        detectRejectAsFoundStainlessLeading = detectRejectAsFoundStainlessLeading.value.toString(),
+        peakSignalAsFoundStainlessLeading = peakSignalAsFoundStainlessLeading.value,
+        detectRejectAsFoundStainlessMiddle = detectRejectAsFoundStainlessMiddle.value.toString(),
+        peakSignalAsFoundStainlessMiddle = peakSignalAsFoundStainlessMiddle.value,
+        detectRejectAsFoundStainlessTrailing = detectRejectAsFoundStainlessTrailing.value.toString(),
+        peakSignalAsFoundStainlessTrailing = peakSignalAsFoundStainlessTrailing.value,
+        stainlessAsFoundEngineerNotes = stainlessTestAsFoundEngineerNotes.value,
+        calibrationId = calibrationId.value
+    )
+}
+
+//-------------------------------------------------------------------------------------------------
+// AS LEFT TEST RESULTS
+//-------------------------------------------------------------------------------------------------
 
 data class FerrousResultUpdate(
     val sensitivityAsLeftFerrous: String,
@@ -291,9 +335,7 @@ data class FerrousResultUpdate(
     val calibrationId: String
 )
 
-fun CalibrationMetalDetectorConveyorViewModel.toFerrousResultUpdate()
-    : FerrousResultUpdate {
-
+fun CalibrationMetalDetectorConveyorViewModel.toFerrousResultUpdate(): FerrousResultUpdate {
     return FerrousResultUpdate(
         sensitivityAsLeftFerrous = sensitivityAsLeftFerrous.value,
         sampleCertificateNumberFerrous = sampleCertificateNumberFerrous.value,
@@ -400,9 +442,7 @@ data class DetectionSettingAsLeftUpdate(
     val calibrationId: String
 )
 
-fun CalibrationMetalDetectorConveyorViewModel.toDetectionSettingAsLeftUpdate()
-        : DetectionSettingAsLeftUpdate {
-
+fun CalibrationMetalDetectorConveyorViewModel.toDetectionSettingAsLeftUpdate(): DetectionSettingAsLeftUpdate {
     return DetectionSettingAsLeftUpdate(
         detectionSettingAsLeft1 = detectionSettingAsLeft1.value,
         detectionSettingAsLeft2 = detectionSettingAsLeft2.value,
@@ -746,7 +786,6 @@ fun CalibrationMetalDetectorConveyorViewModel.toSpeedSensorUpdate(): SpeedSensor
 data class DetectNotificationUpdate(
     val detectNotificationResult: String,
     val detectNotificationEngineerNotes: String,
-
     val detectNotificationTestPvResult: String,
     val calibrationId: String
 )
@@ -828,30 +867,6 @@ fun CalibrationMetalDetectorConveyorViewModel.toOperatorTestUpdate(): OperatorTe
     )
 }
 
-//data class ComplianceConfirmationUpdate(
-//    val sensitivityCompliance: String,
-//    val essentialRequirementCompliance: String,
-//    val failsafeCompliance: String,
-//    val bestSensitivityCompliance: String,
-//    val sensitivityRecommendations: String,
-//    val performanceValidationIssued: String,
-//    val calibrationId: String
-//)
-
-//fun CalibrationMetalDetectorConveyorViewModel.toComplianceConfirmationUpdate()
-//        : ComplianceConfirmationUpdate {
-//
-//    return ComplianceConfirmationUpdate(
-//        sensitivityCompliance = sensitivityCompliance.value.toString(),
-//        essentialRequirementCompliance = essentialRequirementCompliance.value.toString(),
-//        failsafeCompliance = failsafeCompliance.value.toString(),
-//        bestSensitivityCompliance = bestSensitivityCompliance.value.toString(),
-//        sensitivityRecommendations = sensitivityRecommendations.value,
-//        performanceValidationIssued = performanceValidationIssued.value.toString(),
-//        calibrationId = calibrationId.value
-//    )
-//}
-
 data class DetectionSettingLabelsUpdate(
     val detectionSetting1label: String,
     val detectionSetting2label: String,
@@ -894,45 +909,3 @@ fun CalibrationMetalDetectorConveyorViewModel.toCalibrationEndUpdate(): Calibrat
         calibrationId = calibrationId.value
     )
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
