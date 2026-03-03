@@ -88,12 +88,14 @@ fun AddNewMetalDetectorScreen(
 
     val scrollState = rememberScrollState()
 
-    LaunchedEffect(true) {
+    LaunchedEffect(Unit) {
 
         systemTypes = systemTypeRepository.getSystemTypesFromDb()
             .filter { it.systemType.contains("MD", ignoreCase = true) }
+            .sortedBy { it.systemType }
 
         mdModels = mdModelsRepository.getMdModelsFromDb()
+            .sortedBy { it.modelDescription }
     }
 
     val isFormValid by remember(
@@ -326,16 +328,16 @@ suspend fun createInCloud(
                 is FetchResult.Failure -> Log.e("NewMD", "Cloud sync failed: ${result.errorMessage}")
             }
             withContext(Dispatchers.Main) {
-                snackbar.showSnackbar("System added to cloud")
+                snackbar.showSnackbar("✅ System added to cloud")
                 navController.popBackStack()
             }
         } else {
-            withContext(Dispatchers.Main) { snackbar.showSnackbar("Failed to add system to cloud.") }
+            withContext(Dispatchers.Main) { snackbar.showSnackbar("❌ Failed to add system to cloud.") }
         }
     } catch (e: Exception) {
         Log.e("NewMD", "Cloud create failed", e)
         withContext(Dispatchers.Main) {
-            snackbar.showSnackbar("Failed to add system to cloud. Try again later.")
+            snackbar.showSnackbar("❌ Failed to add system to cloud. Try again later.")
         }
     }
 }
@@ -360,19 +362,17 @@ suspend fun createInLocal(
             apertureHeight = apertureHeight,
             systemTypeId = systemTypeId,
             modelId = modelId,
-            calibrationInterval = 0,
-            lastLocation = lastLocation
+            lastLocation = lastLocation,
+            calibrationInterval = 0
         )
-        Log.d("NewMD", "Local Room insert OK.")
         withContext(Dispatchers.Main) {
-            snackbar.showSnackbar("No network. System added locally.")
+            snackbar.showSnackbar("✅ System added locally (offline)")
             navController.popBackStack()
         }
     } catch (e: Exception) {
         Log.e("NewMD", "Local create failed", e)
         withContext(Dispatchers.Main) {
-            snackbar.showSnackbar("Failed to add system locally.")
+            snackbar.showSnackbar("❌ Failed to add system locally.")
         }
     }
 }
-

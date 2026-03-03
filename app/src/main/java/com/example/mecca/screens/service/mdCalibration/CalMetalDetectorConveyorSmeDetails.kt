@@ -1,15 +1,22 @@
 package com.example.mecca.screens.service.mdCalibration
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateSmePvResult
@@ -43,6 +50,19 @@ fun CalMetalDetectorConveyorSmeDetails(
 
     val smeName by viewModel.smeName
     val notes by viewModel.smeEngineerNotes
+
+    // Warning Logic
+    val ferReq = viewModel.sensitivityRequirementFerrous.value.replace(",", ".").toDoubleOrNull() ?: 0.0
+    val ferAchieved = ferrousSize.replace(",", ".").toDoubleOrNull() ?: 0.0
+    val ferWarning = ferAchieved > ferReq && ferAchieved > 0.0 && ferReq > 0.0
+
+    val nferReq = viewModel.sensitivityRequirementNonFerrous.value.replace(",", ".").toDoubleOrNull() ?: 0.0
+    val nferAchieved = nonFerrousSize.replace(",", ".").toDoubleOrNull() ?: 0.0
+    val nferWarning = nferAchieved > nferReq && nferAchieved > 0.0 && nferReq > 0.0
+
+    val ssReq = viewModel.sensitivityRequirementStainless.value.replace(",", ".").toDoubleOrNull() ?: 0.0
+    val ssAchieved = stainlessSize.replace(",", ".").toDoubleOrNull() ?: 0.0
+    val ssWarning = ssAchieved > ssReq && ssAchieved > 0.0 && ssReq > 0.0
 
     // Next enabled
     val isNextStepEnabled = when (operatorTestWitnessed) {
@@ -152,6 +172,10 @@ fun CalMetalDetectorConveyorSmeDetails(
                         secondMaxLength = 12
                     )
 
+                    if (ferWarning) {
+                        SensitivityWarningBox(ferAchieved, ferReq)
+                    }
+
                     FormSpacer()
 
                     LabeledTwoTextInputsWithHelp(
@@ -176,6 +200,10 @@ fun CalMetalDetectorConveyorSmeDetails(
                         secondMaxLength = 12
                     )
 
+                    if (nferWarning) {
+                        SensitivityWarningBox(nferAchieved, nferReq)
+                    }
+
                     FormSpacer()
 
                     LabeledTwoTextInputsWithHelp(
@@ -199,6 +227,10 @@ fun CalMetalDetectorConveyorSmeDetails(
                         firstMaxLength = 4,
                         secondMaxLength = 12
                     )
+
+                    if (ssWarning) {
+                        SensitivityWarningBox(ssAchieved, ssReq)
+                    }
 
                     FormSpacer()
 
@@ -282,5 +314,23 @@ fun CalMetalDetectorConveyorSmeDetails(
                 Spacer(modifier = Modifier.height(60.dp))
             }
         }
+    }
+}
+
+@Composable
+fun SensitivityWarningBox(achieved: Double, required: Double) {
+    Spacer(Modifier.height(4.dp))
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.errorContainer, MaterialTheme.shapes.small)
+            .padding(8.dp)
+    ) {
+        Text(
+            text = "⚠️ Achieved sensitivity ($achieved mm) is worse than Customer Requirement ($required mm).",
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold
+        )
     }
 }

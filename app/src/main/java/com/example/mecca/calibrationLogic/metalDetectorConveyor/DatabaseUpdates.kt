@@ -201,10 +201,9 @@ fun CalibrationMetalDetectorConveyorViewModel.toDetectionSettingsAsFoundUpdate()
 }
 
 //-------------------------------------------------------------------------------------------------
-// SENSITIVITIES (AS FOUND) - Individual Screens
+// SENSITIVITIES (AS FOUND)
 //-------------------------------------------------------------------------------------------------
 
-// Grouped update kept for fallback/summary if needed, but individual ones below are primary
 data class SensitivitiesAsFoundUpdate(
     val sensitivityAsFoundFerrous: String,
     val sensitivityAsFoundFerrousPeakSignal: String,
@@ -233,6 +232,10 @@ fun CalibrationMetalDetectorConveyorViewModel.toSensitivitiesAsFoundUpdate()
     )
 }
 
+//-------------------------------------------------------------------------------------------------
+// FERROUS AS FOUND TEST RESULTS
+//-------------------------------------------------------------------------------------------------
+
 data class FerrousSensitivitiesAsFoundUpdate(
     val sensitivityAsFoundFerrous: String,
     val sampleCertificateNumberAsFoundFerrous: String,
@@ -246,7 +249,9 @@ data class FerrousSensitivitiesAsFoundUpdate(
     val calibrationId: String
 )
 
-fun CalibrationMetalDetectorConveyorViewModel.toFerrousAsFoundUpdate(): FerrousSensitivitiesAsFoundUpdate {
+fun CalibrationMetalDetectorConveyorViewModel.toFerrousAsFoundUpdate()
+        : FerrousSensitivitiesAsFoundUpdate {
+
     return FerrousSensitivitiesAsFoundUpdate(
         sensitivityAsFoundFerrous = sensitivityAsFoundFerrous.value,
         sampleCertificateNumberAsFoundFerrous = sampleCertificateNumberAsFoundFerrous.value,
@@ -261,6 +266,10 @@ fun CalibrationMetalDetectorConveyorViewModel.toFerrousAsFoundUpdate(): FerrousS
     )
 }
 
+//-------------------------------------------------------------------------------------------------
+// NON-FERROUS AS FOUND TEST RESULTS
+//-------------------------------------------------------------------------------------------------
+
 data class NonFerrousSensitivitiesAsFoundUpdate(
     val sensitivityAsFoundNonFerrous: String,
     val sampleCertificateNumberAsFoundNonFerrous: String,
@@ -274,7 +283,9 @@ data class NonFerrousSensitivitiesAsFoundUpdate(
     val calibrationId: String
 )
 
-fun CalibrationMetalDetectorConveyorViewModel.toNonFerrousAsFoundUpdate(): NonFerrousSensitivitiesAsFoundUpdate {
+fun CalibrationMetalDetectorConveyorViewModel.toNonFerrousAsFoundUpdate()
+        : NonFerrousSensitivitiesAsFoundUpdate {
+
     return NonFerrousSensitivitiesAsFoundUpdate(
         sensitivityAsFoundNonFerrous = sensitivityAsFoundNonFerrous.value,
         sampleCertificateNumberAsFoundNonFerrous = sampleCertificateNumberAsFoundNonFerrous.value,
@@ -289,6 +300,10 @@ fun CalibrationMetalDetectorConveyorViewModel.toNonFerrousAsFoundUpdate(): NonFe
     )
 }
 
+//-------------------------------------------------------------------------------------------------
+// STAINLESS AS FOUND TEST RESULTS
+//-------------------------------------------------------------------------------------------------
+
 data class StainlessSensitivitiesAsFoundUpdate(
     val sensitivityAsFoundStainless: String,
     val sampleCertificateNumberAsFoundStainless: String,
@@ -302,7 +317,9 @@ data class StainlessSensitivitiesAsFoundUpdate(
     val calibrationId: String
 )
 
-fun CalibrationMetalDetectorConveyorViewModel.toStainlessAsFoundUpdate(): StainlessSensitivitiesAsFoundUpdate {
+fun CalibrationMetalDetectorConveyorViewModel.toStainlessAsFoundUpdate()
+        : StainlessSensitivitiesAsFoundUpdate {
+
     return StainlessSensitivitiesAsFoundUpdate(
         sensitivityAsFoundStainless = sensitivityAsFoundStainless.value,
         sampleCertificateNumberAsFoundStainless = sampleCertificateNumberAsFoundStainless.value,
@@ -317,9 +334,11 @@ fun CalibrationMetalDetectorConveyorViewModel.toStainlessAsFoundUpdate(): Stainl
     )
 }
 
+
 //-------------------------------------------------------------------------------------------------
-// AS LEFT TEST RESULTS
+// FERROUS TEST RESULTS
 //-------------------------------------------------------------------------------------------------
+
 
 data class FerrousResultUpdate(
     val sensitivityAsLeftFerrous: String,
@@ -335,7 +354,9 @@ data class FerrousResultUpdate(
     val calibrationId: String
 )
 
-fun CalibrationMetalDetectorConveyorViewModel.toFerrousResultUpdate(): FerrousResultUpdate {
+fun CalibrationMetalDetectorConveyorViewModel.toFerrousResultUpdate()
+    : FerrousResultUpdate {
+
     return FerrousResultUpdate(
         sensitivityAsLeftFerrous = sensitivityAsLeftFerrous.value,
         sampleCertificateNumberFerrous = sampleCertificateNumberFerrous.value,
@@ -442,7 +463,9 @@ data class DetectionSettingAsLeftUpdate(
     val calibrationId: String
 )
 
-fun CalibrationMetalDetectorConveyorViewModel.toDetectionSettingAsLeftUpdate(): DetectionSettingAsLeftUpdate {
+fun CalibrationMetalDetectorConveyorViewModel.toDetectionSettingAsLeftUpdate()
+        : DetectionSettingAsLeftUpdate {
+
     return DetectionSettingAsLeftUpdate(
         detectionSettingAsLeft1 = detectionSettingAsLeft1.value,
         detectionSettingAsLeft2 = detectionSettingAsLeft2.value,
@@ -786,6 +809,7 @@ fun CalibrationMetalDetectorConveyorViewModel.toSpeedSensorUpdate(): SpeedSensor
 data class DetectNotificationUpdate(
     val detectNotificationResult: String,
     val detectNotificationEngineerNotes: String,
+
     val detectNotificationTestPvResult: String,
     val calibrationId: String
 )
@@ -867,6 +891,30 @@ fun CalibrationMetalDetectorConveyorViewModel.toOperatorTestUpdate(): OperatorTe
     )
 }
 
+//data class ComplianceConfirmationUpdate(
+//    val sensitivityCompliance: String,
+//    val essentialRequirementCompliance: String,
+//    val failsafeCompliance: String,
+//    val bestSensitivityCompliance: String,
+//    val sensitivityRecommendations: String,
+//    val performanceValidationIssued: String,
+//    val calibrationId: String
+//)
+
+//fun CalibrationMetalDetectorConveyorViewModel.toComplianceConfirmationUpdate()
+//        : ComplianceConfirmationUpdate {
+//
+//    return ComplianceConfirmationUpdate(
+//        sensitivityCompliance = sensitivityCompliance.value.toString(),
+//        essentialRequirementCompliance = essentialRequirementCompliance.value.toString(),
+//        failsafeCompliance = failsafeCompliance.value.toString(),
+//        bestSensitivityCompliance = bestSensitivityCompliance.value.toString(),
+//        sensitivityRecommendations = sensitivityRecommendations.value,
+//        performanceValidationIssued = performanceValidationIssued.value.toString(),
+//        calibrationId = calibrationId.value
+//    )
+//}
+
 data class DetectionSettingLabelsUpdate(
     val detectionSetting1label: String,
     val detectionSetting2label: String,
@@ -909,3 +957,45 @@ fun CalibrationMetalDetectorConveyorViewModel.toCalibrationEndUpdate(): Calibrat
         calibrationId = calibrationId.value
     )
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

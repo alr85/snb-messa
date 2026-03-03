@@ -97,18 +97,22 @@ fun CalMetalDetectorConveyorSystemDetails(
             helpText = "Enter the metal test sample certificate number, usually located on the test piece",
         )
 
-        val options = listOf(
-            "Alarm Belt Stop",
-            "Air Blast",
-            "Air Kicker",
-            "Air Divert Arm",
-            "Air Divert Flap",
-            "Electric Divert Arm",
-            "Retract Band",
-            "Reverse Belt",
-            "Lift or Drop Table",
-            "Alarm only",
-            "Other")
+        val options = remember {
+            listOf(
+                "Alarm Belt Stop",
+                "Air Blast",
+                "Air Kicker",
+                "Air Divert Arm",
+                "Air Divert Flap",
+                "Electric Divert Arm",
+                "Retract Band",
+                "Reverse Belt",
+                "Lift or Drop Table",
+                "Alarm only",
+                "Double Bag",
+                "Other"
+            ).sorted()
+        }
 
         var selectedOption by remember { mutableStateOf<String?>(null) }
 

@@ -316,7 +316,8 @@ fun CalMetalDetectorConveyorSummaryDetails(
             Section(title = "Infeed PEC") {
                 SummaryItem(label = "Fitted", value = viewModel.infeedSensorFitted.value.toString())
                 SummaryItem(label = "Detail", value = viewModel.infeedSensorDetail.value)
-                SummaryItem(label = "Test Method", value = "${viewModel.infeedSensorTestMethod.value} ${viewModel.infeedSensorTestMethodOther.value}")
+                SummaryItem(label = "Test Method", value = "${viewModel.infeedSensorTestMethod.value} ")
+                SummaryItem(label = "Test Method (Other)", value = "${viewModel.infeedSensorTestMethodOther.value} ")
                 SummaryItem(label = "Test Result", value = infeedSensorTestResult.joinToString(", "))
                 SummaryItem(label = "Latched", value = viewModel.infeedSensorLatched.value.toString())
                 SummaryItem(label = "Critical", value = viewModel.infeedSensorCR.value.toString())
@@ -334,7 +335,8 @@ fun CalMetalDetectorConveyorSummaryDetails(
             Section(title = "Reject Confirm PEC") {
                 SummaryItem(label = "Fitted", value = viewModel.rejectConfirmSensorFitted.value.toString())
                 SummaryItem(label = "Detail", value = viewModel.rejectConfirmSensorDetail.value)
-                SummaryItem(label = "Test Method", value = "${viewModel.rejectConfirmSensorTestMethod.value} ${viewModel.rejectConfirmSensorTestMethodOther.value}")
+                SummaryItem(label = "Test Method", value = viewModel.rejectConfirmSensorTestMethod.value)
+                SummaryItem(label = "Test Method (Other)", value = viewModel.rejectConfirmSensorTestMethodOther.value)
                 SummaryItem(label = "Test Result", value = rejectConfirmSensorTestResult.joinToString(", "))
                 SummaryItem(label = "Stop Position", value = viewModel.rejectConfirmSensorStopPosition.value)
                 SummaryItem(label = "Latched", value = viewModel.rejectConfirmSensorLatched.value.toString())
