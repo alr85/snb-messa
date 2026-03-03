@@ -35,21 +35,35 @@ fun CalMetalDetectorConveyorConveyorDetails(
     val rejectDevice by viewModel.rejectDevice
     val rejectDeviceOther by viewModel.rejectDeviceOther
     val conveyorDetailsEngineerNotes by viewModel.conveyorDetailsEngineerNotes
+    val isConveyor by viewModel.isConveyor
 
     // Validation
-    val isNextStepEnabled =
+    val isNextStepEnabled = if (isConveyor) {
         infeedBeltHeight.isNotBlank() &&
                 outfeedBeltHeight.isNotBlank() &&
                 conveyorLength.isNotBlank() &&
                 beltSpeed.isNotBlank() &&
+                conveyorHanding.isNotBlank() &&
                 rejectDevice.isNotBlank() &&
                 (rejectDevice != "Other" || rejectDeviceOther.isNotBlank())
+    } else {
+        rejectDevice.isNotBlank() &&
+                (rejectDevice != "Other" || rejectDeviceOther.isNotBlank())
+    }
 
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
     val rejectOptions = remember {
+        if (!isConveyor) listOf(
+            "Pipeline Valve",
+            "Divert Flap",
+            "Double bag",
+            "Alarm Only",
+            "Other"
+        ).sorted()
+        else
         listOf(
             "Alarm Belt Stop",
             "Air Blast",
@@ -61,7 +75,7 @@ fun CalMetalDetectorConveyorConveyorDetails(
             "Reverse Belt",
             "Lift or Drop Table",
             "Alarm only",
-            "Other")
+            "Other").sorted()
     }
 
     val handingOptions = remember {
@@ -70,78 +84,81 @@ fun CalMetalDetectorConveyorConveyorDetails(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        CalibrationHeader("Conveyor Details")
+        CalibrationHeader(if(isConveyor) "Conveyor Details" else "System Details")
 
         // Scrollable area with scrollbar
         ScrollableWithScrollbar(
             modifier = Modifier
                 .fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
-            // if you want it red via theme:
-            // scrollbarColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+
         ) {
             Column {
-                LabeledTextFieldWithHelp(
-                    label = "In-feed Belt Height (mm)",
-                    value = infeedBeltHeight,
-                    onValueChange = viewModel::setInfeedBeltHeight,
-                    helpText = "Distance from floor to belt on infeed end.",
-                    keyboardType = KeyboardType.Number,
-                    maxLength = 4,
-                    transformInput = InputTransforms.digitsOnly,
-                    showInputLabel = false
-                )
 
-                FormSpacer()
+                if (isConveyor) {
+                    LabeledTextFieldWithHelp(
+                        label = "In-feed Belt Height (mm)",
+                        value = infeedBeltHeight,
+                        onValueChange = viewModel::setInfeedBeltHeight,
+                        helpText = "Distance from floor to belt on infeed end.",
+                        keyboardType = KeyboardType.Number,
+                        maxLength = 4,
+                        transformInput = InputTransforms.digitsOnly,
+                        showInputLabel = false
+                    )
 
-                LabeledTextFieldWithHelp(
-                    label = "Out-feed Belt Height (mm)",
-                    value = outfeedBeltHeight,
-                    onValueChange = viewModel::setOutfeedBeltHeight,
-                    helpText = "Distance from floor to belt on outfeed end.",
-                    keyboardType = KeyboardType.Number,
-                    maxLength = 4,
-                    transformInput = InputTransforms.digitsOnly,
-                    showInputLabel = false
-                )
+                    FormSpacer()
 
-                FormSpacer()
+                    LabeledTextFieldWithHelp(
+                        label = "Out-feed Belt Height (mm)",
+                        value = outfeedBeltHeight,
+                        onValueChange = viewModel::setOutfeedBeltHeight,
+                        helpText = "Distance from floor to belt on outfeed end.",
+                        keyboardType = KeyboardType.Number,
+                        maxLength = 4,
+                        transformInput = InputTransforms.digitsOnly,
+                        showInputLabel = false
+                    )
 
-                LabeledTextFieldWithHelp(
-                    label = "Conveyor Length (mm)",
-                    value = conveyorLength,
-                    onValueChange = viewModel::setConveyorLength,
-                    helpText = "Enter base length (floor space) for inclined conveyors.",
-                    keyboardType = KeyboardType.Number,
-                    maxLength = 5,
-                    transformInput = InputTransforms.digitsOnly,
-                    showInputLabel = false
-                )
+                    FormSpacer()
 
-                FormSpacer()
+                    LabeledTextFieldWithHelp(
+                        label = "Conveyor Length (mm)",
+                        value = conveyorLength,
+                        onValueChange = viewModel::setConveyorLength,
+                        helpText = "Enter base length (floor space) for inclined conveyors.",
+                        keyboardType = KeyboardType.Number,
+                        maxLength = 5,
+                        transformInput = InputTransforms.digitsOnly,
+                        showInputLabel = false
+                    )
 
-                LabeledTextFieldWithHelp(
-                    label = "Belt Speed (m/m)",
-                    value = beltSpeed,
-                    onValueChange = viewModel::setBeltSpeed,
-                    helpText = "Measured using a tachometer.",
-                    keyboardType = KeyboardType.Number,
-                    maxLength = 3,
-                    transformInput = InputTransforms.digitsOnly,
-                    showInputLabel = false
-                )
+                    FormSpacer()
 
-                FormSpacer()
+                    LabeledTextFieldWithHelp(
+                        label = "Belt Speed (m/m)",
+                        value = beltSpeed,
+                        onValueChange = viewModel::setBeltSpeed,
+                        helpText = "Measured using a tachometer.",
+                        keyboardType = KeyboardType.Number,
+                        maxLength = 3,
+                        transformInput = InputTransforms.digitsOnly,
+                        showInputLabel = false
+                    )
 
-                LabeledDropdownWithHelp(
-                    label = "Conveyor Handing",
-                    options = handingOptions,
-                    selectedOption = conveyorHanding,
-                    onSelectionChange = viewModel::setConveyorHanding,
-                    helpText = "Select left-to-right or right-to-left orientation."
-                )
+                    FormSpacer()
 
-                FormSpacer()
+                    LabeledDropdownWithHelp(
+                        label = "Conveyor Handing",
+                        options = handingOptions,
+                        selectedOption = conveyorHanding,
+                        onSelectionChange = viewModel::setConveyorHanding,
+                        helpText = "Select left-to-right or right-to-left orientation."
+                    )
+
+                    FormSpacer()
+                }
+
 
                 LabeledDropdownWithHelp(
                     label = "Reject System",

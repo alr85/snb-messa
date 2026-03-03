@@ -28,14 +28,21 @@ fun CalMetalDetectorConveyorProductDetails(
     val width by viewModel.productWidth
     val height by viewModel.productHeight
     val notes by viewModel.productDetailsEngineerNotes
+    val isConveyor by viewModel.isConveyor
 
-    val isNextStepEnabled =
+
+    val isNextStepEnabled = if (isConveyor) {
         description.isNotBlank() &&
                 libraryRef.isNotBlank() &&
                 libraryNumber.isNotBlank() &&
                 length.isNotBlank() &&
                 width.isNotBlank() &&
                 height.isNotBlank()
+    } else {
+        description.isNotBlank() &&
+                libraryRef.isNotBlank() &&
+                libraryNumber.isNotBlank()
+    }
 
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
@@ -86,43 +93,47 @@ fun CalMetalDetectorConveyorProductDetails(
 
                 FormSpacer()
 
-                LabeledTextFieldWithHelp(
-                    label = "Product Length (mm)",
-                    value = length,
-                    onValueChange = viewModel::setProductLength,
-                    helpText = "Enter the length of the product in mm.",
-                    keyboardType = KeyboardType.Number,
-                    maxLength = 3,
-                    showInputLabel = false
-                )
+                if (isConveyor) {
+                    LabeledTextFieldWithHelp(
+                        label = "Product Length (mm)",
+                        value = length,
+                        onValueChange = viewModel::setProductLength,
+                        helpText = "Enter the length of the product in mm.",
+                        keyboardType = KeyboardType.Number,
+                        maxLength = 3,
+                        showInputLabel = false
+                    )
 
-                FormSpacer()
+                    FormSpacer()
 
-                LabeledTextFieldWithHelp(
-                    label = "Product Width (mm)",
-                    value = width,
-                    onValueChange = viewModel::setProductWidth,
-                    helpText = "Enter the width of the product in mm.",
-                    keyboardType = KeyboardType.Number,
-                    maxLength = 3,
-                    showInputLabel = false
-                )
+                    LabeledTextFieldWithHelp(
+                        label = "Product Width (mm)",
+                        value = width,
+                        onValueChange = viewModel::setProductWidth,
+                        helpText = "Enter the width of the product in mm.",
+                        keyboardType = KeyboardType.Number,
+                        maxLength = 3,
+                        showInputLabel = false
+                    )
 
-                FormSpacer()
+                    FormSpacer()
 
-                LabeledTextFieldWithHelp(
-                    label = "Product Height (mm)",
-                    value = height,
-                    onValueChange = viewModel::setProductHeight,
-                    helpText = "Enter the height of the product in mm. Required for PV calibration.",
-                    keyboardType = KeyboardType.Number,
-                    // PV required => height is mandatory => do NOT allow N/A toggle
-                    isNAToggleEnabled = !viewModel.pvRequired.value,
-                    maxLength = 3,
-                    showInputLabel = false
-                )
+                    LabeledTextFieldWithHelp(
+                        label = "Product Height (mm)",
+                        value = height,
+                        onValueChange = viewModel::setProductHeight,
+                        helpText = "Enter the height of the product in mm. Required for PV calibration.",
+                        keyboardType = KeyboardType.Number,
+                        // PV required => height is mandatory => do NOT allow N/A toggle
+                        isNAToggleEnabled = !viewModel.pvRequired.value,
+                        maxLength = 3,
+                        showInputLabel = false
+                    )
 
-                FormSpacer()
+                    FormSpacer()
+                }
+
+
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Comments",

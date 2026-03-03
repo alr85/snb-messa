@@ -982,6 +982,8 @@ class CalibrationMetalDetectorConveyorViewModel(
         viewModelScope.launch {
             calibrationRepository.updateCalibrationStart(update)
         }
+
+        refreshSensitivities()
     }
 
     fun updateSensitivityRequirements() {
@@ -1438,6 +1440,14 @@ class CalibrationMetalDetectorConveyorViewModel(
         _productWidth.value = newWidth
     }
 
+    private val _isConveyor = mutableStateOf(true)
+    val isConveyor: State<Boolean> = _isConveyor
+
+    // Function to update product height
+    fun setIsConveyor(value: Boolean) {
+        _isConveyor.value = value
+    }
+
     private val _productHeight = mutableStateOf("")
     val productHeight: State<String> = _productHeight
 
@@ -1455,14 +1465,17 @@ class CalibrationMetalDetectorConveyorViewModel(
 
                 1 -> {
                     InAppLogger.d("System type = 1, getting sensitivities by product height...")
+                    setIsConveyor(true)
                     val h = productHeight.value.toDoubleOrNull()
                     InAppLogger.d("Height = $h")
                     if (h == null) null
                     else retailerSensitivitiesRepo.getSensitivitiesByHeight(h)
+
                 }
 
                 2 -> {
                     InAppLogger.d("System type = 2, getting sensitivities by aperture height...")
+                    setIsConveyor(false)
                     val aperture = system.apertureHeight.toDouble()
                     InAppLogger.d("Aperture = $aperture")
                     retailerSensitivitiesRepo
@@ -1471,6 +1484,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
                 3 -> {
                     InAppLogger.d("System type = 3, getting sensitivities by aperture height...")
+                    setIsConveyor(true)
                     val aperture = system.apertureHeight.toDouble()
                     InAppLogger.d("Aperture = $aperture")
                     retailerSensitivitiesRepo
