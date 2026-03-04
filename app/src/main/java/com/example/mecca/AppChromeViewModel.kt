@@ -114,6 +114,27 @@ class AppChromeViewModel : ViewModel() {
                 showMenu = false
             )
 
+            route == "checkweigherSpeedCalculator" -> TopBarState(
+                title = "Speed Calculator",
+                showBack = true,
+                showCall = false,
+                showMenu = false
+            )
+
+            route == "msSensitivities" -> TopBarState(
+                title = "M&S Sensitivities",
+                showBack = true,
+                showCall = false,
+                showMenu = false
+            )
+
+            route == "mdFailsafes" -> TopBarState(
+                title = "MD Failsafes",
+                showBack = true,
+                showCall = false,
+                showMenu = false
+            )
+
 
             else -> TopBarState()
         }

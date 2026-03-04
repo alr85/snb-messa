@@ -20,17 +20,19 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.ListAlt
+import androidx.compose.material.icons.automirrored.filled.Rule
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -38,16 +40,19 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.mecca.PreferencesHelper
 import com.example.mecca.UserViewModel
-import com.example.mecca.util.SyncPreferences
+import com.example.mecca.ui.theme.SnbDarkGrey
+import com.example.mecca.ui.theme.SnbRed
 import kotlin.system.exitProcess
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,57 +63,50 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     val showDialog = remember { mutableStateOf(false) }
-    val syncPrefs = remember { SyncPreferences(context) }
 
-    var isAutoSyncEnabled by remember {
-        mutableStateOf(syncPrefs.isAutoSyncEnabled())
-    }
-
-    val settingsItems = remember {
+    val toolItems = remember {
         listOf(
-            SettingItem("My Calibrations"),
-            SettingItem("Database Sync"),
-            SettingItem("Auto Sync", isSwitch = true),
-            SettingItem("Checkweigher Accuracy Test"),
-            SettingItem("Debug Logs"),
-            SettingItem("About App"),
-            SettingItem("Logout")
+            SettingItem("Checkweigher Accuracy Test", Icons.Default.Calculate, "checkweigherAccuracy"),
+            SettingItem("Checkweigher Speed Calculator", Icons.Default.Speed, "checkweigherSpeedCalculator"),
+            SettingItem("M&S MD Sensitivities", Icons.AutoMirrored.Filled.Rule, "msSensitivities"),
+            SettingItem("MD Failsafes", Icons.Default.Shield, "mdFailsafes")
         )
     }
 
+    val appManagementItems = remember {
+        listOf(
+            SettingItem("My Calibrations", Icons.Filled.EditNote, "myCalibrations"),
+            SettingItem("Database Sync", Icons.Default.CloudSync, "databaseSync"),
+            SettingItem("Debug Logs", Icons.AutoMirrored.Filled.ListAlt, "logsScreen"),
+            SettingItem("About App", Icons.Default.Info, "aboutApp"),
+            SettingItem("Logout", Icons.Default.Refresh, "LOGOUT_TRIGGER")
+        )
+    }
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White),
-
-            contentPadding = PaddingValues(
-                top = 12.dp,
-                bottom = 24.dp)
-
-        ) {
-
-
-            items(settingsItems) { setting ->
-                if (setting.isSwitch) {
-                    SettingSwitchRow(
-                        name = setting.name,
-                        isChecked = isAutoSyncEnabled,
-                        onCheckedChange = {
-                            isAutoSyncEnabled = it
-                            syncPrefs.setAutoSyncEnabled(it)
-                        }
-                    )
-                } else {
-                    SettingRow(
-                        setting = setting,
-                        navController = navController,
-                        showDialog = showDialog
-                    )
-                }
-            }
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White),
+        contentPadding = PaddingValues(bottom = 32.dp)
+    ) {
+        // --- TOOLS SECTION ---
+        item {
+            SettingsHeader("Support Tools")
+        }
+        items(toolItems) { item ->
+            SettingRow(item, navController, showDialog)
         }
 
+        item { Spacer(Modifier.height(16.dp)) }
+
+        // --- MANAGEMENT SECTION ---
+        item {
+            SettingsHeader("App Management")
+        }
+        items(appManagementItems) { item ->
+            SettingRow(item, navController, showDialog)
+        }
+    }
 
     if (showDialog.value) {
         LogoutConfirmationDialog(
@@ -116,9 +114,6 @@ fun SettingsScreen(
                 userViewModel.loginStatus.value = false
                 userViewModel.syncStatus.value = false
                 PreferencesHelper.clearCredentials(context)
-
-                Log.d("LoginDebug", "Credentials cleared")
-
                 (context as? ComponentActivity)?.apply {
                     finishAffinity()
                     exitProcess(0)
@@ -129,55 +124,54 @@ fun SettingsScreen(
     }
 }
 
+@Composable
+private fun SettingsHeader(title: String) {
+    Text(
+        text = title.uppercase(),
+        style = MaterialTheme.typography.labelLarge,
+        color = SnbRed,
+        fontWeight = FontWeight.Bold,
+        letterSpacing = 1.sp,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFFF5F5F5))
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+    )
+}
 
 @Composable
 fun SettingRow(
-    setting: SettingItem,
+    item: SettingItem,
     navController: NavHostController,
     showDialog: MutableState<Boolean>
 ) {
-    val icon = when (setting.name) {
-        "Database Sync" -> Icons.Default.CloudSync
-        "About App" -> Icons.Default.Info
-        "My Calibrations" -> Icons.Filled.EditNote
-        "Debug Logs" -> Icons.AutoMirrored.Filled.ListAlt
-        "Logout" -> Icons.Default.Refresh
-        "Checkweigher Accuracy Test" -> Icons.Default.Calculate
-        "Auto Sync" -> Icons.Default.Refresh
-        else -> Icons.Filled.Settings
-    }
-
     Column {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    when (setting.name) {
-                        "Database Sync" -> navController.navigate("databaseSync")
-                        "About App" -> navController.navigate("aboutApp")
-                        "My Calibrations" -> navController.navigate("myCalibrations")
-                        "Debug Logs" -> navController.navigate("logsScreen")
-                        "Checkweigher Accuracy Test" -> navController.navigate("checkweigherAccuracy")
-                        "Logout" -> showDialog.value = true
-                        else -> navController.navigate("databaseSync")
+                    if (item.route == "LOGOUT_TRIGGER") {
+                        showDialog.value = true
+                    } else {
+                        navController.navigate(item.route)
                     }
                 }
-                .padding(horizontal = 16.dp, vertical = 16.dp),
+                .padding(horizontal = 16.dp, vertical = 18.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = icon,
+                imageVector = item.icon,
                 contentDescription = null,
                 modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.onSurface
+                tint = SnbDarkGrey
             )
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Text(
-                text = setting.name,
+                text = item.name,
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface
+                color = Color.Black
             )
 
             Spacer(modifier = Modifier.weight(1f))
@@ -185,74 +179,25 @@ fun SettingRow(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
-                modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                modifier = Modifier.size(20.dp),
+                tint = Color.Gray
             )
         }
 
-        // Divider (use theme, not raw gray)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 56.dp, end = 16.dp) // inset so it aligns after the icon
-                .height(1.dp)
-                .background(MaterialTheme.colorScheme.outlineVariant)
-        )
-    }
-}
-
-@Composable
-fun SettingSwitchRow(
-    name: String,
-    isChecked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Column {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.Settings,
-                contentDescription = null,
-                modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.onSurface
-            )
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Text(
-                text = name,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Switch(
-                checked = isChecked,
-                onCheckedChange = onCheckedChange
-            )
-        }
-
-        // Divider
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 56.dp, end = 16.dp)
                 .height(1.dp)
-                .background(MaterialTheme.colorScheme.outlineVariant)
+                .background(Color(0xFFEEEEEE))
         )
     }
 }
 
-
 data class SettingItem(
     val name: String,
-    val isSwitch: Boolean = false, // true for switch, false for regular click items
-    val isChecked: Boolean = false // Used for switch settings
+    val icon: ImageVector,
+    val route: String
 )
 
 @Composable

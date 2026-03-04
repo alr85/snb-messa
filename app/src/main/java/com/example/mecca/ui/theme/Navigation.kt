@@ -26,7 +26,10 @@ import com.example.mecca.screens.mainmenu.ServiceSelectCustomerScreen
 import com.example.mecca.screens.mainmenu.SettingsScreen
 import com.example.mecca.screens.menu.AboutAppScreen
 import com.example.mecca.screens.menu.CheckweigherAccuracyScreen
+import com.example.mecca.screens.menu.CheckweigherSpeedCalculatorScreen
 import com.example.mecca.screens.menu.DatabaseSyncScreen
+import com.example.mecca.screens.menu.MDFailsafesScreen
+import com.example.mecca.screens.menu.MSSensitivitiesScreen
 import com.example.mecca.screens.menu.MyCalibrationsScreen
 import com.example.mecca.screens.service.AddNewMetalDetectorScreen
 import com.example.mecca.screens.service.MetalDetectorConveyorSystemScreen
@@ -45,7 +48,7 @@ fun AppNavGraph(
     chromeVm: AppChromeViewModel,
     snackbarHostState: SnackbarHostState,
     repositoryMdSystems: MetalDetectorSystemsRepository,
-    calibrationRepository: MetalDetectorConveyorCalibrationRepository // Add this parameter
+    calibrationRepository: MetalDetectorConveyorCalibrationRepository
 ) {
     val apiService = RetrofitClient.instance
 
@@ -85,6 +88,18 @@ fun AppNavGraph(
 
         composable("checkweigherAccuracy") {
             CheckweigherAccuracyScreen()
+        }
+
+        composable("checkweigherSpeedCalculator") {
+            CheckweigherSpeedCalculatorScreen()
+        }
+
+        composable("msSensitivities") {
+            MSSensitivitiesScreen()
+        }
+
+        composable("mdFailsafes") {
+            MDFailsafesScreen()
         }
 
         composable("notices") {
@@ -172,7 +187,7 @@ fun AppNavGraph(
                 dao = dao,
                 customerRepository = repositoryCustomer,
                 systemsRepository = repositoryMdSystems,
-                calibrationRepository = calibrationRepository, // Passed here
+                calibrationRepository = calibrationRepository,
                 apiService = apiService,
                 snackbarHostState = snackbarHostState
             )
