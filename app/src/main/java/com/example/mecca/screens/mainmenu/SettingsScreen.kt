@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.ListAlt
+import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Info
@@ -68,6 +69,7 @@ fun SettingsScreen(
             SettingItem("My Calibrations"),
             SettingItem("Database Sync"),
             SettingItem("Auto Sync", isSwitch = true),
+            SettingItem("Checkweigher Accuracy Test"),
             SettingItem("Debug Logs"),
             SettingItem("About App"),
             SettingItem("Logout")
@@ -140,6 +142,8 @@ fun SettingRow(
         "My Calibrations" -> Icons.Filled.EditNote
         "Debug Logs" -> Icons.AutoMirrored.Filled.ListAlt
         "Logout" -> Icons.Default.Refresh
+        "Checkweigher Accuracy Test" -> Icons.Default.Calculate
+        "Auto Sync" -> Icons.Default.Refresh
         else -> Icons.Filled.Settings
     }
 
@@ -153,6 +157,7 @@ fun SettingRow(
                         "About App" -> navController.navigate("aboutApp")
                         "My Calibrations" -> navController.navigate("myCalibrations")
                         "Debug Logs" -> navController.navigate("logsScreen")
+                        "Checkweigher Accuracy Test" -> navController.navigate("checkweigherAccuracy")
                         "Logout" -> showDialog.value = true
                         else -> navController.navigate("databaseSync")
                     }

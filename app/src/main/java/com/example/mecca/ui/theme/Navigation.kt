@@ -25,6 +25,7 @@ import com.example.mecca.screens.mainmenu.NoticesScreen
 import com.example.mecca.screens.mainmenu.ServiceSelectCustomerScreen
 import com.example.mecca.screens.mainmenu.SettingsScreen
 import com.example.mecca.screens.menu.AboutAppScreen
+import com.example.mecca.screens.menu.CheckweigherAccuracyScreen
 import com.example.mecca.screens.menu.DatabaseSyncScreen
 import com.example.mecca.screens.menu.MyCalibrationsScreen
 import com.example.mecca.screens.service.AddNewMetalDetectorScreen
@@ -80,6 +81,10 @@ fun AppNavGraph(
 
         composable("aboutApp") {
             AboutAppScreen(chromeVm = chromeVm)
+        }
+
+        composable("checkweigherAccuracy") {
+            CheckweigherAccuracyScreen()
         }
 
         composable("notices") {

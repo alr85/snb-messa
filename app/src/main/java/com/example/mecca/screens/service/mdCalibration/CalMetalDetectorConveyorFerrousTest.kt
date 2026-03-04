@@ -19,7 +19,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -27,7 +26,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateFerrousPvResult
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.core.InputTransforms
 import com.example.mecca.formModules.AnimatedActionPill
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
@@ -57,6 +55,18 @@ fun CalMetalDetectorConveyorFerrousTest(
 
     val engineerNotes by viewModel.ferrousTestEngineerNotes
 
+    val isConveyor by viewModel.isConveyor
+
+    // Default hidden values to safe state if not a conveyor
+    LaunchedEffect(isConveyor) {
+        if (!isConveyor) {
+            viewModel.setDetectRejectFerrousMiddle(YesNoState.NA)
+            viewModel.setPeakSignalFerrousMiddle("N/A")
+            viewModel.setDetectRejectFerrousTrailing(YesNoState.NA)
+            viewModel.setPeakSignalFerrousTrailing("N/A")
+        }
+    }
+
     // Sensitivity Warning Logic
     val customerReq = viewModel.sensitivityRequirementFerrous.value.replace(",", ".").toDoubleOrNull() ?: 0.0
     val achieved = sensitivityAsLeftFerrous.replace(",", ".").toDoubleOrNull() ?: 0.0
@@ -67,8 +77,10 @@ fun CalMetalDetectorConveyorFerrousTest(
         sensitivityAsLeftFerrous.isNotBlank() &&
                 sampleCertificateNumberFerrous.isNotBlank() &&
                 (detectLeading != YesNoState.YES || peakSignalLeading.isNotBlank()) &&
-                (detectMiddle != YesNoState.YES || peakSignalMiddle.isNotBlank()) &&
-                (detectTrailing != YesNoState.YES || peakSignalTrailing.isNotBlank())
+                (!isConveyor || (
+                    (detectMiddle != YesNoState.YES || peakSignalMiddle.isNotBlank()) &&
+                    (detectTrailing != YesNoState.YES || peakSignalTrailing.isNotBlank())
+                ))
 
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
@@ -160,13 +172,13 @@ fun CalMetalDetectorConveyorFerrousTest(
                 if (sensitivityAsLeftFerrous != "N/A") {
 
                     LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
-                        label = "Detected & Rejected (Leading)",
+                        label = if(isConveyor){ "Detected & Rejected (Leading)" } else {"Detected & Rejected"},
                         currentState = detectLeading,
                         onStateChange = {
                             viewModel.setDetectRejectFerrousLeading(it)
                             viewModel.autoUpdateFerrousPvResult()
                         },
-                        helpText = "Leading-edge test result & signal.",
+                        helpText = if(isConveyor){ "Leading edge test result & signal." } else {"Test result & signal."},
                         inputLabel = "Produced Signal",
                         inputValue = peakSignalLeading,
                         onInputValueChange = {
@@ -178,44 +190,47 @@ fun CalMetalDetectorConveyorFerrousTest(
 
                     FormSpacer()
 
-                    LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
-                        label = "Detected & Rejected (Middle)",
-                        currentState = detectMiddle,
-                        onStateChange = {
-                            viewModel.setDetectRejectFerrousMiddle(it)
-                            viewModel.autoUpdateFerrousPvResult()
-                        },
-                        helpText = "Middle test result & signal.",
-                        inputLabel = "Produced Signal",
-                        inputValue = peakSignalMiddle,
-                        onInputValueChange = {
-                            viewModel.setPeakSignalFerrousMiddle(it)
-                            viewModel.autoUpdateFerrousPvResult()
-                        },
-                        inputMaxLength = 12,
-                    )
+                    if (isConveyor){
 
-                    FormSpacer()
+                        LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
+                            label = "Detected & Rejected (Middle)",
+                            currentState = detectMiddle,
+                            onStateChange = {
+                                viewModel.setDetectRejectFerrousMiddle(it)
+                                viewModel.autoUpdateFerrousPvResult()
+                            },
+                            helpText = "Middle test result & signal.",
+                            inputLabel = "Produced Signal",
+                            inputValue = peakSignalMiddle,
+                            onInputValueChange = {
+                                viewModel.setPeakSignalFerrousMiddle(it)
+                                viewModel.autoUpdateFerrousPvResult()
+                            },
+                            inputMaxLength = 12,
+                        )
 
-                    LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
-                        label = "Detected & Rejected (Trailing)",
-                        currentState = detectTrailing,
-                        onStateChange = {
-                            viewModel.setDetectRejectFerrousTrailing(it)
-                            viewModel.autoUpdateFerrousPvResult()
-                        },
-                        helpText = "Trailing-edge test result & signal.",
-                        inputLabel = "Produced Signal",
-                        inputValue = peakSignalTrailing,
-                        onInputValueChange = {
-                            viewModel.setPeakSignalFerrousTrailing(it)
-                            viewModel.autoUpdateFerrousPvResult()
-                        },
-                        inputMaxLength = 12,
-                    )
+                        FormSpacer()
 
-                    FormSpacer()
+                        LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
+                            label = "Detected & Rejected (Trailing)",
+                            currentState = detectTrailing,
+                            onStateChange = {
+                                viewModel.setDetectRejectFerrousTrailing(it)
+                                viewModel.autoUpdateFerrousPvResult()
+                            },
+                            helpText = "Trailing-edge test result & signal.",
+                            inputLabel = "Produced Signal",
+                            inputValue = peakSignalTrailing,
+                            onInputValueChange = {
+                                viewModel.setPeakSignalFerrousTrailing(it)
+                                viewModel.autoUpdateFerrousPvResult()
+                            },
+                            inputMaxLength = 12,
+                        )
 
+                        FormSpacer()
+
+                    }
 
                 }
 
@@ -233,7 +248,7 @@ fun CalMetalDetectorConveyorFerrousTest(
                             Auto-Pass rules:
                             • Achieved sensitivity ≤ Max Allowed
                             • Certificate No. entered
-                            • All three detection tests = Yes
+                            • All required detection tests = Yes
                             • All produced signals entered
                             
                             Otherwise auto-fail. You may override manually.

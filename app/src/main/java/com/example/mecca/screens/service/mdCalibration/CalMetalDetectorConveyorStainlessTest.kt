@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -53,6 +54,18 @@ fun CalMetalDetectorConveyorStainlessTest(
     val detectTrailing by viewModel.detectRejectStainlessTrailing
 
     val notes by viewModel.stainlessTestEngineerNotes
+    
+    val isConveyor by viewModel.isConveyor
+
+    // Default hidden values to safe state if not a conveyor
+    LaunchedEffect(isConveyor) {
+        if (!isConveyor) {
+            viewModel.setDetectRejectStainlessMiddle(YesNoState.NA)
+            viewModel.setPeakSignalStainlessMiddle("N/A")
+            viewModel.setDetectRejectStainlessTrailing(YesNoState.NA)
+            viewModel.setPeakSignalStainlessTrailing("N/A")
+        }
+    }
 
     // Sensitivity Warning Logic
     val customerReq = viewModel.sensitivityRequirementStainless.value.replace(",", ".").toDoubleOrNull() ?: 0.0
@@ -64,8 +77,10 @@ fun CalMetalDetectorConveyorStainlessTest(
         sensitivity.isNotBlank() &&
                 sampleCert.isNotBlank() &&
                 (detectLeading != YesNoState.YES || peakLeading.isNotBlank()) &&
-                (detectMiddle != YesNoState.YES || peakMiddle.isNotBlank()) &&
-                (detectTrailing != YesNoState.YES || peakTrailing.isNotBlank())
+                (!isConveyor || (
+                    (detectMiddle != YesNoState.YES || peakMiddle.isNotBlank()) &&
+                    (detectTrailing != YesNoState.YES || peakTrailing.isNotBlank())
+                ))
 
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
@@ -156,13 +171,13 @@ fun CalMetalDetectorConveyorStainlessTest(
                 if (sensitivity != "N/A") {
 
                     LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
-                        label = "Detected & Rejected (Leading)",
+                        label = if(isConveyor){ "Detected & Rejected (Leading)" } else {"Detected & Rejected"},
                         currentState = detectLeading,
                         onStateChange = {
                             viewModel.setDetectRejectStainlessLeading(it)
                             viewModel.autoUpdateStainlessPvResult()
                         },
-                        helpText = "Leading-edge test result & peak signal.",
+                        helpText = if(isConveyor){ "Leading-edge test result & peak signal." } else {"Test result & peak signal."},
                         inputLabel = "Produced Signal",
                         inputValue = peakLeading,
                         onInputValueChange = {
@@ -174,44 +189,45 @@ fun CalMetalDetectorConveyorStainlessTest(
 
                    FormSpacer()
 
-                    LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
-                        label = "Detected & Rejected (Middle)",
-                        currentState = detectMiddle,
-                        onStateChange = {
-                            viewModel.setDetectRejectStainlessMiddle(it)
-                            viewModel.autoUpdateStainlessPvResult()
-                        },
-                        helpText = "Middle test result & peak signal.",
-                        inputLabel = "Produced Signal",
-                        inputValue = peakMiddle,
-                        onInputValueChange = {
-                            viewModel.setPeakSignalStainlessMiddle(it)
-                            viewModel.autoUpdateStainlessPvResult()
-                        },
-                        inputMaxLength = 12
-                    )
+                    if (isConveyor) {
+                        LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
+                            label = "Detected & Rejected (Middle)",
+                            currentState = detectMiddle,
+                            onStateChange = {
+                                viewModel.setDetectRejectStainlessMiddle(it)
+                                viewModel.autoUpdateStainlessPvResult()
+                            },
+                            helpText = "Middle test result & peak signal.",
+                            inputLabel = "Produced Signal",
+                            inputValue = peakMiddle,
+                            onInputValueChange = {
+                                viewModel.setPeakSignalStainlessMiddle(it)
+                                viewModel.autoUpdateStainlessPvResult()
+                            },
+                            inputMaxLength = 12
+                        )
 
-                   FormSpacer()
+                        FormSpacer()
 
-                    LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
-                        label = "Detected & Rejected (Trailing)",
-                        currentState = detectTrailing,
-                        onStateChange = {
-                            viewModel.setDetectRejectStainlessTrailing(it)
-                            viewModel.autoUpdateStainlessPvResult()
-                        },
-                        helpText = "Trailing test result & peak signal.",
-                        inputLabel = "Produced Signal",
-                        inputValue = peakTrailing,
-                        onInputValueChange = {
-                            viewModel.setPeakSignalStainlessTrailing(it)
-                            viewModel.autoUpdateStainlessPvResult()
-                        },
-                        inputMaxLength = 12
-                    )
+                        LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
+                            label = "Detected & Rejected (Trailing)",
+                            currentState = detectTrailing,
+                            onStateChange = {
+                                viewModel.setDetectRejectStainlessTrailing(it)
+                                viewModel.autoUpdateStainlessPvResult()
+                            },
+                            helpText = "Trailing test result & peak signal.",
+                            inputLabel = "Produced Signal",
+                            inputValue = peakTrailing,
+                            onInputValueChange = {
+                                viewModel.setPeakSignalStainlessTrailing(it)
+                                viewModel.autoUpdateStainlessPvResult()
+                            },
+                            inputMaxLength = 12
+                        )
 
-                    FormSpacer()
-
+                        FormSpacer()
+                    }
 
                 }
 
@@ -229,7 +245,7 @@ fun CalMetalDetectorConveyorStainlessTest(
                             Auto-Pass rules:
                               • Achieved Sensitivity ≤ M&S Max
                               • Certificate number entered
-                              • All three D&R = Yes
+                              • All required D&R = Yes
                               • All peak signals entered
 
                             Otherwise auto-fail. You may override manually.

@@ -15,17 +15,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateFerrousPvResult
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.core.InputTransforms
 import com.example.mecca.formModules.CalibrationHeader
-import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTwoTextInputsWithHelp
 import com.example.mecca.formModules.LabeledYesNoSegmentedSwitchAndTextInputWithHelp
@@ -51,22 +46,33 @@ fun CalMetalDetectorConveyorFerrousTestAsFound(
     val detectTrailing by viewModel.detectRejectAsFoundFerrousTrailing
 
     val notes by viewModel.ferrousTestAsFoundEngineerNotes
+    
+    val isConveyor by viewModel.isConveyor
 
-
-
+    // Default hidden values to safe state if not a conveyor
+    LaunchedEffect(isConveyor) {
+        if (!isConveyor) {
+            viewModel.setDetectRejectAsFoundFerrousMiddle(YesNoState.NA)
+            viewModel.setPeakSignalAsFoundFerrousMiddle("N/A")
+            viewModel.setDetectRejectAsFoundFerrousTrailing(YesNoState.NA)
+            viewModel.setPeakSignalAsFoundFerrousTrailing("N/A")
+        }
+    }
 
     // Sensitivity Warning Logic
     val customerReq = viewModel.sensitivityRequirementFerrous.value.replace(",", ".").toDoubleOrNull() ?: 0.0
     val achieved = sensitivityAsFoundFerrous.replace(",", ".").toDoubleOrNull() ?: 0.0
     val isSensitivityWarning = achieved > customerReq && achieved > 0.0 && customerReq > 0.0
 
-    // Validation
+    // Validation - only check middle/trailing if it's a conveyor
     val isNextStepEnabled =
         sensitivityAsFoundFerrous.isNotBlank() &&
                 sampleCert.isNotBlank() &&
                 (detectLeading != YesNoState.YES || peakLeading.isNotBlank()) &&
-                (detectMiddle != YesNoState.YES || peakMiddle.isNotBlank()) &&
-                (detectTrailing != YesNoState.YES || peakTrailing.isNotBlank())
+                (!isConveyor || (
+                    (detectMiddle != YesNoState.YES || peakMiddle.isNotBlank()) &&
+                    (detectTrailing != YesNoState.YES || peakTrailing.isNotBlank())
+                ))
 
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
@@ -146,12 +152,12 @@ fun CalMetalDetectorConveyorFerrousTestAsFound(
                 if (sensitivityAsFoundFerrous != "N/A") {
 
                     LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
-                        label = "Detected & Rejected (Leading)",
+                        label = if(isConveyor){ "Detected & Rejected (Leading)" } else {"Detected & Rejected"},
                         currentState = detectLeading,
                         onStateChange = {
                             viewModel.setDetectRejectAsFoundFerrousLeading(it)
                         },
-                        helpText = "Leading-edge test result & signal.",
+                        helpText = if(isConveyor){ "Leading edge test result & signal." } else {"Test result & signal."},
                         inputLabel = "Produced Signal",
                         inputValue = peakLeading,
                         onInputValueChange = {
@@ -161,44 +167,44 @@ fun CalMetalDetectorConveyorFerrousTestAsFound(
                     )
 
                     FormSpacer()
+                    
+                    if (isConveyor){
+                        LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
+                            label = "Detected & Rejected (Middle)",
+                            currentState = detectMiddle,
+                            onStateChange = {
+                                viewModel.setDetectRejectAsFoundFerrousMiddle(it)
+                            },
+                            helpText = "Middle test result & signal.",
+                            inputLabel = "Produced Signal",
+                            inputValue = peakMiddle,
+                            onInputValueChange = {
+                                viewModel.setPeakSignalAsFoundFerrousMiddle(it)
+                            },
+                            inputMaxLength = 12,
+                        )
 
-                    LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
-                        label = "Detected & Rejected (Middle)",
-                        currentState = detectMiddle,
-                        onStateChange = {
-                            viewModel.setDetectRejectAsFoundFerrousMiddle(it)
-                        },
-                        helpText = "Middle test result & signal.",
-                        inputLabel = "Produced Signal",
-                        inputValue = peakMiddle,
-                        onInputValueChange = {
-                            viewModel.setPeakSignalAsFoundFerrousMiddle(it)
-                        },
-                        inputMaxLength = 12,
-                    )
+                        FormSpacer()
 
-                    FormSpacer()
+                        LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
+                            label = "Detected & Rejected (Trailing)",
+                            currentState = detectTrailing,
+                            onStateChange = {
+                                viewModel.setDetectRejectAsFoundFerrousTrailing(it)
+                            },
+                            helpText = "Trailing-edge test result & signal.",
+                            inputLabel = "Produced Signal",
+                            inputValue = peakTrailing,
+                            onInputValueChange = {
+                                viewModel.setPeakSignalAsFoundFerrousTrailing(it)
+                            },
+                            inputMaxLength = 12,
+                        )
 
-                    LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
-                        label = "Detected & Rejected (Trailing)",
-                        currentState = detectTrailing,
-                        onStateChange = {
-                            viewModel.setDetectRejectAsFoundFerrousTrailing(it)
-                        },
-                        helpText = "Trailing-edge test result & signal.",
-                        inputLabel = "Produced Signal",
-                        inputValue = peakTrailing,
-                        onInputValueChange = {
-                            viewModel.setPeakSignalAsFoundFerrousTrailing(it)
-                        },
-                        inputMaxLength = 12,
-                    )
+                        FormSpacer()
 
-                    FormSpacer()
-
-
+                    }
                 }
-
 
                 //-----------------------------------------------------
                 //  Engineer Notes

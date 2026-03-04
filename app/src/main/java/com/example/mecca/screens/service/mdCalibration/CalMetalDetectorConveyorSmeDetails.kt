@@ -152,7 +152,7 @@ fun CalMetalDetectorConveyorSmeDetails(
 
                     LabeledTwoTextInputsWithHelp(
                         label = "Ferrous Test",
-                        firstInputLabel = "Size",
+                        firstInputLabel = "Size (mm)",
                         firstInputValue = ferrousSize,
                         onFirstInputValueChange = {
                             viewModel.setOperatorTestResultFerrous(it)
@@ -180,7 +180,7 @@ fun CalMetalDetectorConveyorSmeDetails(
 
                     LabeledTwoTextInputsWithHelp(
                         label = "Non Ferrous Test",
-                        firstInputLabel = "Size",
+                        firstInputLabel = "Size (mm)",
                         firstInputValue = nonFerrousSize,
                         onFirstInputValueChange = {
                             viewModel.setOperatorTestResultNonFerrous(it)
@@ -208,7 +208,7 @@ fun CalMetalDetectorConveyorSmeDetails(
 
                     LabeledTwoTextInputsWithHelp(
                         label = "Stainless Test",
-                        firstInputLabel = "Size",
+                        firstInputLabel = "Size (mm)",
                         firstInputValue = stainlessSize,
                         onFirstInputValueChange = {
                             viewModel.setOperatorTestResultStainless(it)
@@ -236,7 +236,7 @@ fun CalMetalDetectorConveyorSmeDetails(
 
                     LabeledTwoTextInputsWithHelp(
                         label = "Large Metal",
-                        firstInputLabel = "Size",
+                        firstInputLabel = "Size (mm)",
                         firstInputValue = largeMetalSize,
                         onFirstInputValueChange = {
                             viewModel.setOperatorTestResultLargeMetal(it)
