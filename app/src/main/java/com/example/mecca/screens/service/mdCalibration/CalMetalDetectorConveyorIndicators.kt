@@ -79,7 +79,7 @@ fun CalMetalDetectorConveyorIndicators(
             selectedOption = colour,
             onOptionChange = onColourChange,
             helpText = "Select a colour. If 'Other' is selected, describe it in the label. Indicator 1 is the bottom of a stack",
-            inputLabel = "Label",
+            inputLabel = "Label/Function",
             inputValue = label,
             onInputValueChange = onLabelChange,
             isNAToggleEnabled = true,
