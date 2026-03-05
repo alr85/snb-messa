@@ -21,6 +21,7 @@ fun LabeledTextFieldWithHelp(
     keyboardType: KeyboardType = KeyboardType.Text,
     isNAToggleEnabled: Boolean = true,
     rowDisabled: Boolean = false,
+    pvStatus: String? = null,
     maxLength: Int? = null,
     singleLine: Boolean = true,
     transformInput: ((String) -> String)? = null,
@@ -36,6 +37,7 @@ fun LabeledTextFieldWithHelp(
         label = label,
         naButtonText = if (isNa) "Edit" else "N/A",
         isDisabled = false, // keep wrapper consistent with your existing behavior
+        pvStatus = pvStatus,
         onNaClick = if (isNAToggleEnabled) {
             { onValueChange(if (isNa) "" else "N/A") }
         } else null,

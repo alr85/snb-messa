@@ -129,7 +129,11 @@ fun CalMetalDetectorConveyorSmeDetails(
 
                         viewModel.autoUpdateSmePvResult()
                     },
-                    helpText = "If you witnessed an operator perform a successful sensitivity check, select Yes. Otherwise select No or N/A."
+                    helpText = "If you witnessed an operator perform a successful sensitivity check, select Yes. Otherwise select No or N/A.",
+                    pvStatus = if (viewModel.pvRequired.value) {
+                        if (operatorTestWitnessed == YesNoState.YES) "Pass" else "Fail"
+                    } else null,
+
                 )
 
                 FormSpacer()
@@ -145,6 +149,9 @@ fun CalMetalDetectorConveyorSmeDetails(
                         },
                         helpText = "Enter the name of the operator in charge of this system",
                         isNAToggleEnabled = true,
+                        pvStatus = if (viewModel.pvRequired.value) {
+                            if (operatorName.isNotBlank()) "Pass" else "Fail"
+                        } else null,
                         maxLength = 25
                     )
 

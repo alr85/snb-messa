@@ -27,6 +27,7 @@ fun LabeledTextFieldWithHelpEdit(
     helpText: String,
     keyboardType: KeyboardType = KeyboardType.Text,
     isNAToggleEnabled: Boolean = true,
+    pvStatus: String? = null,
     maxLength: Int? = null,
     singleLine: Boolean = true,
     transformInput: ((String) -> String)? = null,
@@ -46,6 +47,7 @@ fun LabeledTextFieldWithHelpEdit(
         onLabelChange = onLabelChange,
         naButtonText = if (isDisabled) "Edit" else "N/A",
         isDisabled = isDisabled,
+        pvStatus = pvStatus,
         onNaClick = if (isNAToggleEnabled) {
             {
                 val next = !isDisabled

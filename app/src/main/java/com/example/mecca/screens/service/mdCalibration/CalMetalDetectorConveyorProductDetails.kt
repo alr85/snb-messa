@@ -3,8 +3,8 @@ package com.example.mecca.screens.service.mdCalibration
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -126,6 +126,9 @@ fun CalMetalDetectorConveyorProductDetails(
                         keyboardType = KeyboardType.Number,
                         // PV required => height is mandatory => do NOT allow N/A toggle
                         isNAToggleEnabled = !viewModel.pvRequired.value,
+                        pvStatus = if (viewModel.pvRequired.value) {
+                            if (height.isNotBlank()) "Pass" else "Fail"
+                        } else null,
                         maxLength = 3,
                         showInputLabel = false
                     )

@@ -122,6 +122,9 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
                         viewModel.setSensitivityAccessRestriction(it)
                         viewModel.autoUpdateDetectionSettingPvResult()
                     },
+                    pvStatus = if (viewModel.pvRequired.value) {
+                        if (sensitivityAccessRestriction.isNotBlank()) "Pass" else "Fail"
+                    } else null,
                     helpText = "Eg: 'Password protected', 'Key switch', etc.",
                     maxLength = 25,
                     showInputLabel = false

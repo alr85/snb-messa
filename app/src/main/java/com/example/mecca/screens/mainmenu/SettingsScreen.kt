@@ -1,6 +1,6 @@
 package com.example.mecca.screens.mainmenu
 
-import android.util.Log
+import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,8 +25,8 @@ import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.AlertDialog
@@ -37,7 +37,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -48,6 +47,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.navigation.NavHostController
 import com.example.mecca.PreferencesHelper
 import com.example.mecca.UserViewModel
@@ -73,6 +73,14 @@ fun SettingsScreen(
         )
     }
 
+    val usefulLinksItems = remember {
+        listOf(
+            SettingItem("Packaged Goods Law", Icons.Default.Language, "https://www.gov.uk/weights-measures-and-packaging-the-law/packaged-goods"),
+            SettingItem("Weights & Measures Guidance", Icons.Default.Language, "https://www.gov.uk/weights-measures-and-packaging-the-law"),
+            SettingItem("SNB Electronic Services LTD", Icons.Default.Language, "https://metaldetector-rentals.co.uk/")
+        )
+    }
+
     val appManagementItems = remember {
         listOf(
             SettingItem("My Calibrations", Icons.Filled.EditNote, "myCalibrations"),
@@ -94,6 +102,16 @@ fun SettingsScreen(
             SettingsHeader("Support Tools")
         }
         items(toolItems) { item ->
+            SettingRow(item, navController, showDialog)
+        }
+
+        item { Spacer(Modifier.height(16.dp)) }
+
+        // --- LINKS SECTION ---
+        item {
+            SettingsHeader("Useful Links")
+        }
+        items(usefulLinksItems) { item ->
             SettingRow(item, navController, showDialog)
         }
 
@@ -145,15 +163,19 @@ fun SettingRow(
     navController: NavHostController,
     showDialog: MutableState<Boolean>
 ) {
+    val context = LocalContext.current
     Column {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    if (item.route == "LOGOUT_TRIGGER") {
-                        showDialog.value = true
-                    } else {
-                        navController.navigate(item.route)
+                    when {
+                        item.route == "LOGOUT_TRIGGER" -> showDialog.value = true
+                        item.route.startsWith("http") -> {
+                            val intent = Intent(Intent.ACTION_VIEW, item.route.toUri())
+                            context.startActivity(intent)
+                        }
+                        else -> navController.navigate(item.route)
                     }
                 }
                 .padding(horizontal = 16.dp, vertical = 18.dp),

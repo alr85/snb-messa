@@ -99,5 +99,3 @@ fun LabeledFourOptionRadioWithHelp(
         )
     }
 }
-
-

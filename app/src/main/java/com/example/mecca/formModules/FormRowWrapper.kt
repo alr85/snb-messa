@@ -1,7 +1,10 @@
 package com.example.mecca.formModules
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -10,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -34,12 +38,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.mecca.ui.theme.FormInputDisabledBorderColor
 import com.example.mecca.ui.theme.FormInputDisabledLabelColor
 import com.example.mecca.ui.theme.FormInputDisabledTextColor
@@ -62,6 +70,7 @@ fun FormRowWrapper(
     modifier: Modifier = Modifier,
     naButtonText: String = "N/A",
     isDisabled: Boolean = false,
+    pvStatus: String? = null, // "Pass", "Fail", or null/invisible
     onNaClick: (() -> Unit)? = null,
     onHelpClick: (() -> Unit)? = null,
     content: @Composable RowScope.(Boolean) -> Unit
@@ -91,6 +100,10 @@ fun FormRowWrapper(
                     overflow = TextOverflow.Ellipsis
                 )
 
+                if (pvStatus != null) {
+                    PvIndicator(status = pvStatus)
+                }
+
                 if (onNaClick != null) {
                     val isNa = naButtonText == "Edit"
 
@@ -98,11 +111,6 @@ fun FormRowWrapper(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-//                        Text(
-//                            text = "N/A",
-//                            style = MaterialTheme.typography.labelSmall,
-//                            color = if (isNa) SnbRed else Color.Gray
-//                        )
                         Switch(
                             checked = isNa,
                             onCheckedChange = { onNaClick() },
@@ -141,6 +149,32 @@ fun FormRowWrapper(
     }
 }
 
+@Composable
+fun PvIndicator(status: String) {
+    val backgroundColor = when (status) {
+        "Pass" -> Color(0xFF4CAF50) // Green
+        "Fail" -> SnbRed
+        else -> Color.Gray
+    }
+
+    Box(
+        modifier = Modifier
+            .size(28.dp)
+            .clip(CircleShape)
+            .background(backgroundColor)
+            .border(1.dp, Color.White.copy(alpha = 0.3f), CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "PV",
+            color = Color.White,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -150,6 +184,7 @@ fun FormRowWrapperEditableLabel(
     modifier: Modifier = Modifier,
     naButtonText: String? = null,
     isDisabled: Boolean = false,
+    pvStatus: String? = null,
     onNaClick: (() -> Unit)? = null,
     onHelpClick: (() -> Unit)? = null,
     content: @Composable RowScope.(Boolean) -> Unit
@@ -241,6 +276,10 @@ fun FormRowWrapperEditableLabel(
                     }
                 }
 
+                if (pvStatus != null) {
+                    PvIndicator(status = pvStatus)
+                }
+
                 if (onNaClick != null) {
                     val isNa = naButtonText == "Edit"
 
@@ -248,11 +287,6 @@ fun FormRowWrapperEditableLabel(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-//                        Text(
-//                            text = "N/A",
-//                            style = MaterialTheme.typography.labelSmall,
-//                            color = if (isNa) SnbRed else Color.Gray
-//                        )
                         Switch(
                             checked = isNa,
                             onCheckedChange = { onNaClick() },
