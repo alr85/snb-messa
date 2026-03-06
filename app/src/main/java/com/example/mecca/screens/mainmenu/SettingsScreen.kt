@@ -17,12 +17,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.ListAlt
 import androidx.compose.material.icons.automirrored.filled.Rule
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.CloudSync
+import androidx.compose.material.icons.filled.Construction
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
@@ -33,6 +35,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -73,6 +76,13 @@ fun SettingsScreen(
         )
     }
 
+    val serviceItems = remember {
+        listOf(
+            SettingItem("My Calibrations", Icons.Filled.EditNote, "myCalibrations"),
+            SettingItem("Service Calls", Icons.Default.Construction, "COMING_SOON", isComingSoon = true)
+        )
+    }
+
     val usefulLinksItems = remember {
         listOf(
             SettingItem("Packaged Goods Law", Icons.Default.Language, "https://www.gov.uk/weights-measures-and-packaging-the-law/packaged-goods"),
@@ -83,7 +93,6 @@ fun SettingsScreen(
 
     val appManagementItems = remember {
         listOf(
-            SettingItem("My Calibrations", Icons.Filled.EditNote, "myCalibrations"),
             SettingItem("Database Sync", Icons.Default.CloudSync, "databaseSync"),
             SettingItem("Debug Logs", Icons.AutoMirrored.Filled.ListAlt, "logsScreen"),
             SettingItem("About App", Icons.Default.Info, "aboutApp"),
@@ -97,6 +106,16 @@ fun SettingsScreen(
             .background(Color.White),
         contentPadding = PaddingValues(bottom = 32.dp)
     ) {
+        // --- SERVICE SECTION ---
+        item {
+            SettingsHeader("Service")
+        }
+        items(serviceItems) { item ->
+            SettingRow(item, navController, showDialog)
+        }
+
+        item { Spacer(Modifier.height(16.dp)) }
+
         // --- TOOLS SECTION ---
         item {
             SettingsHeader("Support Tools")
@@ -168,7 +187,7 @@ fun SettingRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable {
+                .clickable(enabled = !item.isComingSoon) {
                     when {
                         item.route == "LOGOUT_TRIGGER" -> showDialog.value = true
                         item.route.startsWith("http") -> {
@@ -185,25 +204,39 @@ fun SettingRow(
                 imageVector = item.icon,
                 contentDescription = null,
                 modifier = Modifier.size(24.dp),
-                tint = SnbDarkGrey
+                tint = if (item.isComingSoon) Color.Gray else SnbDarkGrey
             )
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            Text(
-                text = item.name,
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.Black
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = item.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = if (item.isComingSoon) Color.Gray else Color.Black
+                )
+            }
 
-            Spacer(modifier = Modifier.weight(1f))
-
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
-                tint = Color.Gray
-            )
+            if (item.isComingSoon) {
+                Surface(
+                    color = Color(0xFFEEEEEE),
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    Text(
+                        text = "COMING SOON",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
+            } else {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = Color.Gray
+                )
+            }
         }
 
         Box(
@@ -219,7 +252,8 @@ fun SettingRow(
 data class SettingItem(
     val name: String,
     val icon: ImageVector,
-    val route: String
+    val route: String,
+    val isComingSoon: Boolean = false
 )
 
 @Composable

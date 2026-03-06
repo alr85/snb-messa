@@ -1230,6 +1230,13 @@ class CalibrationMetalDetectorConveyorViewModel(
     private val _systemTypeDescription = mutableStateOf(system.systemType)
     val systemTypeDescription: State<String> = _systemTypeDescription
 
+    private val _apertureWidth = mutableIntStateOf(system.apertureWidth)
+    val apertureWidth: State<Int> = _apertureWidth
+
+    private val _apertureHeight = mutableIntStateOf(system.apertureHeight)
+    val apertureHeight: State<Int> = _apertureHeight
+
+
 
     private val _customerId = mutableIntStateOf(system.customerId)
     val customerId: State<Int> = _customerId

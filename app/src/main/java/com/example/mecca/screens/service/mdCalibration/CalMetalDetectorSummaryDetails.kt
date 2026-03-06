@@ -126,6 +126,9 @@ fun CalMetalDetectorConveyorSummaryDetails(
         val sensitivityData by viewModel.sensitivityData
 
 
+
+
+
         // --- ORDERED TO MATCH NAV LIST ---
 
         Section(title = "Calibration Details", forceShowCheckbox = false) {
@@ -138,11 +141,13 @@ fun CalMetalDetectorConveyorSummaryDetails(
         Section(title = "System Details") {
             SummaryItem(label = "Customer Name", value = viewModel.customerName.value)
             SummaryItem(label = "Model Description", value = viewModel.modelDescription.value)
+            SummaryItem(label = "Aperture Width", value = "${viewModel.apertureWidth.value}mm")
+            SummaryItem(label = "Aperture Height", value = "${viewModel.apertureHeight.value}mm")
             SummaryItem(label = "Serial Number", value = viewModel.serialNumber.value)
             SummaryItem(label = "System Location", value = viewModel.lastLocation.value)
             SummaryItem(label = "New Location", value = viewModel.newLocation.value)
             SummaryItem(label = "PV required", value = if (viewModel.pvRequired.value) "Yes" else "No")
-            SummaryItem(label = "Able to calibrate?", value = if (viewModel.canPerformCalibration.value) "Yes" else "No")
+            SummaryItem(label = "Able to calibrate", value = if (viewModel.canPerformCalibration.value) "Yes" else "No")
             
             if (!viewModel.canPerformCalibration.value) {
                 SummaryItem(label = "Reason for not calibrating", value = viewModel.reasonForNotCalibrating.value)
