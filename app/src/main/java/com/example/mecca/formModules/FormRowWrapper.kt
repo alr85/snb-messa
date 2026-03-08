@@ -13,15 +13,23 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.RemoveCircle
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +39,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -62,6 +71,14 @@ import com.example.mecca.ui.theme.FormWrapperSurface
 import com.example.mecca.ui.theme.SnbDarkGrey
 import com.example.mecca.ui.theme.SnbRed
 
+enum class PvRuleStatus {
+    Pass, Fail, Incomplete, NA
+}
+
+data class PvRule(
+    val description: String,
+    val status: PvRuleStatus
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,7 +87,8 @@ fun FormRowWrapper(
     modifier: Modifier = Modifier,
     naButtonText: String = "N/A",
     isDisabled: Boolean = false,
-    pvStatus: String? = null, // "Pass", "Fail", or null/invisible
+    pvStatus: String? = null, 
+    pvRules: List<PvRule> = emptyList(),
     onNaClick: (() -> Unit)? = null,
     onHelpClick: (() -> Unit)? = null,
     content: @Composable RowScope.(Boolean) -> Unit
@@ -101,7 +119,7 @@ fun FormRowWrapper(
                 )
 
                 if (pvStatus != null) {
-                    PvIndicator(status = pvStatus)
+                    PvIndicator(status = pvStatus, rules = pvRules)
                 }
 
                 if (onNaClick != null) {
@@ -150,10 +168,14 @@ fun FormRowWrapper(
 }
 
 @Composable
-fun PvIndicator(status: String) {
+fun PvIndicator(status: String, rules: List<PvRule> = emptyList()) {
+    var showHelp by remember { mutableStateOf(false) }
+    
     val backgroundColor = when (status) {
         "Pass" -> Color(0xFF4CAF50) // Green
         "Fail" -> SnbRed
+        "Warning", "Incomplete" -> Color(0xFFFFA000) // Amber
+        "N/A" -> Color.Gray
         else -> Color.Gray
     }
 
@@ -162,7 +184,8 @@ fun PvIndicator(status: String) {
             .size(28.dp)
             .clip(CircleShape)
             .background(backgroundColor)
-            .border(1.dp, Color.White.copy(alpha = 0.3f), CircleShape),
+            .border(1.dp, Color.White.copy(alpha = 0.3f), CircleShape)
+            .clickable { showHelp = true },
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -172,6 +195,126 @@ fun PvIndicator(status: String) {
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center
         )
+    }
+
+    if (showHelp) {
+        AlertDialog(
+            onDismissRequest = { showHelp = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Info, null, tint = SnbDarkGrey)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Performance Validation")
+                }
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    if (rules.isEmpty()) {
+                        Text(
+                            "Performance Validation (PV) rules automatically check your data against SNB standards and retailer requirements.",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        
+                        PvHelpLegendItem(
+                            color = Color(0xFF4CAF50),
+                            label = "PASSED",
+                            description = "This section meets all required validation standards."
+                        )
+                        PvHelpLegendItem(
+                            color = Color(0xFFFFA000),
+                            label = "INCOMPLETE / WARNING",
+                            description = "Mandatory information is missing. Please complete the fields to enable validation."
+                        )
+                        PvHelpLegendItem(
+                            color = SnbRed,
+                            label = "FAILED",
+                            description = "Data entered does not meet the required sensitivity or safety criteria."
+                        )
+                        PvHelpLegendItem(
+                            color = Color.Gray,
+                            label = "NOT APPLICABLE",
+                            description = "Validation is not required for this section."
+                        )
+                    } else {
+                        Text(
+                            "The following rules were evaluated for this section:",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            rules.forEach { rule ->
+                                PvRuleItem(rule)
+                            }
+                        }
+                        
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+                        
+                        Text(
+                            "Overall status: ${status.uppercase()}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Gray
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showHelp = false }) { Text("OK") }
+            }
+        )
+    }
+}
+
+@Composable
+private fun PvRuleItem(rule: PvRule) {
+    Row(
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Icon(
+            imageVector = when (rule.status) {
+                PvRuleStatus.Pass -> Icons.Default.CheckCircle
+                PvRuleStatus.Fail -> Icons.Default.Cancel
+                PvRuleStatus.Incomplete -> Icons.AutoMirrored.Filled.Help
+                PvRuleStatus.NA -> Icons.Default.RemoveCircle
+            },
+            contentDescription = null,
+            tint = when (rule.status) {
+                PvRuleStatus.Pass -> Color(0xFF4CAF50)
+                PvRuleStatus.Fail -> SnbRed
+                PvRuleStatus.Incomplete -> Color(0xFFFFA000)
+                PvRuleStatus.NA -> Color.Gray
+            },
+            modifier = Modifier.size(18.dp).padding(top = 2.dp)
+        )
+        Text(
+            text = rule.description,
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.DarkGray
+        )
+    }
+}
+
+@Composable
+private fun PvHelpLegendItem(color: Color, label: String, description: String) {
+    Row(
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(20.dp)
+                .clip(CircleShape)
+                .background(color),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("PV", color = Color.White, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+        }
+        Column {
+            Text(label, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
+            Text(description, style = MaterialTheme.typography.bodySmall)
+        }
     }
 }
 
@@ -185,6 +328,7 @@ fun FormRowWrapperEditableLabel(
     naButtonText: String? = null,
     isDisabled: Boolean = false,
     pvStatus: String? = null,
+    pvRules: List<PvRule> = emptyList(),
     onNaClick: (() -> Unit)? = null,
     onHelpClick: (() -> Unit)? = null,
     content: @Composable RowScope.(Boolean) -> Unit
@@ -277,7 +421,7 @@ fun FormRowWrapperEditableLabel(
                 }
 
                 if (pvStatus != null) {
-                    PvIndicator(status = pvStatus)
+                    PvIndicator(status = pvStatus, rules = pvRules)
                 }
 
                 if (onNaClick != null) {

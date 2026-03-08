@@ -14,6 +14,8 @@ import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
+import com.example.mecca.formModules.PvRule
+import com.example.mecca.formModules.PvRuleStatus
 import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
@@ -64,7 +66,7 @@ fun CalMetalDetectorConveyorProductDetails(
                     label = "Product Description",
                     value = description,
                     onValueChange = viewModel::setProductDescription,
-                    helpText = "Enter the details of the product.",
+                    helpText = "Enter the details of the product. This should be 'Bags of sweets' or 'Fresh pork'",
                     maxLength = 20,
                     showInputLabel = false
                 )
@@ -127,8 +129,32 @@ fun CalMetalDetectorConveyorProductDetails(
                         // PV required => height is mandatory => do NOT allow N/A toggle
                         isNAToggleEnabled = !viewModel.pvRequired.value,
                         pvStatus = if (viewModel.pvRequired.value) {
-                            if (height.isNotBlank()) "Pass" else "Fail"
+                            val hInt = height.toIntOrNull()
+                            when {
+                                hInt == null -> "Fail"
+                                viewModel.systemTypeId.value == 1 && hInt in 1..175 -> "Pass"
+                                viewModel.systemTypeId.value == 1 && hInt > 175 -> "Warning"
+                                else -> "Fail"
+                            }
                         } else null,
+                        pvRules = if (viewModel.pvRequired.value) {
+                            val hInt = height.toIntOrNull()
+                            listOf(
+                                PvRule(
+                                    description = "Product height must be a valid number.",
+                                    status = if (hInt != null) PvRuleStatus.Pass else PvRuleStatus.Fail
+                                ),
+                                PvRule(
+                                    description = "Height must be between 1mm and 175mm for Conveyor standards.",
+                                    status = when {
+                                        hInt == null -> PvRuleStatus.Incomplete
+                                        viewModel.systemTypeId.value == 1 && hInt in 1..175 -> PvRuleStatus.Pass
+                                        viewModel.systemTypeId.value == 1 && hInt > 175 -> PvRuleStatus.Incomplete
+                                        else -> PvRuleStatus.Fail
+                                    }
+                                )
+                            )
+                        } else emptyList(),
                         maxLength = 3,
                         showInputLabel = false
                     )

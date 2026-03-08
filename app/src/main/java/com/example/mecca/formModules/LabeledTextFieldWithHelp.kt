@@ -22,6 +22,7 @@ fun LabeledTextFieldWithHelp(
     isNAToggleEnabled: Boolean = true,
     rowDisabled: Boolean = false,
     pvStatus: String? = null,
+    pvRules: List<PvRule> = emptyList(),
     maxLength: Int? = null,
     singleLine: Boolean = true,
     transformInput: ((String) -> String)? = null,
@@ -38,6 +39,7 @@ fun LabeledTextFieldWithHelp(
         naButtonText = if (isNa) "Edit" else "N/A",
         isDisabled = false, // keep wrapper consistent with your existing behavior
         pvStatus = pvStatus,
+        pvRules = pvRules,
         onNaClick = if (isNAToggleEnabled) {
             { onValueChange(if (isNa) "" else "N/A") }
         } else null,
