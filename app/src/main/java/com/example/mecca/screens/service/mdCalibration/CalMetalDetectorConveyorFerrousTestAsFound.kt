@@ -136,7 +136,7 @@ fun CalMetalDetectorConveyorFerrousTestAsFound(
                             .padding(8.dp)
                     ) {
                         Text(
-                            text = "⚠️ Achieved sensitivity ($achieved mm) is worse than Customer Requirement ($customerReq mm).",
+                            text = "⚠️ 'As Found' sensitivity ($achieved mm) is worse than Customer Requirement ($customerReq mm).",
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold

@@ -145,7 +145,7 @@ fun CalMetalDetectorConveyorProductDetails(
                                     status = if (hInt != null) PvRuleStatus.Pass else PvRuleStatus.Fail
                                 ),
                                 PvRule(
-                                    description = "Height must be between 1mm and 175mm for Conveyor standards.",
+                                    description = "Height must be between 1mm and 175mm to be considered for Performance Validation.",
                                     status = when {
                                         hInt == null -> PvRuleStatus.Incomplete
                                         viewModel.systemTypeId.value == 1 && hInt in 1..175 -> PvRuleStatus.Pass

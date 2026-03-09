@@ -120,7 +120,7 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
 
                 LabeledDropdownWithHelp(
                     label = "Access Restriction:",
-                    options = listOf("Yes - Password", "Yes - Locked door", "Yes - Key switch", "None"),
+                    options = listOf("Yes (Password)", "Yes (Locked door)", "Yes (Key switch)", "None"),
                     selectedOption = sensitivityAccessRestriction,
                     onSelectionChange = {
                         viewModel.setSensitivityAccessRestriction(it)
@@ -142,7 +142,7 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
                             PvRule(
                                 description = "Sensitivities must be protected to meet retailer safety standards.",
                                 status = when (sensitivityAccessRestriction) {
-                                    "Yes - Password", "Yes - Locked door", "Yes - Key switch" -> PvRuleStatus.Pass
+                                    "Yes (Password)", "Yes (Locked door)", "Yes (Key switch)" -> PvRuleStatus.Pass
                                     "None" -> PvRuleStatus.Fail
                                     else -> PvRuleStatus.Incomplete
                                 }

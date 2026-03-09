@@ -2,7 +2,9 @@ package com.example.mecca.screens.service.mdCalibration
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,19 +16,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ContentPasteGo
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.formModules.AnimatedActionPill
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
-import com.example.mecca.formModules.PvRule
-import com.example.mecca.formModules.PvRuleStatus
 import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
@@ -54,6 +57,19 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
+
+    // Warning Flags
+    val fVal = ferrous.toDoubleOrNull() ?: 0.0
+    val fMax = sensitivityData?.ferrousMaxMM ?: 0.0
+    val isFerrousWarning = fVal > fMax && fVal > 0.0 && fMax > 0.0
+
+    val nfVal = nonFerrous.toDoubleOrNull() ?: 0.0
+    val nfMax = sensitivityData?.nonFerrousMaxMM ?: 0.0
+    val isNonFerrousWarning = nfVal > nfMax && nfVal > 0.0 && nfMax > 0.0
+
+    val sVal = stainless.toDoubleOrNull() ?: 0.0
+    val sMax = sensitivityData?.stainless316MaxMM ?: 0.0
+    val isStainlessWarning = sVal > sMax && sVal > 0.0 && sMax > 0.0
 
     Column(modifier = Modifier.fillMaxSize()) {
 
@@ -94,39 +110,26 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
                     """.trimIndent(),
                     keyboardType = KeyboardType.Decimal,
                     isNAToggleEnabled = true,
-                    pvStatus = if (pvRequired) {
-                        val fVal = ferrous.toDoubleOrNull()
-                        val fMax = sensitivityData?.ferrousMaxMM
-                        when {
-                            ferrous == "N/A" -> "N/A"
-                            ferrous.isBlank() -> "Fail"
-                            fVal == null -> "Fail"
-                            fMax != null && fVal <= fMax -> "Pass"
-                            else -> "Warning"
-                        }
-                    } else null,
-                    pvRules = if (pvRequired) {
-                        val fVal = ferrous.toDoubleOrNull()
-                        val fMax = sensitivityData?.ferrousMaxMM
-                        val list = mutableListOf<PvRule>()
-                        
-                        if (ferrous == "N/A") {
-                            list.add(PvRule("Requirement is marked as Not Applicable.", PvRuleStatus.NA))
-                        } else {
-                            list.add(PvRule("Entry must be a valid number.", if (fVal != null) PvRuleStatus.Pass else if (ferrous.isBlank()) PvRuleStatus.Fail else PvRuleStatus.Fail))
-                            if (fMax != null) {
-                                list.add(PvRule("Requirement must be $fMax mm or less (Retailer Standard).", when {
-                                    fVal == null -> PvRuleStatus.Incomplete
-                                    fVal <= fMax -> PvRuleStatus.Pass
-                                    else -> PvRuleStatus.Incomplete
-                                }))
-                            }
-                        }
-                        list
-                    } else emptyList(),
                     maxLength = 4,
                     showInputLabel = false
                 )
+
+                if (pvRequired && isFerrousWarning) {
+                    Spacer(Modifier.height(4.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.errorContainer, MaterialTheme.shapes.small)
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = "⚠️ Customer Requirement ($fVal mm) is worse than Retailer Maximum ($fMax mm).",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
 
                 FormSpacer()
 
@@ -142,39 +145,26 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
                     """.trimIndent(),
                     keyboardType = KeyboardType.Decimal,
                     isNAToggleEnabled = true,
-                    pvStatus = if (pvRequired) {
-                        val nfVal = nonFerrous.toDoubleOrNull()
-                        val nfMax = sensitivityData?.nonFerrousMaxMM
-                        when {
-                            nonFerrous == "N/A" -> "N/A"
-                            nonFerrous.isBlank() -> "Fail"
-                            nfVal == null -> "Fail"
-                            nfMax != null && nfVal <= nfMax -> "Pass"
-                            else -> "Warning"
-                        }
-                    } else null,
-                    pvRules = if (pvRequired) {
-                        val nfVal = nonFerrous.toDoubleOrNull()
-                        val nfMax = sensitivityData?.nonFerrousMaxMM
-                        val list = mutableListOf<PvRule>()
-                        
-                        if (nonFerrous == "N/A") {
-                            list.add(PvRule("Requirement is marked as Not Applicable.", PvRuleStatus.NA))
-                        } else {
-                            list.add(PvRule("Entry must be a valid number.", if (nfVal != null) PvRuleStatus.Pass else if (nonFerrous.isBlank()) PvRuleStatus.Fail else PvRuleStatus.Fail))
-                            if (nfMax != null) {
-                                list.add(PvRule("Requirement must be $nfMax mm or less (Retailer Standard).", when {
-                                    nfVal == null -> PvRuleStatus.Incomplete
-                                    nfVal <= nfMax -> PvRuleStatus.Pass
-                                    else -> PvRuleStatus.Incomplete
-                                }))
-                            }
-                        }
-                        list
-                    } else emptyList(),
                     maxLength = 4,
                     showInputLabel = false
                 )
+
+                if (pvRequired && isNonFerrousWarning) {
+                    Spacer(Modifier.height(4.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.errorContainer, MaterialTheme.shapes.small)
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = "⚠️ Customer Requirement ($nfVal mm) is worse than Retailer Maximum ($nfMax mm).",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
 
                 FormSpacer()
 
@@ -190,39 +180,26 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
                     """.trimIndent(),
                     keyboardType = KeyboardType.Decimal,
                     isNAToggleEnabled = true,
-                    pvStatus = if (pvRequired) {
-                        val sVal = stainless.toDoubleOrNull()
-                        val sMax = sensitivityData?.stainless316MaxMM
-                        when {
-                            stainless == "N/A" -> "N/A"
-                            stainless.isBlank() -> "Fail"
-                            sVal == null -> "Fail"
-                            sMax != null && sVal <= sMax -> "Pass"
-                            else -> "Warning"
-                        }
-                    } else null,
-                    pvRules = if (pvRequired) {
-                        val sVal = stainless.toDoubleOrNull()
-                        val sMax = sensitivityData?.stainless316MaxMM
-                        val list = mutableListOf<PvRule>()
-                        
-                        if (stainless == "N/A") {
-                            list.add(PvRule("Requirement is marked as Not Applicable.", PvRuleStatus.NA))
-                        } else {
-                            list.add(PvRule("Entry must be a valid number.", if (sVal != null) PvRuleStatus.Pass else if (stainless.isBlank()) PvRuleStatus.Fail else PvRuleStatus.Fail))
-                            if (sMax != null) {
-                                list.add(PvRule("Requirement must be $sMax mm or less (Retailer Standard).", when {
-                                    sVal == null -> PvRuleStatus.Incomplete
-                                    sVal <= sMax -> PvRuleStatus.Pass
-                                    else -> PvRuleStatus.Incomplete
-                                }))
-                            }
-                        }
-                        list
-                    } else emptyList(),
                     maxLength = 4,
                     showInputLabel = false
                 )
+
+                if (pvRequired && isStainlessWarning) {
+                    Spacer(Modifier.height(4.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.errorContainer, MaterialTheme.shapes.small)
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = "⚠️ Customer Requirement ($sVal mm) is worse than Retailer Maximum ($sMax mm).",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
 
                 FormSpacer()
 

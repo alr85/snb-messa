@@ -30,8 +30,9 @@ fun LabeledTwoTextInputsWithHelp(
     secondMaxLength: Int? = null,
     firstTransform: ((String) -> String)? = null,
     secondTransform: ((String) -> String)? = null,
-
-    ) {
+    pvStatus: String? = null,
+    pvRules: List<PvRule> = emptyList(),
+) {
     var showHelpDialog by remember { mutableStateOf(false) }
 
     // Disabled iff BOTH values are "N/A" (your N/A toggle sets both)
@@ -46,6 +47,8 @@ fun LabeledTwoTextInputsWithHelp(
         label = label,
         naButtonText = if (isDisabled) "Edit" else "N/A",
         isDisabled = isDisabled,
+        pvStatus = pvStatus,
+        pvRules = pvRules,
         onNaClick = if (isNAToggleEnabled) {
             {
                 val next = !isDisabled
@@ -56,17 +59,17 @@ fun LabeledTwoTextInputsWithHelp(
             }
         } else null,
         onHelpClick = { showHelpDialog = true }
-    ) { disabled ->
+    ) { _ ->
         TwoTextInputs(
             firstLabel = firstInputLabel,
             firstValue = firstInputValue,
             onFirstChange = { v ->
-                if (!disabled) onFirstInputValueChange(v)
+                if (!isDisabled) onFirstInputValueChange(v)
             },
             secondLabel = secondInputLabel,
             secondValue = secondInputValue,
             onSecondChange = { v ->
-                if (!disabled) onSecondInputValueChange(v)
+                if (!isDisabled) onSecondInputValueChange(v)
             },
             firstKeyboard = firstInputKeyboardType,
             secondKeyboard = secondInputKeyboardType,
@@ -75,7 +78,7 @@ fun LabeledTwoTextInputsWithHelp(
 
             firstTransform = firstTransform,
             secondTransform = secondTransform,
-            isDisabled = disabled
+            isDisabled = isDisabled
         )
     }
 
@@ -88,7 +91,3 @@ fun LabeledTwoTextInputsWithHelp(
         )
     }
 }
-
-
-
-

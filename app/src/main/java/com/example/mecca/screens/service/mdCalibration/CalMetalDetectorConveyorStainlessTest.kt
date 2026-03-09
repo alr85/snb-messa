@@ -27,13 +27,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateStainlessPvResult
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.formModules.AnimatedActionPill
-import com.example.mecca.formModules.CalibrationHeader
-import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
-import com.example.mecca.formModules.LabeledTextFieldWithHelp
-import com.example.mecca.formModules.LabeledTwoTextInputsWithHelp
-import com.example.mecca.formModules.LabeledYesNoSegmentedSwitchAndTextInputWithHelp
-import com.example.mecca.formModules.YesNoState
+import com.example.mecca.formModules.*
 import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
@@ -136,14 +130,37 @@ fun CalMetalDetectorConveyorStainlessTest(
                     helpText = """
                         Enter the achieved Stainless Steel sensitivity and the certificate number.
                         
+                        Customer Requirement: ${viewModel.sensitivityRequirementStainless.value}mm
                         M&S Target: ${viewModel.sensitivityData.value?.stainless316TargetMM}mm
                         Max Allowed: ${viewModel.sensitivityData.value?.stainless316MaxMM}mm
                     """.trimIndent(),
                     firstInputKeyboardType = KeyboardType.Number,
                     secondInputKeyboardType = KeyboardType.Text,
                     isNAToggleEnabled = true,
-                    firstMaxLength = 4,
-                    secondMaxLength = 12
+                    pvStatus = if (viewModel.pvRequired.value) {
+                        val sVal = sensitivity.toDoubleOrNull()
+                        val cReq = viewModel.sensitivityRequirementStainless.value.toDoubleOrNull()
+                        when {
+                            sensitivity == "N/A" -> "N/A"
+                            sensitivity.isBlank() || sampleCert.isBlank() -> "Fail"
+                            sVal == null -> "Fail"
+                            cReq != null && sVal > cReq -> "Warning"
+                            else -> "Pass"
+                        }
+                    } else null,
+                    pvRules = if (viewModel.pvRequired.value && sensitivity != "N/A") {
+                        val sVal = sensitivity.toDoubleOrNull()
+                        val cReq = viewModel.sensitivityRequirementStainless.value.toDoubleOrNull()
+                        listOf(
+                            PvRule("Valid sensitivity size must be entered.", if (sVal != null) PvRuleStatus.Pass else if (sensitivity.isBlank()) PvRuleStatus.Fail else PvRuleStatus.Fail),
+                            PvRule("Certificate number must be entered.", if (sampleCert.isNotBlank()) PvRuleStatus.Pass else PvRuleStatus.Fail),
+                            PvRule("Sensitivity must be $cReq mm or better (Customer Requirement).", when {
+                                sVal == null || cReq == null -> PvRuleStatus.Incomplete
+                                sVal <= cReq -> PvRuleStatus.Pass
+                                else -> PvRuleStatus.Incomplete // Maps to Warning/Amber
+                            })
+                        )
+                    } else emptyList()
                 )
 
                 if (isSensitivityWarning) {
@@ -184,7 +201,21 @@ fun CalMetalDetectorConveyorStainlessTest(
                             viewModel.setPeakSignalStainlessLeading(it)
                             viewModel.autoUpdateStainlessPvResult()
                         },
-                        inputMaxLength = 12
+                        inputMaxLength = 12,
+                        pvStatus = if (viewModel.pvRequired.value) {
+                            when {
+                                detectLeading == YesNoState.NA -> "N/A"
+                                detectLeading == YesNoState.YES && peakLeading.isNotBlank() -> "Pass"
+                                detectLeading == YesNoState.NO -> "Fail"
+                                else -> "Incomplete"
+                            }
+                        } else null,
+                        pvRules = if (viewModel.pvRequired.value && detectLeading != YesNoState.NA) {
+                            listOf(
+                                PvRule("Pack must be successfully detected and rejected.", if (detectLeading == YesNoState.YES) PvRuleStatus.Pass else PvRuleStatus.Fail),
+                                PvRule("Produced signal must be recorded.", if (peakLeading.isNotBlank()) PvRuleStatus.Pass else PvRuleStatus.Incomplete)
+                            )
+                        } else emptyList()
                     )
 
                    FormSpacer()
@@ -204,7 +235,21 @@ fun CalMetalDetectorConveyorStainlessTest(
                                 viewModel.setPeakSignalStainlessMiddle(it)
                                 viewModel.autoUpdateStainlessPvResult()
                             },
-                            inputMaxLength = 12
+                            inputMaxLength = 12,
+                            pvStatus = if (viewModel.pvRequired.value) {
+                                when {
+                                    detectMiddle == YesNoState.NA -> "N/A"
+                                    detectMiddle == YesNoState.YES && peakMiddle.isNotBlank() -> "Pass"
+                                    detectMiddle == YesNoState.NO -> "Fail"
+                                    else -> "Incomplete"
+                                }
+                            } else null,
+                            pvRules = if (viewModel.pvRequired.value && detectMiddle != YesNoState.NA) {
+                                listOf(
+                                    PvRule("Pack must be successfully detected and rejected.", if (detectMiddle == YesNoState.YES) PvRuleStatus.Pass else PvRuleStatus.Fail),
+                                    PvRule("Produced signal must be recorded.", if (peakMiddle.isNotBlank()) PvRuleStatus.Pass else PvRuleStatus.Incomplete)
+                                )
+                            } else emptyList()
                         )
 
                         FormSpacer()
@@ -223,7 +268,21 @@ fun CalMetalDetectorConveyorStainlessTest(
                                 viewModel.setPeakSignalStainlessTrailing(it)
                                 viewModel.autoUpdateStainlessPvResult()
                             },
-                            inputMaxLength = 12
+                            inputMaxLength = 12,
+                            pvStatus = if (viewModel.pvRequired.value) {
+                                when {
+                                    detectTrailing == YesNoState.NA -> "N/A"
+                                    detectTrailing == YesNoState.YES && peakTrailing.isNotBlank() -> "Pass"
+                                    detectTrailing == YesNoState.NO -> "Fail"
+                                    else -> "Incomplete"
+                                }
+                            } else null,
+                            pvRules = if (viewModel.pvRequired.value && detectTrailing != YesNoState.NA) {
+                                listOf(
+                                    PvRule("Pack must be successfully detected and rejected.", if (detectTrailing == YesNoState.YES) PvRuleStatus.Pass else PvRuleStatus.Fail),
+                                    PvRule("Produced signal must be recorded.", if (peakTrailing.isNotBlank()) PvRuleStatus.Pass else PvRuleStatus.Incomplete)
+                                )
+                            } else emptyList()
                         )
 
                         FormSpacer()

@@ -26,13 +26,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateNonFerrousPvResult
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.formModules.AnimatedActionPill
-import com.example.mecca.formModules.CalibrationHeader
-import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
-import com.example.mecca.formModules.LabeledTextFieldWithHelp
-import com.example.mecca.formModules.LabeledTwoTextInputsWithHelp
-import com.example.mecca.formModules.LabeledYesNoSegmentedSwitchAndTextInputWithHelp
-import com.example.mecca.formModules.YesNoState
+import com.example.mecca.formModules.*
 import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
@@ -41,20 +35,20 @@ import com.example.mecca.ui.theme.ScrollableWithScrollbar
 fun CalMetalDetectorConveyorNonFerrousTest(
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    // VM state
-    val sensitivity by viewModel.sensitivityAsLeftNonFerrous
-    val sampleCert by viewModel.sampleCertificateNumberNonFerrous
+    // Pull state from VM
+    val sensitivityAsLeftNonFerrous by viewModel.sensitivityAsLeftNonFerrous
+    val sampleCertificateNumberNonFerrous by viewModel.sampleCertificateNumberNonFerrous
 
-    val peakLeading by viewModel.peakSignalNonFerrousLeading
-    val peakMiddle by viewModel.peakSignalNonFerrousMiddle
-    val peakTrailing by viewModel.peakSignalNonFerrousTrailing
+    val peakSignalLeading by viewModel.peakSignalNonFerrousLeading
+    val peakSignalMiddle by viewModel.peakSignalNonFerrousMiddle
+    val peakSignalTrailing by viewModel.peakSignalNonFerrousTrailing
 
     val detectLeading by viewModel.detectRejectNonFerrousLeading
     val detectMiddle by viewModel.detectRejectNonFerrousMiddle
     val detectTrailing by viewModel.detectRejectNonFerrousTrailing
 
-    val notes by viewModel.nonFerrousTestEngineerNotes
-    
+    val engineerNotes by viewModel.nonFerrousTestEngineerNotes
+
     val isConveyor by viewModel.isConveyor
 
     // Default hidden values to safe state if not a conveyor
@@ -69,17 +63,17 @@ fun CalMetalDetectorConveyorNonFerrousTest(
 
     // Sensitivity Warning Logic
     val customerReq = viewModel.sensitivityRequirementNonFerrous.value.replace(",", ".").toDoubleOrNull() ?: 0.0
-    val achieved = sensitivity.replace(",", ".").toDoubleOrNull() ?: 0.0
+    val achieved = sensitivityAsLeftNonFerrous.replace(",", ".").toDoubleOrNull() ?: 0.0
     val isSensitivityWarning = achieved > customerReq && achieved > 0.0 && customerReq > 0.0
 
-    // Next validation
+    // Validation
     val isNextStepEnabled =
-        sensitivity.isNotBlank() &&
-                sampleCert.isNotBlank() &&
-                (detectLeading != YesNoState.YES || peakLeading.isNotBlank()) &&
+        sensitivityAsLeftNonFerrous.isNotBlank() &&
+                sampleCertificateNumberNonFerrous.isNotBlank() &&
+                (detectLeading != YesNoState.YES || peakSignalLeading.isNotBlank()) &&
                 (!isConveyor || (
-                    (detectMiddle != YesNoState.YES || peakMiddle.isNotBlank()) &&
-                    (detectTrailing != YesNoState.YES || peakTrailing.isNotBlank())
+                    (detectMiddle != YesNoState.YES || peakSignalMiddle.isNotBlank()) &&
+                    (detectTrailing != YesNoState.YES || peakSignalTrailing.isNotBlank())
                 ))
 
     LaunchedEffect(isNextStepEnabled) {
@@ -93,7 +87,7 @@ fun CalMetalDetectorConveyorNonFerrousTest(
         ScrollableWithScrollbar(
             modifier = Modifier
                 .fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp),
         ) {
             Column {
 
@@ -110,13 +104,16 @@ fun CalMetalDetectorConveyorNonFerrousTest(
 
                 Spacer(Modifier.height(6.dp))
 
-                // ⭐ Combined row (Achieved + Cert)
+                //-----------------------------------------------------
+                //  Achieved Sensitivity + Certificate
+                //-----------------------------------------------------
                 LabeledTwoTextInputsWithHelp(
                     label = "Achieved Sensitivity & Certificate",
                     firstInputLabel = "Size",
-                    firstInputValue = sensitivity,
+                    firstInputValue = sensitivityAsLeftNonFerrous,
                     onFirstInputValueChange = {
                         viewModel.setSensitivityAsLeftNonFerrous(it)
+
                         if (it == "N/A") {
                             viewModel.disableNonFerrousTest()
                         } else {
@@ -125,9 +122,9 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                         viewModel.autoUpdateNonFerrousPvResult()
                     },
                     secondInputLabel = "Cert No.",
-                    secondInputValue = sampleCert,
-                    onSecondInputValueChange = {
-                        viewModel.setSampleCertificateNumberNonFerrous(it)
+                    secondInputValue = sampleCertificateNumberNonFerrous,
+                    onSecondInputValueChange = { newValue ->
+                        viewModel.setSampleCertificateNumberNonFerrous(newValue)
                         viewModel.autoUpdateNonFerrousPvResult()
                     },
                     helpText = """
@@ -140,6 +137,30 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                     firstInputKeyboardType = KeyboardType.Decimal,
                     secondInputKeyboardType = KeyboardType.Text,
                     isNAToggleEnabled = true,
+                    pvStatus = if (viewModel.pvRequired.value) {
+                        val nfVal = sensitivityAsLeftNonFerrous.toDoubleOrNull()
+                        val cReq = viewModel.sensitivityRequirementNonFerrous.value.toDoubleOrNull()
+                        when {
+                            sensitivityAsLeftNonFerrous == "N/A" -> "N/A"
+                            sensitivityAsLeftNonFerrous.isBlank() || sampleCertificateNumberNonFerrous.isBlank() -> "Fail"
+                            nfVal == null -> "Fail"
+                            cReq != null && nfVal > cReq -> "Warning"
+                            else -> "Pass"
+                        }
+                    } else null,
+                    pvRules = if (viewModel.pvRequired.value && sensitivityAsLeftNonFerrous != "N/A") {
+                        val nfVal = sensitivityAsLeftNonFerrous.toDoubleOrNull()
+                        val cReq = viewModel.sensitivityRequirementNonFerrous.value.toDoubleOrNull()
+                        listOf(
+                            PvRule("Valid sensitivity size must be entered.", if (nfVal != null) PvRuleStatus.Pass else if (sensitivityAsLeftNonFerrous.isBlank()) PvRuleStatus.Fail else PvRuleStatus.Fail),
+                            PvRule("Certificate number must be entered.", if (sampleCertificateNumberNonFerrous.isNotBlank()) PvRuleStatus.Pass else PvRuleStatus.Fail),
+                            PvRule("Sensitivity must be $cReq mm or better (Customer Requirement).", when {
+                                nfVal == null || cReq == null -> PvRuleStatus.Incomplete
+                                nfVal <= cReq -> PvRuleStatus.Pass
+                                else -> PvRuleStatus.Incomplete 
+                            })
+                        )
+                    } else emptyList(),
                     firstMaxLength = 4,
                     secondMaxLength = 12
                 )
@@ -163,8 +184,10 @@ fun CalMetalDetectorConveyorNonFerrousTest(
 
                 FormSpacer()
 
-                // Skip the D&R tests if N/A
-                if (sensitivity != "N/A") {
+                //-----------------------------------------------------
+                //  If N/A – skip test section
+                //-----------------------------------------------------
+                if (sensitivityAsLeftNonFerrous != "N/A") {
 
                     LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
                         label = if(isConveyor){ "Detected & Rejected (Leading)" } else {"Detected & Rejected"},
@@ -173,19 +196,34 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                             viewModel.setDetectRejectNonFerrousLeading(it)
                             viewModel.autoUpdateNonFerrousPvResult()
                         },
-                        helpText = if(isConveyor){ "Leading-edge test result & peak signal." } else {"Test result & peak signal."},
+                        helpText = if(isConveyor){ "Leading edge test result & signal." } else {"Test result & signal."},
                         inputLabel = "Produced Signal",
-                        inputValue = peakLeading,
+                        inputValue = peakSignalLeading,
                         onInputValueChange = {
                             viewModel.setPeakSignalNonFerrousLeading(it)
                             viewModel.autoUpdateNonFerrousPvResult()
                         },
-                        inputMaxLength = 12
+                        inputMaxLength = 12,
+                        pvStatus = if (viewModel.pvRequired.value) {
+                            when {
+                                detectLeading == YesNoState.NA -> "N/A"
+                                detectLeading == YesNoState.YES && peakSignalLeading.isNotBlank() -> "Pass"
+                                detectLeading == YesNoState.NO -> "Fail"
+                                else -> "Incomplete"
+                            }
+                        } else null,
+                        pvRules = if (viewModel.pvRequired.value && detectLeading != YesNoState.NA) {
+                            listOf(
+                                PvRule("Pack must be successfully detected and rejected.", if (detectLeading == YesNoState.YES) PvRuleStatus.Pass else PvRuleStatus.Fail),
+                                PvRule("Produced signal must be recorded.", if (peakSignalLeading.isNotBlank()) PvRuleStatus.Pass else PvRuleStatus.Incomplete)
+                            )
+                        } else emptyList()
                     )
 
                     FormSpacer()
 
-                    if (isConveyor) {
+                    if (isConveyor){
+
                         LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
                             label = "Detected & Rejected (Middle)",
                             currentState = detectMiddle,
@@ -193,14 +231,28 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                                 viewModel.setDetectRejectNonFerrousMiddle(it)
                                 viewModel.autoUpdateNonFerrousPvResult()
                             },
-                            helpText = "Middle test result & peak signal.",
+                            helpText = "Middle test result & signal.",
                             inputLabel = "Produced Signal",
-                            inputValue = peakMiddle,
+                            inputValue = peakSignalMiddle,
                             onInputValueChange = {
                                 viewModel.setPeakSignalNonFerrousMiddle(it)
                                 viewModel.autoUpdateNonFerrousPvResult()
                             },
-                            inputMaxLength = 12
+                            inputMaxLength = 12,
+                            pvStatus = if (viewModel.pvRequired.value) {
+                                when {
+                                    detectMiddle == YesNoState.NA -> "N/A"
+                                    detectMiddle == YesNoState.YES && peakSignalMiddle.isNotBlank() -> "Pass"
+                                    detectMiddle == YesNoState.NO -> "Fail"
+                                    else -> "Incomplete"
+                                }
+                            } else null,
+                            pvRules = if (viewModel.pvRequired.value && detectMiddle != YesNoState.NA) {
+                                listOf(
+                                    PvRule("Pack must be successfully detected and rejected.", if (detectMiddle == YesNoState.YES) PvRuleStatus.Pass else PvRuleStatus.Fail),
+                                    PvRule("Produced signal must be recorded.", if (peakSignalMiddle.isNotBlank()) PvRuleStatus.Pass else PvRuleStatus.Incomplete)
+                                )
+                            } else emptyList()
                         )
 
                         FormSpacer()
@@ -212,24 +264,41 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                                 viewModel.setDetectRejectNonFerrousTrailing(it)
                                 viewModel.autoUpdateNonFerrousPvResult()
                             },
-                            helpText = "Trailing test result & peak signal.",
+                            helpText = "Trailing-edge test result & signal.",
                             inputLabel = "Produced Signal",
-                            inputValue = peakTrailing,
+                            inputValue = peakSignalTrailing,
                             onInputValueChange = {
                                 viewModel.setPeakSignalNonFerrousTrailing(it)
                                 viewModel.autoUpdateNonFerrousPvResult()
                             },
-                            inputMaxLength = 12
+                            inputMaxLength = 12,
+                            pvStatus = if (viewModel.pvRequired.value) {
+                                when {
+                                    detectTrailing == YesNoState.NA -> "N/A"
+                                    detectTrailing == YesNoState.YES && peakSignalTrailing.isNotBlank() -> "Pass"
+                                    detectTrailing == YesNoState.NO -> "Fail"
+                                    else -> "Incomplete"
+                                }
+                            } else null,
+                            pvRules = if (viewModel.pvRequired.value && detectTrailing != YesNoState.NA) {
+                                listOf(
+                                    PvRule("Pack must be successfully detected and rejected.", if (detectTrailing == YesNoState.YES) PvRuleStatus.Pass else PvRuleStatus.Fail),
+                                    PvRule("Produced signal must be recorded.", if (peakSignalTrailing.isNotBlank()) PvRuleStatus.Pass else PvRuleStatus.Incomplete)
+                                )
+                            } else emptyList()
                         )
 
                         FormSpacer()
+
                     }
 
                 }
 
 
 
-                // ⭐ PV Result (only when required)
+                //-----------------------------------------------------
+                //  PV Result (if required)
+                //-----------------------------------------------------
                 if (viewModel.pvRequired.value) {
                     LabeledFourOptionRadioWithHelp(
                         label = "P.V. Result",
@@ -237,13 +306,12 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                         onValueChange = viewModel::setNonFerrousTestPvResult,
                         helpText = """
                             Auto-Pass rules:
-                              • Achieved Sensitivity ≤ M&S Max
-                              • Certificate number entered
-                              • All required D&R = Yes
-                              • All peak signals entered
-
-                            Otherwise auto-fail.
-                            You may override manually.
+                            • Achieved sensitivity ≤ Max Allowed
+                            • Certificate No. entered
+                            • All required detection tests = Yes
+                            • All produced signals entered
+                            
+                            Otherwise auto-fail. You may override manually.
                         """.trimIndent(),
                         showNotFittedOption = false,
                         notFittedEnabled = false
@@ -254,20 +322,25 @@ fun CalMetalDetectorConveyorNonFerrousTest(
 
 
 
+                //-----------------------------------------------------
+                //  Engineer Notes
+                //-----------------------------------------------------
                 LabeledTextFieldWithHelp(
                     label = "Engineer Notes",
-                    value = notes,
+                    value = engineerNotes,
                     onValueChange = viewModel::setNonFerrousTestEngineerNotes,
-                    helpText = "Enter any notes relevant to this section",
+                    helpText = "Relevant notes for this section.",
                     isNAToggleEnabled = false,
-                    maxLength = 50
+                    maxLength = 50,
                 )
 
                 Spacer(Modifier.height(60.dp))
             }
         }
     }
+
 }
+
 
 fun copyNonFerrousTestAsFoundToAsLeft(viewModel: CalibrationMetalDetectorConveyorViewModel) {
     viewModel.setSensitivityAsLeftNonFerrous(viewModel.sensitivityAsFoundNonFerrous.value)

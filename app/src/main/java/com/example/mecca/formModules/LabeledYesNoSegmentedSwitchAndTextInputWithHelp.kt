@@ -25,7 +25,8 @@ fun LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
     inputKeyboardType: KeyboardType = KeyboardType.Text,
     inputMaxLength: Int? = null,
     inputTransform: ((String) -> String)? = null,
-
+    pvStatus: String? = null,
+    pvRules: List<PvRule> = emptyList(),
     ) {
     var showHelpDialog by remember { mutableStateOf(false) }
     var isDisabled by remember { mutableStateOf(currentState == YesNoState.NA) }
@@ -42,6 +43,8 @@ fun LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
         label = label,
         naButtonText = if (isDisabled) "Edit" else "N/A",
         isDisabled = isDisabled,
+        pvStatus = pvStatus,
+        pvRules = pvRules,
         onNaClick = {
             isDisabled = !isDisabled
             val newState = if (isDisabled) YesNoState.NA else YesNoState.NO

@@ -24,7 +24,6 @@ import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.RemoveCircle
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.AlertDialog
@@ -72,7 +71,7 @@ import com.example.mecca.ui.theme.SnbDarkGrey
 import com.example.mecca.ui.theme.SnbRed
 
 enum class PvRuleStatus {
-    Pass, Fail, Incomplete, NA
+    Pass, Fail, Incomplete
 }
 
 data class PvRule(
@@ -175,7 +174,6 @@ fun PvIndicator(status: String, rules: List<PvRule> = emptyList()) {
         "Pass" -> Color(0xFF4CAF50) // Green
         "Fail" -> SnbRed
         "Warning", "Incomplete" -> Color(0xFFFFA000) // Amber
-        "N/A" -> Color.Gray
         else -> Color.Gray
     }
 
@@ -230,11 +228,6 @@ fun PvIndicator(status: String, rules: List<PvRule> = emptyList()) {
                             label = "FAILED",
                             description = "Data entered does not meet the required sensitivity or safety criteria."
                         )
-                        PvHelpLegendItem(
-                            color = Color.Gray,
-                            label = "NOT APPLICABLE",
-                            description = "Validation is not required for this section."
-                        )
                     } else {
                         Text(
                             "The following rules were evaluated for this section:",
@@ -277,14 +270,12 @@ private fun PvRuleItem(rule: PvRule) {
                 PvRuleStatus.Pass -> Icons.Default.CheckCircle
                 PvRuleStatus.Fail -> Icons.Default.Cancel
                 PvRuleStatus.Incomplete -> Icons.AutoMirrored.Filled.Help
-                PvRuleStatus.NA -> Icons.Default.RemoveCircle
             },
             contentDescription = null,
             tint = when (rule.status) {
                 PvRuleStatus.Pass -> Color(0xFF4CAF50)
                 PvRuleStatus.Fail -> SnbRed
                 PvRuleStatus.Incomplete -> Color(0xFFFFA000)
-                PvRuleStatus.NA -> Color.Gray
             },
             modifier = Modifier.size(18.dp).padding(top = 2.dp)
         )
