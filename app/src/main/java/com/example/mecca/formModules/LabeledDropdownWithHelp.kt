@@ -17,6 +17,8 @@ fun LabeledDropdownWithHelp(
     selectedOption: String?,                 // nullable is fine
     onSelectionChange: (String) -> Unit,
     helpText: String,
+    pvStatus: String? = null,
+    pvRules: List<PvRule> = emptyList(),
     isNAToggleEnabled: Boolean = true
 ) {
     var showHelpDialog by remember { mutableStateOf(false) }
@@ -26,6 +28,8 @@ fun LabeledDropdownWithHelp(
         label = label,
         naButtonText = if (isNa) "Edit" else "N/A",
         isDisabled = false, // ALWAYS
+        pvStatus = pvStatus,
+        pvRules = pvRules,
         onNaClick = if (isNAToggleEnabled) {
             { onSelectionChange(if (isNa) "" else "N/A") }
         } else null,
@@ -51,5 +55,3 @@ fun LabeledDropdownWithHelp(
         )
     }
 }
-
-

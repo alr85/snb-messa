@@ -14,9 +14,12 @@ import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateDetectionSettingPvResult
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.formModules.CalibrationHeader
+import com.example.mecca.formModules.LabeledDropdownWithHelp
 import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelpEdit
+import com.example.mecca.formModules.PvRule
+import com.example.mecca.formModules.PvRuleStatus
 import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
@@ -115,19 +118,39 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
                     FormSpacer()
                 }
 
-                LabeledTextFieldWithHelp(
+                LabeledDropdownWithHelp(
                     label = "Access Restriction:",
-                    value = sensitivityAccessRestriction,
-                    onValueChange = {
+                    options = listOf("Yes - Password", "Yes - Locked door", "Yes - Key switch", "None"),
+                    selectedOption = sensitivityAccessRestriction,
+                    onSelectionChange = {
                         viewModel.setSensitivityAccessRestriction(it)
                         viewModel.autoUpdateDetectionSettingPvResult()
                     },
                     pvStatus = if (viewModel.pvRequired.value) {
-                        if (sensitivityAccessRestriction.isNotBlank()) "Pass" else "Fail"
+                        when (sensitivityAccessRestriction) {
+                            "Yes - Password", "Yes - Other" -> "Pass"
+                            "None", "" -> "Fail"
+                            else -> "Fail"
+                        }
                     } else null,
-                    helpText = "Eg: 'Password protected', 'Key switch', etc.",
-                    maxLength = 25,
-                    showInputLabel = false
+                    pvRules = if (viewModel.pvRequired.value) {
+                        listOf(
+                            PvRule(
+                                description = "Access restriction must be documented.",
+                                status = if (sensitivityAccessRestriction.isNotBlank()) PvRuleStatus.Pass else PvRuleStatus.Incomplete
+                            ),
+                            PvRule(
+                                description = "Sensitivities must be protected to meet retailer safety standards.",
+                                status = when (sensitivityAccessRestriction) {
+                                    "Yes - Password", "Yes - Locked door", "Yes - Key switch" -> PvRuleStatus.Pass
+                                    "None" -> PvRuleStatus.Fail
+                                    else -> PvRuleStatus.Incomplete
+                                }
+                            )
+                        )
+                    } else emptyList(),
+                    helpText = "Select the level of access restriction on the metal detector.",
+                    isNAToggleEnabled = false
                 )
 
                 FormSpacer()
