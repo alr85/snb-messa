@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -13,15 +14,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateRejectConfirmSensorPvResult
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.getRejectConfirmSensorPvRules
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.formModules.CalibrationHeader
-import com.example.mecca.formModules.LabeledDropdownWithHelp
-import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
-import com.example.mecca.formModules.LabeledMultiSelectDropdownWithHelp
-import com.example.mecca.formModules.LabeledTextFieldWithHelp
-import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
-import com.example.mecca.formModules.LabeledYesNoSegmentedSwitchAndTextInputWithHelp
-import com.example.mecca.formModules.YesNoState
+import com.example.mecca.formModules.*
 import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
@@ -29,118 +24,95 @@ import com.example.mecca.ui.theme.ScrollableWithScrollbar
 fun CalMetalDetectorConveyorRejectConfirmPEC(
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-
     val fitted by viewModel.rejectConfirmSensorFitted
     val detail by viewModel.rejectConfirmSensorDetail
     val testMethod by viewModel.rejectConfirmSensorTestMethod
     val testMethodOther by viewModel.rejectConfirmSensorTestMethodOther
     val testResult by viewModel.rejectConfirmSensorTestResult.collectAsState()
-    val notes by viewModel.rejectConfirmSensorEngineerNotes
+    val stopPosition by viewModel.rejectConfirmSensorStopPosition
     val latched by viewModel.rejectConfirmSensorLatched
     val controlledRestart by viewModel.rejectConfirmSensorCR
-    val stopPosition by viewModel.rejectConfirmSensorStopPosition
+    val notes by viewModel.rejectConfirmSensorEngineerNotes
 
-    // Options: remember so Compose doesn’t rebuild them constantly
+    val pvRequired = viewModel.pvRequired.value
+
     val testMethodOptions = remember {
-        listOf("Reject Override Switch", "Product Removal", "Other")
+        listOf("Timed Internal Test", "External Trigger", "Other")
     }
 
     val testResultOptions = remember {
-        listOf(
-            "No Result",
-            "Audible Notification",
-            "Visual Notification",
-            "On-Screen Notification",
-            "Belt Stops",
-            "In-feed Belt Stops",
-            "Out-feed Belt Stops",
-        )
+        listOf("No Result", "Audible Notification", "Visual Notification", "On-Screen Notification", "Belt Stops", "In-feed Belt Stops", "Out-feed Belt Stops", "Other")
     }
 
     val stopPositionOptions = remember {
-        listOf(
-            "No Result",
-            "System Belt",
-            "Out-feed Belt (Controlled)",
-            "Out-feed Belt (Uncontrolled)"
-        )
+        listOf("Weigh Platform", "In-feed Belt", "Out-feed Belt (Uncontrolled)", "Other")
     }
 
-    // Next enabled
     val isNextStepEnabled = when (fitted) {
         YesNoState.NO, YesNoState.NA -> true
         YesNoState.YES -> {
             detail.isNotBlank() &&
                     testMethod.isNotBlank() &&
                     testResult.isNotEmpty() &&
-                    latched != YesNoState.NA &&
-                    controlledRestart != YesNoState.NA &&
                     stopPosition.isNotBlank() &&
-                    (testMethod != "Other" || testMethodOther.isNotBlank())
+                    latched != YesNoState.NA &&
+                    controlledRestart != YesNoState.NA
         }
-
         else -> false
     }
 
-    // Tell wrapper
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    val rules = viewModel.getRejectConfirmSensorPvRules()
 
+    Column(modifier = Modifier.fillMaxSize()) {
         CalibrationHeader("Failsafe Tests - Reject Confirm Sensor")
 
         ScrollableWithScrollbar(
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
         ) {
-
             Column {
-
                 LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
                     label = "Sensor fitted?",
                     currentState = fitted,
                     onStateChange = { newState ->
                         viewModel.setRejectConfirmSensorFitted(newState)
-
-                        if (newState == YesNoState.NO || newState == YesNoState.NA) {
-                            // Set all relevant fields to N/A
+                        if (newState != YesNoState.YES) {
                             viewModel.setRejectConfirmSensorDetail("N/A")
                             viewModel.setRejectConfirmSensorTestMethod("N/A")
-                            viewModel.setRejectConfirmSensorTestMethodOther("N/A")
-                            viewModel.setRejectConfirmSensorTestResult(emptyList())
+                            viewModel.setRejectConfirmSensorStopPosition("N/A")
                             viewModel.setRejectConfirmSensorLatched(YesNoState.NA)
                             viewModel.setRejectConfirmSensorCR(YesNoState.NA)
-                            viewModel.setRejectConfirmSensorStopPosition("N/A")
-                        } else if (newState == YesNoState.YES) {
-                            // Clear fields for proper entry
+                        } else {
                             viewModel.setRejectConfirmSensorDetail("")
                             viewModel.setRejectConfirmSensorTestMethod("")
-                            viewModel.setRejectConfirmSensorTestMethodOther("")
-                            viewModel.setRejectConfirmSensorTestResult(emptyList())
+                            viewModel.setRejectConfirmSensorStopPosition("")
                             viewModel.setRejectConfirmSensorLatched(YesNoState.NO)
                             viewModel.setRejectConfirmSensorCR(YesNoState.NO)
-                            viewModel.setRejectConfirmSensorStopPosition("")
                         }
-
                         viewModel.autoUpdateRejectConfirmSensorPvResult()
                     },
-                    helpText = "Select if there is a reject confirm sensor fitted.",
+                    helpText = "Is a secondary sensor fitted to confirm the pack was correctly rejected?",
                     inputLabel = "Detail",
                     inputValue = detail,
                     onInputValueChange = {
                         viewModel.setRejectConfirmSensorDetail(it)
                         viewModel.autoUpdateRejectConfirmSensorPvResult()
                     },
-                    inputMaxLength = 12
+                    pvStatus = if (pvRequired) {
+                        if (fitted == YesNoState.YES) rules.getOrNull(0)?.status?.name else "N/A"
+                    } else null,
+                    pvRules = if (pvRequired) {
+                        if (fitted == YesNoState.YES) listOfNotNull(rules.getOrNull(0)) else rules
+                    } else emptyList()
                 )
 
                 FormSpacer()
 
                 if (fitted == YesNoState.YES) {
-
                     LabeledDropdownWithHelp(
                         label = "Test Method",
                         options = testMethodOptions,
@@ -149,52 +121,27 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                             viewModel.setRejectConfirmSensorTestMethod(it)
                             viewModel.autoUpdateRejectConfirmSensorPvResult()
                         },
-                        helpText = "Select one option from the dropdown.",
-                        isNAToggleEnabled = false
+                        helpText = "Method used to trigger the reject confirmation fault.",
+                        isNAToggleEnabled = false,
+                        pvStatus = if (pvRequired) rules.getOrNull(1)?.status?.name else null,
+                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(1)) else emptyList()
                     )
 
                     FormSpacer()
-
-                    if (testMethod == "Other") {
-                        LabeledTextFieldWithHelp(
-                            label = "Other Test Method",
-                            value = testMethodOther,
-                            onValueChange = {
-                                viewModel.setRejectConfirmSensorTestMethodOther(it)
-                                viewModel.autoUpdateRejectConfirmSensorPvResult()
-                            },
-                            helpText = "Enter the custom test method.",
-                            isNAToggleEnabled = false,
-                            maxLength = 12
-                        )
-
-                        FormSpacer()
-                    }
 
                     LabeledMultiSelectDropdownWithHelp(
                         label = "Test Result",
                         value = testResult.joinToString(", "),
                         options = testResultOptions,
                         selectedOptions = testResult,
-                        onSelectionChange = { newSelection ->
-
-                            val cleaned = when {
-                                // If "No Result" is selected, it becomes the ONLY selection
-                                "No Result" in newSelection -> listOf("No Result")
-                                else -> newSelection.filterNot { it == "No Result" }
-                            }
-                            viewModel.setRejectConfirmSensorTestResult(cleaned)
-
-
-                            if (cleaned == listOf("No Result")) {
-                                viewModel.setRejectConfirmSensorLatched(YesNoState.NO)
-                                viewModel.setRejectConfirmSensorCR(YesNoState.NO)
-                            }
-
+                        onSelectionChange = {
+                            viewModel.setRejectConfirmSensorTestResult(it)
                             viewModel.autoUpdateRejectConfirmSensorPvResult()
                         },
-                        helpText = "Select one or more items from the dropdown.",
-                        isNAToggleEnabled = false
+                        helpText = "Observed outcome of the failsafe test.",
+                        isNAToggleEnabled = false,
+                        pvStatus = if (pvRequired) rules.getOrNull(2)?.status?.name else null,
+                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(2)) else emptyList()
                     )
 
                     FormSpacer()
@@ -206,8 +153,10 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                             viewModel.setRejectConfirmSensorLatched(it)
                             viewModel.autoUpdateRejectConfirmSensorPvResult()
                         },
-                        helpText = "Is the fault output latched, or does it clear automatically?",
-                        isNAToggleEnabled = false
+                        helpText = "Does the fault remain active until manually cleared?",
+                        isNAToggleEnabled = false,
+                        pvStatus = if (pvRequired) rules.getOrNull(3)?.status?.name else null,
+                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(3)) else emptyList()
                     )
 
                     FormSpacer()
@@ -219,61 +168,48 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                             viewModel.setRejectConfirmSensorCR(it)
                             viewModel.autoUpdateRejectConfirmSensorPvResult()
                         },
-                        helpText = "Is a controlled restart required after a fault?",
-                        isNAToggleEnabled = false
+                        helpText = "Is a manual reset required to restart the system?",
+                        isNAToggleEnabled = false,
+                        pvStatus = if (pvRequired) rules.getOrNull(4)?.status?.name else null,
+                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(4)) else emptyList()
                     )
 
                     FormSpacer()
 
                     LabeledDropdownWithHelp(
-                        label = "Test Pack Stop Position",
+                        label = "Pack Stop Position",
                         options = stopPositionOptions,
                         selectedOption = stopPosition,
                         onSelectionChange = {
                             viewModel.setRejectConfirmSensorStopPosition(it)
                             viewModel.autoUpdateRejectConfirmSensorPvResult()
                         },
-                        helpText = "Select one option from the dropdown.",
-                        isNAToggleEnabled = false
+                        helpText = "Where does the pack stop when this fault occurs?",
+                        isNAToggleEnabled = false,
+                        pvStatus = if (pvRequired) rules.getOrNull(5)?.status?.name else null,
+                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(5)) else emptyList()
                     )
 
                     FormSpacer()
                 }
 
-
-                //-----------------------------------------------------
-                // ⭐ PV RESULT (only when required)
-                //-----------------------------------------------------
-                if (viewModel.pvRequired.value) {
+                if (pvRequired) {
                     LabeledFourOptionRadioWithHelp(
                         label = "P.V. Result",
                         value = viewModel.rejectConfirmSensorTestPvResult.value,
                         onValueChange = viewModel::setRejectConfirmSensorTestPvResult,
-                        helpText = """
-                    Auto-Pass rules (when PV required):
-                      • Sensor fitted = Yes
-                      • Detail entered
-                      • Test method selected (and 'Other' described if chosen)
-                      • At least one test result selected
-                      • Fault Latched is not N/A
-                      • Controlled Restart is not N/A
-                      • Stop position selected
-                    
-                    If sensor is No / N/A → PV = N/A.
-                    Otherwise auto-fail. You may override manually.
-                    """.trimIndent()
+                        helpText = "Overall status for Reject Confirm failsafe validation."
                     )
-
+                    FormSpacer()
+                    PvSectionSummaryCard(title = "Reject confirm test P.V. Summary", rules = rules)
                     FormSpacer()
                 }
-
-
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Comments",
                     value = notes,
                     onValueChange = viewModel::setRejectConfirmSensorEngineerNotes,
-                    helpText = "Enter any notes relevant to this section.",
+                    helpText = "Optional notes for this section.",
                     isNAToggleEnabled = false,
                     maxLength = 50
                 )

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -13,15 +14,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateBinFullSensorPvResult
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.getBinFullSensorPvRules
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.formModules.CalibrationHeader
-import com.example.mecca.formModules.LabeledDropdownWithHelp
-import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
-import com.example.mecca.formModules.LabeledMultiSelectDropdownWithHelp
-import com.example.mecca.formModules.LabeledTextFieldWithHelp
-import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
-import com.example.mecca.formModules.LabeledYesNoSegmentedSwitchAndTextInputWithHelp
-import com.example.mecca.formModules.YesNoState
+import com.example.mecca.formModules.*
 import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
@@ -29,8 +24,6 @@ import com.example.mecca.ui.theme.ScrollableWithScrollbar
 fun CalMetalDetectorConveyorBinFullPEC(
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-
-
     val fitted by viewModel.binFullSensorFitted
     val detail by viewModel.binFullSensorDetail
     val testMethod by viewModel.binFullSensorTestMethod
@@ -40,7 +33,9 @@ fun CalMetalDetectorConveyorBinFullPEC(
     val latched by viewModel.binFullSensorLatched
     val controlledRestart by viewModel.binFullSensorCR
 
-    // Options: remember so Compose doesn’t rebuild them constantly
+    val pvRequired = viewModel.pvRequired.value
+
+    // Options
     val testMethodOptions = remember {
         listOf("Manual Block", "Device Block", "Other")
     }
@@ -58,7 +53,7 @@ fun CalMetalDetectorConveyorBinFullPEC(
         )
     }
 
-    // Next enabled
+    // Validation for Next button
     val isNextStepEnabled = when (fitted) {
         YesNoState.NO, YesNoState.NA -> true
         YesNoState.YES -> {
@@ -69,25 +64,24 @@ fun CalMetalDetectorConveyorBinFullPEC(
                     controlledRestart != YesNoState.NA &&
                     (testMethod != "Other" || testMethodOther.isNotBlank())
         }
-
         else -> false
     }
 
-    // Tell wrapper
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
+
+    // PV Rules Calculation
+    val rules = viewModel.getBinFullSensorPvRules()
 
     Column(modifier = Modifier.fillMaxSize()) {
 
         CalibrationHeader("Failsafe Tests - Bin Full Sensor")
 
         ScrollableWithScrollbar(
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
         ) {
-
             Column {
 
                 LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
@@ -95,9 +89,7 @@ fun CalMetalDetectorConveyorBinFullPEC(
                     currentState = fitted,
                     onStateChange = { newState ->
                         viewModel.setBinFullSensorFitted(newState)
-
                         if (newState == YesNoState.NO || newState == YesNoState.NA) {
-                            // Set all relevant fields to N/A
                             viewModel.setBinFullSensorDetail("N/A")
                             viewModel.setBinFullSensorTestMethod("N/A")
                             viewModel.setBinFullSensorTestMethodOther("N/A")
@@ -105,7 +97,6 @@ fun CalMetalDetectorConveyorBinFullPEC(
                             viewModel.setBinFullSensorLatched(YesNoState.NA)
                             viewModel.setBinFullSensorCR(YesNoState.NA)
                         } else if (newState == YesNoState.YES) {
-                            // Clear fields for proper entry
                             viewModel.setBinFullSensorDetail("")
                             viewModel.setBinFullSensorTestMethod("")
                             viewModel.setBinFullSensorTestMethodOther("")
@@ -113,7 +104,6 @@ fun CalMetalDetectorConveyorBinFullPEC(
                             viewModel.setBinFullSensorLatched(YesNoState.NO)
                             viewModel.setBinFullSensorCR(YesNoState.NO)
                         }
-
                         viewModel.autoUpdateBinFullSensorPvResult()
                     },
                     helpText = "Select if there is a bin full sensor fitted.",
@@ -123,7 +113,13 @@ fun CalMetalDetectorConveyorBinFullPEC(
                         viewModel.setBinFullSensorDetail(it)
                         viewModel.autoUpdateBinFullSensorPvResult()
                     },
-                    inputMaxLength = 12
+                    inputMaxLength = 12,
+                    pvStatus = if (pvRequired) {
+                        if (fitted == YesNoState.YES) rules.getOrNull(0)?.status?.name else "N/A"
+                    } else null,
+                    pvRules = if (pvRequired) {
+                        if (fitted == YesNoState.YES) listOfNotNull(rules.getOrNull(0)) else rules
+                    } else emptyList()
                 )
 
                 FormSpacer()
@@ -138,8 +134,10 @@ fun CalMetalDetectorConveyorBinFullPEC(
                             viewModel.setBinFullSensorTestMethod(it)
                             viewModel.autoUpdateBinFullSensorPvResult()
                         },
-                        helpText = "Select one option from the dropdown.",
-                        isNAToggleEnabled = false
+                        helpText = "Select the method used to trigger the sensor.",
+                        isNAToggleEnabled = false,
+                        pvStatus = if (pvRequired) rules.getOrNull(1)?.status?.name else null,
+                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(1)) else emptyList()
                     )
 
                     FormSpacer()
@@ -156,13 +154,8 @@ fun CalMetalDetectorConveyorBinFullPEC(
                             isNAToggleEnabled = false,
                             maxLength = 12
                         )
-
                         FormSpacer()
-
-
                     }
-
-
 
                     LabeledMultiSelectDropdownWithHelp(
                         label = "Test Result",
@@ -170,24 +163,16 @@ fun CalMetalDetectorConveyorBinFullPEC(
                         options = testResultOptions,
                         selectedOptions = testResult,
                         onSelectionChange = { newSelection ->
-
-                            val cleaned = when {
-                                // If "No Result" is selected, it becomes the ONLY selection
-                                "No Result" in newSelection -> listOf("No Result")
-                                else -> newSelection.filterNot { it == "No Result" }
-                            }
-
+                            val cleaned = if ("No Result" in newSelection) listOf("No Result") 
+                                          else newSelection.filterNot { it == "No Result" }
+                            
                             viewModel.setBinFullSensorTestResult(cleaned)
-
-                            if (cleaned == listOf("No Result")) {
-                                viewModel.setBinFullSensorLatched(YesNoState.NO)
-                                viewModel.setBinFullSensorCR(YesNoState.NO)
-                            }
-
                             viewModel.autoUpdateBinFullSensorPvResult()
                         },
-                        helpText = "Select one or more items from the dropdown.",
-                        isNAToggleEnabled = false
+                        helpText = "Select the outcome of the sensor test.",
+                        isNAToggleEnabled = false,
+                        pvStatus = if (pvRequired) rules.getOrNull(2)?.status?.name else null,
+                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(2)) else emptyList()
                     )
 
                     FormSpacer()
@@ -200,7 +185,9 @@ fun CalMetalDetectorConveyorBinFullPEC(
                             viewModel.autoUpdateBinFullSensorPvResult()
                         },
                         helpText = "Is the fault output latched, or does it clear automatically?",
-                        isNAToggleEnabled = false
+                        isNAToggleEnabled = false,
+                        pvStatus = if (pvRequired) rules.getOrNull(3)?.status?.name else null,
+                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(3)) else emptyList()
                     )
 
                     FormSpacer()
@@ -213,41 +200,25 @@ fun CalMetalDetectorConveyorBinFullPEC(
                             viewModel.autoUpdateBinFullSensorPvResult()
                         },
                         helpText = "Is a controlled restart required after a fault?",
-                        isNAToggleEnabled = false
+                        isNAToggleEnabled = false,
+                        pvStatus = if (pvRequired) rules.getOrNull(4)?.status?.name else null,
+                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(4)) else emptyList()
                     )
 
                     FormSpacer()
                 }
 
-
-
-                //-----------------------------------------------------
-                // ⭐ PV RESULT (only when required)
-                //-----------------------------------------------------
-                if (viewModel.pvRequired.value) {
+                if (pvRequired) {
                     LabeledFourOptionRadioWithHelp(
                         label = "P.V. Result",
                         value = viewModel.binFullSensorTestPvResult.value,
                         onValueChange = viewModel::setBinFullSensorTestPvResult,
-                        helpText = """
-                    Auto-Pass rules (when PV required):
-                      • Sensor fitted = Yes
-                      • Detail entered
-                      • Test method selected (and 'Other' described if chosen)
-                      • At least one test result selected
-                      • Fault Latched is YES
-                      • Controlled Restart is YES
-
-                    If sensor is NO → PV = N/F.
-                    If sensor is N/A → PV = N/A.
-                    Otherwise auto-fail. You may override manually.
-                    """.trimIndent()
+                        helpText = "This section is automatically evaluated. You can manually override if necessary."
                     )
-
+                    FormSpacer()
+                    PvSectionSummaryCard(title = "Bin full test P.V. Summary", rules = rules)
                     FormSpacer()
                 }
-
-
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Comments",

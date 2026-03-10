@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -12,19 +13,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateBinDoorMonitorPvResult
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.getBinDoorMonitorPvRules
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.core.InputTransforms
-import com.example.mecca.formModules.CalibrationHeader
-import com.example.mecca.formModules.LabeledDropdownWithHelp
-import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
-import com.example.mecca.formModules.LabeledMultiSelectDropdownWithHelp
-import com.example.mecca.formModules.LabeledTextFieldWithHelp
-import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
-import com.example.mecca.formModules.LabeledYesNoSegmentedSwitchAndTextInputWithHelp
-import com.example.mecca.formModules.YesNoState
+import com.example.mecca.formModules.*
 import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
@@ -45,39 +39,20 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
     val controlledRestart by viewModel.binDoorCR
     val notes by viewModel.binDoorEngineerNotes
 
-    // Options: remember so Compose doesn’t rebuild them constantly
+    val pvRequired = viewModel.pvRequired.value
+
+    // Options
     val asFoundOptions = remember {
-        listOf(
-            "Open and Unlocked",
-            "Open and Locked",
-            "Closed and Unlocked",
-            "Closed and Locked"
-        )
+        listOf("Open and Unlocked", "Open and Locked", "Closed and Unlocked", "Closed and Locked")
     }
-
     val indicationOptions = remember {
-        listOf(
-            "No Result",
-            "Audible Notification",
-            "Visual Notification",
-            "On-Screen Notification",
-        )
+        listOf("No Result", "Audible Notification", "Visual Notification", "On-Screen Notification")
     }
-
     val timeoutResultOptions = remember {
-        listOf(
-            "No Result",
-            "Audible Notification",
-            "Visual Notification",
-            "On-Screen Notification",
-            "Belt Stops",
-            "In-feed Belt Stops",
-            "Out-feed Belt Stops",
-            "Other"
-        )
+        listOf("No Result", "Audible Notification", "Visual Notification", "On-Screen Notification", "Belt Stops", "In-feed Belt Stops", "Out-feed Belt Stops", "Other")
     }
 
-    // Next enabled
+    // Validation for Next
     val isNextStepEnabled = when (fitted) {
         YesNoState.NO, YesNoState.NA -> true
         YesNoState.YES -> {
@@ -90,34 +65,29 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                     latched != YesNoState.NA &&
                     controlledRestart != YesNoState.NA
         }
-
         else -> false
     }
 
-    // Tell wrapper
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    val rules = viewModel.getBinDoorMonitorPvRules()
 
+    Column(modifier = Modifier.fillMaxSize()) {
         CalibrationHeader("Failsafe Tests - Bin Door Monitor")
 
         ScrollableWithScrollbar(
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
         ) {
-
             Column {
-
                 LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
                     label = "Bin Door Monitor fitted?",
                     currentState = fitted,
                     onStateChange = { newState ->
                         viewModel.setBinDoorMonitorFitted(newState)
-
-                        if (newState == YesNoState.NA || newState == YesNoState.NO) {
+                        if (newState != YesNoState.YES) {
                             viewModel.setBinDoorMonitorDetail("N/A")
                             viewModel.setBinDoorStatusAsFound("N/A")
                             viewModel.setBinDoorOpenIndication(emptyList())
@@ -126,7 +96,7 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                             viewModel.setBinDoorTimeoutResult(emptyList())
                             viewModel.setBinDoorLatched(YesNoState.NA)
                             viewModel.setBinDoorCR(YesNoState.NA)
-                        } else if (newState == YesNoState.YES) {
+                        } else {
                             viewModel.setBinDoorMonitorDetail("")
                             viewModel.setBinDoorStatusAsFound("")
                             viewModel.setBinDoorOpenIndication(emptyList())
@@ -136,7 +106,6 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                             viewModel.setBinDoorLatched(YesNoState.NO)
                             viewModel.setBinDoorCR(YesNoState.NO)
                         }
-
                         viewModel.autoUpdateBinDoorMonitorPvResult()
                     },
                     helpText = "Select if a bin door monitor is fitted.",
@@ -146,13 +115,18 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                         viewModel.setBinDoorMonitorDetail(it)
                         viewModel.autoUpdateBinDoorMonitorPvResult()
                     },
+                    pvStatus = if (pvRequired) {
+                        if (fitted == YesNoState.YES) rules.getOrNull(0)?.status?.name else "N/A"
+                    } else null,
+                    pvRules = if (pvRequired) {
+                        if (fitted == YesNoState.YES) listOfNotNull(rules.getOrNull(0)) else rules
+                    } else emptyList(),
                     inputMaxLength = 12
                 )
 
                 FormSpacer()
 
                 if (fitted == YesNoState.YES) {
-
                     LabeledDropdownWithHelp(
                         label = "Bin Door Status As Found",
                         options = asFoundOptions,
@@ -161,58 +135,28 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                             viewModel.setBinDoorStatusAsFound(it)
                             viewModel.autoUpdateBinDoorMonitorPvResult()
                         },
-                        helpText = "Select one option from the dropdown.",
-                        isNAToggleEnabled = false
+                        helpText = "Select the initial state of the door.",
+                        isNAToggleEnabled = false,
+                        pvStatus = if (pvRequired) rules.getOrNull(1)?.status?.name else null,
+                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(1)) else emptyList()
                     )
 
                     FormSpacer()
 
                     LabeledMultiSelectDropdownWithHelp(
-                        label = "Bin Door Open Indication",
+                        label = "Bin Door Indication",
                         options = indicationOptions,
-                        value = openIndication.joinToString(" + "),
-                        selectedOptions = openIndication,
-                        onSelectionChange = { newSelection ->
-                            val cleaned = when {
-                                "No Result" in newSelection -> listOf("No Result")
-                                else -> newSelection.filterNot { it == "No Result" }
-                            }
-                            viewModel.setBinDoorOpenIndication(cleaned)
-
-                            if (cleaned == listOf("No Result")) {
-                                viewModel.setBinDoorLatched(YesNoState.NO)
-                                viewModel.setBinDoorCR(YesNoState.NO)
-                            }
-
+                        value = (openIndication + unlockedIndication).distinct().joinToString(", "),
+                        selectedOptions = openIndication, // Matches logic in getBinDoorMonitorPvRules
+                        onSelectionChange = { 
+                            viewModel.setBinDoorOpenIndication(it)
+                            viewModel.setBinDoorUnlockedIndication(it)
                             viewModel.autoUpdateBinDoorMonitorPvResult()
                         },
-                        helpText = "What indication is shown when the bin door is OPEN?",
-                        isNAToggleEnabled = false
-                    )
-
-                    FormSpacer()
-
-                    LabeledMultiSelectDropdownWithHelp(
-                        label = "Bin Door Unlocked Indication",
-                        options = indicationOptions,
-                        value = unlockedIndication.joinToString(" + "),
-                        selectedOptions = unlockedIndication,
-                        onSelectionChange = { newSelection ->
-                            val cleaned = when {
-                                "No Result" in newSelection -> listOf("No Result")
-                                else -> newSelection.filterNot { it == "No Result" }
-                            }
-                            viewModel.setBinDoorUnlockedIndication(cleaned)
-
-                            if (cleaned == listOf("No Result")) {
-                                viewModel.setBinDoorLatched(YesNoState.NO)
-                                viewModel.setBinDoorCR(YesNoState.NO)
-                            }
-
-                            viewModel.autoUpdateBinDoorMonitorPvResult()
-                        },
-                        helpText = "What indication is shown when the bin door is UNLOCKED?",
-                        isNAToggleEnabled = false
+                        helpText = "Unlocked and Open indication results.",
+                        isNAToggleEnabled = false,
+                        pvStatus = if (pvRequired) rules.getOrNull(2)?.status?.name else null,
+                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(2)) else emptyList()
                     )
 
                     FormSpacer()
@@ -224,106 +168,48 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                             viewModel.setBinDoorTimeoutTimer(it)
                             viewModel.autoUpdateBinDoorMonitorPvResult()
                         },
-                        helpText = "How many seconds until the system acknowledges the bin door has been left open/unlocked?",
+                        helpText = "Timer value and result recorded.",
                         isNAToggleEnabled = false,
-                        keyboardType = KeyboardType.Decimal,
-                        transformInput = InputTransforms.decimal,
-                        maxLength = 3
-                    )
-
-                    FormSpacer()
-
-                    LabeledMultiSelectDropdownWithHelp(
-                        label = "Bin Door Timeout Result",
-                        options = timeoutResultOptions,
-                        value = timeoutResult.joinToString(" + "),
-                        selectedOptions = timeoutResult,
-                        onSelectionChange = { newSelection ->
-
-                            val cleaned = when {
-                                "No Result" in newSelection -> listOf("No Result")
-                                else -> newSelection.filterNot { it == "No Result" }
-                            }
-                            viewModel.setBinDoorTimeoutResult(cleaned)
-
-                            if (cleaned == listOf("No Result")) {
-                                viewModel.setBinDoorLatched(YesNoState.NO)
-                                viewModel.setBinDoorCR(YesNoState.NO)
-                            }
-
-                            viewModel.autoUpdateBinDoorMonitorPvResult()
-                        },
-                        helpText = "What happens after the bin door timer elapses?",
-                        isNAToggleEnabled = false
+                        pvStatus = if (pvRequired) rules.getOrNull(3)?.status?.name else null,
+                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(3)) else emptyList()
                     )
 
                     FormSpacer()
 
                     LabeledTriStateSwitchWithHelp(
-                        label = "Fault Latched?",
+                        label = "Latch & Restart",
                         currentState = latched,
                         onStateChange = {
                             viewModel.setBinDoorLatched(it)
-                            viewModel.autoUpdateBinDoorMonitorPvResult()
-                        },
-                        helpText = "Is the fault output latched, or does it clear automatically?",
-                        isNAToggleEnabled = false
-                    )
-
-                    FormSpacer()
-
-                    LabeledTriStateSwitchWithHelp(
-                        label = "Controlled Restart?",
-                        currentState = controlledRestart,
-                        onStateChange = {
                             viewModel.setBinDoorCR(it)
                             viewModel.autoUpdateBinDoorMonitorPvResult()
                         },
-                        helpText = "Is a controlled restart required after a fault?",
-                        isNAToggleEnabled = false
+                        helpText = "Fault must be latched and require a controlled restart.",
+                        isNAToggleEnabled = false,
+                        pvStatus = if (pvRequired) rules.getOrNull(4)?.status?.name else null,
+                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(4)) else emptyList()
                     )
 
                     FormSpacer()
                 }
 
-
-
-                //-----------------------------------------------------
-                // ⭐ PV RESULT (only when required)
-                //-----------------------------------------------------
-                if (viewModel.pvRequired.value) {
+                if (pvRequired) {
                     LabeledFourOptionRadioWithHelp(
                         label = "P.V. Result",
                         value = viewModel.binDoorMonitorTestPvResult.value,
                         onValueChange = viewModel::setBinDoorMonitorTestPvResult,
-                        helpText = """
-                        Auto-Pass rules (when PV required):
-                          • Monitor fitted = Yes
-                          • Detail entered
-                          • Status-as-found selected
-                          • Open indication selected (not "No Result")
-                          • Unlocked indication selected (not "No Result")
-                          • Timeout value entered
-                          • Timeout result selected (not "No Result")
-                          • Fault Latched = Yes
-                          • Controlled Restart = Yes
-
-                        If monitor is No → PV = N/F.
-                        If monitor is N/A → PV = N/A.
-                        Otherwise auto-fail. You may override manually.
-                    """.trimIndent()
+                        helpText = "Overall status for Bin Door Monitor failsafe validation."
                     )
-
+                    FormSpacer()
+                    PvSectionSummaryCard(title = "Bin door monitor test P.V. Summary", rules = rules)
                     FormSpacer()
                 }
-
-
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Comments",
                     value = notes,
                     onValueChange = viewModel::setBinDoorEngineerNotes,
-                    helpText = "Enter any notes relevant to this section.",
+                    helpText = "Optional notes for this section.",
                     isNAToggleEnabled = false,
                     maxLength = 50
                 )
