@@ -24,6 +24,8 @@ import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.RemoveCircle
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.AlertDialog
@@ -70,15 +72,6 @@ import com.example.mecca.ui.theme.FormWrapperSurface
 import com.example.mecca.ui.theme.SnbDarkGrey
 import com.example.mecca.ui.theme.SnbRed
 
-enum class PvRuleStatus {
-    Pass, Fail, Incomplete
-}
-
-data class PvRule(
-    val description: String,
-    val status: PvRuleStatus
-)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormRowWrapper(
@@ -117,40 +110,41 @@ fun FormRowWrapper(
                     overflow = TextOverflow.Ellipsis
                 )
 
+                if (onHelpClick != null) {
+                    IconButton(
+                        onClick = { if (!isDisabled) onHelpClick() },
+                        enabled = !isDisabled,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
+                            contentDescription = "Help for $label",
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+
                 if (pvStatus != null) {
                     PvIndicator(status = pvStatus, rules = pvRules)
                 }
 
                 if (onNaClick != null) {
-                    val isNa = naButtonText == "Edit"
+                    val isApplicable = naButtonText != "Edit"
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Switch(
-                            checked = isNa,
+                            checked = isApplicable,
                             onCheckedChange = { onNaClick() },
-                            modifier = Modifier.scale(0.8f),
+                            modifier = Modifier.scale(0.7f),
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = Color.White,
                                 checkedTrackColor = SnbDarkGrey,
                                 uncheckedThumbColor = Color.White,
                                 uncheckedTrackColor = Color.LightGray
                             )
-                        )
-                    }
-                }
-
-                if (onHelpClick != null) {
-                    IconButton(
-                        onClick = { if (!isDisabled) onHelpClick() },
-                        enabled = !isDisabled,
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
-                            contentDescription = "Help for $label"
                         )
                     }
                 }
@@ -174,12 +168,13 @@ fun PvIndicator(status: String, rules: List<PvRule> = emptyList()) {
         "Pass" -> Color(0xFF4CAF50) // Green
         "Fail" -> SnbRed
         "Warning", "Incomplete" -> Color(0xFFFFA000) // Amber
+        "N/A" -> Color.Gray
         else -> Color.Gray
     }
 
     Box(
         modifier = Modifier
-            .size(28.dp)
+            .size(24.dp)
             .clip(CircleShape)
             .background(backgroundColor)
             .border(1.dp, Color.White.copy(alpha = 0.3f), CircleShape)
@@ -189,7 +184,7 @@ fun PvIndicator(status: String, rules: List<PvRule> = emptyList()) {
         Text(
             text = "PV",
             color = Color.White,
-            fontSize = 10.sp,
+            fontSize = 9.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center
         )
@@ -227,6 +222,11 @@ fun PvIndicator(status: String, rules: List<PvRule> = emptyList()) {
                             color = SnbRed,
                             label = "FAILED",
                             description = "Data entered does not meet the required sensitivity or safety criteria."
+                        )
+                        PvHelpLegendItem(
+                            color = Color.Gray,
+                            label = "NOT APPLICABLE",
+                            description = "Validation is not required for this section."
                         )
                     } else {
                         Text(
@@ -270,12 +270,16 @@ private fun PvRuleItem(rule: PvRule) {
                 PvRuleStatus.Pass -> Icons.Default.CheckCircle
                 PvRuleStatus.Fail -> Icons.Default.Cancel
                 PvRuleStatus.Incomplete -> Icons.AutoMirrored.Filled.Help
+                PvRuleStatus.Warning -> Icons.Default.Warning
+                PvRuleStatus.NA -> Icons.Default.RemoveCircle
             },
             contentDescription = null,
             tint = when (rule.status) {
                 PvRuleStatus.Pass -> Color(0xFF4CAF50)
                 PvRuleStatus.Fail -> SnbRed
                 PvRuleStatus.Incomplete -> Color(0xFFFFA000)
+                PvRuleStatus.Warning -> Color(0xFFFFA000)
+                PvRuleStatus.NA -> Color.Gray
             },
             modifier = Modifier.size(18.dp).padding(top = 2.dp)
         )
@@ -399,14 +403,29 @@ fun FormRowWrapperEditableLabel(
                         overflow = TextOverflow.Ellipsis
                     )
 
+                    if (onHelpClick != null) {
+                        IconButton(
+                            onClick = { if (!isDisabled) onHelpClick() },
+                            enabled = !isDisabled,
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
+                                contentDescription = "Help for $label",
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+
                     IconButton(
                         onClick = { isEditingLabel = true },
                         enabled = !isDisabled,
-                        modifier = Modifier.size(40.dp)
+                        modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Edit,
-                            contentDescription = "Edit label"
+                            contentDescription = "Edit label",
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
@@ -416,35 +435,22 @@ fun FormRowWrapperEditableLabel(
                 }
 
                 if (onNaClick != null) {
-                    val isNa = naButtonText == "Edit"
+                    val isApplicable = naButtonText != "Edit"
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Switch(
-                            checked = isNa,
+                            checked = isApplicable,
                             onCheckedChange = { onNaClick() },
-                            modifier = Modifier.scale(0.8f),
+                            modifier = Modifier.scale(0.7f),
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = Color.White,
                                 checkedTrackColor = SnbDarkGrey,
                                 uncheckedThumbColor = Color.White,
                                 uncheckedTrackColor = Color.LightGray
                             )
-                        )
-                    }
-                }
-
-                if (onHelpClick != null) {
-                    IconButton(
-                        onClick = { if (!isDisabled) onHelpClick() },
-                        enabled = !isDisabled,
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
-                            contentDescription = "Help for $label"
                         )
                     }
                 }

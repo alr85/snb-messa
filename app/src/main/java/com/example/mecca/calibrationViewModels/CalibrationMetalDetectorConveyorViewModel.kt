@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mecca.ApiService
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateFerrousPvResult
 import com.example.mecca.daos.CustomerDAO
 import com.example.mecca.daos.MdModelsDAO
 import com.example.mecca.daos.MetalDetectorConveyorCalibrationDAO
@@ -1941,7 +1942,9 @@ class CalibrationMetalDetectorConveyorViewModel(
 
 
     fun setSensitivityAsLeftFerrous(value: String) {
-        _sensitivityAsLeftFerrous.value = value}
+        _sensitivityAsLeftFerrous.value = value
+        autoUpdateFerrousPvResult()
+    }
 
 
     // Sample Certificate Number
@@ -3369,6 +3372,43 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun setSmeName(newValue: String) {
         _smeName.value = newValue
     }
+
+    private val _operatorTestWitnessedInfeed = mutableStateOf(YesNoState.NO)
+    val operatorTestWitnessedInfeed: State<YesNoState> = _operatorTestWitnessedInfeed
+
+    fun setOperatorTestWitnessedInfeed(newValue: YesNoState) {
+        _operatorTestWitnessedInfeed.value = newValue
+    }
+
+    private val _operatorTestWitnessedRejectConfirm = mutableStateOf(YesNoState.NO)
+    val operatorTestWitnessedRejectConfirm: State<YesNoState> = _operatorTestWitnessedRejectConfirm
+
+    fun setOperatorTestWitnessedRejectConfirm(newValue: YesNoState) {
+        _operatorTestWitnessedRejectConfirm.value = newValue
+    }
+
+    private val _operatorTestWitnessedBinFull = mutableStateOf(YesNoState.NO)
+    val operatorTestWitnessedBinFull: State<YesNoState> = _operatorTestWitnessedBinFull
+
+    fun setOperatorTestWitnessedBinFull(newValue: YesNoState) {
+        _operatorTestWitnessedBinFull.value = newValue
+    }
+
+    private val _operatorTestWitnessedBinDoor = mutableStateOf(YesNoState.NO)
+    val operatorTestWitnessedBinDoor: State<YesNoState> = _operatorTestWitnessedBinDoor
+
+    fun setOperatorTestWitnessedBinDoor(newValue: YesNoState) {
+        _operatorTestWitnessedBinDoor.value = newValue
+    }
+
+    private val _operatorTestWitnessedAirFail = mutableStateOf(YesNoState.NO)
+    val operatorTestWitnessedAirFail: State<YesNoState> = _operatorTestWitnessedAirFail
+
+    fun setOperatorTestWitnessedAirFail(newValue: YesNoState) {
+        _operatorTestWitnessedAirFail.value = newValue
+    }
+
+
 
     private val _smeEngineerNotes = mutableStateOf("")
     val smeEngineerNotes: State<(String)> = _smeEngineerNotes

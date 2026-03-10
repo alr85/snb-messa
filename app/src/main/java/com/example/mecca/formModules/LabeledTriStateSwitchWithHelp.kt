@@ -32,6 +32,7 @@ fun LabeledTriStateSwitchWithHelp(
     onStateChange: (YesNoState) -> Unit,
     helpText: String,
     pvStatus: String? = null,
+    pvRules: List<PvRule> = emptyList(),
     isNAToggleEnabled: Boolean = true
 ) {
     var showHelpDialog by remember { mutableStateOf(false) }
@@ -54,6 +55,7 @@ fun LabeledTriStateSwitchWithHelp(
         naButtonText = if (isDisabled) "Edit" else "N/A",
         isDisabled = isDisabled,
         pvStatus = pvStatus,
+        pvRules = pvRules,
         onNaClick = if (isNAToggleEnabled) {
             {
                 isDisabled = !isDisabled

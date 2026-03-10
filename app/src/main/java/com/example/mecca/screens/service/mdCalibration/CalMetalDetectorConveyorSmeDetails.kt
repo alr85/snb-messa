@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,17 +17,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateSmePvResult
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.calculateOverallStatus
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.getSmePvRules
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.formModules.CalibrationHeader
-import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
-import com.example.mecca.formModules.LabeledTextFieldWithHelp
-import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
-import com.example.mecca.formModules.LabeledTwoTextInputsWithHelp
-import com.example.mecca.formModules.YesNoState
+import com.example.mecca.formModules.*
 import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
@@ -49,6 +48,17 @@ fun CalMetalDetectorConveyorSmeDetails(
     val largeMetalCert by viewModel.operatorTestResultCertNumberLargeMetal
 
     val smeName by viewModel.smeName
+
+
+    val infeed by viewModel.operatorTestWitnessedInfeed
+    val rejectConfirm by viewModel.operatorTestWitnessedRejectConfirm
+    val binFull by viewModel.operatorTestWitnessedBinFull
+    val binDoor by viewModel.operatorTestWitnessedBinDoor
+    val airFail by viewModel.operatorTestWitnessedAirFail
+
+
+
+
     val notes by viewModel.smeEngineerNotes
 
     // Warning Logic
@@ -86,6 +96,9 @@ fun CalMetalDetectorConveyorSmeDetails(
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
+    // PV Rules Calculation
+    val rules = viewModel.getSmePvRules()
+
     Column(modifier = Modifier.fillMaxSize()) {
 
         CalibrationHeader("Operator Test")
@@ -119,7 +132,7 @@ fun CalMetalDetectorConveyorSmeDetails(
                             viewModel.setOperatorTestResultFerrous("")
                             viewModel.setOperatorTestResultNonFerrous("")
                             viewModel.setOperatorTestResultStainless("")
-                            viewModel.setOperatorTestResultLargeMetal("")
+                            viewModel.setOperatorTestResultLargeMetal("20.0") // Default as requested
                             viewModel.setOperatorTestResultCertNumberFerrous("")
                             viewModel.setOperatorTestResultCertNumberNonFerrous("")
                             viewModel.setOperatorTestResultCertNumberStainless("")
@@ -131,9 +144,9 @@ fun CalMetalDetectorConveyorSmeDetails(
                     },
                     helpText = "If you witnessed an operator perform a successful sensitivity check, select Yes. Otherwise select No or N/A.",
                     pvStatus = if (viewModel.pvRequired.value) {
-                        if (operatorTestWitnessed == YesNoState.YES) "Pass" else "Fail"
+                        rules.firstOrNull { it.description.contains("witnessed", ignoreCase = true) }?.status?.name
                     } else null,
-
+                    pvRules = rules.filter { it.description.contains("witnessed", ignoreCase = true) }
                 )
 
                 FormSpacer()
@@ -148,10 +161,11 @@ fun CalMetalDetectorConveyorSmeDetails(
                             viewModel.autoUpdateSmePvResult()
                         },
                         helpText = "Enter the name of the operator in charge of this system",
-                        isNAToggleEnabled = true,
+                        isNAToggleEnabled = false,
                         pvStatus = if (viewModel.pvRequired.value) {
-                            if (operatorName.isNotBlank()) "Pass" else "Fail"
+                            rules.firstOrNull { it.description.contains("witnessed", ignoreCase = true) }?.status?.name
                         } else null,
+                        pvRules = rules.filter { it.description.contains("witnessed", ignoreCase = true) },
                         maxLength = 25
                     )
 
@@ -174,7 +188,11 @@ fun CalMetalDetectorConveyorSmeDetails(
                         helpText = "Enter the operator test size and certificate number for Ferrous.",
                         firstInputKeyboardType = KeyboardType.Decimal,
                         secondInputKeyboardType = KeyboardType.Text,
-                        isNAToggleEnabled = true,
+                        isNAToggleEnabled = false,
+                        pvStatus = if (viewModel.pvRequired.value) {
+                            rules.firstOrNull { it.description.contains("Ferrous", ignoreCase = true) }?.status?.name
+                        } else null,
+                        pvRules = rules.filter { it.description.contains("Ferrous", ignoreCase = true) },
                         firstMaxLength = 4,
                         secondMaxLength = 12
                     )
@@ -202,7 +220,11 @@ fun CalMetalDetectorConveyorSmeDetails(
                         helpText = "Enter the operator test size and certificate number for Non-Ferrous.",
                         firstInputKeyboardType = KeyboardType.Decimal,
                         secondInputKeyboardType = KeyboardType.Text,
-                        isNAToggleEnabled = true,
+                        isNAToggleEnabled = false,
+                        pvStatus = if (viewModel.pvRequired.value) {
+                            rules.firstOrNull { it.description.contains("Non-Ferrous", ignoreCase = true) }?.status?.name
+                        } else null,
+                        pvRules = rules.filter { it.description.contains("Non-Ferrous", ignoreCase = true) },
                         firstMaxLength = 4,
                         secondMaxLength = 12
                     )
@@ -230,7 +252,11 @@ fun CalMetalDetectorConveyorSmeDetails(
                         helpText = "Enter the operator test size and certificate number for Stainless.",
                         firstInputKeyboardType = KeyboardType.Decimal,
                         secondInputKeyboardType = KeyboardType.Text,
-                        isNAToggleEnabled = true,
+                        isNAToggleEnabled = false,
+                        pvStatus = if (viewModel.pvRequired.value) {
+                            rules.firstOrNull { it.description.contains("Stainless", ignoreCase = true) }?.status?.name
+                        } else null,
+                        pvRules = rules.filter { it.description.contains("Stainless", ignoreCase = true) },
                         firstMaxLength = 4,
                         secondMaxLength = 12
                     )
@@ -258,9 +284,95 @@ fun CalMetalDetectorConveyorSmeDetails(
                         helpText = "Enter the operator test size and certificate number for Large Metal.",
                         firstInputKeyboardType = KeyboardType.Decimal,
                         secondInputKeyboardType = KeyboardType.Text,
-                        isNAToggleEnabled = true,
+                        isNAToggleEnabled = false,
+                        pvStatus = if (viewModel.pvRequired.value) {
+                            rules.firstOrNull { it.description.contains("Large metal", ignoreCase = true) }?.status?.name
+                        } else null,
+                        pvRules = rules.filter { it.description.contains("Large metal", ignoreCase = true) },
                         firstMaxLength = 4,
                         secondMaxLength = 12
+                    )
+
+
+
+                    FormSpacer()
+
+                    LabeledTriStateSwitchWithHelp(
+                        label = "Infeed Sensor Test",
+                        currentState = infeed,
+                        onStateChange = { newState ->
+                            viewModel.setOperatorTestWitnessedInfeed(newState)
+                        },
+                        isNAToggleEnabled = false,
+                        helpText = "If you witnessed an operator perform a successful Infeed Sensor check, select Yes. Otherwise select No or N/A.",
+                        pvStatus = if (viewModel.pvRequired.value) {
+                            rules.firstOrNull { it.description.contains("Infeed", ignoreCase = true) }?.status?.name
+                        } else null,
+                        pvRules = rules.filter { it.description.contains("Infeed", ignoreCase = true) }
+                    )
+
+                    FormSpacer()
+
+                    LabeledTriStateSwitchWithHelp(
+                        label = "Reject Confirm Test",
+                        currentState = rejectConfirm,
+                        onStateChange = { newState ->
+                            viewModel.setOperatorTestWitnessedRejectConfirm(newState)
+                        },
+                        isNAToggleEnabled = false,
+                        helpText = "If you witnessed an operator perform a successful Reject Confirm check, select Yes. Otherwise select No or N/A.",
+                        pvStatus = if (viewModel.pvRequired.value) {
+                            rules.firstOrNull { it.description.contains("Confirm", ignoreCase = true) }?.status?.name
+                        } else null,
+                        pvRules = rules.filter { it.description.contains("Confirm", ignoreCase = true) }
+                    )
+
+                    FormSpacer()
+
+                    LabeledTriStateSwitchWithHelp(
+                        label = "Bin Full Test",
+                        currentState = binFull,
+                        onStateChange = { newState ->
+                            viewModel.setOperatorTestWitnessedBinFull(newState)
+                        },
+                        isNAToggleEnabled = false,
+                        helpText = "If you witnessed an operator perform a successful Bin Full check, select Yes. Otherwise select No or N/A.",
+                        pvStatus = if (viewModel.pvRequired.value) {
+                            rules.firstOrNull { it.description.contains("Full", ignoreCase = true) }?.status?.name
+                        } else null,
+                        pvRules = rules.filter { it.description.contains("Full", ignoreCase = true) }
+                    )
+
+                    FormSpacer()
+
+                    LabeledTriStateSwitchWithHelp(
+                        label = "Bin Door Test",
+                        currentState = binDoor,
+                        onStateChange = { newState ->
+                            viewModel.setOperatorTestWitnessedBinDoor(newState)
+                        },
+                        isNAToggleEnabled = false,
+                        helpText = "If you witnessed an operator perform a successful Bin Door check, select Yes. Otherwise select No or N/A.",
+                        pvStatus = if (viewModel.pvRequired.value) {
+                            rules.firstOrNull { it.description.contains("Door", ignoreCase = true) }?.status?.name
+                        } else null,
+                        pvRules = rules.filter { it.description.contains("Door", ignoreCase = true) }
+                    )
+
+                    FormSpacer()
+
+                    LabeledTriStateSwitchWithHelp(
+                        label = "Air Fail Test",
+                        currentState = airFail,
+                        onStateChange = { newState ->
+                            viewModel.setOperatorTestWitnessedAirFail(newState)
+                        },
+                        isNAToggleEnabled = false,
+                        helpText = "If you witnessed an operator perform a successful Air Fail check, select Yes. Otherwise select No or N/A.",
+                        pvStatus = if (viewModel.pvRequired.value) {
+                            rules.firstOrNull { it.description.contains("Air", ignoreCase = true) }?.status?.name
+                        } else null,
+                        pvRules = rules.filter { it.description.contains("Air", ignoreCase = true) }
                     )
 
                     FormSpacer()
@@ -273,41 +385,24 @@ fun CalMetalDetectorConveyorSmeDetails(
                             viewModel.autoUpdateSmePvResult()
                         },
                         helpText = "Enter the name of the SME currently on site",
-                        isNAToggleEnabled = true,
+                        isNAToggleEnabled = false,
+                        pvStatus = if (viewModel.pvRequired.value) {
+                            rules.firstOrNull { it.description.contains("SME", ignoreCase = true) }?.status?.name
+                        } else null,
+                        pvRules = rules.filter { it.description.contains("SME", ignoreCase = true) },
                         maxLength = 25
                     )
-
                     FormSpacer()
 
                 }
-
-
 
                 if (viewModel.pvRequired.value) {
-                    LabeledFourOptionRadioWithHelp(
-                        label = "P.V. Result",
-                        value = viewModel.smeTestPvResult.value,
-                        onValueChange = viewModel::setSmeTestPvResult,
-                        helpText = """
-                            Auto-Pass rules (when PV required):
-                              • Operator Test Witnessed = Yes
-                              • Operator name entered
-                              • SME name entered
-                              • All four operator test sizes entered (Fe/NFe/SS/Large)
-                              • All four certificate numbers entered
-                              • Operator test sizes match engineer test sizes
-
-                            If Witnessed = No / N/A → PV = N/A.
-                            Otherwise auto-fail. You may override manually.
-                        """.trimIndent(),
-                        showNotFittedOption = false,
-                        notFittedEnabled = false
+                    PvSectionSummaryCard(
+                        title = "Operator Test P.V. Summary",
+                        rules = rules
                     )
-
                     FormSpacer()
                 }
-
-
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Comments",

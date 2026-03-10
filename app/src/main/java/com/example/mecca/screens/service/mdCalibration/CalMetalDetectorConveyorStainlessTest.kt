@@ -1,6 +1,5 @@
 package com.example.mecca.screens.service.mdCalibration
 
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,7 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateStainlessPvResult
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.*
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.formModules.*
 import com.example.mecca.ui.theme.FormSpacer
@@ -36,19 +35,20 @@ import com.example.mecca.ui.theme.ScrollableWithScrollbar
 fun CalMetalDetectorConveyorStainlessTest(
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    val sensitivity by viewModel.sensitivityAsLeftStainless
-    val sampleCert by viewModel.sampleCertificateNumberStainless
+    // Pull state from VM
+    val sensitivityAsLeftStainless by viewModel.sensitivityAsLeftStainless
+    val sampleCertificateNumberStainless by viewModel.sampleCertificateNumberStainless
 
-    val peakLeading by viewModel.peakSignalStainlessLeading
-    val peakMiddle by viewModel.peakSignalStainlessMiddle
-    val peakTrailing by viewModel.peakSignalStainlessTrailing
+    val peakSignalLeading by viewModel.peakSignalStainlessLeading
+    val peakSignalMiddle by viewModel.peakSignalStainlessMiddle
+    val peakSignalTrailing by viewModel.peakSignalStainlessTrailing
 
     val detectLeading by viewModel.detectRejectStainlessLeading
     val detectMiddle by viewModel.detectRejectStainlessMiddle
     val detectTrailing by viewModel.detectRejectStainlessTrailing
 
-    val notes by viewModel.stainlessTestEngineerNotes
-    
+    val engineerNotes by viewModel.stainlessTestEngineerNotes
+
     val isConveyor by viewModel.isConveyor
 
     // Default hidden values to safe state if not a conveyor
@@ -63,31 +63,41 @@ fun CalMetalDetectorConveyorStainlessTest(
 
     // Sensitivity Warning Logic
     val customerReq = viewModel.sensitivityRequirementStainless.value.replace(",", ".").toDoubleOrNull() ?: 0.0
-    val achieved = sensitivity.replace(",", ".").toDoubleOrNull() ?: 0.0
+    val achieved = sensitivityAsLeftStainless.replace(",", ".").toDoubleOrNull() ?: 0.0
     val isSensitivityWarning = achieved > customerReq && achieved > 0.0 && customerReq > 0.0
 
-    // Validation for Next
+    // Validation
     val isNextStepEnabled =
-        sensitivity.isNotBlank() &&
-                sampleCert.isNotBlank() &&
-                (detectLeading != YesNoState.YES || peakLeading.isNotBlank()) &&
+        sensitivityAsLeftStainless.isNotBlank() &&
+                sampleCertificateNumberStainless.isNotBlank() &&
+                (detectLeading != YesNoState.YES || peakSignalLeading.isNotBlank()) &&
                 (!isConveyor || (
-                    (detectMiddle != YesNoState.YES || peakMiddle.isNotBlank()) &&
-                    (detectTrailing != YesNoState.YES || peakTrailing.isNotBlank())
+                    (detectMiddle != YesNoState.YES || peakSignalMiddle.isNotBlank()) &&
+                    (detectTrailing != YesNoState.YES || peakSignalTrailing.isNotBlank())
                 ))
 
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
+    // PV Rules Calculation
+    val rules = viewModel.getStainlessPvRules()
+    
+    val sensitivityAndCertStatus = when {
+        sensitivityAsLeftStainless == "N/A" -> "N/A"
+        sampleCertificateNumberStainless.isBlank() -> "Fail"
+        sensitivityAsLeftStainless.isBlank() -> "Fail"
+        achieved > customerReq -> "Warning"
+        else -> "Pass"
+    }
+
     Column(Modifier.fillMaxSize()) {
 
-        CalibrationHeader("Stainless Sensitivity (As Left)")
+        CalibrationHeader("Stainless Steel Sensitivity (As Left)")
 
         ScrollableWithScrollbar(
-            modifier = Modifier
-                .fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(horizontal = 16.dp),
         ) {
             Column {
 
@@ -105,15 +115,14 @@ fun CalMetalDetectorConveyorStainlessTest(
                 Spacer(Modifier.height(6.dp))
 
                 //-----------------------------------------------------
-                // Combined: Achieved Sensitivity + Certificate
+                //  Achieved Sensitivity + Certificate
                 //-----------------------------------------------------
                 LabeledTwoTextInputsWithHelp(
                     label = "Achieved Sensitivity & Certificate",
                     firstInputLabel = "Size",
-                    firstInputValue = sensitivity,
+                    firstInputValue = sensitivityAsLeftStainless,
                     onFirstInputValueChange = {
                         viewModel.setSensitivityAsLeftStainless(it)
-
                         if (it == "N/A") {
                             viewModel.disableStainlessTest()
                         } else {
@@ -122,7 +131,7 @@ fun CalMetalDetectorConveyorStainlessTest(
                         viewModel.autoUpdateStainlessPvResult()
                     },
                     secondInputLabel = "Cert No.",
-                    secondInputValue = sampleCert,
+                    secondInputValue = sampleCertificateNumberStainless,
                     onSecondInputValueChange = {
                         viewModel.setSampleCertificateNumberStainless(it)
                         viewModel.autoUpdateStainlessPvResult()
@@ -131,125 +140,77 @@ fun CalMetalDetectorConveyorStainlessTest(
                         Enter the achieved Stainless Steel sensitivity and the certificate number.
                         
                         Customer Requirement: ${viewModel.sensitivityRequirementStainless.value}mm
-                        M&S Target: ${viewModel.sensitivityData.value?.stainless316TargetMM}mm
+                        M&S Target: ${viewModel.sensitivityData.value?.stainless316TargetMM}mm  
                         Max Allowed: ${viewModel.sensitivityData.value?.stainless316MaxMM}mm
                     """.trimIndent(),
-                    firstInputKeyboardType = KeyboardType.Number,
+                    firstInputKeyboardType = KeyboardType.Decimal,
                     secondInputKeyboardType = KeyboardType.Text,
                     isNAToggleEnabled = true,
-                    pvStatus = if (viewModel.pvRequired.value) {
-                        val sVal = sensitivity.toDoubleOrNull()
-                        val cReq = viewModel.sensitivityRequirementStainless.value.toDoubleOrNull()
-                        when {
-                            sensitivity == "N/A" -> "N/A"
-                            sensitivity.isBlank() || sampleCert.isBlank() -> "Fail"
-                            sVal == null -> "Fail"
-                            cReq != null && sVal > cReq -> "Warning"
-                            else -> "Pass"
-                        }
-                    } else null,
-                    pvRules = if (viewModel.pvRequired.value && sensitivity != "N/A") {
-                        val sVal = sensitivity.toDoubleOrNull()
-                        val cReq = viewModel.sensitivityRequirementStainless.value.toDoubleOrNull()
-                        listOf(
-                            PvRule("Valid sensitivity size must be entered.", if (sVal != null) PvRuleStatus.Pass else if (sensitivity.isBlank()) PvRuleStatus.Fail else PvRuleStatus.Fail),
-                            PvRule("Certificate number must be entered.", if (sampleCert.isNotBlank()) PvRuleStatus.Pass else PvRuleStatus.Fail),
-                            PvRule("Sensitivity must be $cReq mm or better (Customer Requirement).", when {
-                                sVal == null || cReq == null -> PvRuleStatus.Incomplete
-                                sVal <= cReq -> PvRuleStatus.Pass
-                                else -> PvRuleStatus.Incomplete // Maps to Warning/Amber
-                            })
-                        )
-                    } else emptyList()
+                    pvStatus = if (viewModel.pvRequired.value) sensitivityAndCertStatus else null,
+                    pvRules = rules.filter { it.description.contains("sensitivity", ignoreCase = true) || it.description.contains("Certificate", ignoreCase = true) },
+                    firstMaxLength = 4,
+                    secondMaxLength = 12
                 )
 
                 if (isSensitivityWarning) {
                     Spacer(Modifier.height(4.dp))
                     Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.errorContainer, MaterialTheme.shapes.small)
-                            .padding(8.dp)
+                        modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.errorContainer, MaterialTheme.shapes.small).padding(8.dp)
                     ) {
                         Text(
                             text = "⚠️ Achieved sensitivity ($achieved mm) is worse than Customer Requirement ($customerReq mm).",
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold
+                            color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold
                         )
                     }
                 }
 
-               FormSpacer()
+                FormSpacer()
 
-                //-----------------------------------------------------
-                // Skip detection tests entirely if N/A
-                //-----------------------------------------------------
-                if (sensitivity != "N/A") {
-
+                // Detection tests
+                if (sensitivityAsLeftStainless != "N/A") {
                     LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
                         label = if(isConveyor){ "Detected & Rejected (Leading)" } else {"Detected & Rejected"},
                         currentState = detectLeading,
-                        onStateChange = {
+                        onStateChange = { 
                             viewModel.setDetectRejectStainlessLeading(it)
-                            viewModel.autoUpdateStainlessPvResult()
+                            viewModel.autoUpdateStainlessPvResult() 
                         },
-                        helpText = if(isConveyor){ "Leading-edge test result & peak signal." } else {"Test result & peak signal."},
+                        helpText = if(isConveyor){ "Leading edge test result & signal." } else {"Test result & signal."},
                         inputLabel = "Produced Signal",
-                        inputValue = peakLeading,
-                        onInputValueChange = {
+                        inputValue = peakSignalLeading,
+                        onInputValueChange = { 
                             viewModel.setPeakSignalStainlessLeading(it)
-                            viewModel.autoUpdateStainlessPvResult()
+                            viewModel.autoUpdateStainlessPvResult() 
                         },
                         inputMaxLength = 12,
                         pvStatus = if (viewModel.pvRequired.value) {
-                            when {
-                                detectLeading == YesNoState.NA -> "N/A"
-                                detectLeading == YesNoState.YES && peakLeading.isNotBlank() -> "Pass"
-                                detectLeading == YesNoState.NO -> "Fail"
-                                else -> "Incomplete"
-                            }
+                            rules.firstOrNull { it.description.contains("Leading", ignoreCase = true) }?.status?.name ?: "Incomplete"
                         } else null,
-                        pvRules = if (viewModel.pvRequired.value && detectLeading != YesNoState.NA) {
-                            listOf(
-                                PvRule("Pack must be successfully detected and rejected.", if (detectLeading == YesNoState.YES) PvRuleStatus.Pass else PvRuleStatus.Fail),
-                                PvRule("Produced signal must be recorded.", if (peakLeading.isNotBlank()) PvRuleStatus.Pass else PvRuleStatus.Incomplete)
-                            )
-                        } else emptyList()
+                        pvRules = rules.filter { it.description.contains("Leading", ignoreCase = true) }
                     )
 
-                   FormSpacer()
+                    FormSpacer()
 
-                    if (isConveyor) {
+                    if (isConveyor){
                         LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
                             label = "Detected & Rejected (Middle)",
                             currentState = detectMiddle,
-                            onStateChange = {
+                            onStateChange = { 
                                 viewModel.setDetectRejectStainlessMiddle(it)
-                                viewModel.autoUpdateStainlessPvResult()
+                                viewModel.autoUpdateStainlessPvResult() 
                             },
-                            helpText = "Middle test result & peak signal.",
+                            helpText = "Middle test result & signal.",
                             inputLabel = "Produced Signal",
-                            inputValue = peakMiddle,
-                            onInputValueChange = {
+                            inputValue = peakSignalMiddle,
+                            onInputValueChange = { 
                                 viewModel.setPeakSignalStainlessMiddle(it)
-                                viewModel.autoUpdateStainlessPvResult()
+                                viewModel.autoUpdateStainlessPvResult() 
                             },
                             inputMaxLength = 12,
                             pvStatus = if (viewModel.pvRequired.value) {
-                                when {
-                                    detectMiddle == YesNoState.NA -> "N/A"
-                                    detectMiddle == YesNoState.YES && peakMiddle.isNotBlank() -> "Pass"
-                                    detectMiddle == YesNoState.NO -> "Fail"
-                                    else -> "Incomplete"
-                                }
+                                rules.firstOrNull { it.description.contains("Middle", ignoreCase = true) }?.status?.name ?: "Incomplete"
                             } else null,
-                            pvRules = if (viewModel.pvRequired.value && detectMiddle != YesNoState.NA) {
-                                listOf(
-                                    PvRule("Pack must be successfully detected and rejected.", if (detectMiddle == YesNoState.YES) PvRuleStatus.Pass else PvRuleStatus.Fail),
-                                    PvRule("Produced signal must be recorded.", if (peakMiddle.isNotBlank()) PvRuleStatus.Pass else PvRuleStatus.Incomplete)
-                                )
-                            } else emptyList()
+                            pvRules = rules.filter { it.description.contains("Middle", ignoreCase = true) }
                         )
 
                         FormSpacer()
@@ -257,77 +218,42 @@ fun CalMetalDetectorConveyorStainlessTest(
                         LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
                             label = "Detected & Rejected (Trailing)",
                             currentState = detectTrailing,
-                            onStateChange = {
+                            onStateChange = { 
                                 viewModel.setDetectRejectStainlessTrailing(it)
-                                viewModel.autoUpdateStainlessPvResult()
+                                viewModel.autoUpdateStainlessPvResult() 
                             },
-                            helpText = "Trailing test result & peak signal.",
+                            helpText = "Trailing-edge test result & signal.",
                             inputLabel = "Produced Signal",
-                            inputValue = peakTrailing,
-                            onInputValueChange = {
+                            inputValue = peakSignalTrailing,
+                            onInputValueChange = { 
                                 viewModel.setPeakSignalStainlessTrailing(it)
-                                viewModel.autoUpdateStainlessPvResult()
+                                viewModel.autoUpdateStainlessPvResult() 
                             },
                             inputMaxLength = 12,
                             pvStatus = if (viewModel.pvRequired.value) {
-                                when {
-                                    detectTrailing == YesNoState.NA -> "N/A"
-                                    detectTrailing == YesNoState.YES && peakTrailing.isNotBlank() -> "Pass"
-                                    detectTrailing == YesNoState.NO -> "Fail"
-                                    else -> "Incomplete"
-                                }
+                                rules.firstOrNull { it.description.contains("Trailing", ignoreCase = true) }?.status?.name ?: "Incomplete"
                             } else null,
-                            pvRules = if (viewModel.pvRequired.value && detectTrailing != YesNoState.NA) {
-                                listOf(
-                                    PvRule("Pack must be successfully detected and rejected.", if (detectTrailing == YesNoState.YES) PvRuleStatus.Pass else PvRuleStatus.Fail),
-                                    PvRule("Produced signal must be recorded.", if (peakTrailing.isNotBlank()) PvRuleStatus.Pass else PvRuleStatus.Incomplete)
-                                )
-                            } else emptyList()
+                            pvRules = rules.filter { it.description.contains("Trailing", ignoreCase = true) }
                         )
 
                         FormSpacer()
                     }
-
                 }
 
-
-
-                //-----------------------------------------------------
-                // PV RESULT (only when required)
-                //-----------------------------------------------------
+                // PV Summary Card
                 if (viewModel.pvRequired.value) {
-                    LabeledFourOptionRadioWithHelp(
-                        label = "P.V. Result",
-                        value = viewModel.stainlessTestPvResult.value,
-                        onValueChange = viewModel::setStainlessTestPvResult,
-                        helpText = """
-                            Auto-Pass rules:
-                              • Achieved Sensitivity ≤ M&S Max
-                              • Certificate number entered
-                              • All required D&R = Yes
-                              • All peak signals entered
-
-                            Otherwise auto-fail. You may override manually.
-                        """.trimIndent(),
-                        showNotFittedOption = false,
-                        notFittedEnabled = false
-                    )
-
+                    PvSectionSummaryCard(title = "Stainless Steel Test P.V. Summary", rules = rules)
                     FormSpacer()
                 }
 
-
-
-                //-----------------------------------------------------
-                // Notes
-                //-----------------------------------------------------
+                // Engineer Notes
                 LabeledTextFieldWithHelp(
                     label = "Engineer Notes",
-                    value = notes,
+                    value = engineerNotes,
                     onValueChange = viewModel::setStainlessTestEngineerNotes,
-                    helpText = "Enter any notes relevant to this section",
+                    helpText = "Relevant notes for this section.",
                     isNAToggleEnabled = false,
-                    maxLength = 50
+                    maxLength = 50,
                 )
 
                 Spacer(Modifier.height(60.dp))
@@ -337,7 +263,7 @@ fun CalMetalDetectorConveyorStainlessTest(
 }
 
 fun copyStainlessTestAsFoundToAsLeft(viewModel: CalibrationMetalDetectorConveyorViewModel) {
-    viewModel.setSensitivityAsLeftStainless(viewModel.sensitivityAsFoundNonFerrous.value)
+    viewModel.setSensitivityAsLeftStainless(viewModel.sensitivityAsFoundStainless.value)
     viewModel.setSampleCertificateNumberStainless(viewModel.sampleCertificateNumberAsFoundStainless.value)
     viewModel.setDetectRejectStainlessLeading(viewModel.detectRejectAsFoundStainlessLeading.value)
     viewModel.setPeakSignalStainlessLeading(viewModel.peakSignalAsFoundStainlessLeading.value)
@@ -345,6 +271,4 @@ fun copyStainlessTestAsFoundToAsLeft(viewModel: CalibrationMetalDetectorConveyor
     viewModel.setPeakSignalStainlessMiddle(viewModel.peakSignalAsFoundStainlessMiddle.value)
     viewModel.setDetectRejectStainlessTrailing(viewModel.detectRejectAsFoundStainlessTrailing.value)
     viewModel.setPeakSignalStainlessTrailing(viewModel.peakSignalAsFoundStainlessTrailing.value)
-
-
 }

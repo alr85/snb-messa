@@ -14,3 +14,12 @@ enum class ConditionState {
     NA,
     UNSPECIFIED
 }
+
+enum class PvRuleStatus {
+    Pass, Fail, Incomplete, Warning, NA
+}
+
+data class PvRule(
+    val description: String,
+    val status: PvRuleStatus
+)

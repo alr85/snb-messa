@@ -120,7 +120,7 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
 
                 LabeledDropdownWithHelp(
                     label = "Access Restriction:",
-                    options = listOf("Yes (Password)", "Yes (Locked door)", "Yes (Key switch)", "None"),
+                    options = listOf("Yes (Password)", "Yes (Locked door)", "Yes (Key switch)", "Yes (RFID Card)", "None"),
                     selectedOption = sensitivityAccessRestriction,
                     onSelectionChange = {
                         viewModel.setSensitivityAccessRestriction(it)
@@ -128,7 +128,7 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
                     },
                     pvStatus = if (viewModel.pvRequired.value) {
                         when (sensitivityAccessRestriction) {
-                            "Yes - Password", "Yes - Other" -> "Pass"
+                            "Yes (Password)", "Yes (Locked door)", "Yes (Key switch)", "Yes (RFID Card)" -> "Pass"
                             "None", "" -> "Fail"
                             else -> "Fail"
                         }
