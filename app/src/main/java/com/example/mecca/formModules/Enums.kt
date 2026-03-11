@@ -21,5 +21,6 @@ enum class PvRuleStatus {
 
 data class PvRule(
     val description: String,
-    val status: PvRuleStatus
+    val status: PvRuleStatus,
+    val ruleId: String = ""
 )

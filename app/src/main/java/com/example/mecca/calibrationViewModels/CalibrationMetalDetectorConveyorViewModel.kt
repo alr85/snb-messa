@@ -3408,6 +3408,13 @@ class CalibrationMetalDetectorConveyorViewModel(
         _operatorTestWitnessedAirFail.value = newValue
     }
 
+    private val _operatorTestWitnessedPackCheck = mutableStateOf(YesNoState.NO)
+    val operatorTestWitnessedPackCheck: State<YesNoState> = _operatorTestWitnessedPackCheck
+
+    fun setOperatorTestWitnessedPackCheck(newValue: YesNoState) {
+        _operatorTestWitnessedPackCheck.value = newValue
+    }
+
 
 
     private val _smeEngineerNotes = mutableStateOf("")
