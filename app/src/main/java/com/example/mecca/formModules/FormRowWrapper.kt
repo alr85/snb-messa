@@ -124,9 +124,7 @@ fun FormRowWrapper(
                     }
                 }
 
-                if (pvStatus != null) {
-                    PvIndicator(status = pvStatus, rules = pvRules)
-                }
+
 
                 if (onNaClick != null) {
                     val isApplicable = naButtonText != "Edit"
@@ -147,6 +145,10 @@ fun FormRowWrapper(
                             )
                         )
                     }
+                }
+
+                if (pvStatus != null) {
+                    PvIndicator(status = pvStatus, rules = pvRules)
                 }
             }
 

@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -16,7 +15,14 @@ import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateBackupSensorPvResult
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.getBackupSensorPvRules
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.formModules.*
+import com.example.mecca.formModules.CalibrationHeader
+import com.example.mecca.formModules.LabeledDropdownWithHelp
+import com.example.mecca.formModules.LabeledMultiSelectDropdownWithHelp
+import com.example.mecca.formModules.LabeledTextFieldWithHelp
+import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
+import com.example.mecca.formModules.LabeledYesNoNaSegmentedSwitchWithHelp
+import com.example.mecca.formModules.PvSectionSummaryCard
+import com.example.mecca.formModules.YesNoState
 import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
@@ -24,9 +30,7 @@ import com.example.mecca.ui.theme.ScrollableWithScrollbar
 fun CalMetalDetectorConveyorBackupPEC(
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-
     val fitted by viewModel.backupSensorFitted
-    val detail by viewModel.backupSensorDetail
     val testMethod by viewModel.backupSensorTestMethod
     val testMethodOther by viewModel.backupSensorTestMethodOther
     val testResult by viewModel.backupSensorTestResult.collectAsState()
@@ -36,29 +40,27 @@ fun CalMetalDetectorConveyorBackupPEC(
 
     val pvRequired = viewModel.pvRequired.value
 
-    // Options
     val testMethodOptions = remember {
         listOf("Reject Override Switch", "Product Removal", "Manual Block", "Other")
     }
+
     val testResultOptions = remember {
         listOf(
             "No Result",
             "Audible Notification",
             "Visual Notification",
             "On-Screen Notification",
-            "Belt Stops",
+            "System Belt Stops",
             "In-feed Belt Stops",
             "Out-feed Belt Stops",
             "Other"
         )
     }
 
-    // Validation for Next button
     val isNextStepEnabled = when (fitted) {
         YesNoState.NO, YesNoState.NA -> true
         YesNoState.YES -> {
-            detail.isNotBlank() &&
-                    testMethod.isNotBlank() &&
+            testMethod.isNotBlank() &&
                     testResult.isNotEmpty() &&
                     latched != YesNoState.NA &&
                     controlledRestart != YesNoState.NA &&
@@ -71,7 +73,16 @@ fun CalMetalDetectorConveyorBackupPEC(
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
-    val rules = viewModel.getBackupSensorPvRules()
+    val rules = remember(
+        fitted,
+        testMethod,
+        testMethodOther,
+        testResult,
+        latched,
+        controlledRestart
+    ) {
+        viewModel.getBackupSensorPvRules()
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
 
@@ -83,19 +94,19 @@ fun CalMetalDetectorConveyorBackupPEC(
         ) {
             Column {
 
-                LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
+                LabeledYesNoNaSegmentedSwitchWithHelp(
                     label = "Back-up sensor fitted?",
                     currentState = fitted,
                     onStateChange = { newState ->
                         viewModel.setBackupSensorFitted(newState)
-                        if (newState != YesNoState.YES) {
-                            viewModel.setBackupSensorDetail("N/A")
+                        if (newState == YesNoState.NO || newState == YesNoState.NA) {
+                            viewModel.setBackupSensorDetail("")
                             viewModel.setBackupSensorTestMethod("N/A")
-                            viewModel.setBackupSensorTestMethodOther("N/A")
+                            viewModel.setBackupSensorTestMethodOther("")
                             viewModel.setBackupSensorTestResult(emptyList())
                             viewModel.setBackupSensorLatched(YesNoState.NA)
                             viewModel.setBackupSensorCR(YesNoState.NA)
-                        } else {
+                        } else if (newState == YesNoState.YES) {
                             viewModel.setBackupSensorDetail("")
                             viewModel.setBackupSensorTestMethod("")
                             viewModel.setBackupSensorTestMethodOther("")
@@ -106,19 +117,10 @@ fun CalMetalDetectorConveyorBackupPEC(
                         viewModel.autoUpdateBackupSensorPvResult()
                     },
                     helpText = "Select if there is a back-up sensor fitted.",
-                    inputLabel = "Detail",
-                    inputValue = detail,
                     onInputValueChange = {
-                        viewModel.setBackupSensorDetail(it)
-                        viewModel.autoUpdateBackupSensorPvResult()
                     },
-                    pvStatus = if (pvRequired) {
-                        if (fitted == YesNoState.YES) rules.getOrNull(0)?.status?.name else "N/A"
-                    } else null,
-                    pvRules = if (pvRequired) {
-                        if (fitted == YesNoState.YES) listOfNotNull(rules.getOrNull(0)) else rules
-                    } else emptyList(),
-                    inputMaxLength = 12
+                    pvStatus = if (pvRequired) rules.find { it.ruleId == "BACKUP_FITTED" }?.status?.name else null,
+                    pvRules = if (pvRequired) rules.filter { it.ruleId == "BACKUP_FITTED" } else emptyList()
                 )
 
                 FormSpacer()
@@ -130,13 +132,14 @@ fun CalMetalDetectorConveyorBackupPEC(
                         options = testMethodOptions,
                         selectedOption = testMethod,
                         onSelectionChange = {
+                            if (it != "Other") viewModel.setBackupSensorTestMethodOther("")
                             viewModel.setBackupSensorTestMethod(it)
                             viewModel.autoUpdateBackupSensorPvResult()
                         },
                         helpText = "Select the method used to test the back-up failsafe.",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.getOrNull(1)?.status?.name else null,
-                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(1)) else emptyList()
+                        pvStatus = if (pvRequired) rules.find { it.ruleId == "BACKUP_METHOD" }?.status?.name else null,
+                        pvRules = if (pvRequired) rules.filter { it.ruleId == "BACKUP_METHOD" } else emptyList()
                     )
 
                     FormSpacer()
@@ -161,14 +164,20 @@ fun CalMetalDetectorConveyorBackupPEC(
                         value = testResult.joinToString(", "),
                         options = testResultOptions,
                         selectedOptions = testResult,
-                        onSelectionChange = {
-                            viewModel.setBackupSensorTestResult(it)
+                        onSelectionChange = { newSelection ->
+                            val cleaned = if ("No Result" in newSelection) {
+                                listOf("No Result")
+                            } else {
+                                newSelection.filterNot { it == "No Result" }
+                            }
+
+                            viewModel.setBackupSensorTestResult(cleaned)
                             viewModel.autoUpdateBackupSensorPvResult()
                         },
                         helpText = "Select the observed failsafe action.",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.getOrNull(2)?.status?.name else null,
-                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(2)) else emptyList()
+                        pvStatus = if (pvRequired) rules.find { it.ruleId == "BACKUP_RESULT" }?.status?.name else null,
+                        pvRules = if (pvRequired) rules.filter { it.ruleId == "BACKUP_RESULT" } else emptyList()
                     )
 
                     FormSpacer()
@@ -182,14 +191,14 @@ fun CalMetalDetectorConveyorBackupPEC(
                         },
                         helpText = "Does the fault remain active until manually cleared?",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.getOrNull(3)?.status?.name else null,
-                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(3)) else emptyList()
+                        pvStatus = if (pvRequired) rules.find { it.ruleId == "BACKUP_LATCHED" }?.status?.name else null,
+                        pvRules = if (pvRequired) rules.filter { it.ruleId == "BACKUP_LATCHED" } else emptyList()
                     )
 
                     FormSpacer()
 
                     LabeledTriStateSwitchWithHelp(
-                        label = "Fault Controlled Restart?",
+                        label = "Controlled Restart?",
                         currentState = controlledRestart,
                         onStateChange = {
                             viewModel.setBackupSensorCR(it)
@@ -197,23 +206,18 @@ fun CalMetalDetectorConveyorBackupPEC(
                         },
                         helpText = "Is a manual reset required to restart the system?",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.getOrNull(4)?.status?.name else null,
-                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(4)) else emptyList()
+                        pvStatus = if (pvRequired) rules.find { it.ruleId == "BACKUP_CR" }?.status?.name else null,
+                        pvRules = if (pvRequired) rules.filter { it.ruleId == "BACKUP_CR" } else emptyList()
                     )
 
-                    FormSpacer()
+                    if (!pvRequired) FormSpacer()
                 }
 
                 if (pvRequired) {
-                    LabeledFourOptionRadioWithHelp(
-                        label = "P.V. Result",
-                        value = viewModel.backupSensorTestPvResult.value,
-                        onValueChange = viewModel::setBackupSensorTestPvResult,
-                        helpText = "Overall status for Backup sensor failsafe validation."
+                    PvSectionSummaryCard(
+                        title = "Backup sensor test P.V. Summary",
+                        rules = rules
                     )
-                    FormSpacer()
-                    PvSectionSummaryCard(title = "Backup sensor test P.V. Summary", rules = rules)
-                    FormSpacer()
                 }
 
                 LabeledTextFieldWithHelp(

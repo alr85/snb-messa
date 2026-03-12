@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -16,7 +15,14 @@ import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdatePackCheckSensorPvResult
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.getPackCheckSensorPvRules
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.formModules.*
+import com.example.mecca.formModules.CalibrationHeader
+import com.example.mecca.formModules.LabeledDropdownWithHelp
+import com.example.mecca.formModules.LabeledMultiSelectDropdownWithHelp
+import com.example.mecca.formModules.LabeledTextFieldWithHelp
+import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
+import com.example.mecca.formModules.LabeledYesNoNaSegmentedSwitchWithHelp
+import com.example.mecca.formModules.PvSectionSummaryCard
+import com.example.mecca.formModules.YesNoState
 import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
@@ -25,7 +31,6 @@ fun CalMetalDetectorConveyorPackCheckSensor(
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
     val fitted by viewModel.packCheckSensorFitted
-    val detail by viewModel.packCheckSensorDetail
     val testMethod by viewModel.packCheckSensorTestMethod
     val testMethodOther by viewModel.packCheckSensorTestMethodOther
     val testResult by viewModel.packCheckSensorTestResult.collectAsState()
@@ -35,29 +40,27 @@ fun CalMetalDetectorConveyorPackCheckSensor(
 
     val pvRequired = viewModel.pvRequired.value
 
-    // Options
     val testMethodOptions = remember {
         listOf("Timed Internal Test", "Product Block", "Manual Block", "Other")
     }
+
     val testResultOptions = remember {
         listOf(
             "No Result",
             "Audible Notification",
             "Visual Notification",
             "On-Screen Notification",
-            "Belt Stops",
+            "System Belt Stops",
             "In-feed Belt Stops",
             "Out-feed Belt Stops",
             "Other"
         )
     }
 
-    // Validation for Next button
     val isNextStepEnabled = when (fitted) {
         YesNoState.NO, YesNoState.NA -> true
         YesNoState.YES -> {
-            detail.isNotBlank() &&
-                    testMethod.isNotBlank() &&
+            testMethod.isNotBlank() &&
                     testResult.isNotEmpty() &&
                     latched != YesNoState.NA &&
                     controlledRestart != YesNoState.NA &&
@@ -70,7 +73,16 @@ fun CalMetalDetectorConveyorPackCheckSensor(
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
-    val rules = viewModel.getPackCheckSensorPvRules()
+    val rules = remember(
+        fitted,
+        testMethod,
+        testMethodOther,
+        testResult,
+        latched,
+        controlledRestart
+    ) {
+        viewModel.getPackCheckSensorPvRules()
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         CalibrationHeader("Failsafe Tests - Pack Check Sensor")
@@ -80,19 +92,19 @@ fun CalMetalDetectorConveyorPackCheckSensor(
             contentPadding = PaddingValues(16.dp),
         ) {
             Column {
-                LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
+                LabeledYesNoNaSegmentedSwitchWithHelp(
                     label = "Pack check sensor fitted?",
                     currentState = fitted,
                     onStateChange = { newState ->
                         viewModel.setPackCheckSensorFitted(newState)
-                        if (newState != YesNoState.YES) {
-                            viewModel.setPackCheckSensorDetail("N/A")
+                        if (newState == YesNoState.NO || newState == YesNoState.NA) {
+                            viewModel.setPackCheckSensorDetail("")
                             viewModel.setPackCheckSensorTestMethod("N/A")
-                            viewModel.setPackCheckSensorTestMethodOther("N/A")
+                            viewModel.setPackCheckSensorTestMethodOther("")
                             viewModel.setPackCheckSensorTestResult(emptyList())
                             viewModel.setPackCheckSensorLatched(YesNoState.NA)
                             viewModel.setPackCheckSensorCR(YesNoState.NA)
-                        } else {
+                        } else if (newState == YesNoState.YES) {
                             viewModel.setPackCheckSensorDetail("")
                             viewModel.setPackCheckSensorTestMethod("")
                             viewModel.setPackCheckSensorTestMethodOther("")
@@ -103,19 +115,10 @@ fun CalMetalDetectorConveyorPackCheckSensor(
                         viewModel.autoUpdatePackCheckSensorPvResult()
                     },
                     helpText = "Is a pack check sensor fitted to the system?",
-                    inputLabel = "Detail",
-                    inputValue = detail,
                     onInputValueChange = {
-                        viewModel.setPackCheckSensorDetail(it)
-                        viewModel.autoUpdatePackCheckSensorPvResult()
                     },
-                    pvStatus = if (pvRequired) {
-                        if (fitted == YesNoState.YES) rules.getOrNull(0)?.status?.name else "N/A"
-                    } else null,
-                    pvRules = if (pvRequired) {
-                        if (fitted == YesNoState.YES) listOfNotNull(rules.getOrNull(0)) else rules
-                    } else emptyList(),
-                    inputMaxLength = 12
+                    pvStatus = if (pvRequired) rules.find { it.ruleId == "PACK_FITTED" }?.status?.name else null,
+                    pvRules = if (pvRequired) rules.filter { it.ruleId == "PACK_FITTED" } else emptyList()
                 )
 
                 FormSpacer()
@@ -126,13 +129,14 @@ fun CalMetalDetectorConveyorPackCheckSensor(
                         options = testMethodOptions,
                         selectedOption = testMethod,
                         onSelectionChange = {
+                            if (it != "Other") viewModel.setPackCheckSensorTestMethodOther("")
                             viewModel.setPackCheckSensorTestMethod(it)
                             viewModel.autoUpdatePackCheckSensorPvResult()
                         },
                         helpText = "Select the method used to test the pack check sensor.",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.getOrNull(1)?.status?.name else null,
-                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(1)) else emptyList()
+                        pvStatus = if (pvRequired) rules.find { it.ruleId == "PACK_METHOD" }?.status?.name else null,
+                        pvRules = if (pvRequired) rules.filter { it.ruleId == "PACK_METHOD" } else emptyList()
                     )
 
                     FormSpacer()
@@ -157,14 +161,20 @@ fun CalMetalDetectorConveyorPackCheckSensor(
                         value = testResult.joinToString(", "),
                         options = testResultOptions,
                         selectedOptions = testResult,
-                        onSelectionChange = {
-                            viewModel.setPackCheckSensorTestResult(it)
+                        onSelectionChange = { newSelection ->
+                            val cleaned = if ("No Result" in newSelection) {
+                                listOf("No Result")
+                            } else {
+                                newSelection.filterNot { it == "No Result" }
+                            }
+
+                            viewModel.setPackCheckSensorTestResult(cleaned)
                             viewModel.autoUpdatePackCheckSensorPvResult()
                         },
                         helpText = "Select the observed failsafe action.",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.getOrNull(2)?.status?.name else null,
-                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(2)) else emptyList()
+                        pvStatus = if (pvRequired) rules.find { it.ruleId == "PACK_RESULT" }?.status?.name else null,
+                        pvRules = if (pvRequired) rules.filter { it.ruleId == "PACK_RESULT" } else emptyList()
                     )
 
                     FormSpacer()
@@ -178,14 +188,14 @@ fun CalMetalDetectorConveyorPackCheckSensor(
                         },
                         helpText = "Does the fault remain active until manually cleared?",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.getOrNull(3)?.status?.name else null,
-                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(3)) else emptyList()
+                        pvStatus = if (pvRequired) rules.find { it.ruleId == "PACK_LATCHED" }?.status?.name else null,
+                        pvRules = if (pvRequired) rules.filter { it.ruleId == "PACK_LATCHED" } else emptyList()
                     )
 
                     FormSpacer()
 
                     LabeledTriStateSwitchWithHelp(
-                        label = "Fault Controlled Restart?",
+                        label = "Controlled Restart?",
                         currentState = controlledRestart,
                         onStateChange = {
                             viewModel.setPackCheckSensorCR(it)
@@ -193,23 +203,18 @@ fun CalMetalDetectorConveyorPackCheckSensor(
                         },
                         helpText = "Is a manual reset required to restart the system?",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.getOrNull(4)?.status?.name else null,
-                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(4)) else emptyList()
+                        pvStatus = if (pvRequired) rules.find { it.ruleId == "PACK_CR" }?.status?.name else null,
+                        pvRules = if (pvRequired) rules.filter { it.ruleId == "PACK_CR" } else emptyList()
                     )
 
-                    FormSpacer()
+                    if (!pvRequired) FormSpacer()
                 }
 
                 if (pvRequired) {
-                    LabeledFourOptionRadioWithHelp(
-                        label = "P.V. Result",
-                        value = viewModel.packCheckSensorTestPvResult.value,
-                        onValueChange = viewModel::setPackCheckSensorTestPvResult,
-                        helpText = "Overall status for Pack Check sensor failsafe validation."
+                    PvSectionSummaryCard(
+                        title = "Pack check test P.V. Summary",
+                        rules = rules
                     )
-                    FormSpacer()
-                    PvSectionSummaryCard(title = "Pack check test P.V. Summary", rules = rules)
-                    FormSpacer()
                 }
 
                 LabeledTextFieldWithHelp(

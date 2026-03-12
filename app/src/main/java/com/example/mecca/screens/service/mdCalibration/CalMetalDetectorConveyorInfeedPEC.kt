@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -16,7 +15,14 @@ import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateInfeedSensorPvResult
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.getInfeedSensorPvRules
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.formModules.*
+import com.example.mecca.formModules.CalibrationHeader
+import com.example.mecca.formModules.LabeledDropdownWithHelp
+import com.example.mecca.formModules.LabeledMultiSelectDropdownWithHelp
+import com.example.mecca.formModules.LabeledTextFieldWithHelp
+import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
+import com.example.mecca.formModules.LabeledYesNoNaSegmentedSwitchWithHelp
+import com.example.mecca.formModules.PvSectionSummaryCard
+import com.example.mecca.formModules.YesNoState
 import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
@@ -26,7 +32,6 @@ fun CalMetalDetectorConveyorInfeedPEC(
 ) {
 
     val fitted by viewModel.infeedSensorFitted
-    val detail by viewModel.infeedSensorDetail
     val testMethod by viewModel.infeedSensorTestMethod
     val testMethodOther by viewModel.infeedSensorTestMethodOther
     val testResult by viewModel.infeedSensorTestResult.collectAsState()
@@ -42,14 +47,13 @@ fun CalMetalDetectorConveyorInfeedPEC(
     }
 
     val testResultOptions = remember {
-        listOf("No Result", "Audible Notification", "Visual Notification", "On-Screen Notification", "Belt Stops", "In-feed Belt Stops", "Out-feed Belt Stops")
+        listOf("No Result", "Audible Notification", "Visual Notification", "On-Screen Notification", "System Belt Stops", "In-feed Belt Stops", "Out-feed Belt Stops")
     }
 
     // Validation for Next button
     val isNextStepEnabled = when (fitted) {
         YesNoState.NO, YesNoState.NA -> true
         YesNoState.YES -> {
-            detail.isNotBlank() &&
                     testMethod.isNotBlank() &&
                     testResult.isNotEmpty() &&
                     latched != YesNoState.NA &&
@@ -84,7 +88,7 @@ fun CalMetalDetectorConveyorInfeedPEC(
                         if (newState == YesNoState.NA || newState == YesNoState.NO) {
                             viewModel.setInfeedSensorDetail("N/A")
                             viewModel.setInfeedSensorTestMethod("N/A")
-                            viewModel.setInfeedSensorTestMethodOther("N/A")
+                            viewModel.setInfeedSensorTestMethodOther("")
                             viewModel.setInfeedSensorTestResult(emptyList())
                             viewModel.setInfeedSensorLatched(YesNoState.NA)
                             viewModel.setInfeedSensorCR(YesNoState.NA)
@@ -100,7 +104,7 @@ fun CalMetalDetectorConveyorInfeedPEC(
                     },
                     helpText = "Select if there is an in-feed/gated timer sensor fitted.",
                     onInputValueChange = {
-                        // This matches the old detail text input if needed, but here it acts as a reset
+
                     },
                     pvStatus = if (pvRequired) rules.find { it.ruleId == "INFEED_FITTED" }?.status?.name else null,
                     pvRules = rules.filter { it.ruleId == "INFEED_FITTED" }
@@ -109,13 +113,12 @@ fun CalMetalDetectorConveyorInfeedPEC(
                 FormSpacer()
 
                 if (fitted == YesNoState.YES) {
-
-
                     LabeledDropdownWithHelp(
                         label = "Test Method",
                         options = testMethodOptions,
                         selectedOption = testMethod,
                         onSelectionChange = {
+                            if(it != "Other") viewModel.setInfeedSensorTestMethodOther("")
                             viewModel.setInfeedSensorTestMethod(it)
                             viewModel.autoUpdateInfeedSensorPvResult()
                         },
@@ -184,13 +187,13 @@ fun CalMetalDetectorConveyorInfeedPEC(
                             viewModel.setInfeedSensorCR(it)
                             viewModel.autoUpdateInfeedSensorPvResult()
                         },
-                        helpText = "Is a controlled restart required after a fault?",
+                        helpText = "Is a manual reset required to restart the system?",
                         isNAToggleEnabled = false,
                         pvStatus = if (pvRequired) rules.find { it.ruleId == "INFEED_CR" }?.status?.name else null,
                         pvRules = rules.filter { it.ruleId == "INFEED_CR" }
                     )
 
-                    FormSpacer()
+                    if(!pvRequired) FormSpacer()
                 }
 
                 if (pvRequired) {
@@ -198,7 +201,7 @@ fun CalMetalDetectorConveyorInfeedPEC(
                         title = "Infeed sensor test P.V. Summary",
                         rules = rules
                     )
-                    FormSpacer()
+
                 }
 
                 LabeledTextFieldWithHelp(

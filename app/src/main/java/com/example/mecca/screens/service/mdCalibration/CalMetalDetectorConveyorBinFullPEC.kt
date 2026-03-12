@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -16,7 +15,14 @@ import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateBinFullSensorPvResult
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.getBinFullSensorPvRules
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.example.mecca.formModules.*
+import com.example.mecca.formModules.CalibrationHeader
+import com.example.mecca.formModules.LabeledDropdownWithHelp
+import com.example.mecca.formModules.LabeledMultiSelectDropdownWithHelp
+import com.example.mecca.formModules.LabeledTextFieldWithHelp
+import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
+import com.example.mecca.formModules.LabeledYesNoNaSegmentedSwitchWithHelp
+import com.example.mecca.formModules.PvSectionSummaryCard
+import com.example.mecca.formModules.YesNoState
 import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
@@ -25,7 +31,6 @@ fun CalMetalDetectorConveyorBinFullPEC(
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
     val fitted by viewModel.binFullSensorFitted
-    val detail by viewModel.binFullSensorDetail
     val testMethod by viewModel.binFullSensorTestMethod
     val testMethodOther by viewModel.binFullSensorTestMethodOther
     val testResult by viewModel.binFullSensorTestResult.collectAsState()
@@ -46,7 +51,7 @@ fun CalMetalDetectorConveyorBinFullPEC(
             "Audible Notification",
             "Visual Notification",
             "On-Screen Notification",
-            "Belt Stops",
+            "System Belt Stops",
             "In-feed Belt Stops",
             "Out-feed Belt Stops",
             "Other"
@@ -57,7 +62,6 @@ fun CalMetalDetectorConveyorBinFullPEC(
     val isNextStepEnabled = when (fitted) {
         YesNoState.NO, YesNoState.NA -> true
         YesNoState.YES -> {
-            detail.isNotBlank() &&
                     testMethod.isNotBlank() &&
                     testResult.isNotEmpty() &&
                     latched != YesNoState.NA &&
@@ -72,7 +76,16 @@ fun CalMetalDetectorConveyorBinFullPEC(
     }
 
     // PV Rules Calculation
-    val rules = viewModel.getBinFullSensorPvRules()
+    val rules = remember(
+        fitted,
+        testMethod,
+        testMethodOther,
+        testResult,
+        latched,
+        controlledRestart
+    ) {
+        viewModel.getBinFullSensorPvRules()
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
 
@@ -84,7 +97,7 @@ fun CalMetalDetectorConveyorBinFullPEC(
         ) {
             Column {
 
-                LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
+                LabeledYesNoNaSegmentedSwitchWithHelp(
                     label = "Sensor fitted?",
                     currentState = fitted,
                     onStateChange = { newState ->
@@ -92,7 +105,7 @@ fun CalMetalDetectorConveyorBinFullPEC(
                         if (newState == YesNoState.NO || newState == YesNoState.NA) {
                             viewModel.setBinFullSensorDetail("N/A")
                             viewModel.setBinFullSensorTestMethod("N/A")
-                            viewModel.setBinFullSensorTestMethodOther("N/A")
+                            viewModel.setBinFullSensorTestMethodOther("")
                             viewModel.setBinFullSensorTestResult(emptyList())
                             viewModel.setBinFullSensorLatched(YesNoState.NA)
                             viewModel.setBinFullSensorCR(YesNoState.NA)
@@ -107,19 +120,10 @@ fun CalMetalDetectorConveyorBinFullPEC(
                         viewModel.autoUpdateBinFullSensorPvResult()
                     },
                     helpText = "Select if there is a bin full sensor fitted.",
-                    inputLabel = "Detail",
-                    inputValue = detail,
                     onInputValueChange = {
-                        viewModel.setBinFullSensorDetail(it)
-                        viewModel.autoUpdateBinFullSensorPvResult()
                     },
-                    inputMaxLength = 12,
-                    pvStatus = if (pvRequired) {
-                        if (fitted == YesNoState.YES) rules.getOrNull(0)?.status?.name else "N/A"
-                    } else null,
-                    pvRules = if (pvRequired) {
-                        if (fitted == YesNoState.YES) listOfNotNull(rules.getOrNull(0)) else rules
-                    } else emptyList()
+                    pvStatus = if (pvRequired) rules.find { it.ruleId == "BIN_FULL_FITTED" }?.status?.name else null,
+                    pvRules = rules.filter { it.ruleId == "BIN_FULL_FITTED" }
                 )
 
                 FormSpacer()
@@ -131,13 +135,14 @@ fun CalMetalDetectorConveyorBinFullPEC(
                         options = testMethodOptions,
                         selectedOption = testMethod,
                         onSelectionChange = {
+                            if(it != "Other") viewModel.setBinFullSensorTestMethodOther("")
                             viewModel.setBinFullSensorTestMethod(it)
                             viewModel.autoUpdateBinFullSensorPvResult()
                         },
-                        helpText = "Select the method used to trigger the sensor.",
+                        helpText = "Select the method used to trigger the bin full fault.",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.getOrNull(1)?.status?.name else null,
-                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(1)) else emptyList()
+                        pvStatus = if (pvRequired) rules.find { it.ruleId == "BIN_FULL_METHOD" }?.status?.name else null,
+                        pvRules = rules.filter { it.ruleId == "BIN_FULL_METHOD" }
                     )
 
                     FormSpacer()
@@ -171,8 +176,8 @@ fun CalMetalDetectorConveyorBinFullPEC(
                         },
                         helpText = "Select the outcome of the sensor test.",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.getOrNull(2)?.status?.name else null,
-                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(2)) else emptyList()
+                        pvStatus = if (pvRequired) rules.find { it.ruleId == "BIN_FULL_RESULT" }?.status?.name else null,
+                        pvRules = rules.filter { it.ruleId == "BIN_FULL_RESULT" }
                     )
 
                     FormSpacer()
@@ -186,8 +191,8 @@ fun CalMetalDetectorConveyorBinFullPEC(
                         },
                         helpText = "Is the fault output latched, or does it clear automatically?",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.getOrNull(3)?.status?.name else null,
-                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(3)) else emptyList()
+                        pvStatus = if (pvRequired) rules.find { it.ruleId == "BIN_FULL_LATCHED" }?.status?.name else null,
+                        pvRules = rules.filter { it.ruleId == "BIN_FULL_LATCHED" }
                     )
 
                     FormSpacer()
@@ -201,23 +206,20 @@ fun CalMetalDetectorConveyorBinFullPEC(
                         },
                         helpText = "Is a controlled restart required after a fault?",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.getOrNull(4)?.status?.name else null,
-                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(4)) else emptyList()
+                        pvStatus = if (pvRequired) rules.find { it.ruleId == "BIN_FULL_CR" }?.status?.name else null,
+                        pvRules = rules.filter { it.ruleId == "BIN_FULL_CR" }
                     )
 
-                    FormSpacer()
+                    if(!pvRequired) FormSpacer()
                 }
 
                 if (pvRequired) {
-                    LabeledFourOptionRadioWithHelp(
-                        label = "P.V. Result",
-                        value = viewModel.binFullSensorTestPvResult.value,
-                        onValueChange = viewModel::setBinFullSensorTestPvResult,
-                        helpText = "This section is automatically evaluated. You can manually override if necessary."
+
+                    PvSectionSummaryCard(
+                        title = "Bin full test P.V. Summary",
+                        rules = rules
                     )
-                    FormSpacer()
-                    PvSectionSummaryCard(title = "Bin full test P.V. Summary", rules = rules)
-                    FormSpacer()
+
                 }
 
                 LabeledTextFieldWithHelp(

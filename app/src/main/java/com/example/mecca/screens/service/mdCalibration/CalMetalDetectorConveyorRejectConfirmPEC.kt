@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateInfeedSensorPvResult
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateRejectConfirmSensorPvResult
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.getRejectConfirmSensorPvRules
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
@@ -25,7 +26,6 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
     val fitted by viewModel.rejectConfirmSensorFitted
-    val detail by viewModel.rejectConfirmSensorDetail
     val testMethod by viewModel.rejectConfirmSensorTestMethod
     val testMethodOther by viewModel.rejectConfirmSensorTestMethodOther
     val testResult by viewModel.rejectConfirmSensorTestResult.collectAsState()
@@ -37,21 +37,20 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
     val pvRequired = viewModel.pvRequired.value
 
     val testMethodOptions = remember {
-        listOf("Timed Internal Test", "External Trigger", "Other")
+        listOf("Reject Override Switch/Button", "Remove Pack", "Other")
     }
 
     val testResultOptions = remember {
-        listOf("No Result", "Audible Notification", "Visual Notification", "On-Screen Notification", "Belt Stops", "In-feed Belt Stops", "Out-feed Belt Stops", "Other")
+        listOf("No Result", "Audible Notification", "Visual Notification", "On-Screen Notification", "System Belt Stops", "In-feed Belt Stops", "Out-feed Belt Stops", "Other")
     }
 
     val stopPositionOptions = remember {
-        listOf("Weigh Platform", "In-feed Belt", "Out-feed Belt (Uncontrolled)", "Other")
+        listOf("Controlled", "Uncontrolled")
     }
 
     val isNextStepEnabled = when (fitted) {
         YesNoState.NO, YesNoState.NA -> true
         YesNoState.YES -> {
-            detail.isNotBlank() &&
                     testMethod.isNotBlank() &&
                     testResult.isNotEmpty() &&
                     stopPosition.isNotBlank() &&
@@ -65,49 +64,54 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
-    val rules = viewModel.getRejectConfirmSensorPvRules()
+    val rules = remember(
+        fitted,
+        testMethod,
+        testMethodOther,
+        testResult,
+        stopPosition,
+        latched,
+        controlledRestart
+    ) {
+        viewModel.getRejectConfirmSensorPvRules()
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        CalibrationHeader("Failsafe Tests - Reject Confirm Sensor")
+        CalibrationHeader("Failsafe Tests - Reject Confirm/Activation Sensor")
 
         ScrollableWithScrollbar(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
         ) {
             Column {
-                LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
+                LabeledYesNoNaSegmentedSwitchWithHelp(
                     label = "Sensor fitted?",
                     currentState = fitted,
                     onStateChange = { newState ->
                         viewModel.setRejectConfirmSensorFitted(newState)
                         if (newState != YesNoState.YES) {
-                            viewModel.setRejectConfirmSensorDetail("N/A")
                             viewModel.setRejectConfirmSensorTestMethod("N/A")
+                            viewModel.setRejectConfirmSensorTestMethodOther("")
+                            viewModel.setRejectConfirmSensorTestResult(emptyList())
                             viewModel.setRejectConfirmSensorStopPosition("N/A")
                             viewModel.setRejectConfirmSensorLatched(YesNoState.NA)
                             viewModel.setRejectConfirmSensorCR(YesNoState.NA)
                         } else {
-                            viewModel.setRejectConfirmSensorDetail("")
                             viewModel.setRejectConfirmSensorTestMethod("")
+                            viewModel.setRejectConfirmSensorTestMethodOther("")
+                            viewModel.setRejectConfirmSensorTestResult(emptyList())
                             viewModel.setRejectConfirmSensorStopPosition("")
                             viewModel.setRejectConfirmSensorLatched(YesNoState.NO)
                             viewModel.setRejectConfirmSensorCR(YesNoState.NO)
                         }
                         viewModel.autoUpdateRejectConfirmSensorPvResult()
                     },
-                    helpText = "Is a secondary sensor fitted to confirm the pack was correctly rejected?",
-                    inputLabel = "Detail",
-                    inputValue = detail,
+                    helpText = "Is a sensor fitted to confirm the pack was correctly rejected?",
                     onInputValueChange = {
-                        viewModel.setRejectConfirmSensorDetail(it)
-                        viewModel.autoUpdateRejectConfirmSensorPvResult()
+
                     },
-                    pvStatus = if (pvRequired) {
-                        if (fitted == YesNoState.YES) rules.getOrNull(0)?.status?.name else "N/A"
-                    } else null,
-                    pvRules = if (pvRequired) {
-                        if (fitted == YesNoState.YES) listOfNotNull(rules.getOrNull(0)) else rules
-                    } else emptyList()
+                    pvStatus = if (pvRequired) rules.find { it.ruleId == "REJECT_CONFIRM_FITTED" }?.status?.name else null,
+                    pvRules = rules.filter { it.ruleId == "REJECT_CONFIRM_FITTED" }
                 )
 
                 FormSpacer()
@@ -118,30 +122,49 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                         options = testMethodOptions,
                         selectedOption = testMethod,
                         onSelectionChange = {
+                            if(it != "Other") viewModel.setRejectConfirmSensorTestMethodOther("")
                             viewModel.setRejectConfirmSensorTestMethod(it)
                             viewModel.autoUpdateRejectConfirmSensorPvResult()
                         },
-                        helpText = "Method used to trigger the reject confirmation fault.",
+                        helpText = "Select the method used to trigger the reject confirmation fault.",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.getOrNull(1)?.status?.name else null,
-                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(1)) else emptyList()
+                        pvStatus = if (pvRequired) rules.find { it.ruleId == "REJECT_CONFIRM_METHOD" }?.status?.name else null,
+                        pvRules = rules.filter { it.ruleId == "REJECT_CONFIRM_METHOD" }
                     )
 
                     FormSpacer()
+
+                    if (testMethod == "Other") {
+                        LabeledTextFieldWithHelp(
+                            label = "Other Test Method",
+                            value = testMethodOther,
+                            onValueChange = {
+                                viewModel.setRejectConfirmSensorTestMethodOther(it)
+                                viewModel.autoUpdateRejectConfirmSensorPvResult()
+                            },
+                            helpText = "Enter the custom test method.",
+                            isNAToggleEnabled = false,
+                            maxLength = 12
+                        )
+                        FormSpacer()
+                    }
 
                     LabeledMultiSelectDropdownWithHelp(
                         label = "Test Result",
                         value = testResult.joinToString(", "),
                         options = testResultOptions,
                         selectedOptions = testResult,
-                        onSelectionChange = {
-                            viewModel.setRejectConfirmSensorTestResult(it)
+                        onSelectionChange = { newSelection ->
+                            val cleaned = if ("No Result" in newSelection) listOf("No Result")
+                                            else newSelection.filterNot { it == "No Result" }
+
+                            viewModel.setRejectConfirmSensorTestResult(cleaned)
                             viewModel.autoUpdateRejectConfirmSensorPvResult()
                         },
-                        helpText = "Observed outcome of the failsafe test.",
+                        helpText = "Select the outcome of the sensor test.",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.getOrNull(2)?.status?.name else null,
-                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(2)) else emptyList()
+                        pvStatus = if (pvRequired) rules.find { it.ruleId == "REJECT_CONFIRM_RESULT" }?.status?.name else null,
+                        pvRules = rules.filter { it.ruleId == "REJECT_CONFIRM_RESULT" }
                     )
 
                     FormSpacer()
@@ -153,10 +176,10 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                             viewModel.setRejectConfirmSensorLatched(it)
                             viewModel.autoUpdateRejectConfirmSensorPvResult()
                         },
-                        helpText = "Does the fault remain active until manually cleared?",
+                        helpText = "Is the fault output latched, or does it clear automatically?",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.getOrNull(3)?.status?.name else null,
-                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(3)) else emptyList()
+                        pvStatus = if (pvRequired) rules.find { it.ruleId == "REJECT_CONFIRM_LATCHED" }?.status?.name else null,
+                        pvRules = rules.filter { it.ruleId == "REJECT_CONFIRM_LATCHED" }
                     )
 
                     FormSpacer()
@@ -170,8 +193,8 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                         },
                         helpText = "Is a manual reset required to restart the system?",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.getOrNull(4)?.status?.name else null,
-                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(4)) else emptyList()
+                        pvStatus = if (pvRequired) rules.find { it.ruleId == "REJECT_CONFIRM_CR" }?.status?.name else null,
+                        pvRules = rules.filter { it.ruleId == "REJECT_CONFIRM_CR" }
                     )
 
                     FormSpacer()
@@ -186,23 +209,19 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                         },
                         helpText = "Where does the pack stop when this fault occurs?",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.getOrNull(5)?.status?.name else null,
-                        pvRules = if (pvRequired) listOfNotNull(rules.getOrNull(5)) else emptyList()
-                    )
+                        pvStatus = if (pvRequired) rules.find { it.ruleId == "REJECT_CONFIRM_STOP_POS" }?.status?.name else null,
+                        pvRules = rules.filter { it.ruleId == "REJECT_CONFIRM_STOP_POS" }                    )
 
-                    FormSpacer()
+                    if(!pvRequired) FormSpacer()
                 }
 
                 if (pvRequired) {
-                    LabeledFourOptionRadioWithHelp(
-                        label = "P.V. Result",
-                        value = viewModel.rejectConfirmSensorTestPvResult.value,
-                        onValueChange = viewModel::setRejectConfirmSensorTestPvResult,
-                        helpText = "Overall status for Reject Confirm failsafe validation."
+
+                    PvSectionSummaryCard(
+                        title = "Reject confirm/activation test P.V. Summary",
+                        rules = rules
                     )
-                    FormSpacer()
-                    PvSectionSummaryCard(title = "Reject confirm test P.V. Summary", rules = rules)
-                    FormSpacer()
+
                 }
 
                 LabeledTextFieldWithHelp(
