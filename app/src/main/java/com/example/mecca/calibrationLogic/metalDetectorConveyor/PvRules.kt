@@ -439,6 +439,37 @@ fun CalibrationMetalDetectorConveyorViewModel.autoUpdateSpeedSensorPvResult() {
 }
 
 // ---------------------------------------------------------
+// Large Metal PV Logic
+// ---------------------------------------------------------
+
+fun CalibrationMetalDetectorConveyorViewModel.getLargeMetalPvRules(): List<PvRule> {
+
+
+    if (!pvRequired.value) return emptyList()
+
+    val dAndR = detectRejectLargeMetal.value
+    val cert = sampleCertificateNumberLargeMetal.value
+
+    if(dAndR == YesNoState.NA) return listOf(PvRule(description = "Test marked as N/A", status = PvRuleStatus.NA, ruleId = "LARGE_METAL_NA"))
+
+    val rules = mutableListOf<PvRule>()
+
+    rules.add(PvRule(
+        description = "20mm Ferrous Test Sample must be detected and rejected",
+        status = if (dAndR == YesNoState.YES && cert.isNotBlank()) PvRuleStatus.Pass else PvRuleStatus.Fail,
+        ruleId = "LARGE_METAL_DETECT_REJECT"
+    ))
+
+
+    return rules
+}
+
+fun CalibrationMetalDetectorConveyorViewModel.autoUpdateLargeMetalPvResult() {
+    if (!pvRequired.value) { setLargeMetalTestPvResult("N/A"); return }
+    setLargeMetalTestPvResult(getLargeMetalPvRules().calculateOverallStatus())
+}
+
+// ---------------------------------------------------------
 // Bin Door Monitor PV Logic
 // ---------------------------------------------------------
 fun CalibrationMetalDetectorConveyorViewModel.getBinDoorMonitorPvRules(): List<PvRule> {

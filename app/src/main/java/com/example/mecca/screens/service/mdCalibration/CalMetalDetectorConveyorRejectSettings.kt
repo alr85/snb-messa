@@ -72,19 +72,19 @@ fun CalMetalDetectorConveyorRejectSettings(
 
             Column {
 
-                LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
-                    label = "Synchronisation",
-                    currentState = rejectSynchronisationSetting,
-                    onStateChange = viewModel::setRejectSynchronisationSetting,
-                    helpText = "Select if there is a method of reject synchronisation.",
-                    inputLabel = "Detail",
-                    inputValue = rejectSynchronisationDetail,
-                    onInputValueChange = viewModel::setRejectSynchronisationDetail,
-                    inputMaxLength = 12,
-                    inputKeyboardType = KeyboardType.Text
-                )
-
-                FormSpacer()
+//                LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
+//                    label = "Synchronisation",
+//                    currentState = rejectSynchronisationSetting,
+//                    onStateChange = viewModel::setRejectSynchronisationSetting,
+//                    helpText = "Select if there is a method of reject synchronisation.",
+//                    inputLabel = "Detail",
+//                    inputValue = rejectSynchronisationDetail,
+//                    onInputValueChange = viewModel::setRejectSynchronisationDetail,
+//                    inputMaxLength = 12,
+//                    inputKeyboardType = KeyboardType.Text
+//                )
+//
+//                FormSpacer()
 
                 LabeledDropdownWithTextInput(
                     label = "Reject Duration",

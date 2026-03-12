@@ -2753,7 +2753,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         _rejectConfirmSensorFitted.value = newValue
     }
 
-    private val _rejectConfirmSensorDetail = mutableStateOf("")
+    private val _rejectConfirmSensorDetail = mutableStateOf("N/A")
     val rejectConfirmSensorDetail: State<(String)> = _rejectConfirmSensorDetail
 
 
@@ -2761,7 +2761,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         _rejectConfirmSensorDetail.value = newValue
     }
 
-    private val _rejectConfirmSensorTestMethod = mutableStateOf("")
+    private val _rejectConfirmSensorTestMethod = mutableStateOf("N/A")
     val rejectConfirmSensorTestMethod: State<(String)> = _rejectConfirmSensorTestMethod
 
 
@@ -2769,7 +2769,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         _rejectConfirmSensorTestMethod.value = newValue
     }
 
-    private val _rejectConfirmSensorTestMethodOther = mutableStateOf("")
+    private val _rejectConfirmSensorTestMethodOther = mutableStateOf("N/A")
     val rejectConfirmSensorTestMethodOther: State<(String)> = _rejectConfirmSensorTestMethodOther
 
 
@@ -2784,7 +2784,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         _rejectConfirmSensorTestResult.value = newValue
     }
 
-    private val _rejectConfirmSensorEngineerNotes = mutableStateOf("")
+    private val _rejectConfirmSensorEngineerNotes = mutableStateOf("N/A")
     val rejectConfirmSensorEngineerNotes: State<(String)> = _rejectConfirmSensorEngineerNotes
 
 
@@ -2806,14 +2806,14 @@ class CalibrationMetalDetectorConveyorViewModel(
         _rejectConfirmSensorCR.value = newValue
     }
 
-    private val _rejectConfirmSensorStopPosition = mutableStateOf("")
+    private val _rejectConfirmSensorStopPosition = mutableStateOf("N/A")
     val rejectConfirmSensorStopPosition: State<String> = _rejectConfirmSensorStopPosition
 
     fun setRejectConfirmSensorStopPosition(newValue: String) {
         _rejectConfirmSensorStopPosition.value = newValue
     }
 
-    private val _rejectConfirmSensorTestPvResult = mutableStateOf("")
+    private val _rejectConfirmSensorTestPvResult = mutableStateOf("N/A")
     val rejectConfirmSensorTestPvResult: State<String> = _rejectConfirmSensorTestPvResult
 
     fun setRejectConfirmSensorTestPvResult(newValue: String) {
