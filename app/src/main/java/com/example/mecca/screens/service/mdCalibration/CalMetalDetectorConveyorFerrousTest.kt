@@ -50,6 +50,8 @@ fun CalMetalDetectorConveyorFerrousTest(
     val engineerNotes by viewModel.ferrousTestEngineerNotes
 
     val isConveyor by viewModel.isConveyor
+    val pvRequired by viewModel.pvRequired
+
 
     // Default hidden values to safe state if not a conveyor
     LaunchedEffect(isConveyor) {
@@ -258,13 +260,12 @@ fun CalMetalDetectorConveyorFerrousTest(
                 //-----------------------------------------------------
                 //  PV Summary Card (replacing the old radio selector)
                 //-----------------------------------------------------
-                if (viewModel.pvRequired.value) {
+                if (pvRequired) {
                     PvSectionSummaryCard(
                         title = "Ferrous Test P.V. Summary",
                         rules = rules
                     )
 
-                    //FormSpacer()
                 }
 
 

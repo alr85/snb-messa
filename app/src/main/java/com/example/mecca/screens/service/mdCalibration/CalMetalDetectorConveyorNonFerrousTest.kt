@@ -50,6 +50,9 @@ fun CalMetalDetectorConveyorNonFerrousTest(
     val engineerNotes by viewModel.nonFerrousTestEngineerNotes
 
     val isConveyor by viewModel.isConveyor
+    val pvRequired by viewModel.pvRequired
+
+
 
     // Default hidden values to safe state if not a conveyor
     LaunchedEffect(isConveyor) {
@@ -146,7 +149,7 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                     firstInputKeyboardType = KeyboardType.Decimal,
                     secondInputKeyboardType = KeyboardType.Text,
                     isNAToggleEnabled = true,
-                    pvStatus = if (viewModel.pvRequired.value) {
+                    pvStatus = if (pvRequired) {
                         if (sensitivityAsLeftNonFerrous == "N/A") "N/A" else sensitivityAndCertStatus
                     } else null,
                     pvRules = rules.filter { it.description.contains("sensitivity", ignoreCase = true) || it.description.contains("Certificate", ignoreCase = true) },
@@ -193,7 +196,7 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                             viewModel.autoUpdateNonFerrousPvResult()
                         },
                         inputMaxLength = 12,
-                        pvStatus = if (viewModel.pvRequired.value) {
+                        pvStatus = if (pvRequired) {
                             rules.firstOrNull { it.description.contains("Leading", ignoreCase = true) }?.status?.name ?: "Incomplete"
                         } else null,
                         pvRules = rules.filter { it.description.contains("Leading", ignoreCase = true) }
@@ -218,7 +221,7 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                                 viewModel.autoUpdateNonFerrousPvResult()
                             },
                             inputMaxLength = 12,
-                            pvStatus = if (viewModel.pvRequired.value) {
+                            pvStatus = if (pvRequired) {
                                 rules.firstOrNull { it.description.contains("Middle", ignoreCase = true) }?.status?.name ?: "Incomplete"
                             } else null,
                             pvRules = rules.filter { it.description.contains("Middle", ignoreCase = true) }
@@ -241,7 +244,7 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                                 viewModel.autoUpdateNonFerrousPvResult()
                             },
                             inputMaxLength = 12,
-                            pvStatus = if (viewModel.pvRequired.value) {
+                            pvStatus = if (pvRequired) {
                                 rules.firstOrNull { it.description.contains("Trailing", ignoreCase = true) }?.status?.name ?: "Incomplete"
                             } else null,
                             pvRules = rules.filter { it.description.contains("Trailing", ignoreCase = true) }
@@ -264,7 +267,6 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                         rules = rules
                     )
 
-                    FormSpacer()
                 }
 
 

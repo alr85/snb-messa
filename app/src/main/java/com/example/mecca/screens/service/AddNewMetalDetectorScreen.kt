@@ -160,7 +160,7 @@ fun AddNewMetalDetectorScreen(
                 label = "Serial Number",
                 value = serialNumber,
                 onValueChange = { raw ->
-                    serialNumber = raw.replace(Regex("[^A-Za-z0-9 _.-]"), "").uppercase()
+                    serialNumber = raw.replace(Regex("[^A-Za-z0-9 _.-]"), "")
                 },
                 helpText = "Enter the serial number (A-Z / 0-9 / space / _ . -).",
                 keyboardType = KeyboardType.Text,

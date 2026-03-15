@@ -126,11 +126,6 @@ fun CalMetalDetectorConveyorSummaryDetails(
         val sensitivityData by viewModel.sensitivityData
 
 
-
-
-
-        // --- ORDERED TO MATCH NAV LIST ---
-
         Section(title = "Calibration Details", forceShowCheckbox = false) {
             SummaryItem(label = "Calibration ID", value = viewModel.calibrationId.value)
             SummaryItem(label = "Engineer ID", value = viewModel.engineerId.toString())

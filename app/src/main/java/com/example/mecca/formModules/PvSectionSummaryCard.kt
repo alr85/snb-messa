@@ -55,13 +55,16 @@ fun PvSectionSummaryCard(
         else -> Color.Gray
     }
 
+    Spacer(Modifier.height(12.dp))
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFFBFBFB)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -86,8 +89,11 @@ fun PvSectionSummaryCard(
                     SummaryRuleItem(rule)
                 }
             }
+
         }
     }
+    Spacer(Modifier.height(12.dp))
+
 }
 
 @Composable

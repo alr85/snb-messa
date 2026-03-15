@@ -129,9 +129,11 @@ fun CalibrationBanner(
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-
+                    val type = if (!pvRequired) "Metal Detector Calibration" else "Metal Detector Performance Verification"
                     Text(
-                        text = "Metal Detector Calibration",
+
+
+                        text = type,
                         style = if (isCompact){
                             MaterialTheme.typography.titleSmall
                         } else MaterialTheme.typography.titleLarge
@@ -146,33 +148,6 @@ fun CalibrationBanner(
                     )
                 }
             }
-
-            if(pvRequired){
-
-                Spacer(modifier = Modifier.width(2.dp))
-
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(Color.White)
-                        .border(3.dp, Color.DarkGray.copy(alpha = 0.3f), CircleShape),
-
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "PV",
-                        color = Color.DarkGray,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-            }
-
 
         }
 

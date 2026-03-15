@@ -455,7 +455,7 @@ fun CalibrationMetalDetectorConveyorViewModel.getLargeMetalPvRules(): List<PvRul
     val rules = mutableListOf<PvRule>()
 
     rules.add(PvRule(
-        description = "20mm Ferrous Test Sample must be detected and rejected",
+        description = "20mm Ferrous Test Sample must be detected and rejected. The certificate number must be recorded.",
         status = if (dAndR == YesNoState.YES && cert.isNotBlank()) PvRuleStatus.Pass else PvRuleStatus.Fail,
         ruleId = "LARGE_METAL_DETECT_REJECT"
     ))
@@ -621,6 +621,9 @@ fun CalibrationMetalDetectorConveyorViewModel.getSmePvRules(): List<PvRule> {
     val binDoor = operatorTestWitnessedBinDoor.value
     val airFail = operatorTestWitnessedAirFail.value
     val packCheck = operatorTestWitnessedPackCheck.value
+    val speedSensor = operatorTestWitnessedSpeedSensor.value
+    val backup = operatorTestWitnessedBackup.value
+
 
     val engF = sensitivityAsLeftFerrous.value.normalisedSize().toDoubleOrNull() ?: 99.0
     val engNF = sensitivityAsLeftNonFerrous.value.normalisedSize().toDoubleOrNull() ?: 99.0
@@ -705,6 +708,19 @@ fun CalibrationMetalDetectorConveyorViewModel.getSmePvRules(): List<PvRule> {
     ))
 
     rules.add(PvRule(
+        description = "Speed Sensor test must be witnessed.",
+        status = if (speedSensor == YesNoState.YES) PvRuleStatus.Pass else if (speedSensor == YesNoState.NA) PvRuleStatus.NA else PvRuleStatus.Fail,
+        ruleId = "OPERATOR_TEST_SPEED_SENSOR"
+    ))
+
+    rules.add(PvRule(
+        description = "Backup Sensor test must be witnessed.",
+        status = if (backup == YesNoState.YES) PvRuleStatus.Pass else if (backup == YesNoState.NA) PvRuleStatus.NA else PvRuleStatus.Fail,
+        ruleId = "OPERATOR_TEST_BACKUP"
+    ))
+
+
+    rules.add(PvRule(
         description = "Site must have an SME on site, and their name must be recorded.",
         status = if (smeName.value.isNotBlank()) PvRuleStatus.Pass else PvRuleStatus.Fail,
         ruleId = "SME_NAME"
@@ -722,6 +738,36 @@ fun CalibrationMetalDetectorConveyorViewModel.autoUpdateSmePvResult() {
 // Detect Notify PV Logic
 // ---------------------------------------------------------
 
+
+fun CalibrationMetalDetectorConveyorViewModel.getDetectNotificationPvRules(): List<PvRule> {
+    if (!pvRequired.value) return emptyList()
+
+    val rules = mutableListOf<PvRule>()
+    val results = detectNotificationResult.value
+
+    val resultsStatus = when {
+        results.isEmpty() -> PvRuleStatus.Incomplete
+        "No Result" in results -> PvRuleStatus.Fail
+        results.any {
+            it.contains(
+                "Notification (Latched)",
+                ignoreCase = true
+            )
+        } -> PvRuleStatus.Pass
+
+        else -> PvRuleStatus.Fail
+    }
+
+
+    rules.add(PvRule(
+        description = "There must be a latched audible or visual alarm upon detection",
+        status = resultsStatus,
+        ruleId = "DETECT_NOTIFICATION"
+    ))
+
+    return rules
+
+}
 fun CalibrationMetalDetectorConveyorViewModel.autoUpdateDetectNotificationTestPvResult() {
     if (!pvRequired.value) { setDetectNotificationTestPvResult("N/A"); return }
     val results = detectNotificationResult.value

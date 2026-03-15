@@ -42,6 +42,9 @@ fun CalMetalDetectorConveyorSmeDetails(
     val binDoor by viewModel.operatorTestWitnessedBinDoor
     val airFail by viewModel.operatorTestWitnessedAirFail
     val packCheck by viewModel.operatorTestWitnessedPackCheck
+    val speedSensor by viewModel.operatorTestWitnessedSpeedSensor
+    val backup by viewModel.operatorTestWitnessedBackup
+
 
     val smeName by viewModel.smeName
     val notes by viewModel.smeEngineerNotes
@@ -174,7 +177,7 @@ fun CalMetalDetectorConveyorSmeDetails(
                         onSecondInputValueChange = { viewModel.setOperatorTestResultCertNumberNonFerrous(it); viewModel.autoUpdateSmePvResult() },
                         helpText = "Enter Non-Ferrous size and certificate number.",
                         firstInputKeyboardType = KeyboardType.Decimal,
-                        isNAToggleEnabled = false,
+                        isNAToggleEnabled = true,
                         pvStatus = if (viewModel.pvRequired.value) rules.find { it.ruleId == "OPERATOR_TEST_NON_FERR" }?.status?.name else null,
                         pvRules = rules.filter { it.ruleId == "OPERATOR_TEST_NON_FERR" }
                     )
@@ -191,7 +194,7 @@ fun CalMetalDetectorConveyorSmeDetails(
                         onSecondInputValueChange = { viewModel.setOperatorTestResultCertNumberStainless(it); viewModel.autoUpdateSmePvResult() },
                         helpText = "Enter Stainless size and certificate number.",
                         firstInputKeyboardType = KeyboardType.Decimal,
-                        isNAToggleEnabled = false,
+                        isNAToggleEnabled = true,
                         pvStatus = if (viewModel.pvRequired.value) rules.find { it.ruleId == "OPERATOR_TEST_STAINLESS" }?.status?.name else null,
                         pvRules = rules.filter { it.ruleId == "OPERATOR_TEST_STAINLESS" }
                     )
@@ -208,7 +211,7 @@ fun CalMetalDetectorConveyorSmeDetails(
                         onSecondInputValueChange = { viewModel.setOperatorTestResultCertNumberLargeMetal(it); viewModel.autoUpdateSmePvResult() },
                         helpText = "Enter Large Metal size and certificate number.",
                         firstInputKeyboardType = KeyboardType.Decimal,
-                        isNAToggleEnabled = false,
+                        isNAToggleEnabled = true,
                         pvStatus = if (viewModel.pvRequired.value) rules.find { it.ruleId == "OPERATOR_TEST_LM" }?.status?.name else null,
                         pvRules = rules.filter { it.ruleId == "OPERATOR_TEST_LM" }
                     )
@@ -283,6 +286,30 @@ fun CalMetalDetectorConveyorSmeDetails(
                         isNAToggleEnabled = true,
                         pvStatus = if (viewModel.pvRequired.value) rules.find { it.ruleId == "OPERATOR_TEST_PACK_CHECK" }?.status?.name else null,
                         pvRules = rules.filter { it.ruleId == "OPERATOR_TEST_PACK_CHECK" }
+                    )
+
+                    FormSpacer()
+
+                    LabeledTriStateSwitchWithHelp(
+                        label = "Speed Sensor Test",
+                        currentState = speedSensor,
+                        onStateChange = { viewModel.setOperatorTestWitnessedSpeedSensor(it); viewModel.autoUpdateSmePvResult() },
+                        helpText = "Was the Speed Sensor test performed by the operator?",
+                        isNAToggleEnabled = true,
+                        pvStatus = if (viewModel.pvRequired.value) rules.find { it.ruleId == "OPERATOR_TEST_SPEED_SENSOR" }?.status?.name else null,
+                        pvRules = rules.filter { it.ruleId == "OPERATOR_TEST_SPEED_SENSOR" }
+                    )
+
+                    FormSpacer()
+
+                    LabeledTriStateSwitchWithHelp(
+                        label = "Back Up Sensor Test",
+                        currentState = backup,
+                        onStateChange = { viewModel.setOperatorTestWitnessedBackup(it); viewModel.autoUpdateSmePvResult() },
+                        helpText = "Was the Back Up test performed by the operator?",
+                        isNAToggleEnabled = true,
+                        pvStatus = if (viewModel.pvRequired.value) rules.find { it.ruleId == "OPERATOR_TEST_BACKUP" }?.status?.name else null,
+                        pvRules = rules.filter { it.ruleId == "OPERATOR_TEST_BACKUP" }
                     )
 
                     FormSpacer()

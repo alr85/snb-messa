@@ -50,6 +50,9 @@ fun CalMetalDetectorConveyorStainlessTest(
     val engineerNotes by viewModel.stainlessTestEngineerNotes
 
     val isConveyor by viewModel.isConveyor
+    val pvRequired by viewModel.pvRequired
+
+
 
     // Default hidden values to safe state if not a conveyor
     LaunchedEffect(isConveyor) {
@@ -146,7 +149,7 @@ fun CalMetalDetectorConveyorStainlessTest(
                     firstInputKeyboardType = KeyboardType.Decimal,
                     secondInputKeyboardType = KeyboardType.Text,
                     isNAToggleEnabled = true,
-                    pvStatus = if (viewModel.pvRequired.value) sensitivityAndCertStatus else null,
+                    pvStatus = if (pvRequired) sensitivityAndCertStatus else null,
                     pvRules = rules.filter { it.description.contains("sensitivity", ignoreCase = true) || it.description.contains("Certificate", ignoreCase = true) },
                     firstMaxLength = 4,
                     secondMaxLength = 12
@@ -207,7 +210,7 @@ fun CalMetalDetectorConveyorStainlessTest(
                                 viewModel.autoUpdateStainlessPvResult() 
                             },
                             inputMaxLength = 12,
-                            pvStatus = if (viewModel.pvRequired.value) {
+                            pvStatus = if (pvRequired) {
                                 rules.firstOrNull { it.description.contains("Middle", ignoreCase = true) }?.status?.name ?: "Incomplete"
                             } else null,
                             pvRules = rules.filter { it.description.contains("Middle", ignoreCase = true) }
@@ -230,7 +233,7 @@ fun CalMetalDetectorConveyorStainlessTest(
                                 viewModel.autoUpdateStainlessPvResult() 
                             },
                             inputMaxLength = 12,
-                            pvStatus = if (viewModel.pvRequired.value) {
+                            pvStatus = if (pvRequired) {
                                 rules.firstOrNull { it.description.contains("Trailing", ignoreCase = true) }?.status?.name ?: "Incomplete"
                             } else null,
                             pvRules = rules.filter { it.description.contains("Trailing", ignoreCase = true) }
@@ -241,9 +244,11 @@ fun CalMetalDetectorConveyorStainlessTest(
                 }
 
                 // PV Summary Card
-                if (viewModel.pvRequired.value) {
-                    PvSectionSummaryCard(title = "Stainless Steel Test P.V. Summary", rules = rules)
-                    FormSpacer()
+                if (pvRequired) {
+                    PvSectionSummaryCard(
+                        title = "Stainless Steel Test P.V. Summary",
+                        rules = rules
+                    )
                 }
 
                 // Engineer Notes

@@ -36,6 +36,9 @@ fun CalMetalDetectorConveyorConveyorDetails(
     val rejectDeviceOther by viewModel.rejectDeviceOther
     val conveyorDetailsEngineerNotes by viewModel.conveyorDetailsEngineerNotes
     val isConveyor by viewModel.isConveyor
+    val pvRequired by viewModel.pvRequired
+
+    val forbiddenItems = listOf("Alarm Belt Stop", "Alarm Only")
 
     // Validation
     val isNextStepEnabled = if (isConveyor) {
@@ -48,6 +51,7 @@ fun CalMetalDetectorConveyorConveyorDetails(
                 (rejectDevice != "Other" || rejectDeviceOther.isNotBlank())
     } else {
         rejectDevice.isNotBlank() &&
+                (!pvRequired || rejectDevice !in forbiddenItems) &&
                 (rejectDevice != "Other" || rejectDeviceOther.isNotBlank())
     }
 
@@ -55,27 +59,43 @@ fun CalMetalDetectorConveyorConveyorDetails(
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
-    val rejectOptions = remember {
-        if (!isConveyor) listOf(
-            "Pipeline Valve",
-            "Divert Flap",
-            "Double bag",
-            "Alarm Only",
-            "Other"
-        ).sorted()
-        else
-        listOf(
-            "Alarm Belt Stop",
-            "Air Blast",
-            "Air Kicker",
-            "Air Divert Arm",
-            "Air Divert Flap",
-            "Electric Divert Arm",
-            "Retract Band",
-            "Reverse Belt",
-            "Lift or Drop Table",
-            "Alarm only",
-            "Other").sorted()
+
+
+    val rejectOptions = remember(isConveyor, pvRequired) {
+        val baseList = if (!isConveyor) {
+            listOf(
+                "Pipeline Valve",
+                "Divert Flap",
+                "Double bag",
+                "Alarm Only",
+                "Other"
+            )
+        } else {
+            listOf(
+                "Alarm Belt Stop",
+                "Air Blast",
+                "Air Kicker",
+                "Air Divert Arm",
+                "Air Divert Flap",
+                "Electric Divert Arm",
+                "Retract Band",
+                "Reverse Belt",
+                "Lift or Drop Table",
+                "Alarm Only",
+                "Other"
+            )
+        }
+
+
+
+        // Filter out "Alarm Belt Stop" if PV is required
+        val filteredList = if (pvRequired) {
+            baseList.filter { it !in forbiddenItems }
+        } else {
+            baseList
+        }
+
+        filteredList.sorted()
     }
 
     val handingOptions = remember {
@@ -165,7 +185,7 @@ fun CalMetalDetectorConveyorConveyorDetails(
                     options = rejectOptions,
                     selectedOption = rejectDevice,
                     onSelectionChange = viewModel::setRejectDevice,
-                    helpText = "Select the reject device type."
+                    helpText = "Select the reject device type. If P.V is enabled, Alarm Belt Stop and Alarm Only will be excluded."
                 )
 
                 FormSpacer()
@@ -193,7 +213,6 @@ fun CalMetalDetectorConveyorConveyorDetails(
                     showInputLabel = false
                 )
 
-                // optional breathing room so last field isn't glued to bottom buttons
                 Spacer(Modifier.height(60.dp))
             }
         }

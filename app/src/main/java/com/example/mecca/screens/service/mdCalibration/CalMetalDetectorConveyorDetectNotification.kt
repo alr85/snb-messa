@@ -14,11 +14,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateBinDoorMonitorPvResult
 import com.example.mecca.calibrationLogic.metalDetectorConveyor.autoUpdateDetectNotificationTestPvResult
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.getDetectNotificationPvRules
+import com.example.mecca.calibrationLogic.metalDetectorConveyor.getFerrousPvRules
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
 import com.example.mecca.formModules.LabeledMultiSelectDropdownWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
+import com.example.mecca.formModules.PvSectionSummaryCard
 import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
 
@@ -30,6 +33,9 @@ fun CalMetalDetectorConveyorDetectNotification(
 
     val result by viewModel.detectNotificationResult.collectAsState()
     val notes by viewModel.detectNotificationEngineerNotes
+
+    val pvRequired by viewModel.pvRequired
+
 
     val resultOptions = remember {
         listOf(
@@ -54,6 +60,9 @@ fun CalMetalDetectorConveyorDetectNotification(
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
+
+    // PV Rules Calculation
+    val rules = viewModel.getDetectNotificationPvRules()
 
     Column(modifier = Modifier.fillMaxSize()) {
 
@@ -91,27 +100,42 @@ fun CalMetalDetectorConveyorDetectNotification(
                     
                     If "No Result" is selected, all other options will be cleared.
                 """.trimIndent(),
-                    isNAToggleEnabled = false
+                    isNAToggleEnabled = false,
+                    pvStatus = if (pvRequired) rules.find { it.ruleId == "DETECT_NOTIFICATION" }?.status?.name else null,
+                    pvRules = if (pvRequired) rules.filter { it.ruleId == "DETECT_NOTIFICATION" } else emptyList()
+
+
 
                 )
 
                 FormSpacer()
 
-
-                if (viewModel.pvRequired.value) {
-                    LabeledFourOptionRadioWithHelp(
-                        label = "P.V. Result",
-                        value = viewModel.detectNotificationTestPvResult.value,
-                        onValueChange = viewModel::setDetectNotificationTestPvResult,
-                        helpText = """
-                    Auto-Pass rules (when PV required):
-
-                    Otherwise auto-fail. You may override manually.
-                    """.trimIndent()
+                //-----------------------------------------------------
+                //  PV Summary Card (replacing the old radio selector)
+                //-----------------------------------------------------
+                if (pvRequired) {
+                    PvSectionSummaryCard(
+                        title = "Detect Notification P.V. Summary",
+                        rules = rules
                     )
 
-                    FormSpacer()
                 }
+
+
+//                if (viewModel.pvRequired.value) {
+//                    LabeledFourOptionRadioWithHelp(
+//                        label = "P.V. Result",
+//                        value = viewModel.detectNotificationTestPvResult.value,
+//                        onValueChange = viewModel::setDetectNotificationTestPvResult,
+//                        helpText = """
+//                    Auto-Pass rules (when PV required):
+//
+//                    Otherwise auto-fail. You may override manually.
+//                    """.trimIndent()
+//                    )
+//
+//                    FormSpacer()
+//                }
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Comments",

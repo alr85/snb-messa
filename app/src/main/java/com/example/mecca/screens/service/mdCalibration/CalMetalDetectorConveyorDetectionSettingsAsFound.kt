@@ -99,25 +99,6 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
         ) {
             Column {
 
-                Spacer(Modifier.height(6.dp))
-
-                // Render settings 1–8 dynamically
-                labels.indices.forEach { index ->
-                    val labelState = labels[index]
-                    val valueState = values[index]
-
-                    LabeledTextFieldWithHelpEdit(
-                        label = labelState.value,
-                        onLabelChange = { labelSetters[index](it) },
-                        value = valueState.value,
-                        onValueChange = { valueSetters[index](it) },
-                        helpText = "Enter the detection setting value. Tap the label to rename.",
-                        maxLength = 15
-                    )
-
-                    FormSpacer()
-                }
-
                 LabeledDropdownWithHelp(
                     label = "Access Restriction:",
                     options = listOf("Yes (Password)", "Yes (Locked door)", "Yes (Key switch)", "Yes (RFID Card)", "None"),
@@ -155,22 +136,41 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
 
                 FormSpacer()
 
-                if (pvRequired) {
-                    LabeledFourOptionRadioWithHelp(
-                        label = "P.V. Result",
-                        showNotFittedOption = false,
-                        value = pvResult,
-                        onValueChange = { viewModel.setDetectionSettingPvResult(it) },
-                        helpText = """
-                            If Access Restriction has a value, P.V. automatically becomes Pass.
-                            If Access Restriction is blank, P.V. automatically becomes Fail.
-                            If Access Restriction is 'N/A', P.V. becomes N/A.
-                            You may override manually if required.
-                        """.trimIndent()
+                // Render settings 1–8 dynamically
+                labels.indices.forEach { index ->
+                    val labelState = labels[index]
+                    val valueState = values[index]
+
+                    LabeledTextFieldWithHelpEdit(
+                        label = labelState.value,
+                        onLabelChange = { labelSetters[index](it) },
+                        value = valueState.value,
+                        onValueChange = { valueSetters[index](it) },
+                        helpText = "Enter the detection setting value. Tap the label to rename.",
+                        maxLength = 20
                     )
 
                     FormSpacer()
+
                 }
+
+
+//                if (pvRequired) {
+//                    LabeledFourOptionRadioWithHelp(
+//                        label = "P.V. Result",
+//                        showNotFittedOption = false,
+//                        value = pvResult,
+//                        onValueChange = { viewModel.setDetectionSettingPvResult(it) },
+//                        helpText = """
+//                            If Access Restriction has a value, P.V. automatically becomes Pass.
+//                            If Access Restriction is blank, P.V. automatically becomes Fail.
+//                            If Access Restriction is 'N/A', P.V. becomes N/A.
+//                            You may override manually if required.
+//                        """.trimIndent()
+//                    )
+//
+//                    FormSpacer()
+//                }
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Notes",

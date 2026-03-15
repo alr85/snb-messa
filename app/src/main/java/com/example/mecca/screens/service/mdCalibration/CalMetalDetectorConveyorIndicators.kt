@@ -1,10 +1,15 @@
 package com.example.mecca.screens.service.mdCalibration
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ToggleOn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -12,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.mecca.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
+import com.example.mecca.formModules.AnimatedActionPill
 import com.example.mecca.formModules.CalibrationHeader
 import com.example.mecca.formModules.LabeledDropdownWithTextInput
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
@@ -95,11 +101,21 @@ fun CalMetalDetectorConveyorIndicators(
         ScrollableWithScrollbar(
             modifier = Modifier
                 .fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),  // replaces your old Column padding
-            // Make thumb red (if your wrapper supports it):
-            // scrollbarColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
+            contentPadding = PaddingValues(16.dp),
+
         ) {
             Column {
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    AnimatedActionPill(
+                        text = "Set all N/A",
+                        icon = Icons.Outlined.ToggleOn,
+                        onClick = { setAllNa(viewModel) }
+                    )
+                }
 
                 indicatorRow(
                     number = 6,
@@ -176,4 +192,24 @@ fun CalMetalDetectorConveyorIndicators(
             }
         }
     }
+}
+
+fun setAllNa(viewModel: CalibrationMetalDetectorConveyorViewModel) {
+    val naValue = "N/A"
+
+    // Set all colours to N/A
+    viewModel.setIndicator6colour(naValue)
+    viewModel.setIndicator5colour(naValue)
+    viewModel.setIndicator4colour(naValue)
+    viewModel.setIndicator3colour(naValue)
+    viewModel.setIndicator2colour(naValue)
+    viewModel.setIndicator1colour(naValue)
+
+    // Set all labels to N/A
+    viewModel.setIndicator6label(naValue)
+    viewModel.setIndicator5label(naValue)
+    viewModel.setIndicator4label(naValue)
+    viewModel.setIndicator3label(naValue)
+    viewModel.setIndicator2label(naValue)
+    viewModel.setIndicator1label(naValue)
 }

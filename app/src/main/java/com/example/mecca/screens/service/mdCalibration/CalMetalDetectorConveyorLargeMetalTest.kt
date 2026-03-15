@@ -22,6 +22,7 @@ import com.example.mecca.formModules.LabeledFourOptionRadioWithHelp
 import com.example.mecca.formModules.LabeledTextFieldWithHelp
 import com.example.mecca.formModules.LabeledTriStateSwitchWithHelp
 import com.example.mecca.formModules.LabeledYesNoSegmentedSwitchAndTextInputWithHelp
+import com.example.mecca.formModules.PvSectionSummaryCard
 import com.example.mecca.formModules.YesNoState
 import com.example.mecca.ui.theme.FormSpacer
 import com.example.mecca.ui.theme.ScrollableWithScrollbar
@@ -57,15 +58,17 @@ fun CalMetalDetectorConveyorLargeMetalTest(
             return@LaunchedEffect
         }
 
-        // PV rules
-        val rules = remember(
-            dr,
-            certNo,
-            pvRequired
 
-        ) {
-            viewModel.getLargeMetalPvRules()
-        }
+    }
+
+    // PV rules
+    val rules = remember(
+        dr,
+        certNo,
+        pvRequired
+
+    ) {
+        viewModel.getLargeMetalPvRules()
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -100,63 +103,21 @@ fun CalMetalDetectorConveyorLargeMetalTest(
                     onInputValueChange = viewModel::setSampleCertificateNumberLargeMetal,
                     inputMaxLength = 12,
                     inputKeyboardType = KeyboardType.Text,
-                    pvStatus = if (pvRequired) rules.find { it.ruleId == "SPEED_RESULT" }?.status?.name else null,
-                    pvRules = if (pvRequired) rules.filter { it.ruleId == "SPEED_RESULT" } else emptyList()
+                    pvStatus = if (pvRequired) rules.find { it.ruleId == "LARGE_METAL_DETECT_REJECT" }?.status?.name else null,
+                    pvRules = if (pvRequired) rules.filter { it.ruleId == "LARGE_METAL_DETECT_REJECT" } else emptyList()
                 )
 
                 FormSpacer()
-
-//                LabeledTriStateSwitchWithHelp(
-//                    label = "Detected & Rejected OK",
-//                    currentState = dr,
-//                    onStateChange = { newState ->
-//                        viewModel.setDetectRejectLargeMetal(newState)
-//
-//                        // Optional but sensible: autofill fields for N/A
-//                        if (newState == YesNoState.NA) {
-//                            viewModel.setSampleCertificateNumberLargeMetal("N/A")
-//                        } else if (certNo == "N/A") {
-//                            viewModel.setSampleCertificateNumberLargeMetal("")
-//                        }
-//                    },
-//                    helpText = "Select if there was satisfactory Detection and Rejection of the metal sample: Yes, No, or N/A."
-//                )
-//
-//                FormSpacer()
-//
-//                LabeledTextFieldWithHelp(
-//                    label = "Sample Certificate No.",
-//                    value = certNo,
-//                    onValueChange = viewModel::setSampleCertificateNumberLargeMetal,
-//                    helpText = "Enter the metal test sample certificate number (usually on the test piece).",
-//                    isNAToggleEnabled = false,
-//                    maxLength = 12
-//                )
-//
-//                FormSpacer()
 
                 // -----------------------------------------------------
                 // PV RESULT (only when required)
                 // -----------------------------------------------------
                 if (pvRequired) {
-                    LabeledFourOptionRadioWithHelp(
-                        label = "P.V. Result",
-                        value = viewModel.largeMetalTestPvResult.value,
-                        onValueChange = viewModel::setLargeMetalTestPvResult,
-                        helpText = """
-                        Auto-Pass rules:
-                          • Det. & Rej. OK = Yes
-                          • Certificate number entered
+                     PvSectionSummaryCard(
+                            title = "Large metal test P.V. Summary",
+                            rules = rules
+                        )
 
-                        If D&R OK = No → auto-fail.
-                        If D&R OK = N/A → PV = N/A.
-                        You may override manually.
-                    """.trimIndent(),
-                        showNotFittedOption = false,
-                        notFittedEnabled = false
-                    )
-
-                    FormSpacer()
                 }
 
                 LabeledTextFieldWithHelp(

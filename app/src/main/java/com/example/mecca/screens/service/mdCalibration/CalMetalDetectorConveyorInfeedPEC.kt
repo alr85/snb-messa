@@ -193,14 +193,19 @@ fun CalMetalDetectorConveyorInfeedPEC(
                         pvRules = rules.filter { it.ruleId == "INFEED_CR" }
                     )
 
-                    if(!pvRequired) FormSpacer()
+                    FormSpacer()
                 }
 
                 if (pvRequired) {
+
+                    Spacer(Modifier.height(10.dp))
+
                     PvSectionSummaryCard(
                         title = "Infeed sensor test P.V. Summary",
                         rules = rules
                     )
+
+                    Spacer(Modifier.height(10.dp))
 
                 }
 

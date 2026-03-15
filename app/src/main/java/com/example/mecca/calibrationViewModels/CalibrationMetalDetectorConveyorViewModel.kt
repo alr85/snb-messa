@@ -3415,6 +3415,20 @@ class CalibrationMetalDetectorConveyorViewModel(
         _operatorTestWitnessedPackCheck.value = newValue
     }
 
+    private val _operatorTestWitnessedSpeedSensor = mutableStateOf(YesNoState.NO)
+    val operatorTestWitnessedSpeedSensor: State<YesNoState> = _operatorTestWitnessedSpeedSensor
+
+    fun setOperatorTestWitnessedSpeedSensor(newValue: YesNoState) {
+        _operatorTestWitnessedSpeedSensor.value = newValue
+    }
+
+    private val _operatorTestWitnessedBackup = mutableStateOf(YesNoState.NO)
+    val operatorTestWitnessedBackup: State<YesNoState> = _operatorTestWitnessedBackup
+
+    fun setOperatorTestWitnessedBackup(newValue: YesNoState) {
+        _operatorTestWitnessedBackup.value = newValue
+    }
+
 
 
     private val _smeEngineerNotes = mutableStateOf("")

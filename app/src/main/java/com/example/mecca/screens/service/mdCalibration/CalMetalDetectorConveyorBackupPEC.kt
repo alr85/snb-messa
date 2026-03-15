@@ -41,7 +41,7 @@ fun CalMetalDetectorConveyorBackupPEC(
     val pvRequired = viewModel.pvRequired.value
 
     val testMethodOptions = remember {
-        listOf("Reject Override Switch", "Product Removal", "Manual Block", "Other")
+        listOf("Manual Block", "Device Block")
     }
 
     val testResultOptions = remember {
