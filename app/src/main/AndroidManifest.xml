@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:name=".MyApplication"
+        android:name="com.snb.inspect.MyApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -17,7 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MECCA" >
         <activity
-            android:name=".MainActivity"
+            android:name="com.snb.inspect.MainActivity"
 
             android:windowSoftInputMode="adjustResize"
             android:exported="true"
@@ -29,7 +29,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.MetalDetectorConveyorCalibrationActivity"
+        <activity android:name="com.snb.inspect.activities.MetalDetectorConveyorCalibrationActivity"
             android:theme="@style/Theme.MECCA"/>
 
 

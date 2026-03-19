@@ -1,0 +1,81 @@
+package com.snb.inspect.formModules
+
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.input.KeyboardType
+import com.snb.inspect.formModules.inputs.YesNoSegmented
+
+
+@Composable
+fun LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
+    label: String,
+    currentState: YesNoState = YesNoState.NO,
+    onStateChange: (YesNoState) -> Unit,
+    helpText: String,
+    inputLabel: String,
+    inputValue: String,
+    onInputValueChange: (String) -> Unit,
+    inputKeyboardType: KeyboardType = KeyboardType.Text,
+    inputMaxLength: Int? = null,
+    inputTransform: ((String) -> String)? = null,
+    pvStatus: String? = null,
+    pvRules: List<PvRule> = emptyList(),
+    ) {
+    var showHelpDialog by remember { mutableStateOf(false) }
+    var isDisabled by remember { mutableStateOf(currentState == YesNoState.NA) }
+    var localCurrentState by remember {
+        mutableStateOf(if (currentState == YesNoState.UNSPECIFIED) YesNoState.NO else currentState)
+    }
+
+    LaunchedEffect(currentState) {
+        isDisabled = currentState == YesNoState.NA
+        localCurrentState = if (currentState == YesNoState.UNSPECIFIED) YesNoState.NO else currentState
+    }
+
+    FormRowWrapper(
+        label = label,
+        naButtonText = if (isDisabled) "Edit" else "N/A",
+        isDisabled = isDisabled,
+        pvStatus = pvStatus,
+        pvRules = pvRules,
+        onNaClick = {
+            isDisabled = !isDisabled
+            val newState = if (isDisabled) YesNoState.NA else YesNoState.NO
+            localCurrentState = newState
+            onStateChange(newState)
+            onInputValueChange(if (isDisabled) "N/A" else "")
+        },
+        onHelpClick = { showHelpDialog = true }
+    ) { disabled ->
+        YesNoSegmented(
+            currentState = localCurrentState,
+            onStateChange = { new ->
+                localCurrentState = new
+                onStateChange(new)
+            },
+            inputLabel = inputLabel,
+            inputValue = inputValue,
+            onInputValueChange = onInputValueChange,
+            inputKeyboardType = inputKeyboardType,
+            inputMaxLength = inputMaxLength,
+            inputTransform = inputTransform,
+            isDisabled = disabled
+        )
+    }
+
+    if (showHelpDialog) {
+        AlertDialog(
+            onDismissRequest = { showHelpDialog = false },
+            title = { Text(text = label) },
+            text = { Text(text = helpText) },
+            confirmButton = { TextButton(onClick = { showHelpDialog = false }) { Text("OK") } }
+        )
+    }
+}

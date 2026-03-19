@@ -1,0 +1,625 @@
+package com.snb.inspect
+
+
+import android.Manifest
+import android.os.Bundle
+import android.view.WindowManager
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.annotation.RequiresPermission
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.MailOutline
+import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.outlined.Build
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.snb.inspect.calibrationViewModels.CustomerViewModel
+import com.snb.inspect.calibrationViewModels.NoticeViewModel
+import com.snb.inspect.network.NetworkMonitor
+import com.snb.inspect.network.rememberIsOffline
+import com.snb.inspect.repositories.CustomerRepository
+import com.snb.inspect.repositories.MetalDetectorSystemsRepository
+import com.snb.inspect.repositories.MetalDetectorConveyorCalibrationRepository
+import com.snb.inspect.repositories.NoticeRepository
+import com.snb.inspect.repositories.UserRepository
+import com.snb.inspect.screens.LoginScreen
+import com.snb.inspect.ui.theme.AppNavGraph
+import com.snb.inspect.ui.theme.SnbDarkGrey
+import com.snb.inspect.ui.theme.SnbRed
+import com.snb.inspect.util.InAppLogger
+import com.snb.inspect.util.SyncPreferences
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+
+class MainActivity : ComponentActivity() {
+
+    private lateinit var userViewModel: UserViewModel
+    private lateinit var customerViewModel: CustomerViewModel
+    private lateinit var noticeViewModel: NoticeViewModel
+    private lateinit var mdSystemsRepository: MetalDetectorSystemsRepository
+    private lateinit var calibrationRepository: MetalDetectorConveyorCalibrationRepository
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        //requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
+        android.util.Log.d("MESSA DEBUG", "onCreate. savedInstanceState is null = ${savedInstanceState == null}")
+
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_SECURE,
+            WindowManager.LayoutParams.FLAG_SECURE
+        )
+
+        val app = application as MyApplication
+        val db = app.database
+        val apiService = app.apiService
+        val syncPrefs = SyncPreferences(this)
+
+        // Repositories
+        val userRepository = UserRepository(db.userDao(), apiService)
+        val customerRepository = CustomerRepository(apiService, db, syncPrefs)
+        val noticeRepository = NoticeRepository(apiService, db)
+        mdSystemsRepository = MetalDetectorSystemsRepository(apiService, db)
+        calibrationRepository = MetalDetectorConveyorCalibrationRepository(db.metalDetectorConveyorCalibrationDAO())
+
+        // ViewModels
+        userViewModel = UserViewModel(userRepository)
+        customerViewModel = CustomerViewModel(customerRepository)
+        noticeViewModel = NoticeViewModel(noticeRepository)
+
+        val savedCredentials = PreferencesHelper.getCredentials(this)
+        PreferencesHelper.isLoggedIn(this)
+
+        // Always sync users on launch
+        userViewModel.syncUsers(this)
+
+        setContent {
+
+            val syncStatus by userViewModel.syncStatus.collectAsState()
+            val loginStatus by userViewModel.loginStatus.collectAsState()
+            val loginError by userViewModel.loginError.collectAsState()
+
+            when {
+
+                //----------------------------------------
+                // 1. WAIT FOR USER SYNC
+                //----------------------------------------
+
+                !syncStatus -> {
+                    SyncUsersScreen(
+                        message = loginError,
+                        onRetry = { userViewModel.syncUsers(this) }
+                    )
+                }
+
+                //----------------------------------------
+                // 2. AUTO LOGIN IF SESSION EXISTS
+                //----------------------------------------
+
+                loginStatus -> {
+
+                    LaunchedEffect(Unit) {
+
+
+
+                        // Boot sync (runs once)
+                        customerViewModel.syncCustomers()
+                        noticeViewModel.syncNotices()
+                    }
+
+                    MyApp(
+                        db = db,
+                        userViewModel = userViewModel,
+                        customerViewModel = customerViewModel,
+                        noticeViewModel = noticeViewModel,
+                        mdSystemsRepository = mdSystemsRepository,
+                        calibrationRepository = calibrationRepository,
+                        syncPrefs = syncPrefs
+                    )
+                }
+
+                //----------------------------------------
+                // 3. SHOW LOGIN
+                //----------------------------------------
+
+                else -> {
+                    LoginScreen(
+                        userViewModel = userViewModel,
+                        defaultUsername = savedCredentials.first,
+                        defaultPassword = savedCredentials.second,
+                        loginError = loginError,
+                        onLoginClick = { username, password, pin ->
+                            userViewModel.login(this, username, password, pin)
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        android.util.Log.d("MESSA DEBUG", "onDestroy called")
+        super.onDestroy()
+    }
+}
+
+
+@Composable
+fun SyncUsersScreen(
+    message: String?,
+    onRetry: () -> Unit
+) {
+    // Optional: simple auto-retry countdown when there’s an error
+    // Useful for “Azure is waking up” without making the user babysit it.
+    var retryInSeconds by remember { mutableIntStateOf(if (message != null) { 10 } else { 0 }) }
+
+    LaunchedEffect(message) {
+        if (message != null) {
+            retryInSeconds = 10
+            while (retryInSeconds > 0) {
+                delay(1000)
+                retryInSeconds--
+            }
+            onRetry()
+        } else {
+            retryInSeconds = 0
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+
+            if (message == null) {
+                CircularProgressIndicator()
+                Text(
+                    text = "Syncing users…",
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "Waking the server up and pulling the latest user list.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center
+                )
+            } else {
+                // Error state
+                Text(
+                    text = "Couldn’t sync users",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color(0xFFB71C1C),
+                    textAlign = TextAlign.Center
+                )
+
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center,
+                    maxLines = 4,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                Button(onClick = onRetry) {
+                    Text("Retry now")
+                }
+
+                // Optional auto retry status
+                if (retryInSeconds > 0) {
+                    Text(
+                        text = "Retrying automatically in ${retryInSeconds}s…",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                }
+
+                // Optional: allow offline login path if you want later
+                // OutlinedButton(onClick = { /* continue offline */ }) { Text("Continue offline") }
+            }
+        }
+    }
+}
+
+
+data class NavigationBarItem(
+    val title: String,
+    val selectedIcon: ImageVector,
+    val unselectedIcon: ImageVector
+)
+
+@Composable
+fun OfflineBanner(
+    isOffline: Boolean,
+    isSyncing: Boolean
+) {
+    val showBanner = isOffline || isSyncing
+    val backgroundColor by animateColorAsState(
+        targetValue = if (isOffline) Color(0xFFB71C1C) else Color(0xFF2E7D32),
+        label = "bannerColor"
+    )
+
+    AnimatedVisibility(
+        visible = showBanner,
+        enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
+        exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .animateContentSize()
+                .background(backgroundColor)
+                .padding(vertical = 6.dp)
+                .heightIn(min = 32.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (isSyncing) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp
+                    )
+                }
+                Text(
+                    text = if (isOffline) "Offline mode" else "Back online - Syncing data...",
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+@RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
+fun MyApp(
+    db: AppDatabase,
+    userViewModel: UserViewModel,
+    customerViewModel: CustomerViewModel,
+    noticeViewModel: NoticeViewModel,
+    mdSystemsRepository: MetalDetectorSystemsRepository,
+    calibrationRepository: MetalDetectorConveyorCalibrationRepository,
+    syncPrefs: SyncPreferences
+) {
+
+    /*
+        NavController drives the entire app navigation.
+        There should be ONE of these at the root of your app.
+     */
+    val navController = rememberNavController()
+
+    /*
+        Chrome ViewModel controls GLOBAL UI:
+        - Top bar
+        - Menu button
+        - Back button
+        etc.
+
+        Screens should NOT control global UI anymore.
+     */
+    val chromeVm: AppChromeViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    /*
+        Observe the TopBar state once.
+        NEVER collect the same flow multiple times in Compose.
+     */
+    val topBarState by chromeVm.topBarState.collectAsState()
+
+    /*
+        Observe navigation changes so we can update the TopBar automatically.
+        This removes the need for setTopBar() calls inside screens.
+     */
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val route = navBackStackEntry?.destination?.route
+
+
+    // ---------------------------------------------------------
+    // GLOBAL SNACKBAR HOST
+    // ---------------------------------------------------------
+    /*
+        One snackbar host for the entire app.
+
+        Avoid putting snack bars inside screens — it leads to
+        nested scaffolds and layout chaos.
+     */
+    val snackbarHostState = remember { SnackbarHostState() }
+
+
+
+    // ---------------------------------------------------------
+    // OFFLINE STATE
+    // ---------------------------------------------------------
+    val isOffline by rememberIsOffline()
+
+    var isSyncingBackground by remember { mutableStateOf(false) }
+
+    // AUTO-SYNC when coming back online
+    LaunchedEffect(isOffline) {
+        if (!isOffline && syncPrefs.isAutoSyncEnabled()) {
+            // Wait 2 seconds for signal stability
+            delay(2000)
+            
+            isSyncingBackground = true
+            scope.launch(Dispatchers.IO) {
+                try {
+                    val app = context.applicationContext as MyApplication
+                    val apiService = app.apiService
+
+                    // 1. UPLOAD MACHINES FIRST (Creates cloud IDs & links calibrations)
+                    InAppLogger.d("BACKGROUND SYNC: Step 1 - Uploading Machines...")
+                    mdSystemsRepository.uploadUnsyncedSystems(context)
+                    
+                    // 2. REFRESH MACHINE DATABASE (Resolves cloud IDs for machines already on server)
+                    // This now also resolving ID linking for pending calibrations.
+                    InAppLogger.d("BACKGROUND SYNC: Step 2 - Pulling latest machine data...")
+                    mdSystemsRepository.fetchAndStoreMdSystems()
+                    
+                    // 3. UPLOAD CALIBRATIONS (Now they definitely have cloudSystemIds and fresh CSVs)
+                    InAppLogger.d("BACKGROUND SYNC: Step 3 - Uploading Calibrations...")
+                    calibrationRepository.uploadUnsyncedCalibrations(context, apiService)
+                    
+                    // 4. REFRESH OTHER DATA
+                    InAppLogger.d("BACKGROUND SYNC: Step 4 - Refreshing other data...")
+                    customerViewModel.syncCustomers()
+                    noticeViewModel.syncNotices()
+                    
+                    withContext(Dispatchers.Main) {
+                        snackbarHostState.showSnackbar("✅ Background sync complete")
+                    }
+                } catch (e: Exception) {
+                    InAppLogger.e("Background Sync Failed: ${e.message}")
+                    withContext(Dispatchers.Main) {
+                        snackbarHostState.showSnackbar("⚠️ Background sync failed: ${e.message}")
+                    }
+                } finally {
+                    isSyncingBackground = false
+                }
+            }
+        }
+    }
+
+
+    // ---------------------------------------------------------
+    // TOP BAR AUTO-UPDATES BASED ON ROUTE
+    // ---------------------------------------------------------
+    /*
+
+        Navigation drives chrome.
+        Screens no longer fight over it.
+     */
+
+
+    LaunchedEffect(route) {
+        chromeVm.applyRouteChrome(
+            chromeVm.topBarForRoute(route)
+        )
+    }
+
+
+
+    // ---------------------------------------------------------
+    // BOTTOM NAVIGATION ITEMS
+    // ---------------------------------------------------------
+    val items = listOf(
+        NavigationBarItem("Service", Icons.Outlined.Build, Icons.Outlined.Build),
+        NavigationBarItem("Notices", Icons.Outlined.Info, Icons.Outlined.Info),
+        NavigationBarItem("More", Icons.Filled.MoreHoriz, Icons.Default.MoreHoriz)
+    )
+
+    var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
+
+    // =========================================================
+    // ROOT SCAFFOLD (THE ONLY ONE IN THE APP)
+    // =========================================================
+    Scaffold(
+
+
+
+        /*
+            Global snackbar lives here.
+         */
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.padding(bottom = 12.dp)
+            ) { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = SnbDarkGrey,
+                    contentColor = Color.White,
+                    actionColor = SnbRed,
+                    shape = RoundedCornerShape(24.dp),
+                    modifier = Modifier.padding(12.dp)
+                )
+            }
+        },
+
+
+
+
+        // ---------------- TOP BAR ----------------
+        topBar = {
+            MyTopAppBar(
+                navController = navController,
+                title = topBarState.title,
+                showBack = topBarState.showBack,
+                showCall = topBarState.showCall,
+                showMenu = topBarState.showMenu,
+                onMenuClick = topBarState.onMenuClick
+            )
+        },
+
+
+        // ---------------- BOTTOM BAR ----------------
+        bottomBar = {
+            NavigationBar(containerColor = Color.LightGray) {
+
+                items.forEachIndexed { index, item ->
+
+                    NavigationBarItem(
+                        selected = selectedItemIndex == index,
+                        onClick = {
+
+                            selectedItemIndex = index
+
+                            when (index) {
+                                0 -> navController.navigate("serviceSelectCustomer")
+                                1 -> navController.navigate("notices")
+                                2 -> navController.navigate("menu")
+                            }
+                        },
+                        icon = {
+                            Icon(
+                                imageVector = item.selectedIcon,
+                                contentDescription = item.title,
+                                modifier = Modifier.size(30.dp)
+                            )
+                        },
+                        label = {
+                            Text(
+                                item.title,
+                                fontWeight = if (selectedItemIndex == index) FontWeight.Bold else FontWeight.Normal
+                            )
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = SnbRed,
+                            selectedTextColor = Color.Black,
+                            indicatorColor = Color.LightGray,
+                            unselectedIconColor = Color.Black,
+                            unselectedTextColor = Color.Black
+                        )
+                    )
+                }
+            }
+        }
+
+    ) { innerPadding ->
+
+
+        // =====================================================
+        // CONTENT LAYER
+        // =====================================================
+        /*
+
+            NavHost = main content
+
+         */
+        Column(
+            modifier = Modifier
+                .padding(innerPadding) // accounts for top & bottom bars
+                .fillMaxSize()
+        ) {
+            OfflineBanner(isOffline = isOffline, isSyncing = isSyncingBackground)
+
+
+            // ---------------- MAIN NAVIGATION ----------------
+
+            Box(
+                modifier = Modifier.weight(1f)
+            ){
+                AppNavGraph(
+                    navController = navController,
+                    db = db,
+                    userViewModel = userViewModel,
+                    customerViewModel = customerViewModel,
+                    noticeViewModel = noticeViewModel,
+                    chromeVm = chromeVm,
+                    snackbarHostState = snackbarHostState, // optional but recommended
+                    repositoryMdSystems = mdSystemsRepository,
+                    calibrationRepository = calibrationRepository
+                )
+            }
+
+        }
+    }
+}

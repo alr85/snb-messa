@@ -1,0 +1,57 @@
+package com.snb.inspect.formModules
+
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.snb.inspect.formModules.inputs.SimpleDropdown
+
+@Composable
+fun LabeledDropdownWithHelp(
+    label: String,
+    options: List<String>,
+    selectedOption: String?,                 // nullable is fine
+    onSelectionChange: (String) -> Unit,
+    helpText: String,
+    pvStatus: String? = null,
+    pvRules: List<PvRule> = emptyList(),
+    isNAToggleEnabled: Boolean = true
+) {
+    var showHelpDialog by remember { mutableStateOf(false) }
+    val isNa = selectedOption == "N/A"
+
+    FormRowWrapper(
+        label = label,
+        naButtonText = if (isNa) "Edit" else "N/A",
+        isDisabled = false, // ALWAYS
+        pvStatus = pvStatus,
+        pvRules = pvRules,
+        onNaClick = if (isNAToggleEnabled) {
+            { onSelectionChange(if (isNa) "" else "N/A") }
+        } else null,
+        onHelpClick = { showHelpDialog = true }
+    ) { _ ->
+        SimpleDropdown(
+            options = options,
+            selectedOption = selectedOption,
+            onSelectionChange = { if (!isNa) onSelectionChange(it) },
+            isDisabled = isNa
+        )
+    }
+
+
+    if (showHelpDialog) {
+        AlertDialog(
+            onDismissRequest = { showHelpDialog = false },
+            title = { Text(label) },
+            text = { Text(helpText) },
+            confirmButton = {
+                TextButton(onClick = { showHelpDialog = false }) { Text("OK") }
+            }
+        )
+    }
+}

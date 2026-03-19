@@ -5,7 +5,7 @@ plugins {
     id("kotlin-parcelize")
 
     // ✅ Compose compiler plugin (for Kotlin 2.x)
-    id("org.jetbrains.kotlin.plugin.compose") version "2.3.0"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.3.20"
 
     // ✅ KSP plugin — must match your Kotlin version!
     id("com.google.devtools.ksp") version "2.3.2"
@@ -14,20 +14,21 @@ plugins {
 
 
 android {
-    namespace = "com.example.mecca"
+    namespace = "com.snb.inspect"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.mecca"
+        applicationId = "com.snb.inspect"
         minSdk = 31
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
+        versionNameSuffix = "TEST"
     }
 
     buildTypes {

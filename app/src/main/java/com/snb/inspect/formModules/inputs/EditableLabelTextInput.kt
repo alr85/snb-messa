@@ -1,0 +1,114 @@
+package com.snb.inspect.formModules.inputs
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import com.snb.inspect.ui.theme.FormInputDisabledBorderColor
+import com.snb.inspect.ui.theme.FormInputDisabledContainerColor
+import com.snb.inspect.ui.theme.FormInputDisabledLabelColor
+import com.snb.inspect.ui.theme.FormInputDisabledPlaceholderColor
+import com.snb.inspect.ui.theme.FormInputDisabledTextColor
+import com.snb.inspect.ui.theme.FormInputFocusedBorderColor
+import com.snb.inspect.ui.theme.FormInputFocusedContainerColor
+import com.snb.inspect.ui.theme.FormInputFocusedLabelColor
+import com.snb.inspect.ui.theme.FormInputFocusedPlaceholderColor
+import com.snb.inspect.ui.theme.FormInputFocusedTextColor
+import com.snb.inspect.ui.theme.FormInputUnfocusedBorderColor
+import com.snb.inspect.ui.theme.FormInputUnfocusedContainerColor
+import com.snb.inspect.ui.theme.FormInputUnfocusedLabelColor
+import com.snb.inspect.ui.theme.FormInputUnfocusedPlaceholderColor
+import com.snb.inspect.ui.theme.FormInputUnfocusedTextColor
+
+@Composable
+fun EditableLabelTextInput(
+    label: String,
+    onLabelChange: (String) -> Unit,
+    value: String,
+    onValueChange: (String) -> Unit,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    isDisabled: Boolean
+) {
+    var isEditingLabel by remember { mutableStateOf(false) }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        // Editable or static label
+        if (isEditingLabel) {
+            OutlinedTextField(
+                value = label,
+                onValueChange = onLabelChange,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = androidx.compose.ui.text.input.ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(onDone = { isEditingLabel = false }),
+                placeholder = { Text("Enter label") },
+                modifier = Modifier.weight(0.8f)
+            )
+        } else {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelLarge.copy(
+                    textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline
+                ),
+                modifier = Modifier
+                    .weight(0.8f)
+                    .clickable { isEditingLabel = true },
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+
+        // Main text input
+        OutlinedTextField(
+            value = value,
+            onValueChange = { if (!isDisabled) onValueChange(it) },
+            singleLine = true,
+            enabled = !isDisabled,
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = FormInputFocusedContainerColor,
+                unfocusedContainerColor = FormInputUnfocusedContainerColor,
+                disabledContainerColor = FormInputDisabledContainerColor,
+
+                focusedBorderColor = FormInputFocusedBorderColor,
+                unfocusedBorderColor = FormInputUnfocusedBorderColor,
+                disabledBorderColor = FormInputDisabledBorderColor,
+
+                focusedTextColor = FormInputFocusedTextColor,
+                unfocusedTextColor = FormInputUnfocusedTextColor,
+                disabledTextColor = FormInputDisabledTextColor,
+
+                focusedLabelColor = FormInputFocusedLabelColor,
+                unfocusedLabelColor = FormInputUnfocusedLabelColor,
+                disabledLabelColor = FormInputDisabledLabelColor,
+
+                focusedPlaceholderColor = FormInputFocusedPlaceholderColor,
+                unfocusedPlaceholderColor = FormInputUnfocusedPlaceholderColor,
+                disabledPlaceholderColor = FormInputDisabledPlaceholderColor
+            ),
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
