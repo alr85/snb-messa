@@ -10,8 +10,37 @@ package com.snb.inspect.repositories
 import android.content.Context
 import com.snb.inspect.ApiService
 import com.snb.inspect.FetchResult
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.AirPressureSensorUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.BackupSensorUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.BinDoorMonitorUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.BinFullSensorUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.CalibrationEndUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.CalibrationStartUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.ConveyorDetailsUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.DetectNotificationUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.DetectionSettingAsLeftUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.DetectionSettingLabelsUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.DetectionSettingsAsFoundUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.FerrousResultUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.FerrousSensitivitiesAsFoundUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.IndicatorsUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.InfeedSensorUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.LargeMetalResultUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.NewCalibrationInsert
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.NonFerrousResultUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.NonFerrousSensitivitiesAsFoundUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.OperatorTestUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.PackCheckSensorUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.ProductDetailsUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.RejectConfirmSensorUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.RejectSettingsUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.SensitivitiesAsFoundUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.SensitivityRequirementsUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.SpeedSensorUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.StainlessResultUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.StainlessSensitivitiesAsFoundUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.SystemChecklistUpdate
 import com.snb.inspect.daos.MetalDetectorConveyorCalibrationDAO
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.*
 import com.snb.inspect.dataClasses.MetalDetectorConveyorCalibrationLocal
 import com.snb.inspect.network.isNetworkAvailable
 import com.snb.inspect.util.CsvUploader
@@ -20,8 +49,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileWriter
-import java.io.IOException
 
 class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: MetalDetectorConveyorCalibrationDAO) {
 
@@ -117,111 +144,270 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
         val csvFile = File(context.filesDir, fileName)
 
         try {
-            val data = listOf(
-                row.calibrationId, row.mapVersion, row.systemId, row.tempSystemId, row.cloudSystemId,
-                row.systemTypeId, row.modelId, row.engineerId, row.customerId, row.startDate, row.endDate,
-                row.isSynced, row.newLocation, row.canPerformCalibration, row.reasonForNotCalibrating,
-                row.pvRequired, row.desiredCop, row.startCalibrationNotes, row.productDescription,
-                row.productLibraryReference, row.productLibraryNumber, row.productLength, row.productWidth,
-                row.productHeight, row.productDetailsEngineerNotes, row.detectionSettingAsFound1,
-                row.detectionSettingAsFound2, row.detectionSettingAsFound3, row.detectionSettingAsFound4,
-                row.detectionSettingAsFound5, row.detectionSettingAsFound6, row.detectionSettingAsFound7,
-                row.detectionSettingAsFound8, row.detectionSettingAsFoundEngineerNotes,
-                row.sensitivityRequirementFerrous, row.sensitivityRequirementNonFerrous,
-                row.sensitivityRequirementStainless, row.sensitivityRequirementEngineerNotes,
-                row.sensitivityAccessRestriction, row.sensitivityAsFoundFerrous,
-   //             row.sensitivityAsFoundFerrousPeakSignal,
+            val rawData = listOf(
+                row.calibrationId,
+                row.mapVersion,
+                row.systemId,
+                row.tempSystemId,
+                row.cloudSystemId,
+                row.systemTypeId,
+                row.modelId,
+                row.engineerId,
+                row.customerId,
+                row.startDate,
+                row.endDate,
+                row.isSynced,
+                row.newLocation,
+                row.canPerformCalibration,
+                row.reasonForNotCalibrating,
+                row.pvRequired,
+                row.desiredCop,
+                row.startCalibrationNotes,
+                row.productDescription,
+                row.productLibraryReference,
+                row.productLibraryNumber,
+                row.productLength,
+                row.productWidth,
+                row.productHeight,
+                row.productDetailsEngineerNotes,
+                row.detectionSettingAsFound1,
+                row.detectionSettingAsFound2,
+                row.detectionSettingAsFound3,
+                row.detectionSettingAsFound4,
+                row.detectionSettingAsFound5,
+                row.detectionSettingAsFound6,
+                row.detectionSettingAsFound7,
+                row.detectionSettingAsFound8,
+                row.detectionSettingAsFoundEngineerNotes,
+                row.sensitivityRequirementFerrous,
+                row.sensitivityRequirementNonFerrous,
+                row.sensitivityRequirementStainless,
+                row.sensitivityRequirementEngineerNotes,
+                row.sensitivityAccessRestriction,
+                row.sensitivityAsFoundFerrous,
+                row.peakSignalAsFoundFerrousLeading,
+                row.peakSignalAsFoundFerrousMiddle,
+                row.peakSignalAsFoundFerrousTrailing,
                 row.sensitivityAsFoundNonFerrous,
-                //row.sensitivityAsFoundNonFerrousPeakSignal,
+                row.peakSignalAsFoundNonFerrousLeading,
+                row.peakSignalAsFoundNonFerrousMiddle,
+                row.peakSignalAsFoundNonFerrousTrailing,
                 row.sensitivityAsFoundStainless,
-                //row.sensitivityAsFoundStainlessPeakSignal,
-                //row.productPeakSignalAsFound,
-                //row.sensitivityAsFoundEngineerNotes,
+                row.peakSignalAsFoundStainlessLeading,
+                row.peakSignalAsFoundStainlessMiddle,
+                row.peakSignalAsFoundStainlessTrailing,
+                row.productPeakSignalAsFound,
+                row.ferrousAsFoundEngineerNotes,
+                row.nonFerrousAsFoundEngineerNotes,
+                row.stainlessAsFoundEngineerNotes,
                 row.sensitivityAsLeftFerrous,
-                row.sampleCertificateNumberFerrous, row.detectRejectFerrousLeading,
-                row.detectRejectFerrousLeadingPeakSignal, row.detectRejectFerrousMiddle,
-                row.detectRejectFerrousMiddlePeakSignal, row.detectRejectFerrousTrailing,
-                row.detectRejectFerrousTrailingPeakSignal, row.ferrousTestEngineerNotes,
-                row.sensitivityAsLeftNonFerrous, row.sampleCertificateNumberNonFerrous,
-                row.detectRejectNonFerrousLeading, row.detectRejectNonFerrousLeadingPeakSignal,
-                row.detectRejectNonFerrousMiddle, row.detectRejectNonFerrousMiddlePeakSignal,
-                row.detectRejectNonFerrousTrailing, row.detectRejectNonFerrousTrailingPeakSignal,
-                row.nonFerrousTestEngineerNotes, row.sensitivityAsLeftStainless,
-                row.sampleCertificateNumberStainless, row.detectRejectStainlessLeading,
-                row.detectRejectStainlessLeadingPeakSignal, row.detectRejectStainlessMiddle,
-                row.detectRejectStainlessMiddlePeakSignal, row.detectRejectStainlessTrailing,
-                row.detectRejectStainlessTrailingPeakSignal, row.stainlessTestEngineerNotes,
-                row.detectRejectLargeMetal, row.sampleCertificateNumberLargeMetal,
-                row.largeMetalTestEngineerNotes, row.detectionSettingAsLeft1,
-                row.detectionSettingAsLeft2, row.detectionSettingAsLeft3, row.detectionSettingAsLeft4,
-                row.detectionSettingAsLeft5, row.detectionSettingAsLeft6, row.detectionSettingAsLeft7,
-                row.detectionSettingAsLeft8, row.detectionSettingAsLeftEngineerNotes,
-                row.rejectSynchronisationSetting, row.rejectSynchronisationDetail,
-                row.rejectDelaySetting, row.rejectDelayUnits, row.rejectDurationSetting,
-                row.rejectDurationUnits, row.rejectConfirmWindowSetting, row.rejectConfirmWindowUnits,
-                row.rejectSettingsEngineerNotes, row.infeedBeltHeight, row.outfeedBeltHeight,
-                row.conveyorLength, row.conveyorHanding, row.beltSpeed, row.rejectDevice,
-                row.rejectDeviceOther, row.conveyorDetailsEngineerNotes, row.beltCondition,
-                row.beltConditionComments, row.guardCondition, row.guardConditionComments,
-                row.safetyCircuitCondition, row.safetyCircuitConditionComments, row.linerCondition,
-                row.linerConditionComments, row.cablesCondition, row.cablesConditionComments,
-                row.screwsCondition, row.screwsConditionComments, row.systemChecklistEngineerNotes,
-                row.indicator6colour, row.indicator6label, row.indicator5colour, row.indicator5label,
-                row.indicator4colour, row.indicator4label, row.indicator3colour, row.indicator3label,
-                row.indicator2colour, row.indicator2label, row.indicator1colour, row.indicator1label,
-                row.indicatorsEngineerNotes, row.infeedSensorFitted, row.infeedSensorDetail,
-                row.infeedSensorTestMethod, row.infeedSensorTestMethodOther, row.infeedSensorTestResult,
-                row.infeedSensorEngineerNotes, row.infeedSensorLatched, row.infeedSensorCR,
-                row.rejectConfirmSensorFitted, row.rejectConfirmSensorDetail,
-                row.rejectConfirmSensorTestMethod, row.rejectConfirmSensorTestMethodOther,
-                row.rejectConfirmSensorTestResult, row.rejectConfirmSensorEngineerNotes,
-                row.rejectConfirmSensorLatched, row.rejectConfirmSensorCR,
-                row.rejectConfirmSensorStopPosition, row.binFullSensorFitted,
-                row.binFullSensorDetail, row.binFullSensorTestMethod, row.binFullSensorTestMethodOther,
-                row.binFullSensorTestResult, row.binFullSensorEngineerNotes,
-                row.binFullSensorLatched, row.binFullSensorCR, row.backupSensorFitted,
-                row.backupSensorDetail, row.backupSensorTestMethod, row.backupSensorTestMethodOther,
-                row.backupSensorTestResult, row.backupSensorEngineerNotes, row.backupSensorLatched,
-                row.backupSensorCR, row.airPressureSensorFitted, row.airPressureSensorDetail,
-                row.airPressureSensorTestMethod, row.airPressureSensorTestMethodOther,
-                row.airPressureSensorTestResult, row.airPressureSensorEngineerNotes,
-                row.airPressureSensorLatched, row.airPressureSensorCR, row.packCheckSensorFitted,
-                row.packCheckSensorDetail, row.packCheckSensorTestMethod,
-                row.packCheckSensorTestMethodOther, row.packCheckSensorTestResult,
-                row.packCheckSensorEngineerNotes, row.packCheckSensorLatched, row.packCheckSensorCR,
-                row.speedSensorFitted, row.speedSensorDetail, row.speedSensorTestMethod,
-                row.speedSensorTestMethodOther, row.speedSensorTestResult,
-                row.speedSensorEngineerNotes, row.speedSensorLatched, row.speedSensorCR,
-                row.detectNotificationResult, row.detectNotificationEngineerNotes,
-                row.binDoorMonitorFitted, row.binDoorMonitorDetail, row.binDoorStatusAsFound,
-                row.binDoorUnlockedIndication, row.binDoorOpenIndication, row.binDoorTimeoutTimer,
-                row.binDoorTimeoutResult, row.binDoorLatched, row.binDoorCR,
-                row.binDoorEngineerNotes, row.operatorName, row.operatorTestWitnessed,
-                row.operatorTestResultFerrous, row.operatorTestResultNonFerrous,
-                row.operatorTestResultStainless, row.operatorTestResultLargeMetal,
-                row.operatorTestResultCertNumberFerrous, row.operatorTestResultCertNumberNonFerrous,
-                row.operatorTestResultCertNumberStainless, row.operatorTestResultCertNumberLargeMetal,
-                row.smeName, row.smeEngineerNotes, row.detectionSetting1label,
-                row.detectionSetting2label, row.detectionSetting3label, row.detectionSetting4label,
-                row.detectionSetting5label, row.detectionSetting6label, row.detectionSetting7label,
-                row.detectionSetting8label, row.detectionSettingPvResult, row.ferrousTestPvResult,
-                row.nonFerrousTestPvResult, row.stainlessTestPvResult, row.smeTestPvResult,
-                row.infeedSensorTestPvResult, row.binFullSensorTestPvResult,
-                row.largeMetalTestPvResult, row.rejectConfirmSensorTestPvResult,
-                row.backupSensorTestPvResult, row.airPressureSensorTestPvResult,
-                row.packCheckSensorTestPvResult, row.speedSensorTestPvResult,
-                row.binDoorMonitorTestPvResult, row.detectNotificationTestPvResult
+                row.sampleCertificateNumberFerrous,
+                row.detectRejectFerrousLeading,
+                row.detectRejectFerrousLeadingPeakSignal,
+                row.detectRejectFerrousMiddle,
+                row.detectRejectFerrousMiddlePeakSignal,
+                row.detectRejectFerrousTrailing,
+                row.detectRejectFerrousTrailingPeakSignal,
+                row.ferrousTestEngineerNotes,
+                row.sensitivityAsLeftNonFerrous,
+                row.sampleCertificateNumberNonFerrous,
+                row.detectRejectNonFerrousLeading,
+                row.detectRejectNonFerrousLeadingPeakSignal,
+                row.detectRejectNonFerrousMiddle,
+                row.detectRejectNonFerrousMiddlePeakSignal,
+                row.detectRejectNonFerrousTrailing,
+                row.detectRejectNonFerrousTrailingPeakSignal,
+                row.nonFerrousTestEngineerNotes,
+                row.sensitivityAsLeftStainless,
+                row.sampleCertificateNumberStainless,
+                row.detectRejectStainlessLeading,
+                row.detectRejectStainlessLeadingPeakSignal,
+                row.detectRejectStainlessMiddle,
+                row.detectRejectStainlessMiddlePeakSignal,
+                row.detectRejectStainlessTrailing,
+                row.detectRejectStainlessTrailingPeakSignal,
+                row.stainlessTestEngineerNotes,
+                row.detectRejectLargeMetal,
+                row.sampleCertificateNumberLargeMetal,
+                row.largeMetalTestEngineerNotes,
+                row.detectionSettingAsLeft1,
+                row.detectionSettingAsLeft2,
+                row.detectionSettingAsLeft3,
+                row.detectionSettingAsLeft4,
+                row.detectionSettingAsLeft5,
+                row.detectionSettingAsLeft6,
+                row.detectionSettingAsLeft7,
+                row.detectionSettingAsLeft8,
+                row.detectionSettingAsLeftEngineerNotes,
+                row.rejectSynchronisationSetting,
+                row.rejectSynchronisationDetail,
+                row.rejectDelaySetting,
+                row.rejectDelayUnits,
+                row.rejectDurationSetting,
+                row.rejectDurationUnits,
+                row.rejectConfirmWindowSetting,
+                row.rejectConfirmWindowUnits,
+                row.rejectSettingsEngineerNotes,
+                row.infeedBeltHeight,
+                row.outfeedBeltHeight,
+                row.conveyorLength,
+                row.conveyorHanding,
+                row.beltSpeed,
+                row.rejectDevice,
+                row.rejectDeviceOther,
+                row.conveyorDetailsEngineerNotes,
+                row.beltCondition,
+                row.beltConditionComments,
+                row.guardCondition,
+                row.guardConditionComments,
+                row.safetyCircuitCondition,
+                row.safetyCircuitConditionComments,
+                row.linerCondition,
+                row.linerConditionComments,
+                row.cablesCondition,
+                row.cablesConditionComments,
+                row.screwsCondition,
+                row.screwsConditionComments,
+                row.systemChecklistEngineerNotes,
+                row.indicator6colour,
+                row.indicator6label,
+                row.indicator5colour,
+                row.indicator5label,
+                row.indicator4colour,
+                row.indicator4label,
+                row.indicator3colour,
+                row.indicator3label,
+                row.indicator2colour,
+                row.indicator2label,
+                row.indicator1colour,
+                row.indicator1label,
+                row.indicatorsEngineerNotes,
+                row.infeedSensorFitted,
+                row.infeedSensorDetail,
+                row.infeedSensorTestMethod,
+                row.infeedSensorTestMethodOther,
+                row.infeedSensorTestResult,
+                row.infeedSensorEngineerNotes,
+                row.infeedSensorLatched,
+                row.infeedSensorCR,
+                row.rejectConfirmSensorFitted,
+                row.rejectConfirmSensorDetail,
+                row.rejectConfirmSensorTestMethod,
+                row.rejectConfirmSensorTestMethodOther,
+                row.rejectConfirmSensorTestResult,
+                row.rejectConfirmSensorEngineerNotes,
+                row.rejectConfirmSensorLatched,
+                row.rejectConfirmSensorCR,
+                row.rejectConfirmSensorStopPosition,
+                row.binFullSensorFitted,
+                row.binFullSensorDetail,
+                row.binFullSensorTestMethod,
+                row.binFullSensorTestMethodOther,
+                row.binFullSensorTestResult,
+                row.binFullSensorEngineerNotes,
+                row.binFullSensorLatched,
+                row.binFullSensorCR,
+                row.backupSensorFitted,
+                row.backupSensorDetail,
+                row.backupSensorTestMethod,
+                row.backupSensorTestMethodOther,
+                row.backupSensorTestResult,
+                row.backupSensorEngineerNotes,
+                row.backupSensorLatched,
+                row.backupSensorCR,
+                row.airPressureSensorFitted,
+                row.airPressureSensorDetail,
+                row.airPressureSensorTestMethod,
+                row.airPressureSensorTestMethodOther,
+                row.airPressureSensorTestResult,
+                row.airPressureSensorEngineerNotes,
+                row.airPressureSensorLatched,
+                row.airPressureSensorCR,
+                row.packCheckSensorFitted,
+                row.packCheckSensorDetail,
+                row.packCheckSensorTestMethod,
+                row.packCheckSensorTestMethodOther,
+                row.packCheckSensorTestResult,
+                row.packCheckSensorEngineerNotes,
+                row.packCheckSensorLatched,
+                row.packCheckSensorCR,
+                row.speedSensorFitted,
+                row.speedSensorDetail,
+                row.speedSensorTestMethod,
+                row.speedSensorTestMethodOther,
+                row.speedSensorTestResult,
+                row.speedSensorEngineerNotes,
+                row.speedSensorLatched,
+                row.speedSensorCR,
+                row.detectNotificationResult,
+                row.detectNotificationEngineerNotes,
+                row.binDoorMonitorFitted,
+                row.binDoorMonitorDetail,
+                row.binDoorStatusAsFound,
+                row.binDoorUnlockedIndication,
+                row.binDoorOpenIndication,
+                row.binDoorTimeoutTimer,
+                row.binDoorTimeoutResult,
+                row.binDoorLatched,
+                row.binDoorCR,
+                row.binDoorEngineerNotes,
+                row.operatorName,
+                row.operatorTestWitnessed,
+                row.operatorTestResultFerrous,
+                row.operatorTestResultNonFerrous,
+                row.operatorTestResultStainless,
+                row.operatorTestResultLargeMetal,
+                row.operatorTestResultCertNumberFerrous,
+                row.operatorTestResultCertNumberNonFerrous,
+                row.operatorTestResultCertNumberStainless,
+                row.operatorTestResultCertNumberLargeMetal,
+                row.smeName,
+                row.smeEngineerNotes,
+                row.detectionSetting1label,
+                row.detectionSetting2label,
+                row.detectionSetting3label,
+                row.detectionSetting4label,
+                row.detectionSetting5label,
+                row.detectionSetting6label,
+                row.detectionSetting7label,
+                row.detectionSetting8label,
+                row.detectionSettingPvResult,
+                row.ferrousTestPvResult,
+                row.nonFerrousTestPvResult,
+                row.stainlessTestPvResult,
+                row.smeTestPvResult,
+                row.infeedSensorTestPvResult,
+                row.binFullSensorTestPvResult,
+                row.largeMetalTestPvResult,
+                row.rejectConfirmSensorTestPvResult,
+                row.backupSensorTestPvResult,
+                row.airPressureSensorTestPvResult,
+                row.packCheckSensorTestPvResult,
+                row.speedSensorTestPvResult,
+                row.binDoorMonitorTestPvResult,
+                row.detectNotificationTestPvResult
             )
 
-            FileWriter(csvFile).use { writer ->
-                writer.append(data.joinToString(";"))
-                writer.append("\n")
+            // 1. Sanitise: Convert everything to string and remove semicolons/newlines
+            val sanitizedData = rawData.map {
+                it?.toString()
+                    ?.replace(";", ",")   // Remove semicolons so they don't break CSV columns
+                    ?.replace("\n", " ")   // Remove newlines so they don't break CSV rows
+                    ?.replace("\r", "")
+                    ?: ""
+            }
+
+            // Write as UTF-8 WITHOUT the BOM
+            csvFile.bufferedWriter(Charsets.UTF_8).use { writer ->
+                writer.write(sanitizedData.joinToString(";"))
+                writer.write("\r\n") // Windows-style line ending
             }
             csvFile
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             InAppLogger.e("CSV Creation Error: ${e.message}")
             null
         }
+
     }
 
 
