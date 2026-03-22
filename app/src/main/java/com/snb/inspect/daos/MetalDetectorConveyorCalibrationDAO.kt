@@ -759,6 +759,14 @@ interface MetalDetectorConveyorCalibrationDAO {
                 "operatorTestResultCertNumberStainless = :operatorTestResultCertNumberStainless," +
                 "operatorTestResultCertNumberLargeMetal = :operatorTestResultCertNumberLargeMetal, " +
                 "smeName =:smeName, " +
+                "operatorTestWitnessedInfeed = :operatorTestWitnessedInfeed, " +
+                "operatorTestWitnessedRejectConfirm = :operatorTestWitnessedRejectConfirm," +
+                "operatorTestWitnessedBinFull = :operatorTestWitnessedBinFull," +
+                "operatorTestWitnessedBinDoor = :operatorTestWitnessedBinDoor," +
+                "operatorTestWitnessedAirFail = :operatorTestWitnessedAirFail," +
+                "operatorTestWitnessedPackCheck = :operatorTestWitnessedPackCheck, " +
+                "operatorTestWitnessedSpeedSensor = :operatorTestWitnessedSpeedSensor, " +
+                "operatorTestWitnessedBackup = :operatorTestWitnessedBackup, " +
                 "smeEngineerNotes = :smeEngineerNotes, " +
                 "smeTestPvResult = :smeTestPvResult " +
                 "WHERE calibrationId = :calibrationId"
@@ -775,6 +783,14 @@ interface MetalDetectorConveyorCalibrationDAO {
         operatorTestResultCertNumberStainless: String,
         operatorTestResultCertNumberLargeMetal: String,
         smeName: String,
+        operatorTestWitnessedInfeed: String,
+        operatorTestWitnessedRejectConfirm: String,
+        operatorTestWitnessedBinFull: String,
+        operatorTestWitnessedBinDoor: String,
+        operatorTestWitnessedAirFail: String,
+        operatorTestWitnessedPackCheck: String,
+        operatorTestWitnessedSpeedSensor: String,
+        operatorTestWitnessedBackup: String,
         smeEngineerNotes: String,
         smeTestPvResult: String,
         calibrationId: String
