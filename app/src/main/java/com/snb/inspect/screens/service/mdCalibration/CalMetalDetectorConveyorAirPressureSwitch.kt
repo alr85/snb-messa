@@ -74,8 +74,6 @@ fun CalMetalDetectorConveyorAirPressureSensor(
             if (ind1label.isNotBlank() && ind1label != "N/A") add("Indicator 1 ($ind1colour)")
             addAll(
                 listOf(
-                    "Audible Notification",
-                    "Visual Notification",
                     "On-Screen Notification",
                     "System Belt Stops",
                     "In-feed Belt Stops",
@@ -133,6 +131,7 @@ fun CalMetalDetectorConveyorAirPressureSensor(
                             viewModel.setAirPressureSensorTestResult(emptyList())
                             viewModel.setAirPressureSensorLatched(YesNoState.NA)
                             viewModel.setAirPressureSensorCR(YesNoState.NA)
+                            viewModel.setOperatorTestWitnessedAirFail(YesNoState.NA)
                         } else if (newState == YesNoState.YES) {
                             viewModel.setAirPressureSensorDetail("")
                             viewModel.setAirPressureSensorTestMethod("")

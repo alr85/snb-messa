@@ -69,7 +69,7 @@ fun LoginScreen(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(75.dp))
+        Spacer(modifier = Modifier.height(25.dp))
 
         Image(
             painter = painterResource(id = R.drawable.logo_electronics),
@@ -89,7 +89,7 @@ fun LoginScreen(
         Text(
             text = "v$appVersion",
             color = Color.Black, // You can use different colour for the second line
-            fontSize = 16.sp, // Adjust font size for the description text
+            fontSize = 12.sp, // Adjust font size for the description text
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.fillMaxWidth(),

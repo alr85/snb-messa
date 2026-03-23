@@ -82,7 +82,7 @@ fun CalMetalDetectorConveyorLargeMetalTest(
 
 
                 LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
-                    label = "Detected & Rejected OK",
+                    label = "20mm Ferrous Detected & Rejected OK",
                     currentState = dr,
                     onStateChange = { newState ->
                         viewModel.setDetectRejectLargeMetal(newState)

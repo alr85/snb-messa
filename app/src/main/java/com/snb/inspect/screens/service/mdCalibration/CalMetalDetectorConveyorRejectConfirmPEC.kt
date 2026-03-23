@@ -68,8 +68,6 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
             if (ind1label.isNotBlank() && ind1label != "N/A") add("Indicator 1 ($ind1colour)")
             addAll(
                 listOf(
-                    "Audible Notification",
-                    "Visual Notification",
                     "On-Screen Notification",
                     "System Belt Stops",
                     "In-feed Belt Stops",
@@ -132,6 +130,7 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                             viewModel.setRejectConfirmSensorStopPosition("N/A")
                             viewModel.setRejectConfirmSensorLatched(YesNoState.NA)
                             viewModel.setRejectConfirmSensorCR(YesNoState.NA)
+                            viewModel.setOperatorTestWitnessedRejectConfirm(YesNoState.NA)
                         } else {
                             viewModel.setRejectConfirmSensorTestMethod("")
                             viewModel.setRejectConfirmSensorTestMethodOther("")

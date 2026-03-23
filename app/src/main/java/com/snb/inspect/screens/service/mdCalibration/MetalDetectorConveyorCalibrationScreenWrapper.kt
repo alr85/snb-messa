@@ -69,10 +69,10 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
             "CalMetalDetectorConveyorBinFullPEC",
             "CalMetalDetectorConveyorAirPressureSensor",
             "CalMetalDetectorConveyorBinDoorMonitor",
-            "CalMetalDetectorConveyorDetectNotification",
             "CalMetalDetectorConveyorBackupPEC",
             "CalMetalDetectorConveyorPackCheckSensor",
             "CalMetalDetectorConveyorSpeedSensor",
+            "CalMetalDetectorConveyorDetectNotification",
             "CalMetalDetectorConveyorSmeDetails",
             "CalMetalDetectorConveyorSummary"
         )

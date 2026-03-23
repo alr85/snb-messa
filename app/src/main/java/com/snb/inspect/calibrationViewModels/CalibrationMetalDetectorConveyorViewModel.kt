@@ -2757,7 +2757,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         _rejectConfirmSensorFitted.value = newValue
     }
 
-    private val _rejectConfirmSensorDetail = mutableStateOf("N/A")
+    private val _rejectConfirmSensorDetail = mutableStateOf("")
     val rejectConfirmSensorDetail: State<(String)> = _rejectConfirmSensorDetail
 
 
@@ -2773,7 +2773,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         _rejectConfirmSensorTestMethod.value = newValue
     }
 
-    private val _rejectConfirmSensorTestMethodOther = mutableStateOf("N/A")
+    private val _rejectConfirmSensorTestMethodOther = mutableStateOf("")
     val rejectConfirmSensorTestMethodOther: State<(String)> = _rejectConfirmSensorTestMethodOther
 
 
@@ -2788,7 +2788,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         _rejectConfirmSensorTestResult.value = newValue
     }
 
-    private val _rejectConfirmSensorEngineerNotes = mutableStateOf("N/A")
+    private val _rejectConfirmSensorEngineerNotes = mutableStateOf("")
     val rejectConfirmSensorEngineerNotes: State<(String)> = _rejectConfirmSensorEngineerNotes
 
 
@@ -2810,14 +2810,14 @@ class CalibrationMetalDetectorConveyorViewModel(
         _rejectConfirmSensorCR.value = newValue
     }
 
-    private val _rejectConfirmSensorStopPosition = mutableStateOf("N/A")
+    private val _rejectConfirmSensorStopPosition = mutableStateOf("")
     val rejectConfirmSensorStopPosition: State<String> = _rejectConfirmSensorStopPosition
 
     fun setRejectConfirmSensorStopPosition(newValue: String) {
         _rejectConfirmSensorStopPosition.value = newValue
     }
 
-    private val _rejectConfirmSensorTestPvResult = mutableStateOf("N/A")
+    private val _rejectConfirmSensorTestPvResult = mutableStateOf("")
     val rejectConfirmSensorTestPvResult: State<String> = _rejectConfirmSensorTestPvResult
 
     fun setRejectConfirmSensorTestPvResult(newValue: String) {

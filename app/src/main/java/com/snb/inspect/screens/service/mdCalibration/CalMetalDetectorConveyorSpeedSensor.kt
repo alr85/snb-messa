@@ -79,7 +79,6 @@ fun CalMetalDetectorConveyorSpeedSensor(
                     "System Belt Stops",
                     "In-feed Belt Stops",
                     "Out-feed Belt Stops",
-                    "Test Pack Rejects OK",
                     "Other"
                 )
             )
@@ -133,6 +132,7 @@ fun CalMetalDetectorConveyorSpeedSensor(
                             viewModel.setSpeedSensorTestResult(emptyList())
                             viewModel.setSpeedSensorLatched(YesNoState.NA)
                             viewModel.setSpeedSensorCR(YesNoState.NA)
+                            viewModel.setOperatorTestWitnessedSpeedSensor(YesNoState.NA)
                         } else if (newState == YesNoState.YES) {
                             viewModel.setSpeedSensorDetail("")
                             viewModel.setSpeedSensorTestMethod("")

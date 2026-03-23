@@ -79,12 +79,11 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
             if (ind1label.isNotBlank() && ind1label != "N/A") add("Indicator 1 ($ind1colour)")
             addAll(
                 listOf(
-                    "Audible Notification",
-                    "Visual Notification",
                     "On-Screen Notification",
                     "System Belt Stops",
                     "In-feed Belt Stops",
-                    "Out-feed Belt Stops"
+                    "Out-feed Belt Stops",
+                    "Other"
                 )
             )
         }
@@ -141,6 +140,7 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                             viewModel.setBinDoorTimeoutResult(emptyList())
                             viewModel.setBinDoorLatched(YesNoState.NA)
                             viewModel.setBinDoorCR(YesNoState.NA)
+                            viewModel.setOperatorTestWitnessedBinDoor(YesNoState.NA)
                         } else if (newState == YesNoState.YES) {
                             viewModel.setBinDoorMonitorDetail("")
                             viewModel.setBinDoorStatusAsFound("")

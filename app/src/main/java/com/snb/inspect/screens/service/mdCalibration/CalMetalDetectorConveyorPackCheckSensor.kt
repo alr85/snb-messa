@@ -74,8 +74,6 @@ fun CalMetalDetectorConveyorPackCheckSensor(
             if (ind1label.isNotBlank() && ind1label != "N/A") add("Indicator 1 ($ind1colour)")
             addAll(
                 listOf(
-                    "Audible Notification",
-                    "Visual Notification",
                     "On-Screen Notification",
                     "System Belt Stops",
                     "In-feed Belt Stops",
@@ -133,6 +131,7 @@ fun CalMetalDetectorConveyorPackCheckSensor(
                             viewModel.setPackCheckSensorTestResult(emptyList())
                             viewModel.setPackCheckSensorLatched(YesNoState.NA)
                             viewModel.setPackCheckSensorCR(YesNoState.NA)
+                            viewModel.setOperatorTestWitnessedPackCheck(YesNoState.NA)
                         } else if (newState == YesNoState.YES) {
                             viewModel.setPackCheckSensorDetail("")
                             viewModel.setPackCheckSensorTestMethod("")

@@ -128,6 +128,7 @@ fun CalMetalDetectorConveyorInfeedPEC(
                             viewModel.setInfeedSensorTestResult(emptyList())
                             viewModel.setInfeedSensorLatched(YesNoState.NA)
                             viewModel.setInfeedSensorCR(YesNoState.NA)
+                            viewModel.setOperatorTestWitnessedInfeed(YesNoState.NA)
                         } else if (newState == YesNoState.YES) {
                             viewModel.setInfeedSensorDetail("")
                             viewModel.setInfeedSensorTestMethod("")

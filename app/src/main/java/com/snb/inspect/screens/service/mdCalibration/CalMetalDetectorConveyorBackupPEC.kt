@@ -74,8 +74,6 @@ fun CalMetalDetectorConveyorBackupPEC(
             if (ind1label.isNotBlank() && ind1label != "N/A") add("Indicator 1 ($ind1colour)")
             addAll(
                 listOf(
-                    "Audible Notification",
-                    "Visual Notification",
                     "On-Screen Notification",
                     "System Belt Stops",
                     "In-feed Belt Stops",
@@ -135,6 +133,7 @@ fun CalMetalDetectorConveyorBackupPEC(
                             viewModel.setBackupSensorTestResult(emptyList())
                             viewModel.setBackupSensorLatched(YesNoState.NA)
                             viewModel.setBackupSensorCR(YesNoState.NA)
+                            viewModel.setOperatorTestWitnessedBackup(YesNoState.NA)
                         } else if (newState == YesNoState.YES) {
                             viewModel.setBackupSensorDetail("")
                             viewModel.setBackupSensorTestMethod("")
