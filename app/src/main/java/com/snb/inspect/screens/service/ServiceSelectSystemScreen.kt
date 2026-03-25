@@ -25,10 +25,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.Navigation
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -72,6 +74,7 @@ fun ServiceSelectSystemScreen(
 
     // Screen state - REACTIVE OBSERVATION
     val systems by repository.observeMetalDetectorsByCustomerId(customerID).collectAsState(initial = emptyList())
+    var searchQuery by rememberSaveable { mutableStateOf("") }
     var isRefreshing by remember { mutableStateOf(false) }
 
     // Floating action menu state
@@ -94,8 +97,10 @@ fun ServiceSelectSystemScreen(
         ) {
 
             // ---- Main content ----
-            val filteredSystems = remember(systems) {
-                systems.sortedBy { it.serialNumber }
+            val filteredSystems = remember(systems, searchQuery) {
+                systems
+                    .filter { it.serialNumber.contains(searchQuery, ignoreCase = true) }
+                    .sortedBy { it.serialNumber }
             }
 
             Box(
@@ -140,7 +145,26 @@ fun ServiceSelectSystemScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Search Serial Number...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Default.Clear, contentDescription = "Clear search")
+                        }
+                    }
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = "Metal Detectors",

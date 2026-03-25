@@ -8,6 +8,7 @@
 package com.snb.inspect.repositories
 
 import android.content.Context
+import androidx.compose.runtime.State
 import com.snb.inspect.ApiService
 import com.snb.inspect.FetchResult
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.AirPressureSensorUpdate
@@ -49,6 +50,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.io.File
+import kotlin.String
 
 class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: MetalDetectorConveyorCalibrationDAO) {
 
@@ -156,7 +158,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.customerId,
                 row.startDate,
                 row.endDate,
-                row.isSynced,
                 row.newLocation,
                 row.canPerformCalibration,
                 row.reasonForNotCalibrating,
@@ -183,49 +184,77 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.sensitivityRequirementStainless,
                 row.sensitivityRequirementEngineerNotes,
                 row.sensitivityAccessRestriction,
+
+
+
                 row.sensitivityAsFoundFerrous,
-                row.peakSignalAsFoundFerrousLeading,
-                row.peakSignalAsFoundFerrousMiddle,
-                row.peakSignalAsFoundFerrousTrailing,
+                row.sampleCertificateNumberAsFoundFerrous,
+                "${ row.detectRejectAsFoundFerrousLeading } (${row.peakSignalAsFoundFerrousLeading})".trim(),
+                "${ row.detectRejectAsFoundFerrousMiddle } (${row.peakSignalAsFoundFerrousMiddle})".trim(),
+                "${ row.detectRejectAsFoundFerrousTrailing } (${row.peakSignalAsFoundFerrousTrailing})".trim(),
+
+//                row.peakSignalAsFoundFerrousLeading,
+//                row.peakSignalAsFoundFerrousMiddle,
+//                row.peakSignalAsFoundFerrousTrailing,
+
                 row.sensitivityAsFoundNonFerrous,
-                row.peakSignalAsFoundNonFerrousLeading,
-                row.peakSignalAsFoundNonFerrousMiddle,
-                row.peakSignalAsFoundNonFerrousTrailing,
+                row.sampleCertificateNumberAsFoundNonFerrous,
+                "${row.detectRejectAsFoundNonFerrousLeading} (${row.peakSignalAsFoundNonFerrousLeading})".trim(),
+                "${row.detectRejectAsFoundNonFerrousMiddle} (${row.peakSignalAsFoundNonFerrousMiddle})".trim(),
+                "${row.detectRejectAsFoundNonFerrousTrailing} (${row.peakSignalAsFoundNonFerrousTrailing})".trim(),
+
+//                row.peakSignalAsFoundNonFerrousLeading,
+//                row.peakSignalAsFoundNonFerrousMiddle,
+//                row.peakSignalAsFoundNonFerrousTrailing,
+
                 row.sensitivityAsFoundStainless,
-                row.peakSignalAsFoundStainlessLeading,
-                row.peakSignalAsFoundStainlessMiddle,
-                row.peakSignalAsFoundStainlessTrailing,
+                row.sampleCertificateNumberAsFoundStainless,
+                "${row.detectRejectAsFoundStainlessLeading} (${row.peakSignalAsFoundStainlessLeading})".trim(),
+                "${row.detectRejectAsFoundStainlessMiddle} (${row.peakSignalAsFoundStainlessMiddle})".trim(),
+                "${row.detectRejectAsFoundStainlessTrailing} (${row.peakSignalAsFoundStainlessTrailing})".trim(),
+
+//                row.peakSignalAsFoundStainlessLeading,
+//                row.peakSignalAsFoundStainlessMiddle,
+//                row.peakSignalAsFoundStainlessTrailing,
+
                 row.productPeakSignalAsFound,
                 row.ferrousAsFoundEngineerNotes,
                 row.nonFerrousAsFoundEngineerNotes,
                 row.stainlessAsFoundEngineerNotes,
+
                 row.sensitivityAsLeftFerrous,
                 row.sampleCertificateNumberFerrous,
-                row.detectRejectFerrousLeading,
-                row.detectRejectFerrousLeadingPeakSignal,
-                row.detectRejectFerrousMiddle,
-                row.detectRejectFerrousMiddlePeakSignal,
-                row.detectRejectFerrousTrailing,
-                row.detectRejectFerrousTrailingPeakSignal,
+                "${row.detectRejectFerrousLeading} (${row.detectRejectFerrousLeadingPeakSignal})".trim(),
+                "${row.detectRejectFerrousMiddle} (${row.detectRejectFerrousMiddlePeakSignal})".trim(),
+                "${row.detectRejectFerrousTrailing} (${row.detectRejectFerrousTrailingPeakSignal})".trim(),
                 row.ferrousTestEngineerNotes,
+
+//                row.detectRejectFerrousLeadingPeakSignal,
+//                row.detectRejectFerrousMiddlePeakSignal,
+//                row.detectRejectFerrousTrailingPeakSignal,
+
                 row.sensitivityAsLeftNonFerrous,
                 row.sampleCertificateNumberNonFerrous,
-                row.detectRejectNonFerrousLeading,
-                row.detectRejectNonFerrousLeadingPeakSignal,
-                row.detectRejectNonFerrousMiddle,
-                row.detectRejectNonFerrousMiddlePeakSignal,
-                row.detectRejectNonFerrousTrailing,
-                row.detectRejectNonFerrousTrailingPeakSignal,
+                "${row.detectRejectNonFerrousLeading} (${row.detectRejectNonFerrousLeadingPeakSignal})".trim(),
+                "${row.detectRejectNonFerrousMiddle} (${row.detectRejectNonFerrousMiddlePeakSignal})".trim(),
+                "${row.detectRejectNonFerrousTrailing} (${row.detectRejectNonFerrousTrailingPeakSignal})".trim(),
                 row.nonFerrousTestEngineerNotes,
+
+//                row.detectRejectNonFerrousLeadingPeakSignal,
+//                row.detectRejectNonFerrousMiddlePeakSignal,
+//                row.detectRejectNonFerrousTrailingPeakSignal,
+
                 row.sensitivityAsLeftStainless,
                 row.sampleCertificateNumberStainless,
-                row.detectRejectStainlessLeading,
-                row.detectRejectStainlessLeadingPeakSignal,
-                row.detectRejectStainlessMiddle,
-                row.detectRejectStainlessMiddlePeakSignal,
-                row.detectRejectStainlessTrailing,
-                row.detectRejectStainlessTrailingPeakSignal,
+                "${row.detectRejectStainlessLeading} (${row.detectRejectStainlessLeadingPeakSignal})".trim(),
+                "${row.detectRejectStainlessMiddle} (${row.detectRejectStainlessMiddlePeakSignal})".trim(),
+                "${row.detectRejectStainlessTrailing} (${row.detectRejectStainlessTrailingPeakSignal})".trim(),
                 row.stainlessTestEngineerNotes,
+
+//                row.detectRejectStainlessLeadingPeakSignal,
+//                row.detectRejectStainlessMiddlePeakSignal,
+//                row.detectRejectStainlessTrailingPeakSignal,
+
                 row.detectRejectLargeMetal,
                 row.sampleCertificateNumberLargeMetal,
                 row.largeMetalTestEngineerNotes,
@@ -238,8 +267,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.detectionSettingAsLeft7,
                 row.detectionSettingAsLeft8,
                 row.detectionSettingAsLeftEngineerNotes,
-                row.rejectSynchronisationSetting,
-                row.rejectSynchronisationDetail,
                 "${row.rejectDelaySetting} ${row.rejectDelayUnits}".trim(),
                 "${row.rejectDurationSetting} ${row.rejectDurationUnits}".trim(),
                 "${row.rejectConfirmWindowSetting} ${row.rejectConfirmWindowUnits}".trim(),
@@ -377,6 +404,7 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.operatorTestWitnessedPackCheck,
                 row.operatorTestWitnessedSpeedSensor,
                 row.operatorTestWitnessedBackup,
+
 
             )
 

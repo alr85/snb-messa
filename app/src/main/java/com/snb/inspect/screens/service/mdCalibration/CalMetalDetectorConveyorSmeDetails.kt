@@ -138,12 +138,43 @@ fun CalMetalDetectorConveyorSmeDetails(
                             viewModel.setOperatorTestResultCertNumberNonFerrous("")
                             viewModel.setOperatorTestResultCertNumberStainless("")
                             viewModel.setOperatorTestResultCertNumberLargeMetal("")
-                            viewModel.setOperatorTestWitnessedInfeed(YesNoState.NO)
-                            viewModel.setOperatorTestWitnessedRejectConfirm(YesNoState.NO)
-                            viewModel.setOperatorTestWitnessedBinFull(YesNoState.NO)
-                            viewModel.setOperatorTestWitnessedBinDoor(YesNoState.NO)
-                            viewModel.setOperatorTestWitnessedAirFail(YesNoState.NO)
-                            viewModel.setOperatorTestWitnessedPackCheck(YesNoState.NO)
+                            if (viewModel.operatorTestWitnessedInfeed.value == YesNoState.NA) {
+                                viewModel.setOperatorTestWitnessedInfeed(YesNoState.NA)
+                            }
+                            else {
+                                viewModel.setOperatorTestWitnessedInfeed(YesNoState.NO)
+                            }
+                            if (viewModel.operatorTestWitnessedRejectConfirm.value == YesNoState.NA) {
+                                viewModel.setOperatorTestWitnessedRejectConfirm(YesNoState.NA)
+                            }
+                            else {
+                                viewModel.setOperatorTestWitnessedRejectConfirm(YesNoState.NO)
+                            }
+                            if (viewModel.operatorTestWitnessedBinFull.value == YesNoState.NA) {
+                                viewModel.setOperatorTestWitnessedBinFull(YesNoState.NA)
+                            }
+                            else {
+                                viewModel.setOperatorTestWitnessedBinFull(YesNoState.NO)
+                            }
+                            if (viewModel.operatorTestWitnessedBinDoor.value == YesNoState.NA) {
+                                viewModel.setOperatorTestWitnessedBinDoor(YesNoState.NA)
+                            }
+                            else {
+                                viewModel.setOperatorTestWitnessedBinDoor(YesNoState.NO)
+                            }
+                            if (viewModel.operatorTestWitnessedAirFail.value == YesNoState.NA) {
+                                viewModel.setOperatorTestWitnessedAirFail(YesNoState.NA)
+                            }
+                            else {
+                                viewModel.setOperatorTestWitnessedAirFail(YesNoState.NO)
+                            }
+                            if (viewModel.operatorTestWitnessedPackCheck.value == YesNoState.NA) {
+                                viewModel.setOperatorTestWitnessedPackCheck(YesNoState.NA)
+                            }
+                            else {
+                                viewModel.setOperatorTestWitnessedPackCheck(YesNoState.NO)
+                            }
+
                             viewModel.setSmeName("")
                         }
                         viewModel.autoUpdateSmePvResult()
