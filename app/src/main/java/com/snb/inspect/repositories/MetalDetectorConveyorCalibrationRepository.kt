@@ -163,6 +163,8 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.reasonForNotCalibrating,
                 row.pvRequired,
                 row.desiredCop,
+
+
                 row.productDescription,
                 row.productLibraryReference,
                 row.productLibraryNumber,
@@ -170,6 +172,8 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.productWidth,
                 row.productHeight,
                 row.productDetailsEngineerNotes,
+
+
                 row.detectionSettingAsFound1,
                 row.detectionSettingAsFound2,
                 row.detectionSettingAsFound3,
@@ -179,6 +183,8 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.detectionSettingAsFound7,
                 row.detectionSettingAsFound8,
                 row.detectionSettingAsFoundEngineerNotes,
+
+
                 row.sensitivityRequirementFerrous,
                 row.sensitivityRequirementNonFerrous,
                 row.sensitivityRequirementStainless,
@@ -193,9 +199,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 "${ row.detectRejectAsFoundFerrousMiddle } (${row.peakSignalAsFoundFerrousMiddle})".trim(),
                 "${ row.detectRejectAsFoundFerrousTrailing } (${row.peakSignalAsFoundFerrousTrailing})".trim(),
 
-//                row.peakSignalAsFoundFerrousLeading,
-//                row.peakSignalAsFoundFerrousMiddle,
-//                row.peakSignalAsFoundFerrousTrailing,
 
                 row.sensitivityAsFoundNonFerrous,
                 row.sampleCertificateNumberAsFoundNonFerrous,
@@ -203,9 +206,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 "${row.detectRejectAsFoundNonFerrousMiddle} (${row.peakSignalAsFoundNonFerrousMiddle})".trim(),
                 "${row.detectRejectAsFoundNonFerrousTrailing} (${row.peakSignalAsFoundNonFerrousTrailing})".trim(),
 
-//                row.peakSignalAsFoundNonFerrousLeading,
-//                row.peakSignalAsFoundNonFerrousMiddle,
-//                row.peakSignalAsFoundNonFerrousTrailing,
 
                 row.sensitivityAsFoundStainless,
                 row.sampleCertificateNumberAsFoundStainless,
@@ -213,9 +213,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 "${row.detectRejectAsFoundStainlessMiddle} (${row.peakSignalAsFoundStainlessMiddle})".trim(),
                 "${row.detectRejectAsFoundStainlessTrailing} (${row.peakSignalAsFoundStainlessTrailing})".trim(),
 
-//                row.peakSignalAsFoundStainlessLeading,
-//                row.peakSignalAsFoundStainlessMiddle,
-//                row.peakSignalAsFoundStainlessTrailing,
 
                 row.productPeakSignalAsFound,
                 row.ferrousAsFoundEngineerNotes,
@@ -229,9 +226,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 "${row.detectRejectFerrousTrailing} (${row.detectRejectFerrousTrailingPeakSignal})".trim(),
                 row.ferrousTestEngineerNotes,
 
-//                row.detectRejectFerrousLeadingPeakSignal,
-//                row.detectRejectFerrousMiddlePeakSignal,
-//                row.detectRejectFerrousTrailingPeakSignal,
 
                 row.sensitivityAsLeftNonFerrous,
                 row.sampleCertificateNumberNonFerrous,
@@ -240,9 +234,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 "${row.detectRejectNonFerrousTrailing} (${row.detectRejectNonFerrousTrailingPeakSignal})".trim(),
                 row.nonFerrousTestEngineerNotes,
 
-//                row.detectRejectNonFerrousLeadingPeakSignal,
-//                row.detectRejectNonFerrousMiddlePeakSignal,
-//                row.detectRejectNonFerrousTrailingPeakSignal,
 
                 row.sensitivityAsLeftStainless,
                 row.sampleCertificateNumberStainless,
@@ -251,13 +242,12 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 "${row.detectRejectStainlessTrailing} (${row.detectRejectStainlessTrailingPeakSignal})".trim(),
                 row.stainlessTestEngineerNotes,
 
-//                row.detectRejectStainlessLeadingPeakSignal,
-//                row.detectRejectStainlessMiddlePeakSignal,
-//                row.detectRejectStainlessTrailingPeakSignal,
 
                 row.detectRejectLargeMetal,
                 row.sampleCertificateNumberLargeMetal,
                 row.largeMetalTestEngineerNotes,
+
+
                 row.detectionSettingAsLeft1,
                 row.detectionSettingAsLeft2,
                 row.detectionSettingAsLeft3,
@@ -267,10 +257,14 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.detectionSettingAsLeft7,
                 row.detectionSettingAsLeft8,
                 row.detectionSettingAsLeftEngineerNotes,
+
+
                 "${row.rejectDelaySetting} ${row.rejectDelayUnits}".trim(),
                 "${row.rejectDurationSetting} ${row.rejectDurationUnits}".trim(),
                 "${row.rejectConfirmWindowSetting} ${row.rejectConfirmWindowUnits}".trim(),
                 row.rejectSettingsEngineerNotes,
+
+
                 row.infeedBeltHeight,
                 row.outfeedBeltHeight,
                 row.conveyorLength,
@@ -279,6 +273,8 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.rejectDevice,
                 row.rejectDeviceOther,
                 row.conveyorDetailsEngineerNotes,
+
+
                 row.beltCondition,
                 row.beltConditionComments,
                 row.guardCondition,
@@ -292,6 +288,8 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.screwsCondition,
                 row.screwsConditionComments,
                 row.systemChecklistEngineerNotes,
+
+
                 "${row.indicator6colour} (${row.indicator6label})".trim(),
                 "${row.indicator5colour} (${row.indicator5label})".trim(),
                 "${row.indicator4colour} (${row.indicator4label})".trim(),
@@ -299,6 +297,8 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 "${row.indicator2colour} (${row.indicator2label})".trim(),
                 "${row.indicator1colour} (${row.indicator1label})".trim(),
                 row.indicatorsEngineerNotes,
+
+
                 row.infeedSensorFitted,
                 row.infeedSensorTestMethod,
                 row.infeedSensorTestMethodOther,
@@ -306,6 +306,8 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.infeedSensorEngineerNotes,
                 row.infeedSensorLatched,
                 row.infeedSensorCR,
+
+
                 row.rejectConfirmSensorFitted,
                 row.rejectConfirmSensorTestMethod,
                 row.rejectConfirmSensorTestMethodOther,
@@ -314,6 +316,8 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.rejectConfirmSensorLatched,
                 row.rejectConfirmSensorCR,
                 row.rejectConfirmSensorStopPosition,
+
+
                 row.binFullSensorFitted,
                 row.binFullSensorTestMethod,
                 row.binFullSensorTestMethodOther,
@@ -321,6 +325,8 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.binFullSensorEngineerNotes,
                 row.binFullSensorLatched,
                 row.binFullSensorCR,
+
+
                 row.backupSensorFitted,
                 row.backupSensorTestMethod,
                 row.backupSensorTestMethodOther,
@@ -328,6 +334,8 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.backupSensorEngineerNotes,
                 row.backupSensorLatched,
                 row.backupSensorCR,
+
+
                 row.airPressureSensorFitted,
                 row.airPressureSensorTestMethod,
                 row.airPressureSensorTestMethodOther,
@@ -335,6 +343,8 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.airPressureSensorEngineerNotes,
                 row.airPressureSensorLatched,
                 row.airPressureSensorCR,
+
+
                 row.packCheckSensorFitted,
                 row.packCheckSensorTestMethod,
                 row.packCheckSensorTestMethodOther,
@@ -342,6 +352,8 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.packCheckSensorEngineerNotes,
                 row.packCheckSensorLatched,
                 row.packCheckSensorCR,
+
+
                 row.speedSensorFitted,
                 row.speedSensorTestMethod,
                 row.speedSensorTestMethodOther,
@@ -349,8 +361,12 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.speedSensorEngineerNotes,
                 row.speedSensorLatched,
                 row.speedSensorCR,
+
+
                 row.detectNotificationResult,
                 row.detectNotificationEngineerNotes,
+
+
                 row.binDoorMonitorFitted,
                 row.binDoorStatusAsFound,
                 row.binDoorUnlockedIndication,
@@ -360,6 +376,8 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.binDoorLatched,
                 row.binDoorCR,
                 row.binDoorEngineerNotes,
+
+
                 row.operatorName,
                 row.operatorTestWitnessed,
                 row.operatorTestResultFerrous,
@@ -372,6 +390,8 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.operatorTestResultCertNumberLargeMetal,
                 row.smeName,
                 row.smeEngineerNotes,
+
+
                 row.detectionSetting1label,
                 row.detectionSetting2label,
                 row.detectionSetting3label,
@@ -381,6 +401,8 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.detectionSetting7label,
                 row.detectionSetting8label,
                 row.detectionSettingPvResult,
+
+
                 row.ferrousTestPvResult,
                 row.nonFerrousTestPvResult,
                 row.stainlessTestPvResult,
@@ -395,7 +417,11 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.speedSensorTestPvResult,
                 row.binDoorMonitorTestPvResult,
                 row.detectNotificationTestPvResult,
+
+
                 row.productPeakSignalAsLeft,
+
+
                 row.operatorTestWitnessedInfeed,
                 row.operatorTestWitnessedRejectConfirm,
                 row.operatorTestWitnessedBinFull,

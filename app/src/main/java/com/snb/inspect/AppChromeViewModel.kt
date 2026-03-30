@@ -135,6 +135,13 @@ class AppChromeViewModel : ViewModel() {
                 showMenu = false
             )
 
+            route == "weekendRota" -> TopBarState(
+                title = "Weekend Rota",
+                showBack = true,
+                showCall = false,
+                showMenu = false
+            )
+
 
             else -> TopBarState()
         }

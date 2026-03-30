@@ -115,6 +115,66 @@ interface MetalDetectorSystemsDAO {
         JOIN MdModels ON MdSystems.modelId = MdModels.meaId
         JOIN systemTypes ON MdSystems.systemTypeId = systemTypes.id
         JOIN customer ON MdSystems.customerId = customer.fusionID
+        WHERE MdSystems.serialNumber = :serialNumber
+        LIMIT 1
+        """
+    )
+    suspend fun getMetalDetectorWithFullDetailsBySerialNumber(serialNumber: String): MetalDetectorWithFullDetails?
+
+    @Query(
+        """
+        SELECT 
+            MdSystems.id, 
+            MdSystems.cloudId,
+            MdSystems.modelId, 
+            MdSystems.customerId, 
+            MdSystems.serialNumber, 
+            MdSystems.apertureWidth, 
+            MdSystems.apertureHeight, 
+            MdSystems.lastCalibration, 
+            MdSystems.addedDate, 
+            MdSystems.calibrationInterval,
+            MdSystems.systemTypeId,
+            MdSystems.tempId,
+            MdSystems.isSynced,
+            MdSystems.lastLocation,
+            customer.fusionID,
+            MdModels.modelDescription,
+            systemTypes.systemType,
+            customer.name AS customerName
+        FROM MdSystems
+        JOIN MdModels ON MdSystems.modelId = MdModels.meaId
+        JOIN systemTypes ON MdSystems.systemTypeId = systemTypes.id
+        JOIN customer ON MdSystems.customerId = customer.fusionID
+        """
+    )
+    suspend fun getAllMetalDetectorsWithFullDetails(): List<MetalDetectorWithFullDetails>
+
+    @Query(
+        """
+        SELECT 
+            MdSystems.id, 
+            MdSystems.cloudId,
+            MdSystems.modelId, 
+            MdSystems.customerId, 
+            MdSystems.serialNumber, 
+            MdSystems.apertureWidth, 
+            MdSystems.apertureHeight, 
+            MdSystems.lastCalibration, 
+            MdSystems.addedDate, 
+            MdSystems.calibrationInterval,
+            MdSystems.systemTypeId,
+            MdSystems.tempId,
+            MdSystems.isSynced,
+            MdSystems.lastLocation,
+            customer.fusionID,
+            MdModels.modelDescription,
+            systemTypes.systemType,
+            customer.name AS customerName
+        FROM MdSystems
+        JOIN MdModels ON MdSystems.modelId = MdModels.meaId
+        JOIN systemTypes ON MdSystems.systemTypeId = systemTypes.id
+        JOIN customer ON MdSystems.customerId = customer.fusionID
         WHERE MdSystems.customerId = :customerId
         """
     )

@@ -23,6 +23,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.ListAlt
 import androidx.compose.material.icons.automirrored.filled.Rule
 import androidx.compose.material.icons.filled.Calculate
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.Construction
 import androidx.compose.material.icons.filled.EditNote
@@ -79,6 +80,7 @@ fun SettingsScreen(
     val serviceItems = remember {
         listOf(
             SettingItem("My Calibrations", Icons.Filled.EditNote, "myCalibrations"),
+            SettingItem("Weekend Rota", Icons.Default.CalendarMonth, "weekendRota"),
             SettingItem("Service Calls", Icons.Default.Construction, "COMING_SOON", isComingSoon = true)
         )
     }

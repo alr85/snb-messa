@@ -146,27 +146,55 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
         return db.mdSystemDAO().getSystemBySerialNumber(serialNumber) != null
     }
 
+    private fun normalizeSerial(serial: String): String {
+        return serial.replace(Regex("[^A-Za-z0-9]"), "").uppercase()
+    }
+
     suspend fun checkSerialNumberStatus(
         context: Context,
         serialNumber: String
     ): SerialCheckResult {
-        // 1) No network? Use local cache so engineers can still work
-        if (!isNetworkAvailable(context)) {
-            val localExists = isSerialNumberExists(serialNumber)
-            return if (localExists) {
-                SerialCheckResult.ExistsLocalOffline
-            } else {
-                SerialCheckResult.NotFoundLocalOffline
+        val normalizedInput = normalizeSerial(serialNumber)
+
+        // 1) Online check
+        if (isNetworkAvailable(context)) {
+            try {
+                // Exact check via API
+                val exactExists = apiService.checkSerialNumberExists(serialNumber)
+                if (exactExists) {
+                    val systemDetails = db.mdSystemDAO().getMetalDetectorWithFullDetailsBySerialNumber(serialNumber)
+                    return SerialCheckResult.Exists(systemDetails)
+                }
+
+                // Fuzzy check via local cache (which contains all cloud data if synced)
+                val allSystems = db.mdSystemDAO().getAllMetalDetectorsWithFullDetails()
+                val fuzzyMatch = allSystems.find { normalizeSerial(it.serialNumber) == normalizedInput }
+                if (fuzzyMatch != null) {
+                    return SerialCheckResult.FuzzyMatch(fuzzyMatch)
+                }
+
+                return SerialCheckResult.NotFound
+            } catch (e: Exception) {
+                return SerialCheckResult.Error(e.message)
             }
         }
 
-        // 2) Online: ask the cloud. If it flakes out, return Error, not "false".
-        return try {
-            val exists = apiService.checkSerialNumberExists(serialNumber)
-            if (exists) SerialCheckResult.Exists else SerialCheckResult.NotFound
-        } catch (e: Exception) {
-            SerialCheckResult.Error(e.message)
+        // 2) Offline check
+        val allLocalSystems = db.mdSystemDAO().getAllMetalDetectorsWithFullDetails()
+        
+        // Exact local match
+        val exactLocal = allLocalSystems.find { it.serialNumber == serialNumber }
+        if (exactLocal != null) {
+            return SerialCheckResult.ExistsLocalOffline(exactLocal)
         }
+
+        // Fuzzy local match
+        val fuzzyLocal = allLocalSystems.find { normalizeSerial(it.serialNumber) == normalizedInput }
+        if (fuzzyLocal != null) {
+            return SerialCheckResult.FuzzyMatch(fuzzyLocal)
+        }
+
+        return SerialCheckResult.NotFoundLocalOffline
     }
 
     // Add a new metal detector to the local database (offline mode)

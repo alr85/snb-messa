@@ -24,6 +24,10 @@ class UserRepository(
         return userDao.getUserIdByUsername(username)
     }
 
+    suspend fun getUsernameByMeaId(meaId: Int): String? {
+        return userDao.getUsernameByMeaId(meaId)
+    }
+
     suspend fun hasLocalUsers(): Boolean {
         return userDao.getUserCount() > 0
     }
@@ -118,4 +122,3 @@ private suspend fun <T> retryWithBackoff(
 
     }
 }
-

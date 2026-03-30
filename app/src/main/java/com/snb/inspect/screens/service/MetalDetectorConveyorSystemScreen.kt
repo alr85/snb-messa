@@ -24,10 +24,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CloudUpload
-import androidx.compose.material.icons.filled.Handyman
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -172,8 +170,11 @@ fun MetalDetectorConveyorSystemScreen(
             when (val status =
                 repositoryMD.checkSerialNumberStatus(context, system.serialNumber)) {
 
-                SerialCheckResult.Exists ->
+                is SerialCheckResult.Exists ->
                     snackbarHostState.showSnackbar("⚠️ Serial already exists in cloud.")
+
+                is SerialCheckResult.FuzzyMatch ->
+                    snackbarHostState.showSnackbar("⚠️ Serial fuzzy match found in cloud.")
 
                 SerialCheckResult.NotFound -> {
 
@@ -201,7 +202,7 @@ fun MetalDetectorConveyorSystemScreen(
                     }
                 }
 
-                SerialCheckResult.ExistsLocalOffline ->
+                is SerialCheckResult.ExistsLocalOffline ->
                     snackbarHostState.showSnackbar("⚠️ Offline: serial exists locally.")
 
                 SerialCheckResult.NotFoundLocalOffline ->
@@ -297,114 +298,65 @@ fun MetalDetectorConveyorSystemScreen(
                                 showActions = false
                                 startCalibration()
                             },
-                            containerColor = SnbRed,
-                            contentColor = Color.White,
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Text(
-                                    text = "Start Calibration",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Icon(Icons.Default.Tune, null, modifier = Modifier.size(24.dp))
+                                Icon(Icons.Default.Tune, "Calibration")
+                                Text("New Calibration", fontWeight = FontWeight.Bold)
                             }
                         }
 
-                        // Start Service Call
+                        // Sync with Cloud
                         FloatingActionButton(
                             modifier = Modifier.fillMaxWidth(),
                             onClick = {
                                 showActions = false
-                                scope.launch {
-                                    snackbarHostState.showSnackbar("⚠️ Service flow not wired yet.")
-                                }
+                                scope.launch { syncThisSystem() }
                             },
-                            containerColor = SnbRed,
-                            contentColor = Color.White,
+                            containerColor = if (mdSystem?.isSynced == true) Color.LightGray else SnbRed,
+                            contentColor = Color.White
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Text(
-                                    text = "Start Service Call",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Icon(Icons.Default.Handyman, null, modifier = Modifier.size(24.dp))
-                            }
-                        }
-
-                        // Sync to Cloud
-                        if (mdSystem?.isSynced == false) {
-                            FloatingActionButton(
-                                modifier = Modifier.fillMaxWidth(),
-                                onClick = {
-                                    showActions = false
-                                    scope.launch { syncThisSystem() }
-                                },
-                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "Sync to Cloud",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.weight(1f)
+                                if (isUploading) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(24.dp),
+                                        color = Color.White,
+                                        strokeWidth = 2.dp
                                     )
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Icon(Icons.Default.CloudUpload, null, modifier = Modifier.size(24.dp))
+                                } else {
+                                    Icon(Icons.Default.CloudUpload, "Sync")
                                 }
+                                Text(
+                                    if (mdSystem?.isSynced == true) "Synced" else "Sync to Cloud",
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
                         }
                     }
                 }
 
-                // Main FAB
-                ExtendedFloatingActionButton(
-                    text = {
-                        Text(
-                            if (showActions) "Close" else "Actions",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = null,
-                            modifier = Modifier.rotate(rotation).size(28.dp)
-                        )
-                    },
+                // Main FAB to toggle actions
+                FloatingActionButton(
                     onClick = { showActions = !showActions },
-                    expanded = !showActions,
-
-                    containerColor = if (showActions) SnbDarkGrey else SnbRed,
-                    contentColor = if (showActions) Color.White else Color.White
-                )
-            }
-        }
-
-        // Upload overlay
-        if (isUploading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.15f)),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
+                    containerColor = SnbDarkGrey,
+                    contentColor = Color.White,
+                    modifier = Modifier.size(56.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Actions",
+                        modifier = Modifier.rotate(rotation)
+                    )
+                }
             }
         }
     }

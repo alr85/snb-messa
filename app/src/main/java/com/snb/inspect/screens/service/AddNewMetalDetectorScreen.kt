@@ -14,12 +14,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -33,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -42,6 +45,7 @@ import com.snb.inspect.repositories.MetalDetectorSystemsRepository
 import com.snb.inspect.repositories.SystemTypeRepository
 import com.snb.inspect.dataClasses.MdModelsLocal
 import com.snb.inspect.dataClasses.SystemTypeLocal
+import com.snb.inspect.dataClasses.MetalDetectorWithFullDetails
 import com.snb.inspect.formModules.LabeledDualNumberInputsWithHelp
 import com.snb.inspect.formModules.LabeledObjectDropdownWithHelp
 import com.snb.inspect.formModules.LabeledReadOnlyField
@@ -83,6 +87,8 @@ fun AddNewMetalDetectorScreen(
 
     // Submit state
     var isProcessing by remember { mutableStateOf(false) }
+    var duplicateSystem by remember { mutableStateOf<MetalDetectorWithFullDetails?>(null) }
+    var fuzzyMatchSystem by remember { mutableStateOf<MetalDetectorWithFullDetails?>(null) }
 
     val scrollState = rememberScrollState()
 
@@ -210,7 +216,9 @@ fun AddNewMetalDetectorScreen(
                                 lastLocation = lastLocation,
                                 mdSystemsRepository = mdSystemsRepository,
                                 snackbarHostState = snackbarHostState,
-                                navController = navController
+                                navController = navController,
+                                onDuplicateFound = { duplicateSystem = it },
+                                onFuzzyMatchFound = { fuzzyMatchSystem = it }
                             )
                         } finally {
                             isProcessing = false
@@ -231,7 +239,93 @@ fun AddNewMetalDetectorScreen(
                 }
             }
         }
+
+    // Exact Duplicate Serial Dialog
+    duplicateSystem?.let { system ->
+        AlertDialog(
+            onDismissRequest = { duplicateSystem = null },
+            title = { Text("Serial Number Already Exists") },
+            text = {
+                Column {
+                    Text("The serial number ")
+                    Text(text = system.serialNumber, fontWeight = FontWeight.Bold)
+                    Text(" is already assigned to:")
+                    Spacer(Modifier.height(8.dp))
+                    Text("Customer: ", fontWeight = FontWeight.Bold)
+                    Text(system.customerName)
+                    Spacer(Modifier.height(4.dp))
+                    Text("Location: ", fontWeight = FontWeight.Bold)
+                    Text(system.lastLocation)
+                    Spacer(Modifier.height(12.dp))
+                    Text("Please contact the office if this machine needs to be moved to a different customer.")
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { duplicateSystem = null }) {
+                    Text("OK")
+                }
+            }
+        )
     }
+
+    // Fuzzy Match Dialog
+    fuzzyMatchSystem?.let { system ->
+        AlertDialog(
+            onDismissRequest = { fuzzyMatchSystem = null },
+            title = { Text("Similar Serial Found") },
+            text = {
+                Column {
+                    Text("The serial you entered is very similar to an existing one:")
+                    Spacer(Modifier.height(8.dp))
+                    Text("Existing Serial: ", fontWeight = FontWeight.Bold)
+                    Text(system.serialNumber)
+                    Text("Customer: ", fontWeight = FontWeight.Bold)
+                    Text(system.customerName)
+                    Text("Location: ", fontWeight = FontWeight.Bold)
+                    Text(system.lastLocation)
+                    Spacer(Modifier.height(12.dp))
+                    Text("Is this the same machine? (e.g. a typo in the serial number)")
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        // User confirms it IS the same machine -> Block
+                        fuzzyMatchSystem = null
+                    }
+                ) {
+                    Text("Yes, this is the same machine")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        // User says it's different -> Proceed
+                        val sys = fuzzyMatchSystem!!
+                        fuzzyMatchSystem = null
+                        coroutineScope.launch(Dispatchers.IO) {
+                            proceedWithCreation(
+                                context = context,
+                                repo = mdSystemsRepository,
+                                customerID = customerID,
+                                serialNumber = serialNumber,
+                                apertureWidth = apertureWidth.toInt(),
+                                apertureHeight = apertureHeight.toInt(),
+                                systemTypeId = selectedSystemType!!.id,
+                                modelId = selectedMdModel!!.meaId,
+                                lastLocation = lastLocation,
+                                snackbar = snackbarHostState,
+                                navController = navController
+                            )
+                        }
+                    }
+                ) {
+                    Text("No, this is a different machine")
+                }
+            }
+        )
+    }
+}
 
 
 
@@ -246,53 +340,84 @@ suspend fun submitNewMdSystem(
     lastLocation: String,
     mdSystemsRepository: MetalDetectorSystemsRepository,
     snackbarHostState: SnackbarHostState,
-    navController: NavHostController
+    navController: NavHostController,
+    onDuplicateFound: (MetalDetectorWithFullDetails?) -> Unit,
+    onFuzzyMatchFound: (MetalDetectorWithFullDetails?) -> Unit
 ) {
     InAppLogger.d("Adding new MD system...")
-    // Ask cloud if online; else check local cache
     when (val status = mdSystemsRepository.checkSerialNumberStatus(context, serialNumber)) {
-        SerialCheckResult.Exists -> {
-            snackbarHostState.showSnackbar("⚠️ This serial number was found in the cloud database - unable to create new system.")
-            InAppLogger.d("Serial already exists in cloud - Abort.")
+        is SerialCheckResult.Exists -> {
+            withContext(Dispatchers.Main) {
+                onDuplicateFound(status.system)
+                snackbarHostState.showSnackbar("⚠️ This serial number already exists.")
+            }
             return
         }
-        SerialCheckResult.NotFound -> {
-            InAppLogger.d("Serial not found in cloud - creating new system...")
-            createInCloud(
-                repo = mdSystemsRepository,
-                customerID = customerID,
-                serialNumber = serialNumber,
-                apertureWidth = apertureWidth,
-                apertureHeight = apertureHeight,
-                systemTypeId = systemTypeId,
-                modelId = modelId,
-                lastLocation = lastLocation,
-                snackbar = snackbarHostState,
-                navController = navController
-            )
-        }
-        SerialCheckResult.ExistsLocalOffline -> {
-            snackbarHostState.showSnackbar("⚠️ Offline: serial exists locally. Cannot create.")
+        is SerialCheckResult.FuzzyMatch -> {
+            withContext(Dispatchers.Main) {
+                onFuzzyMatchFound(status.system)
+            }
             return
         }
-        SerialCheckResult.NotFoundLocalOffline -> {
-            createInLocal(
-                repo = mdSystemsRepository,
-                customerID = customerID,
-                serialNumber = serialNumber,
-                apertureWidth = apertureWidth,
-                apertureHeight = apertureHeight,
-                systemTypeId = systemTypeId,
-                modelId = modelId,
-                lastLocation = lastLocation,
-                snackbar = snackbarHostState,
-                navController = navController
+        SerialCheckResult.NotFound, SerialCheckResult.NotFoundLocalOffline -> {
+            proceedWithCreation(
+                context, mdSystemsRepository, customerID, serialNumber,
+                apertureWidth, apertureHeight, systemTypeId, modelId, lastLocation,
+                snackbarHostState, navController
             )
+        }
+        is SerialCheckResult.ExistsLocalOffline -> {
+            withContext(Dispatchers.Main) {
+                onDuplicateFound(status.system)
+                snackbarHostState.showSnackbar("⚠️ Offline: serial exists locally.")
+            }
+            return
         }
         is SerialCheckResult.Error -> {
-            snackbarHostState.showSnackbar("⚠️ Couldn’t verify serial: ${status.message ?: "network error"}")
-            return
+            snackbarHostState.showSnackbar("⚠️ Error: ${status.message ?: "network error"}")
         }
+    }
+}
+
+suspend fun proceedWithCreation(
+    context: Context,
+    repo: MetalDetectorSystemsRepository,
+    customerID: Int,
+    serialNumber: String,
+    apertureWidth: Int,
+    apertureHeight: Int,
+    systemTypeId: Int,
+    modelId: Int,
+    lastLocation: String,
+    snackbar: SnackbarHostState,
+    navController: NavHostController
+) {
+    if (com.snb.inspect.network.isNetworkAvailable(context)) {
+        createInCloud(
+            repo = repo,
+            customerID = customerID,
+            serialNumber = serialNumber,
+            apertureWidth = apertureWidth,
+            apertureHeight = apertureHeight,
+            systemTypeId = systemTypeId,
+            modelId = modelId,
+            lastLocation = lastLocation,
+            snackbar = snackbar,
+            navController = navController
+        )
+    } else {
+        createInLocal(
+            repo = repo,
+            customerID = customerID,
+            serialNumber = serialNumber,
+            apertureWidth = apertureWidth,
+            apertureHeight = apertureHeight,
+            systemTypeId = systemTypeId,
+            modelId = modelId,
+            lastLocation = lastLocation,
+            snackbar = snackbar,
+            navController = navController
+        )
     }
 }
 

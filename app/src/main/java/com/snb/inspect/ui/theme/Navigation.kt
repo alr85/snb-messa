@@ -5,6 +5,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -14,12 +15,14 @@ import com.snb.inspect.RetrofitClient
 import com.snb.inspect.UserViewModel
 import com.snb.inspect.calibrationViewModels.CustomerViewModel
 import com.snb.inspect.calibrationViewModels.NoticeViewModel
+import com.snb.inspect.calibrationViewModels.WeekendRotaViewModel
 import com.snb.inspect.repositories.CustomerRepository
 import com.snb.inspect.repositories.MetalDetectorModelsRepository
 import com.snb.inspect.repositories.MetalDetectorSystemsRepository
 import com.snb.inspect.repositories.MetalDetectorConveyorCalibrationRepository
 import com.snb.inspect.repositories.RetailerSensitivitiesRepository
 import com.snb.inspect.repositories.SystemTypeRepository
+import com.snb.inspect.repositories.UserRepository
 import com.snb.inspect.screens.mainmenu.HomeScreen
 import com.snb.inspect.screens.mainmenu.NoticesScreen
 import com.snb.inspect.screens.mainmenu.ServiceSelectCustomerScreen
@@ -31,6 +34,7 @@ import com.snb.inspect.screens.menu.DatabaseSyncScreen
 import com.snb.inspect.screens.menu.MDFailsafesScreen
 import com.snb.inspect.screens.menu.MSSensitivitiesScreen
 import com.snb.inspect.screens.menu.MyCalibrationsScreen
+import com.snb.inspect.screens.menu.WeekendRotaScreen
 import com.snb.inspect.screens.service.AddNewMetalDetectorScreen
 import com.snb.inspect.screens.service.MetalDetectorConveyorSystemScreen
 import com.snb.inspect.screens.service.ServiceSelectSystemScreen
@@ -63,6 +67,8 @@ fun AppNavGraph(
 
     val repositoryCustomer =
         CustomerRepository(apiService, db, syncPrefs)
+
+    val userRepository = UserRepository(db.userDao(), apiService)
 
 
     NavHost(
@@ -100,6 +106,17 @@ fun AppNavGraph(
 
         composable("mdFailsafes") {
             MDFailsafesScreen()
+        }
+
+        composable("weekendRota") {
+            val rotaViewModel: WeekendRotaViewModel = viewModel(
+                factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+                    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                        return WeekendRotaViewModel(apiService, userRepository) as T
+                    }
+                }
+            )
+            WeekendRotaScreen(viewModel = rotaViewModel)
         }
 
         composable("notices") {
