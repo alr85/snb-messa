@@ -7,8 +7,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.snb.inspect.AppChromeViewModel
 import com.snb.inspect.AppDatabase
 import com.snb.inspect.RetrofitClient
@@ -36,10 +38,14 @@ import com.snb.inspect.screens.menu.MSSensitivitiesScreen
 import com.snb.inspect.screens.menu.MyCalibrationsScreen
 import com.snb.inspect.screens.menu.WeekendRotaScreen
 import com.snb.inspect.screens.service.AddNewMetalDetectorScreen
+import com.snb.inspect.screens.service.ManualViewerScreen
 import com.snb.inspect.screens.service.MetalDetectorConveyorSystemScreen
 import com.snb.inspect.screens.service.ServiceSelectSystemScreen
 import com.snb.inspect.util.LogConsole
 import com.snb.inspect.util.SyncPreferences
+import java.net.URLDecoder
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -227,6 +233,25 @@ fun AppNavGraph(
                 snackbarHostState = snackbarHostState
             )
 
+        }
+
+        composable(
+            route = "manualViewer/{modelName}/{manualUrl}",
+            arguments = listOf(
+                navArgument("modelName") { type = NavType.StringType },
+                navArgument("manualUrl") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val modelName = backStackEntry.arguments?.getString("modelName") ?: ""
+            val encodedUrl = backStackEntry.arguments?.getString("manualUrl") ?: ""
+            val manualUrl = URLDecoder.decode(encodedUrl, StandardCharsets.UTF_8.toString())
+
+            ManualViewerScreen(
+                modelName = modelName,
+                manualUrl = manualUrl,
+                chromeVm = chromeVm,
+                onBack = { navController.popBackStack() }
+            )
         }
 
     }

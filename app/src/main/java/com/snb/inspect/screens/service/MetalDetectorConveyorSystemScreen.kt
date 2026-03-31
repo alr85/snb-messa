@@ -24,8 +24,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CloudUpload
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -65,6 +67,8 @@ import com.snb.inspect.ui.theme.SnbRed
 import com.snb.inspect.util.InAppLogger
 import com.snb.inspect.util.SerialCheckResult
 import kotlinx.coroutines.launch
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @Composable
 fun MetalDetectorConveyorSystemScreen(
@@ -298,16 +302,49 @@ fun MetalDetectorConveyorSystemScreen(
                                 showActions = false
                                 startCalibration()
                             },
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            containerColor = Color.White,
+                            contentColor = SnbRed,
                         ) {
                             Row(
                                 modifier = Modifier.padding(horizontal = 16.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Icon(Icons.Default.Tune, "Calibration")
-                                Text("New Calibration", fontWeight = FontWeight.Bold)
+                                Icon(Icons.Default.Tune, "Calibration", modifier = Modifier.size(24.dp))
+                                Text(
+                                    text = "New Calibration",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
+
+                        // View Manual
+                        if (!modelDetails?.manualUrl.isNullOrEmpty()) {
+                            FloatingActionButton(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = {
+                                    showActions = false
+                                    val encodedUrl = URLEncoder.encode(modelDetails?.manualUrl ?: "", StandardCharsets.UTF_8.toString())
+                                    navController.navigate("manualViewer/${modelDetails?.modelDescription}/$encodedUrl")
+                                },
+                                containerColor = Color.White,
+                                contentColor = SnbRed,
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Icon(Icons.Default.Description, "Manual", modifier = Modifier.size(24.dp))
+                                    Text(
+                                        text = "View Technical Manual",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
                             }
                         }
 
@@ -318,8 +355,8 @@ fun MetalDetectorConveyorSystemScreen(
                                 showActions = false
                                 scope.launch { syncThisSystem() }
                             },
-                            containerColor = if (mdSystem?.isSynced == true) Color.LightGray else SnbRed,
-                            contentColor = Color.White
+                            containerColor = Color.White,
+                            contentColor = SnbRed,
                         ) {
                             Row(
                                 modifier = Modifier.padding(horizontal = 16.dp),
@@ -329,15 +366,21 @@ fun MetalDetectorConveyorSystemScreen(
                                 if (isUploading) {
                                     CircularProgressIndicator(
                                         modifier = Modifier.size(24.dp),
-                                        color = Color.White,
+                                        color = SnbRed,
                                         strokeWidth = 2.dp
                                     )
                                 } else {
-                                    Icon(Icons.Default.CloudUpload, "Sync")
+                                    Icon(
+                                        imageVector = Icons.Default.CloudUpload,
+                                        contentDescription = "Sync",
+                                        modifier = Modifier.size(24.dp)
+                                    )
                                 }
                                 Text(
-                                    if (mdSystem?.isSynced == true) "Synced" else "Sync to Cloud",
-                                    fontWeight = FontWeight.Bold
+                                    text = if (mdSystem?.isSynced == true) "Synced" else "Sync to Cloud",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.weight(1f)
                                 )
                             }
                         }
@@ -345,18 +388,26 @@ fun MetalDetectorConveyorSystemScreen(
                 }
 
                 // Main FAB to toggle actions
-                FloatingActionButton(
+                ExtendedFloatingActionButton(
+                    text = {
+                        Text(
+                            if (showActions) "Close" else "Actions",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null,
+                            modifier = Modifier.rotate(rotation).size(28.dp)
+                        )
+                    },
                     onClick = { showActions = !showActions },
-                    containerColor = SnbDarkGrey,
-                    contentColor = Color.White,
-                    modifier = Modifier.size(56.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Actions",
-                        modifier = Modifier.rotate(rotation)
-                    )
-                }
+                    expanded = !showActions,
+                    containerColor = if (showActions) SnbDarkGrey else SnbRed,
+                    contentColor = Color.White
+                )
             }
         }
     }

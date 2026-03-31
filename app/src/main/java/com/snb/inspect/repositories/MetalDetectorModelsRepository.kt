@@ -34,6 +34,7 @@ class MetalDetectorModelsRepository(
                             id = 0,
                             meaId = apiMdModel.model_id ?: 0,
                             modelDescription = apiMdModel.model_description ?: "Unknown Name",
+                            manualUrl = apiMdModel.manualUrl, // Match the new name in MdModel
                             detectionSetting1 = apiMdModel.detectionSetting1 ?: "N/A",
                             detectionSetting2 = apiMdModel.detectionSetting2 ?: "N/A",
                             detectionSetting3 = apiMdModel.detectionSetting3 ?: "N/A",

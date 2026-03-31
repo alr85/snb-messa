@@ -238,21 +238,22 @@ fun ServiceSelectSystemScreen(
                                 val encodedName = Uri.encode(customerName)
                                 navController.navigate("AddNewMetalDetectorScreen/$customerID/$encodedName")
                             },
-                            containerColor = SnbRed,
-                            contentColor = Color.White,
+                            containerColor = Color.White,
+                            contentColor = SnbRed,
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
+                                Icon(Icons.Default.Add, null, modifier = Modifier.size(24.dp))
                                 Text(
                                     text = "New Metal Detector",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier.weight(1f)
                                 )
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Icon(Icons.Default.Add, null, modifier = Modifier.size(24.dp))
+
                             }
                         }
 
@@ -263,21 +264,26 @@ fun ServiceSelectSystemScreen(
                                 showMenu = false
                                 navigateToPostcode(context, customerPostcode)
                             },
-                            containerColor = SnbRed,
-                            contentColor = Color.White,
+                            containerColor = Color.White,
+                            contentColor = SnbRed,
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
+                                Icon(
+                                    imageVector = Icons.Default.Navigation,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(24.dp)
+                                )
                                 Text(
                                     text = "Navigate to Site",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier.weight(1f)
                                 )
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Icon(Icons.Default.Navigation, null, modifier = Modifier.size(24.dp))
+
                             }
                         }
 
@@ -301,21 +307,26 @@ fun ServiceSelectSystemScreen(
                                     }
                                 }
                             },
-                            containerColor = SnbRed,
-                            contentColor = Color.White,
+                            containerColor = Color.White,
+                            contentColor = SnbRed,
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
+                                Icon(
+                                    imageVector = Icons.Default.CloudSync,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(24.dp)
+                                )
                                 Text(
                                     text = "Refresh Database",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier.weight(1f)
                                 )
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Icon(Icons.Default.CloudSync, null, modifier = Modifier.size(24.dp))
+
                             }
                         }
                     }

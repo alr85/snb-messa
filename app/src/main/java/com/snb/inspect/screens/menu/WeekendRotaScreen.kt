@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.snb.inspect.PreferencesHelper
 import com.snb.inspect.calibrationViewModels.WeekendRotaViewModel
@@ -53,39 +54,55 @@ fun WeekendRotaScreen(
         viewModel.fetchRota()
     }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF5F5F5))
     ) {
-        if (isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center),
-                color = SnbRed
-            )
-        } else if (error != null) {
-            Text(
-                text = error ?: "Unknown error",
-                color = Color.Red,
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(16.dp)
-            )
-        } else if (rotaData.isEmpty()) {
-            Text(
-                text = "No rota data found",
-                modifier = Modifier.align(Alignment.Center),
-                color = Color.Gray
-            )
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(rotaData) { item ->
-                    RotaItem(
-                        item = item,
-                        isHighlighted = item.engineerId == currentEngineerId
-                    )
+        Text(
+            text = "Please contact your manager for adjustment requests",
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray,
+            textAlign = TextAlign.Center
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = SnbRed
+                )
+            } else if (error != null) {
+                Text(
+                    text = error ?: "Unknown error",
+                    color = Color.Red,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(16.dp)
+                )
+            } else if (rotaData.isEmpty()) {
+                Text(
+                    text = "No rota data found",
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color.Gray
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(rotaData) { item ->
+                        RotaItem(
+                            item = item,
+                            isHighlighted = item.engineerId == currentEngineerId
+                        )
+                    }
                 }
             }
         }

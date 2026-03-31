@@ -41,7 +41,7 @@ import com.snb.inspect.dataClasses.UserEntity
         NoticeLocal::class
 
     ],
-    version = 56,
+    version = 58,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

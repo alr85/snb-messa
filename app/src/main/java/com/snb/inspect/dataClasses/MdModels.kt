@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 data class MdModel(
     val model_id: Int?,              // Match the API key
     val model_description: String?,   // Match the API key
+    val manualUrl: String?,           // UPDATED to match API key: "manualUrl"
     val detectionSetting1: String?,
     val detectionSetting2: String?,
     val detectionSetting3: String?,
@@ -23,6 +24,7 @@ data class MdModelsLocal(
     @PrimaryKey(autoGenerate = true) val id: Int,
     val meaId: Int,                 // Adjusted to match your previous naming convention
     val modelDescription: String,    // Adjusted to match your previous naming convention
+    val manualUrl: String?,          // Local storage for the manual URL
     val detectionSetting1: String,
     val detectionSetting2: String,
     val detectionSetting3: String,
@@ -32,5 +34,3 @@ data class MdModelsLocal(
     val detectionSetting7: String,
     val detectionSetting8: String,
 )
-
-
