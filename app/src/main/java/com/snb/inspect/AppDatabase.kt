@@ -16,6 +16,7 @@ import com.snb.inspect.daos.NoticesDAO
 import com.snb.inspect.daos.PipelineDao
 import com.snb.inspect.daos.SystemTypeDAO
 import com.snb.inspect.daos.UserDao
+import com.snb.inspect.daos.UserManualsDAO
 import com.snb.inspect.dataClasses.ConveyorRetailerSensitivitiesEntity
 import com.snb.inspect.dataClasses.CustomerLocal
 import com.snb.inspect.dataClasses.FreefallThroatRetailerSensitivitiesEntity
@@ -26,6 +27,7 @@ import com.snb.inspect.dataClasses.NoticeLocal
 import com.snb.inspect.dataClasses.PipelineRetailerSensitivitiesEntity
 import com.snb.inspect.dataClasses.SystemTypeLocal
 import com.snb.inspect.dataClasses.UserEntity
+import com.snb.inspect.dataClasses.UserManualLocal
 
 @Database(
     entities = [
@@ -38,10 +40,11 @@ import com.snb.inspect.dataClasses.UserEntity
         ConveyorRetailerSensitivitiesEntity::class,
         FreefallThroatRetailerSensitivitiesEntity::class,
         PipelineRetailerSensitivitiesEntity::class,
-        NoticeLocal::class
+        NoticeLocal::class,
+        UserManualLocal::class
 
     ],
-    version = 58,
+    version = 59,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -59,6 +62,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun pipelineDao(): PipelineDao
 
     abstract fun noticesDAO(): NoticesDAO
+    abstract fun userManualsDAO(): UserManualsDAO
 
 
     companion object {

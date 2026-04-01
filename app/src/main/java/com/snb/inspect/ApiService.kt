@@ -10,6 +10,7 @@ import com.snb.inspect.dataClasses.MdSystemCloud
 import com.snb.inspect.dataClasses.NoticeCloud
 import com.snb.inspect.dataClasses.PipelineRetailerSensitivitiesEntity
 import com.snb.inspect.dataClasses.SystemType
+import com.snb.inspect.dataClasses.UserManual
 import com.snb.inspect.dataClasses.WeekendRotaResponse
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
@@ -74,4 +75,7 @@ interface ApiService {
 
     @GET("https://snb-mea-web-api20240909215557.azurewebsites.net/api/WeekendRota")
     suspend fun getWeekendRota(): Response<List<WeekendRotaResponse>>
+
+    @GET("UserManuals")
+    suspend fun getUserManuals(): Response<List<UserManual>>
 }

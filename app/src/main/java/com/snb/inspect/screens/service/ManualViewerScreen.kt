@@ -90,6 +90,11 @@ fun ManualViewerScreen(
                     val page = renderer.openPage(i)
                     // Scale bitmap to screen width for better quality
                     val bitmap = Bitmap.createBitmap(page.width * 2, page.height * 2, Bitmap.Config.ARGB_8888)
+                    
+                    // IMPORTANT: Fill bitmap with white background
+                    // Many PDFs have transparent backgrounds and expect the "paper" to be white.
+                    bitmap.eraseColor(android.graphics.Color.WHITE)
+
                     page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
                     bitmaps.add(bitmap)
                     page.close()

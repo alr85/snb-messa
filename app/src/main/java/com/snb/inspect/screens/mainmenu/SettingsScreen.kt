@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.Construction
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
@@ -81,6 +82,7 @@ fun SettingsScreen(
         listOf(
             SettingItem("My Calibrations", Icons.Filled.EditNote, "myCalibrations"),
             SettingItem("Weekend Rota", Icons.Default.CalendarMonth, "weekendRota"),
+            SettingItem("User Manuals", Icons.Default.Description, "userManualsList"),
             SettingItem("Service Calls", Icons.Default.Construction, "COMING_SOON", isComingSoon = true)
         )
     }

@@ -3,8 +3,11 @@ package com.snb.inspect.ui.theme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -17,6 +20,7 @@ import com.snb.inspect.RetrofitClient
 import com.snb.inspect.UserViewModel
 import com.snb.inspect.calibrationViewModels.CustomerViewModel
 import com.snb.inspect.calibrationViewModels.NoticeViewModel
+import com.snb.inspect.calibrationViewModels.UserManualsViewModel
 import com.snb.inspect.calibrationViewModels.WeekendRotaViewModel
 import com.snb.inspect.repositories.CustomerRepository
 import com.snb.inspect.repositories.MetalDetectorModelsRepository
@@ -24,6 +28,7 @@ import com.snb.inspect.repositories.MetalDetectorSystemsRepository
 import com.snb.inspect.repositories.MetalDetectorConveyorCalibrationRepository
 import com.snb.inspect.repositories.RetailerSensitivitiesRepository
 import com.snb.inspect.repositories.SystemTypeRepository
+import com.snb.inspect.repositories.UserManualsRepository
 import com.snb.inspect.repositories.UserRepository
 import com.snb.inspect.screens.mainmenu.HomeScreen
 import com.snb.inspect.screens.mainmenu.NoticesScreen
@@ -36,6 +41,7 @@ import com.snb.inspect.screens.menu.DatabaseSyncScreen
 import com.snb.inspect.screens.menu.MDFailsafesScreen
 import com.snb.inspect.screens.menu.MSSensitivitiesScreen
 import com.snb.inspect.screens.menu.MyCalibrationsScreen
+import com.snb.inspect.screens.menu.UserManualsListScreen
 import com.snb.inspect.screens.menu.WeekendRotaScreen
 import com.snb.inspect.screens.service.AddNewMetalDetectorScreen
 import com.snb.inspect.screens.service.ManualViewerScreen
@@ -75,6 +81,8 @@ fun AppNavGraph(
         CustomerRepository(apiService, db, syncPrefs)
 
     val userRepository = UserRepository(db.userDao(), apiService)
+
+    val manualRepository = UserManualsRepository(apiService, db)
 
 
     NavHost(
@@ -116,13 +124,33 @@ fun AppNavGraph(
 
         composable("weekendRota") {
             val rotaViewModel: WeekendRotaViewModel = viewModel(
-                factory = object : androidx.lifecycle.ViewModelProvider.Factory {
-                    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
                         return WeekendRotaViewModel(apiService, userRepository) as T
                     }
                 }
             )
             WeekendRotaScreen(viewModel = rotaViewModel)
+        }
+
+        composable("userManualsList") {
+            val manualsViewModel: UserManualsViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return UserManualsViewModel(manualRepository) as T
+                    }
+                }
+            )
+            // Sync on entry
+            LaunchedEffect(Unit) { manualsViewModel.syncManuals() }
+            
+            UserManualsListScreen(
+                viewModel = manualsViewModel,
+                navController = navController,
+                chromeVm = chromeVm
+            )
         }
 
         composable("notices") {
@@ -243,8 +271,9 @@ fun AppNavGraph(
             )
         ) { backStackEntry ->
             val modelName = backStackEntry.arguments?.getString("modelName") ?: ""
-            val encodedUrl = backStackEntry.arguments?.getString("manualUrl") ?: ""
-            val manualUrl = URLDecoder.decode(encodedUrl, StandardCharsets.UTF_8.toString())
+            // DO NOT call URLDecoder.decode manually. 
+            // Navigation.compose already handles the decoding of arguments.
+            val manualUrl = backStackEntry.arguments?.getString("manualUrl") ?: ""
 
             ManualViewerScreen(
                 modelName = modelName,
