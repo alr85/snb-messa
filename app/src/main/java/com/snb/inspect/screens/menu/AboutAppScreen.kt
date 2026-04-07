@@ -98,7 +98,7 @@ fun AboutAppScreen(
 
                 // Section: About
                 Text(
-                    text = "About INSPECT",
+                    text = "About SNB INSPECT",
                     color = Color(0xFFB71C1C),
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp
