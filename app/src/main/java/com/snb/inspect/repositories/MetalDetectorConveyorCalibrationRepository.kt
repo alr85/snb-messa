@@ -48,11 +48,15 @@ import com.snb.inspect.util.CsvUploader
 import com.snb.inspect.util.InAppLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.String
 
 class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: MetalDetectorConveyorCalibrationDAO) {
+
+    private val uploadMutex = Mutex()
 
     /**
      * UPDATED: Uses property setters instead of a massive constructor call to avoid
@@ -89,16 +93,35 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
     /**
      * BULLETPROOF BACKGROUND UPLOAD:
      * Identifies all calibrations that are finished but not yet synced, and attempts to upload them.
+     *
+     * @param specificId If provided, only this calibration will be attempted.
      */
-    suspend fun uploadUnsyncedCalibrations(context: Context, apiService: ApiService): FetchResult {
-        InAppLogger.d("uploadUnsyncedCalibrations() called")
+    suspend fun uploadUnsyncedCalibrations(
+        context: Context,
+        apiService: ApiService,
+        specificId: String? = null
+    ): FetchResult = uploadMutex.withLock {
+        InAppLogger.d("uploadUnsyncedCalibrations() called (specificId=$specificId)")
 
         if (!isNetworkAvailable(context)) {
-            return FetchResult.Failure("Offline. Background upload skipped.")
+            return@withLock FetchResult.Failure("Offline. Upload skipped.")
         }
 
-        val pending = calibrationDao.getAllPendingCalibrations().first()
-        if (pending.isEmpty()) return FetchResult.Success("No pending calibrations.")
+        val pending = if (specificId != null) {
+            val cal = calibrationDao.getCalibrationById(specificId)
+            // Match the 'pending' criteria: not synced AND has an end date
+            if (cal != null && !cal.isSynced && cal.endDate.isNotBlank()) {
+                listOf(cal)
+            } else {
+                emptyList()
+            }
+        } else {
+            calibrationDao.getAllPendingCalibrations().first()
+        }
+
+        if (pending.isEmpty()) {
+            return@withLock FetchResult.Success(if (specificId != null) "Calibration already synced or not ready." else "No pending calibrations.")
+        }
 
         var uploaded = 0
         val failed = mutableListOf<String>()
@@ -136,7 +159,7 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
             }
         }
 
-        return if (failed.isEmpty()) FetchResult.Success("Uploaded $uploaded calibration(s).")
+        if (failed.isEmpty()) FetchResult.Success("Uploaded $uploaded calibration(s).")
         else FetchResult.Failure("Uploaded $uploaded. Failed: ${failed.joinToString()}")
     }
 
