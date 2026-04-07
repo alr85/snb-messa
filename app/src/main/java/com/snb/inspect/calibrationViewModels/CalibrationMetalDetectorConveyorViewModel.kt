@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.snb.inspect.ApiService
+import com.snb.inspect.FetchResult
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateFerrousPvResult
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.setAllPvResultsNa
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.toAirPressureSensorUpdate
@@ -52,19 +53,13 @@ import com.snb.inspect.formModules.YesNoState
 import com.snb.inspect.repositories.MetalDetectorConveyorCalibrationRepository
 import com.snb.inspect.repositories.MetalDetectorSystemsRepository
 import com.snb.inspect.repositories.RetailerSensitivitiesRepository
-import com.snb.inspect.util.CsvUploader
 import com.snb.inspect.util.InAppLogger
 import com.snb.inspect.util.toConditionState
 import com.snb.inspect.util.toYesNoState
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.File
-import java.io.FileWriter
-import java.io.IOException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -160,7 +155,7 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _productLibraryNumber.value = existingCalibration.productLibraryNumber
                 _productLength.value = existingCalibration.productLength
                 _productWidth.value = existingCalibration.productWidth
-                _productHeight.value = existingCalibration.productHeight ?: ""
+                _productHeight.value = existingCalibration.productHeight
                 refreshSensitivities()
                 _productDetailsEngineerNotes.value = existingCalibration.productDetailsEngineerNotes
 
@@ -3507,12 +3502,12 @@ class CalibrationMetalDetectorConveyorViewModel(
         try {
             _isUploading.value = true
 
-            // 1. End calibration (Await this so the CSV has the end date)
+            // 1. End calibration locally (Ensures CSV has the end date)
             InAppLogger.d("Updating the calibration end time...")
             val endUpdate = toCalibrationEndUpdate()
-            calibrationRepository.updateCalibrationEnd(endUpdate) // Call repository directly (assuming it's suspend)
+            calibrationRepository.updateCalibrationEnd(endUpdate)
 
-            // 2. Update local database last calibration date
+            // 2. Update local machine record with last calibration date
             InAppLogger.d("Updating the last calibration in the local database...")
             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSS")
             val lastCalibrationDateTime = LocalDateTime.now().format(formatter)
@@ -3522,8 +3517,8 @@ class CalibrationMetalDetectorConveyorViewModel(
                 lastCalibrationDateTime
             )
 
-            // 3. Sync system details with the cloud
-            InAppLogger.d("Syncing with the cloud...")
+            // 3. Sync machine details with cloud (Ensures cloudSystemId is present)
+            InAppLogger.d("Syncing machine record with the cloud...")
             repository.updateSystem(
                 context = context,
                 cloudId = cloudSystemId.value,
@@ -3531,14 +3526,22 @@ class CalibrationMetalDetectorConveyorViewModel(
                 tempId = tempSystemId.value
             )
 
-            // 4. Generate + upload CSV
-            val csvSuccess = createAndUploadCsv(context, calibrationId.value, apiService)
-            if (csvSuccess) {
+            // 4. Perform locked upload using the Repository's centralized method
+            // This prevents concurrent background syncs from uploading the same file.
+            InAppLogger.d("Initiating locked upload for ${calibrationId.value}")
+            val result = calibrationRepository.uploadUnsyncedCalibrations(
+                context = context,
+                apiService = apiService,
+                specificId = calibrationId.value
+            )
+
+            if (result is FetchResult.Success) {
                 onResult("✅ Calibration completed and uploaded to the cloud.")
-                InAppLogger.d("Calibration completed and uploaded to the cloud.")
+                InAppLogger.d("Manual upload successful: ${result.message}")
             } else {
-                onResult("⚠️ Calibration completed, but NOT uploaded to the cloud. Please try again later.")
-                InAppLogger.d("Calibration completed, but NOT uploaded to the cloud.")
+                // If it fails here, it's saved locally and background sync will pick it up later
+                onResult("⚠️ Calibration completed locally, but cloud upload failed. It will retry automatically when you have a better connection.")
+                InAppLogger.d("Manual upload failed or skipped: ${(result as FetchResult.Failure).errorMessage}")
             }
         } catch (e: Exception) {
             InAppLogger.e("Error finishing calibration: ${e.message}")
@@ -3548,32 +3551,9 @@ class CalibrationMetalDetectorConveyorViewModel(
         }
     }
 
+    // You can now safely REMOVE the createAndUploadCsv function from this ViewModel
+    // as its logic is now correctly encapsulated inside the Repository's locked method.
 
-    //---------------------------------------------------------------------------CSV File Processing
-    suspend fun createAndUploadCsv(
-        context: Context,
-        calibrationId: String,
-        apiService: ApiService,
-    ): Boolean {
-
-
-        // Step 1: Create CSV
-        InAppLogger.d("Creating CSV file for calibration: $calibrationId")
-        // Now calls the fixed version in the repository
-        val csvFile = calibrationRepository.createCsvFile(context, calibrationId) ?: return false
-
-        // Step 2: Attempt upload and store result
-        InAppLogger.d("Uploading CSV file for calibration: $calibrationId")
-        val uploadSuccessful = CsvUploader.uploadCsvFile(
-            csvFile = csvFile,
-            apiService = apiService,
-            fileName = calibrationId
-        )
-
-        // Step 3: Update upload status in database
-        calibrationDao.updateIsSynced(calibrationId, uploadSuccessful)
-        return uploadSuccessful
-    }
 
 
     // Add a method to clear all relevant data

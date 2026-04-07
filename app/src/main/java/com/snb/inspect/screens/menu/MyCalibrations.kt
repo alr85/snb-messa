@@ -89,7 +89,7 @@ fun MyCalibrationsScreen(
     val completedCalibrations by dao.getAllCompletedCalibrations()
         .collectAsState(initial = emptyList())
 
-    // Safeguard for duplicate uploads
+    // Safeguard for duplicate uploads (UI level)
     var uploadingCalibrationIds by remember { mutableStateOf(setOf<String>()) }
 
     // ---------------- Customer Cache ----------------
@@ -178,7 +178,11 @@ fun MyCalibrationsScreen(
                         coroutineScope.launch {
                             uploadingCalibrationIds = uploadingCalibrationIds + calibration.calibrationId
                             try {
-                                val result = calibrationRepository.uploadUnsyncedCalibrations(context, apiService)
+                                val result = calibrationRepository.uploadUnsyncedCalibrations(
+                                    context = context,
+                                    apiService = apiService,
+                                    specificId = calibration.calibrationId
+                                )
                                 snackbarHostState.showSnackbar(result.toString())
                             } catch (e: Exception) {
                                 snackbarHostState.showSnackbar("⚠️ An error occurred during upload.")
