@@ -2,6 +2,7 @@ package com.snb.inspect
 
 
 import android.Manifest
+import android.net.Uri
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
@@ -78,7 +79,10 @@ import com.snb.inspect.network.rememberIsOffline
 import com.snb.inspect.repositories.CustomerRepository
 import com.snb.inspect.repositories.MetalDetectorSystemsRepository
 import com.snb.inspect.repositories.MetalDetectorConveyorCalibrationRepository
+import com.snb.inspect.repositories.MetalDetectorModelsRepository
 import com.snb.inspect.repositories.NoticeRepository
+import com.snb.inspect.repositories.RetailerSensitivitiesRepository
+import com.snb.inspect.repositories.SystemTypeRepository
 import com.snb.inspect.repositories.UserRepository
 import com.snb.inspect.screens.LoginScreen
 import com.snb.inspect.ui.theme.AppNavGraph
@@ -124,6 +128,11 @@ class MainActivity : ComponentActivity() {
         val noticeRepository = NoticeRepository(apiService, db)
         mdSystemsRepository = MetalDetectorSystemsRepository(apiService, db)
         calibrationRepository = MetalDetectorConveyorCalibrationRepository(db.metalDetectorConveyorCalibrationDAO())
+
+        // Additional repositories for background sync
+        val systemTypeRepository = SystemTypeRepository(apiService, db)
+        val mdModelsRepository = MetalDetectorModelsRepository(apiService, db)
+        val retailerSensitivitiesRepository = RetailerSensitivitiesRepository(apiService, db)
 
         // ViewModels
         userViewModel = UserViewModel(userRepository)
@@ -177,6 +186,9 @@ class MainActivity : ComponentActivity() {
                         noticeViewModel = noticeViewModel,
                         mdSystemsRepository = mdSystemsRepository,
                         calibrationRepository = calibrationRepository,
+                        systemTypeRepository = systemTypeRepository,
+                        mdModelsRepository = mdModelsRepository,
+                        retailerSensitivitiesRepository = retailerSensitivitiesRepository,
                         syncPrefs = syncPrefs
                     )
                 }
@@ -366,6 +378,9 @@ fun MyApp(
     noticeViewModel: NoticeViewModel,
     mdSystemsRepository: MetalDetectorSystemsRepository,
     calibrationRepository: MetalDetectorConveyorCalibrationRepository,
+    systemTypeRepository: SystemTypeRepository,
+    mdModelsRepository: MetalDetectorModelsRepository,
+    retailerSensitivitiesRepository: RetailerSensitivitiesRepository,
     syncPrefs: SyncPreferences
 ) {
 
@@ -452,6 +467,14 @@ fun MyApp(
                     InAppLogger.d("BACKGROUND SYNC: Step 4 - Refreshing other data...")
                     customerViewModel.syncCustomers()
                     noticeViewModel.syncNotices()
+
+                    // 5. REFRESH SYSTEM TYPES, MODELS & SENSITIVITIES
+                    InAppLogger.d("BACKGROUND SYNC: Step 5 - Refreshing System Types, Models & Sensitivities...")
+                    systemTypeRepository.fetchAndStoreSystemTypes()
+                    mdModelsRepository.fetchAndStoreMdModels()
+                    retailerSensitivitiesRepository.fetchAndStoreConveyor()
+                    retailerSensitivitiesRepository.fetchAndStoreFreefall()
+                    retailerSensitivitiesRepository.fetchAndStorePipeline()
                     
                     withContext(Dispatchers.Main) {
                         snackbarHostState.showSnackbar("✅ Background sync complete")

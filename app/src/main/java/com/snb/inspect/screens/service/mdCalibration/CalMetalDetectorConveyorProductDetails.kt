@@ -78,7 +78,7 @@ fun CalMetalDetectorConveyorProductDetails(
                     value = libraryRef,
                     onValueChange = viewModel::setProductLibraryReference,
                     helpText = "There is usually a 'Product Name' in the metal detector library. Enter it here.",
-                    maxLength = 12,
+                    maxLength = 15,
                     showInputLabel = false
                 )
 
@@ -102,7 +102,7 @@ fun CalMetalDetectorConveyorProductDetails(
                         onValueChange = viewModel::setProductLength,
                         helpText = "Enter the length of the product in mm.",
                         keyboardType = KeyboardType.Number,
-                        maxLength = 3,
+                        maxLength = 4,
                         showInputLabel = false
                     )
 
@@ -114,7 +114,7 @@ fun CalMetalDetectorConveyorProductDetails(
                         onValueChange = viewModel::setProductWidth,
                         helpText = "Enter the width of the product in mm.",
                         keyboardType = KeyboardType.Number,
-                        maxLength = 3,
+                        maxLength = 4,
                         showInputLabel = false
                     )
 
@@ -155,7 +155,7 @@ fun CalMetalDetectorConveyorProductDetails(
                                 )
                             )
                         } else emptyList(),
-                        maxLength = 3,
+                        maxLength = 4,
                         showInputLabel = false
                     )
 
