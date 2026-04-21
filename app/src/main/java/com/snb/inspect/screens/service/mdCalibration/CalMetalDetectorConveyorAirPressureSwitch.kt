@@ -179,7 +179,7 @@ fun CalMetalDetectorConveyorAirPressureSensor(
                             },
                             helpText = "Enter the custom test method.",
                             isNAToggleEnabled = false,
-                            maxLength = 12
+                            maxLength = 25
                         )
                         FormSpacer()
                     }

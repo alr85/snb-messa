@@ -18,10 +18,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -40,8 +42,34 @@ fun AboutAppScreen(
     chromeVm: AppChromeViewModel
 ) {
 
+    val context = LocalContext.current
     val appVersion = getAppVersion()  // Get the app version
     FontFamily(Font(R.font.audiowide))
+
+    // Automatically load the latest changes from the raw/changelog.md file
+    val latestChanges = remember {
+        try {
+            val fullText = context.resources.openRawResource(R.raw.changelog).bufferedReader().use { it.readText() }
+            
+            // Find the first version header (## [) and the one after it
+            val marker = "## ["
+            val firstIdx = fullText.indexOf(marker)
+            if (firstIdx != -1) {
+                val secondIdx = fullText.indexOf(marker, firstIdx + marker.length)
+                val content = if (secondIdx != -1) {
+                    fullText.substring(firstIdx, secondIdx).trim()
+                } else {
+                    fullText.substring(firstIdx).trim()
+                }
+                // Remove the "## " prefix from the display
+                content.removePrefix("## ").trim()
+            } else {
+                "No recent changes recorded."
+            }
+        } catch (e: Exception) {
+            "Error loading changelog."
+        }
+    }
 
 
     Column(
@@ -94,6 +122,21 @@ fun AboutAppScreen(
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(5.dp))
+
+                // Section: What's New (Linked to changelog.md)
+                Text(
+                    text = "What's New",
+                    color = Color(0xFFB71C1C),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+                HorizontalDivider(thickness = 1.dp, color = Color(0xFFE0E0E0))
+                Text(
+                    text = latestChanges,
+                    fontSize = 14.sp,
+                    color = Color.DarkGray,
+                    lineHeight = 20.sp
+                )
 
 
                 // Section: About

@@ -54,7 +54,7 @@ fun CalMetalDetectorConveyorDetectionSettingsAsLeft(
     val engineerNotes by viewModel.detectionSettingAsLeftEngineerNotes
 
     // Validation
-    val isNextStepEnabled = asLeftStates.all { it.value.isNotBlank() }
+    val isNextStepEnabled = asLeftStates.all { it.value.isNotBlank() && viewModel.productPeakSignalAsLeft.value.isNotBlank() }
 
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)

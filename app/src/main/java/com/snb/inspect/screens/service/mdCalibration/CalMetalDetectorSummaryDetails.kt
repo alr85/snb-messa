@@ -301,6 +301,7 @@ fun CalMetalDetectorConveyorSummaryDetails(
                 SummaryItem(label = viewModel.detectionSetting6label.value, value = viewModel.detectionSettingAsLeft6.value)
                 SummaryItem(label = viewModel.detectionSetting7label.value, value = viewModel.detectionSettingAsLeft7.value)
                 SummaryItem(label = viewModel.detectionSetting8label.value, value = viewModel.detectionSettingAsLeft8.value)
+                SummaryItem(label = "Product Peak Signal", value = viewModel.productPeakSignalAsLeft.value)
                 SummaryItem(label = "Engineer Notes", value = viewModel.detectionSettingAsLeftEngineerNotes.value)
             }
 

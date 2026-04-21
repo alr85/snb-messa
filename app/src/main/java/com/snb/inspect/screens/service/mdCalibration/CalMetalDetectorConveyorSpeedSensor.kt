@@ -75,10 +75,7 @@ fun CalMetalDetectorConveyorSpeedSensor(
             if (ind1label.isNotBlank() && ind1label != "N/A") add("Indicator 1 ($ind1colour)")
             addAll(
                 listOf(
-                    "On-Screen Notification",
-                    "System Belt Stops",
-                    "In-feed Belt Stops",
-                    "Out-feed Belt Stops",
+                    "Pack rejects OK",
                     "Other"
                 )
             )
@@ -180,7 +177,7 @@ fun CalMetalDetectorConveyorSpeedSensor(
                             },
                             helpText = "Enter the custom test method.",
                             isNAToggleEnabled = false,
-                            maxLength = 12
+                            maxLength = 25
                         )
                         FormSpacer()
                     }

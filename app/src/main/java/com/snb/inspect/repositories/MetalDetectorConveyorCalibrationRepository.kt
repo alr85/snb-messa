@@ -8,7 +8,6 @@
 package com.snb.inspect.repositories
 
 import android.content.Context
-import androidx.compose.runtime.State
 import com.snb.inspect.ApiService
 import com.snb.inspect.FetchResult
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.AirPressureSensorUpdate
@@ -52,7 +51,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
-import kotlin.String
+import java.text.Normalizer
 
 class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: MetalDetectorConveyorCalibrationDAO) {
 
@@ -161,6 +160,37 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
 
         if (failed.isEmpty()) FetchResult.Success("Uploaded $uploaded calibration(s).")
         else FetchResult.Failure("Uploaded $uploaded. Failed: ${failed.joinToString()}")
+    }
+
+    /**
+     * Normalises a string to prevent encoding issues with special characters.
+     * Replaces common "smart" characters (en-dash, em-dash, smart quotes) with ASCII equivalents.
+     */
+    private fun normalizeForCsv(input: Any?): String {
+        if (input == null) return ""
+        var text = input.toString()
+
+        // 1. Replace common "smart" punctuation from mobile keyboards
+        text = text
+            .replace("\u2013", "-") // en dash
+            .replace("\u2014", "-") // em dash
+            .replace("\u2018", "'") // left single quote
+            .replace("\u2019", "'") // right single quote
+            .replace("\u201C", "\"") // left double quote
+            .replace("\u201D", "\"") // right double quote
+            .replace("\u2026", "...") // ellipsis
+
+        // 2. Remove semicolons and newlines which break CSV structure
+        text = text
+            .replace(";", ",")
+            .replace("\n", " ")
+            .replace("\r", "")
+
+        // 3. (Optional) Decompose accented characters to their base form (e.g. é -> e)
+        text = Normalizer.normalize(text, Normalizer.Form.NFD)
+        text = text.replace("[\\p{InCombiningDiacriticalMarks}]".toRegex(), "")
+
+        return text.trim()
     }
 
     suspend fun createCsvFile(context: Context, calibrationId: String): File? = withContext(Dispatchers.IO) {
@@ -457,19 +487,19 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
 
             )
 
-            // 1. Sanitise: Convert everything to string and remove semicolons/newlines
-            val sanitizedData = rawData.map {
-                it?.toString()
-                    ?.replace(";", ",")   // Remove semicolons so they don't break CSV columns
-                    ?.replace("\n", " ")   // Remove newlines so they don't break CSV rows
-                    ?.replace("\r", "")
-                    ?: ""
-            }
+            // Sanitise: Apply normalisation to every field
+            val sanitizedData = rawData.map { normalizeForCsv(it) }
 
-            // Write as UTF-8 WITHOUT the BOM
-            csvFile.bufferedWriter(Charsets.UTF_8).use { writer ->
-                writer.write(sanitizedData.joinToString(";"))
-                writer.write("\r\n") // Windows-style line ending
+            // Write as UTF-8 WITH a BOM (Byte Order Mark) 
+            // The BOM helps Excel/Access/Notepad recognise the UTF-8 encoding immediately.
+            csvFile.outputStream().use { out ->
+                // Write the BOM for UTF-8 (EF BB BF)
+                out.write(byteArrayOf(0xEF.toByte(), 0xBB.toByte(), 0xBF.toByte()))
+                
+                out.bufferedWriter(Charsets.UTF_8).use { writer ->
+                    writer.write(sanitizedData.joinToString(";"))
+                    writer.write("\r\n") // Windows-style line ending
+                }
             }
             csvFile
         } catch (e: Exception) {
