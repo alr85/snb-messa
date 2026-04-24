@@ -135,7 +135,7 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
 
             try {
                 val csvFile = createCsvFile(context, cal.calibrationId)
-                
+
                 if (csvFile == null || !csvFile.exists()) {
                     failed += "${cal.calibrationId} (CSV generation failed)"
                     continue
@@ -169,6 +169,9 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
     private fun normalizeForCsv(input: Any?): String {
         if (input == null) return ""
         var text = input.toString()
+
+        // 0. Remove any hidden Byte Order Marks that might be lingering in the string itself
+        text = text.replace("\uFEFF", "")
 
         // 1. Replace common "smart" punctuation from mobile keyboards
         text = text
@@ -490,12 +493,9 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
             // Sanitise: Apply normalisation to every field
             val sanitizedData = rawData.map { normalizeForCsv(it) }
 
-            // Write as UTF-8 WITH a BOM (Byte Order Mark) 
-            // The BOM helps Excel/Access/Notepad recognise the UTF-8 encoding immediately.
+            // Write as UTF-8 WITHOUT a BOM (Byte Order Mark) 
+            // Microsoft Access can misinterpret the BOM as literal characters (ï»¿).
             csvFile.outputStream().use { out ->
-                // Write the BOM for UTF-8 (EF BB BF)
-                out.write(byteArrayOf(0xEF.toByte(), 0xBB.toByte(), 0xBF.toByte()))
-                
                 out.bufferedWriter(Charsets.UTF_8).use { writer ->
                     writer.write(sanitizedData.joinToString(";"))
                     writer.write("\r\n") // Windows-style line ending

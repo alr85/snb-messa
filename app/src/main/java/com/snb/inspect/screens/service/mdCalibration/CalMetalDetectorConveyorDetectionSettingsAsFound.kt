@@ -133,6 +133,17 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
 
                 FormSpacer()
 
+                LabeledTextFieldWithHelp(
+                    label = "Product Peak Signal (As Found)",
+                    value = viewModel.productPeakSignalAsFound.value,
+                    onValueChange = viewModel::setProductPeakSignalAsFound,
+                    helpText = "Enter the product peak signal value at the 'As Found' settings",
+                    isNAToggleEnabled = false,
+                    maxLength = 25
+                )
+
+                FormSpacer()
+
                 // Render settings 1–8 dynamically
                 labels.indices.forEach { index ->
                     val labelState = labels[index]
@@ -150,16 +161,7 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
                     FormSpacer()
 
                 }
-                LabeledTextFieldWithHelp(
-                    label = "Product Peak Signal (As Found)",
-                    value = viewModel.productPeakSignalAsFound.value,
-                    onValueChange = viewModel::setProductPeakSignalAsFound,
-                    helpText = "Enter the product peak signal value at the 'As Found' settings",
-                    isNAToggleEnabled = false,
-                    maxLength = 10
-                )
 
-                FormSpacer()
 
 
 

@@ -84,6 +84,17 @@ fun CalMetalDetectorConveyorDetectionSettingsAsLeft(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                LabeledTextFieldWithHelp(
+                    label = "Product Peak Signal (As Left)",
+                    value = viewModel.productPeakSignalAsLeft.value,
+                    onValueChange = viewModel::setProductPeakSignalAsLeft,
+                    helpText = "Enter the product peak signal value at the 'As Left' settings",
+                    isNAToggleEnabled = false,
+                    maxLength = 25
+                )
+
+                FormSpacer()
+
                 // Detection setting fields
                 labelStates.indices.forEach { index ->
                     val label = labelStates[index].value
@@ -111,16 +122,7 @@ fun CalMetalDetectorConveyorDetectionSettingsAsLeft(
                     FormSpacer()
                 }
 
-                LabeledTextFieldWithHelp(
-                    label = "Product Peak Signal (As Left)",
-                    value = viewModel.productPeakSignalAsLeft.value,
-                    onValueChange = viewModel::setProductPeakSignalAsLeft,
-                    helpText = "Enter the product peak signal value at the 'As Left' settings",
-                    isNAToggleEnabled = false,
-                    maxLength = 10
-                )
 
-                FormSpacer()
 
 
                 LabeledTextFieldWithHelp(
@@ -147,6 +149,7 @@ fun copyAsFoundToAsLeft(viewModel: CalibrationMetalDetectorConveyorViewModel) {
     viewModel.setDetectionSettingAsLeft6(viewModel.detectionSettingAsFound6.value)
     viewModel.setDetectionSettingAsLeft7(viewModel.detectionSettingAsFound7.value)
     viewModel.setDetectionSettingAsLeft8(viewModel.detectionSettingAsFound8.value)
+    viewModel.setProductPeakSignalAsLeft(viewModel.productPeakSignalAsFound.value)
 }
 
 
