@@ -202,20 +202,20 @@ fun CalMetalDetectorConveyorSummaryDetails(
                 SummaryItem(label = "Engineer Notes", value = viewModel.productDetailsEngineerNotes.value)
             }
 
-            Section(title = "M&S Sensitivity Requirements") {
-                SummaryItem(
-                    label = "Ferrous Target",
-                    value = "${sensitivityData?.ferrousTargetMM ?: "N/A"}mm (Max ${sensitivityData?.ferrousMaxMM ?: "N/A"}mm)"
-                )
-                SummaryItem(
-                    label = "Non-Ferrous Target",
-                    value = "${sensitivityData?.nonFerrousTargetMM ?: "N/A"}mm (Max ${sensitivityData?.nonFerrousMaxMM ?: "N/A"}mm)"
-                )
-                SummaryItem(
-                    label = "Stainless Target",
-                    value = "${sensitivityData?.stainless316TargetMM ?: "N/A"}mm (Max ${sensitivityData?.stainless316MaxMM ?: "N/A"}mm)"
-                )
-            }
+//            Section(title = "M&S Sensitivity Requirements") {
+//                SummaryItem(
+//                    label = "Ferrous Target",
+//                    value = "${sensitivityData?.ferrousTargetMM ?: "N/A"}mm (Max ${sensitivityData?.ferrousMaxMM ?: "N/A"}mm)"
+//                )
+//                SummaryItem(
+//                    label = "Non-Ferrous Target",
+//                    value = "${sensitivityData?.nonFerrousTargetMM ?: "N/A"}mm (Max ${sensitivityData?.nonFerrousMaxMM ?: "N/A"}mm)"
+//                )
+//                SummaryItem(
+//                    label = "Stainless Target",
+//                    value = "${sensitivityData?.stainless316TargetMM ?: "N/A"}mm (Max ${sensitivityData?.stainless316MaxMM ?: "N/A"}mm)"
+//                )
+//            }
 
             Section(title = "Customer Sensitivity Requirements") {
                 SummaryItem(label = "Ferrous Requirement", value = viewModel.sensitivityRequirementFerrous.value)
@@ -306,8 +306,8 @@ fun CalMetalDetectorConveyorSummaryDetails(
             }
 
             Section(title = "Reject Settings") {
-                SummaryItem(label = "Reject Synchronisation", value = viewModel.rejectSynchronisationSetting.value.toString())
-                SummaryItem(label = "Synchronisation Detail", value = viewModel.rejectSynchronisationDetail.value)
+//                SummaryItem(label = "Reject Synchronisation", value = viewModel.rejectSynchronisationSetting.value.toString())
+//                SummaryItem(label = "Synchronisation Detail", value = viewModel.rejectSynchronisationDetail.value)
                 SummaryItem(label = "Reject Delay", value = "${viewModel.rejectDelaySetting.value} ${viewModel.rejectDelayUnits.value}")
                 SummaryItem(label = "Reject Duration", value = "${viewModel.rejectDurationSetting.value} ${viewModel.rejectDurationUnits.value}")
                 SummaryItem(label = "Confirm Window", value = "${viewModel.rejectConfirmWindowSetting.value} ${viewModel.rejectConfirmWindowUnits.value}")

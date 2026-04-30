@@ -12,7 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateDetectNotificationTestPvResult
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateDetectNotificationPvResult
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.getDetectNotificationPvRules
 import com.snb.inspect.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.snb.inspect.formModules.CalibrationHeader
@@ -90,7 +90,7 @@ fun CalMetalDetectorConveyorDetectNotification(
 
                         viewModel.setDetectNotificationResult(cleaned)
 
-                        viewModel.autoUpdateDetectNotificationTestPvResult()
+                        viewModel.autoUpdateDetectNotificationPvResult()
                     },
                     helpText = """
                     Select one or more notification results.

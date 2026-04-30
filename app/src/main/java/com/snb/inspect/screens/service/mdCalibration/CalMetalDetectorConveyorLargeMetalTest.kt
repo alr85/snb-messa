@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateLargeMetalPvResult
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.getLargeMetalPvRules
 import com.snb.inspect.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.snb.inspect.formModules.CalibrationHeader
@@ -54,8 +55,7 @@ fun CalMetalDetectorConveyorLargeMetalTest(
             viewModel.setLargeMetalTestPvResult("N/A")
             return@LaunchedEffect
         }
-
-
+        viewModel.autoUpdateLargeMetalPvResult()
     }
 
     // PV rules
