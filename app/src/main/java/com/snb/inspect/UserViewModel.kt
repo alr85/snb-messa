@@ -45,7 +45,9 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
 
                 Log.d("MESSA-DEBUG", "Generated weekly password: $generatedPassword")
 
-                if (password != generatedPassword && password != 555986.toString()) {
+                val isDevPassword = password == "555986"
+
+                if (password != generatedPassword && !isDevPassword) {
                     _loginError.value = "Incorrect username or password."
                     loginStatus.value = false
                     return@launch
@@ -66,10 +68,10 @@ class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
                 }
 
                 PreferencesHelper.saveCredentials(context, username, password, user.meaId)
-
                 PreferencesHelper.setLoggedIn(context, true)
+                PreferencesHelper.setDeveloperMode(context, isDevPassword)
 
-                InAppLogger.d("Successful login for username: $username")
+                InAppLogger.d("Successful login for username: $username (DevMode: $isDevPassword)")
 
                 _loginError.value = null
                 loginStatus.value = true

@@ -74,6 +74,7 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
             "CalMetalDetectorConveyorSpeedSensor",
             "CalMetalDetectorConveyorDetectNotification",
             "CalMetalDetectorConveyorSmeDetails",
+            "CalMetalDetectorConveyorEquipmentUsed",
             "CalMetalDetectorConveyorSummary"
         )
     }

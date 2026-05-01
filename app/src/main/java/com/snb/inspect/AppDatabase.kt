@@ -10,6 +10,7 @@ import com.snb.inspect.daos.ConveyorDao
 import com.snb.inspect.daos.CustomerDAO
 import com.snb.inspect.daos.FreefallDao
 import com.snb.inspect.daos.MdModelsDAO
+import com.snb.inspect.daos.MeasuringEquipmentDAO
 import com.snb.inspect.daos.MetalDetectorConveyorCalibrationDAO
 import com.snb.inspect.daos.MetalDetectorSystemsDAO
 import com.snb.inspect.daos.NoticesDAO
@@ -22,6 +23,7 @@ import com.snb.inspect.dataClasses.CustomerLocal
 import com.snb.inspect.dataClasses.FreefallThroatRetailerSensitivitiesEntity
 import com.snb.inspect.dataClasses.MdModelsLocal
 import com.snb.inspect.dataClasses.MdSystemLocal
+import com.snb.inspect.dataClasses.MeasuringEquipmentLocal
 import com.snb.inspect.dataClasses.MetalDetectorConveyorCalibrationLocal
 import com.snb.inspect.dataClasses.NoticeLocal
 import com.snb.inspect.dataClasses.PipelineRetailerSensitivitiesEntity
@@ -41,10 +43,11 @@ import com.snb.inspect.dataClasses.UserManualLocal
         FreefallThroatRetailerSensitivitiesEntity::class,
         PipelineRetailerSensitivitiesEntity::class,
         NoticeLocal::class,
-        UserManualLocal::class
+        UserManualLocal::class,
+        MeasuringEquipmentLocal::class
 
     ],
-    version = 59,
+    version = 62,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -63,6 +66,8 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun noticesDAO(): NoticesDAO
     abstract fun userManualsDAO(): UserManualsDAO
+
+    abstract fun measuringEquipmentDAO(): MeasuringEquipmentDAO
 
 
     companion object {

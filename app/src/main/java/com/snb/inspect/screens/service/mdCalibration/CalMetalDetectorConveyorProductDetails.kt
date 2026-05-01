@@ -67,7 +67,7 @@ fun CalMetalDetectorConveyorProductDetails(
                     value = description,
                     onValueChange = viewModel::setProductDescription,
                     helpText = "Enter the details of the product. This should be 'Bags of sweets' or 'Fresh pork'",
-                    maxLength = 20,
+                    maxLength = 25,
                     showInputLabel = false
                 )
 
@@ -170,7 +170,7 @@ fun CalMetalDetectorConveyorProductDetails(
                     onValueChange = viewModel::setProductDetailsEngineerNotes,
                     helpText = "Enter any notes relevant to this section.",
                     isNAToggleEnabled = false,
-                    maxLength = 50,
+                    maxLength = 25,
                     showInputLabel = false
                 )
 

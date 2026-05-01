@@ -19,27 +19,35 @@ fun LabeledDropdownWithHelp(
     helpText: String,
     pvStatus: String? = null,
     pvRules: List<PvRule> = emptyList(),
-    isNAToggleEnabled: Boolean = true
+    isNAToggleEnabled: Boolean = true,
+    onNAChange: ((Boolean) -> Unit)? = null,
+    isNA: Boolean? = null
 ) {
     var showHelpDialog by remember { mutableStateOf(false) }
-    val isNa = selectedOption == "N/A"
+    val isNaState = isNA ?: (selectedOption == "N/A")
 
     FormRowWrapper(
         label = label,
-        naButtonText = if (isNa) "Edit" else "N/A",
+        naButtonText = if (isNaState) "Edit" else "N/A",
         isDisabled = false, // ALWAYS
         pvStatus = pvStatus,
         pvRules = pvRules,
         onNaClick = if (isNAToggleEnabled) {
-            { onSelectionChange(if (isNa) "" else "N/A") }
+            {
+                if (onNAChange != null) {
+                    onNAChange(!isNaState)
+                } else {
+                    onSelectionChange(if (isNaState) "" else "N/A")
+                }
+            }
         } else null,
         onHelpClick = { showHelpDialog = true }
     ) { _ ->
         SimpleDropdown(
             options = options,
             selectedOption = selectedOption,
-            onSelectionChange = { if (!isNa) onSelectionChange(it) },
-            isDisabled = isNa
+            onSelectionChange = { if (!isNaState) onSelectionChange(it) },
+            isDisabled = isNaState
         )
     }
 

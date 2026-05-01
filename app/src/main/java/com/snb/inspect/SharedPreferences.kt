@@ -11,6 +11,7 @@ object PreferencesHelper {
     private const val KEY_ENGINEER_ID = "engineer_id"
 
     private const val KEY_LOGGED_IN = "logged_in"
+    private const val KEY_DEVELOPER_MODE = "developer_mode"
 
     // Save credentials, including userID
     fun saveCredentials(context: Context, username: String, password: String, engineerId: Int) {
@@ -37,8 +38,6 @@ object PreferencesHelper {
 
             InAppLogger.d("Credentials before clearing: ${sharedPreferences.all}")
 
-
-
             clear()
         } // Clears all stored preferences synchronously
 
@@ -56,5 +55,16 @@ object PreferencesHelper {
                 putBoolean(KEY_LOGGED_IN, loggedIn)
             }
     }
-}
 
+    fun isDeveloperMode(context: Context): Boolean {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getBoolean(KEY_DEVELOPER_MODE, false)
+    }
+
+    fun setDeveloperMode(context: Context, isDev: Boolean) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit {
+                putBoolean(KEY_DEVELOPER_MODE, isDev)
+            }
+    }
+}

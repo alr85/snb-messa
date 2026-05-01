@@ -52,7 +52,6 @@ fun CalMetalDetectorConveyorNonFerrousTest(
     val pvRequired by viewModel.pvRequired
 
 
-
     // Default hidden values to safe state if not a conveyor
     LaunchedEffect(isConveyor) {
         if (!isConveyor) {
@@ -84,10 +83,18 @@ fun CalMetalDetectorConveyorNonFerrousTest(
 
     // PV Rules Calculation
     val rules = viewModel.getNonFerrousPvRules()
-    
+
     val sensitivityAndCertStatus = when {
-        rules.any { (it.description.contains("sensitivity", ignoreCase = true) || it.description.contains("Certificate", ignoreCase = true)) && it.status == PvRuleStatus.Fail } -> "Fail"
-        rules.any { (it.description.contains("sensitivity", ignoreCase = true) || it.description.contains("Certificate", ignoreCase = true)) && (it.status == PvRuleStatus.Incomplete || it.status == PvRuleStatus.Warning) } -> "Warning"
+        // If the sensitivity value is explicitly "N/A", the indicator must be "N/A" (Grey)
+        sensitivityAsLeftNonFerrous == "N/A" -> "N/A"
+
+        // Otherwise, evaluate the specific rules for Compliance and Cert
+        rules.filter { it.ruleId.contains("SENSITIVITY") || it.ruleId.contains("CERT") }
+            .any { it.status == PvRuleStatus.Fail } -> "Fail"
+
+        rules.filter { it.ruleId.contains("SENSITIVITY") || it.ruleId.contains("CERT") }
+            .any { it.status == PvRuleStatus.Incomplete || it.status == PvRuleStatus.Warning } -> "Warning"
+
         else -> "Pass"
     }
 
@@ -148,10 +155,10 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                     firstInputKeyboardType = KeyboardType.Decimal,
                     secondInputKeyboardType = KeyboardType.Text,
                     isNAToggleEnabled = true,
-                    pvStatus = if (pvRequired) {
-                        if (sensitivityAsLeftNonFerrous == "N/A") "N/A" else sensitivityAndCertStatus
-                    } else null,
-                    pvRules = rules.filter { it.description.contains("sensitivity", ignoreCase = true) || it.description.contains("Certificate", ignoreCase = true) },
+                    pvStatus = if (viewModel.pvRequired.value) sensitivityAndCertStatus else null,
+                    pvRules = rules.filter {
+                        it.ruleId.contains("SENSITIVITY") || it.ruleId.contains("CERT")
+                    },
                     firstMaxLength = 4,
                     secondMaxLength = 12
                 )
@@ -180,6 +187,8 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                 //-----------------------------------------------------
                 if (sensitivityAsLeftNonFerrous != "N/A") {
 
+                    val leadingRules = rules.filter { it.ruleId.startsWith("NON_FERROUS_DR_LEADING") }
+
                     LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
                         label = if(isConveyor){ "Detected & Rejected (Leading)" } else {"Detected & Rejected"},
                         currentState = detectLeading,
@@ -195,15 +204,15 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                             viewModel.autoUpdateNonFerrousPvResult()
                         },
                         inputMaxLength = 12,
-                        pvStatus = if (pvRequired) {
-                            rules.firstOrNull { it.description.contains("Leading", ignoreCase = true) }?.status?.name ?: "Incomplete"
-                        } else null,
-                        pvRules = rules.filter { it.description.contains("Leading", ignoreCase = true) }
+                        pvStatus = if (viewModel.pvRequired.value) leadingRules.calculateOverallStatus() else null,
+                        pvRules = leadingRules
                     )
 
                     FormSpacer()
 
                     if (isConveyor){
+
+                        val middleRules = rules.filter { it.ruleId.startsWith("NON_FERROUS_DR_MIDDLE") }
 
                         LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
                             label = "Detected & Rejected (Middle)",
@@ -220,13 +229,13 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                                 viewModel.autoUpdateNonFerrousPvResult()
                             },
                             inputMaxLength = 12,
-                            pvStatus = if (pvRequired) {
-                                rules.firstOrNull { it.description.contains("Middle", ignoreCase = true) }?.status?.name ?: "Incomplete"
-                            } else null,
-                            pvRules = rules.filter { it.description.contains("Middle", ignoreCase = true) }
+                            pvStatus = if (viewModel.pvRequired.value) middleRules.calculateOverallStatus() else null,
+                            pvRules = middleRules
                         )
 
                         FormSpacer()
+
+                        val trailingRules = rules.filter { it.ruleId.startsWith("NON_FERROUS_DR_TRAILING") }
 
                         LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
                             label = "Detected & Rejected (Trailing)",
@@ -243,10 +252,8 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                                 viewModel.autoUpdateNonFerrousPvResult()
                             },
                             inputMaxLength = 12,
-                            pvStatus = if (pvRequired) {
-                                rules.firstOrNull { it.description.contains("Trailing", ignoreCase = true) }?.status?.name ?: "Incomplete"
-                            } else null,
-                            pvRules = rules.filter { it.description.contains("Trailing", ignoreCase = true) }
+                            pvStatus = if (viewModel.pvRequired.value) trailingRules.calculateOverallStatus() else null,
+                            pvRules = trailingRules
                         )
 
                         FormSpacer()
@@ -260,7 +267,7 @@ fun CalMetalDetectorConveyorNonFerrousTest(
                 //-----------------------------------------------------
                 //  PV Summary Card (replacing the old radio selector)
                 //-----------------------------------------------------
-                if (viewModel.pvRequired.value) {
+                if (pvRequired) {
                     PvSectionSummaryCard(
                         title = "Non-Ferrous Test P.V. Summary",
                         rules = rules

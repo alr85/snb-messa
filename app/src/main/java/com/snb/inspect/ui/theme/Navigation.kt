@@ -23,6 +23,7 @@ import com.snb.inspect.calibrationViewModels.NoticeViewModel
 import com.snb.inspect.calibrationViewModels.UserManualsViewModel
 import com.snb.inspect.calibrationViewModels.WeekendRotaViewModel
 import com.snb.inspect.repositories.CustomerRepository
+import com.snb.inspect.repositories.MeasuringEquipmentRepository
 import com.snb.inspect.repositories.MetalDetectorModelsRepository
 import com.snb.inspect.repositories.MetalDetectorSystemsRepository
 import com.snb.inspect.repositories.MetalDetectorConveyorCalibrationRepository
@@ -164,6 +165,7 @@ fun AppNavGraph(
 
         composable("databaseSync") {
             val detectionRepo = RetailerSensitivitiesRepository(apiService, db)
+            val measuringEquipmentRepo = MeasuringEquipmentRepository(apiService, db)
 
             DatabaseSyncScreen(
                 repositoryCustomer = repositoryCustomer,
@@ -171,6 +173,7 @@ fun AppNavGraph(
                 repositoryMdSystems = repositoryMdSystems,
                 repositorySystemTypes = repositorySystemTypes,
                 detectionRepo = detectionRepo,
+                measuringEquipmentRepo = measuringEquipmentRepo,
                 snackbarHostState = snackbarHostState
             )
         }

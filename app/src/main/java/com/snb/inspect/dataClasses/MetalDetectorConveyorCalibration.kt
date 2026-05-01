@@ -293,6 +293,11 @@ class MetalDetectorConveyorCalibrationLocal(
     var binDoorEngineerNotes: String = ""
     var binDoorMonitorTestPvResult: String = ""
 
+    //-------------------------------------------------------------------------------Equipment Used
+    var equipmentOscilloscopeId: Int? = null
+    var equipmentMultimeterId: Int? = null
+    var equipmentTachometerId: Int? = null
+
     //---------------------------------------------------------------------------------SME
     var operatorName: String = ""
     var operatorTestWitnessed: String = ""

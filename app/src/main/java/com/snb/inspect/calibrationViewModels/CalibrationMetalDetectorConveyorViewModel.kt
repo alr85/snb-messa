@@ -22,6 +22,7 @@ import com.snb.inspect.calibrationLogic.metalDetectorConveyor.toDetectNotificati
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.toDetectionSettingAsLeftUpdate
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.toDetectionSettingLabelsUpdate
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.toDetectionSettingsAsFoundUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.toEquipmentUsedUpdate
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.toFerrousAsFoundUpdate
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.toFerrousResultUpdate
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.toIndicatorsUpdate
@@ -43,6 +44,7 @@ import com.snb.inspect.calibrationLogic.metalDetectorConveyor.toStainlessResultU
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.toSystemChecklistUpdate
 import com.snb.inspect.daos.CustomerDAO
 import com.snb.inspect.daos.MdModelsDAO
+import com.snb.inspect.daos.MeasuringEquipmentDAO
 import com.snb.inspect.daos.MetalDetectorConveyorCalibrationDAO
 import com.snb.inspect.daos.MetalDetectorSystemsDAO
 import com.snb.inspect.daos.SystemTypeDAO
@@ -50,6 +52,7 @@ import com.snb.inspect.dataClasses.MetalDetectorWithFullDetails
 import com.snb.inspect.dataClasses.RetailerSensitivity
 import com.snb.inspect.formModules.ConditionState
 import com.snb.inspect.formModules.YesNoState
+import com.snb.inspect.repositories.MeasuringEquipmentRepository
 import com.snb.inspect.repositories.MetalDetectorConveyorCalibrationRepository
 import com.snb.inspect.repositories.MetalDetectorSystemsRepository
 import com.snb.inspect.repositories.RetailerSensitivitiesRepository
@@ -73,6 +76,8 @@ class CalibrationMetalDetectorConveyorViewModel(
     private val systemTypeDAO: SystemTypeDAO,
     private val customerDAO: CustomerDAO,
     private val repository: MetalDetectorSystemsRepository,
+    private val measuringEquipmentRepository: MeasuringEquipmentRepository,
+    private val measuringEquipmentDAO: MeasuringEquipmentDAO,
     calibrationId: String, detectionSetting1label: String,
     detectionSetting2label: String,
     detectionSetting3label: String,
@@ -85,7 +90,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     private val retailerSensitivitiesRepo: RetailerSensitivitiesRepository,
     private val system: MetalDetectorWithFullDetails,
 
-) : ViewModel() {
+    ) : ViewModel() {
 
 
     init {
@@ -133,11 +138,11 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _pvRequired.value = existingCalibration.pvRequired
 
 
-//                _desiredCop.value = existingCalibration.desiredCop
-//                    .removeSurrounding("[", "]")
-//                    .split(",")
-//                    .map { it.trim() }
-//                    .filter { it.isNotBlank() }
+                _desiredCop.value = existingCalibration.desiredCop
+                    .removeSurrounding("[", "]")
+                    .split(",")
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
                 _startCalibrationNotes.value = existingCalibration.startCalibrationNotes
 
                 _sensitivityRequirementFerrous.value =
@@ -346,6 +351,7 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _largeMetalTestEngineerNotes.value = existingCalibration.largeMetalTestEngineerNotes
                 _largeMetalTestPvResult.value = existingCalibration.largeMetalTestPvResult
 
+                _productPeakSignalAsLeft.value = existingCalibration.productPeakSignalAsLeft
 
                 _detectionSettingAsLeft1.value = existingCalibration.detectionSettingAsLeft1
                 _detectionSettingAsLeft2.value = existingCalibration.detectionSettingAsLeft2
@@ -640,6 +646,10 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _detectionSetting7label.value = existingCalibration.detectionSetting7label
                 _detectionSetting8label.value = existingCalibration.detectionSetting8label
 
+                _equipmentOscilloscopeId.value = existingCalibration.equipmentOscilloscopeId
+                _equipmentMultimeterId.value = existingCalibration.equipmentMultimeterId
+                _equipmentTachometerId.value = existingCalibration.equipmentTachometerId
+
                 //endregion
 
             } else {
@@ -661,9 +671,6 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun setCurrentScreenNextEnabled(enabled: Boolean) {
         _currentScreenNextEnabled.value = enabled
     }
-
-
-
 
     // -----------------------------------------------------------------------------
     //  GENERAL FIELD STATE DUMP
@@ -951,6 +958,9 @@ class CalibrationMetalDetectorConveyorViewModel(
 
             "CalMetalDetectorConveyorSmeDetails" ->
                 updateOperatorTest()
+
+            "CalMetalDetectorConveyorEquipmentUsed" ->
+                updateEquipmentUsed()
 
 //            "CalMetalDetectorConveyorComplianceConfirmation" ->
 //                updateComplianceConfirmation()
@@ -3491,6 +3501,34 @@ class CalibrationMetalDetectorConveyorViewModel(
 //        _performanceValidationIssued.value = newValue
 //    }
 
+
+    //-----------------------------------------------------------------------Compliance Confirmation
+
+    private val _equipmentOscilloscopeId = mutableStateOf<Int?>(null)
+    val equipmentOscilloscopeId: State<Int?> = _equipmentOscilloscopeId
+
+    private val _equipmentMultimeterId = mutableStateOf<Int?>(null)
+    val equipmentMultimeterId: State<Int?> = _equipmentMultimeterId
+
+    private val _equipmentTachometerId = mutableStateOf<Int?>(null)
+    val equipmentTachometerId: State<Int?> = _equipmentTachometerId
+
+    // These provide the data for the dropdowns
+    val oscilloscopes = measuringEquipmentDAO.getEquipmentByType(1)
+    val multimeters = measuringEquipmentDAO.getEquipmentByType(2)
+    val tachometers = measuringEquipmentDAO.getEquipmentByType(3)
+
+    fun setEquipmentOscilloscopeId(id: Int?) { _equipmentOscilloscopeId.value = id }
+    fun setEquipmentMultimeterId(id: Int?) { _equipmentMultimeterId.value = id }
+    fun setEquipmentTachometerId(id: Int?) { _equipmentTachometerId.value = id }
+
+    fun updateEquipmentUsed() {
+        val update = toEquipmentUsedUpdate()
+        viewModelScope.launch {
+            calibrationRepository.updateEquipmentUsed(update)
+        }
+    }
+
     //endregion
 
 
@@ -3619,6 +3657,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         { setDetectRejectLargeMetal(YesNoState.NA) },
         { setSampleCertificateNumberLargeMetal("") },
         { setLargeMetalTestEngineerNotes("") },
+        { setProductPeakSignalAsLeft("") },
         { setDetectionSettingAsLeft1("") },
         { setDetectionSettingAsLeft2("") },
         { setDetectionSettingAsLeft3("") },
@@ -3794,6 +3833,10 @@ class CalibrationMetalDetectorConveyorViewModel(
         { setPeakSignalAsFoundStainlessMiddle("") },
         { setPeakSignalAsFoundStainlessTrailing("") },
         { setStainlessTestAsFoundEngineerNotes("") },
+
+        { setEquipmentOscilloscopeId(null) },
+        { setEquipmentMultimeterId(null) },
+        { setEquipmentTachometerId(null) },
     )
 
 

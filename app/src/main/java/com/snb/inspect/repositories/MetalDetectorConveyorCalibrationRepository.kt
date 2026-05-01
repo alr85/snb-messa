@@ -10,36 +10,7 @@ package com.snb.inspect.repositories
 import android.content.Context
 import com.snb.inspect.ApiService
 import com.snb.inspect.FetchResult
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.AirPressureSensorUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.BackupSensorUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.BinDoorMonitorUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.BinFullSensorUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.CalibrationEndUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.CalibrationStartUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.ConveyorDetailsUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.DetectNotificationUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.DetectionSettingAsLeftUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.DetectionSettingLabelsUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.DetectionSettingsAsFoundUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.FerrousResultUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.FerrousSensitivitiesAsFoundUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.IndicatorsUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.InfeedSensorUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.LargeMetalResultUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.NewCalibrationInsert
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.NonFerrousResultUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.NonFerrousSensitivitiesAsFoundUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.OperatorTestUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.PackCheckSensorUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.ProductDetailsUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.RejectConfirmSensorUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.RejectSettingsUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.SensitivitiesAsFoundUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.SensitivityRequirementsUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.SpeedSensorUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.StainlessResultUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.StainlessSensitivitiesAsFoundUpdate
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.SystemChecklistUpdate
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.*
 import com.snb.inspect.daos.MetalDetectorConveyorCalibrationDAO
 import com.snb.inspect.dataClasses.MetalDetectorConveyorCalibrationLocal
 import com.snb.inspect.network.isNetworkAvailable
@@ -57,10 +28,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
 
     private val uploadMutex = Mutex()
 
-    /**
-     * UPDATED: Uses property setters instead of a massive constructor call to avoid
-     * java.lang.VerifyError (register limit exceeded in large constructors).
-     */
     suspend fun insertNewCalibration(insert: NewCalibrationInsert) {
         val entity = MetalDetectorConveyorCalibrationLocal(
             calibrationId = insert.calibrationId
@@ -89,12 +56,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
         calibrationDao.insertOrUpdateCalibration(entity)
     }
 
-    /**
-     * BULLETPROOF BACKGROUND UPLOAD:
-     * Identifies all calibrations that are finished but not yet synced, and attempts to upload them.
-     *
-     * @param specificId If provided, only this calibration will be attempted.
-     */
     suspend fun uploadUnsyncedCalibrations(
         context: Context,
         apiService: ApiService,
@@ -108,7 +69,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
 
         val pending = if (specificId != null) {
             val cal = calibrationDao.getCalibrationById(specificId)
-            // Match the 'pending' criteria: not synced AND has an end date
             if (cal != null && !cal.isSynced && cal.endDate.isNotBlank()) {
                 listOf(cal)
             } else {
@@ -126,7 +86,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
         val failed = mutableListOf<String>()
 
         for (cal in pending) {
-            // CRITICAL: We don't upload if we don't have a Cloud ID yet.
             if (cal.cloudSystemId == 0) {
                 InAppLogger.d("Skipping cal ${cal.calibrationId}: No cloudSystemId yet.")
                 failed += "${cal.calibrationId} (Waiting for machine sync)"
@@ -162,37 +121,24 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
         else FetchResult.Failure("Uploaded $uploaded. Failed: ${failed.joinToString()}")
     }
 
-    /**
-     * Normalises a string to prevent encoding issues with special characters.
-     * Replaces common "smart" characters (en-dash, em-dash, smart quotes) with ASCII equivalents.
-     */
     private fun normalizeForCsv(input: Any?): String {
         if (input == null) return ""
         var text = input.toString()
-
-        // 0. Remove any hidden Byte Order Marks that might be lingering in the string itself
         text = text.replace("\uFEFF", "")
-
-        // 1. Replace common "smart" punctuation from mobile keyboards
         text = text
-            .replace("\u2013", "-") // en dash
-            .replace("\u2014", "-") // em dash
-            .replace("\u2018", "'") // left single quote
-            .replace("\u2019", "'") // right single quote
-            .replace("\u201C", "\"") // left double quote
-            .replace("\u201D", "\"") // right double quote
-            .replace("\u2026", "...") // ellipsis
-
-        // 2. Remove semicolons and newlines which break CSV structure
+            .replace("\u2013", "-")
+            .replace("\u2014", "-")
+            .replace("\u2018", "'")
+            .replace("\u2019", "'")
+            .replace("\u201C", "\"")
+            .replace("\u201D", "\"")
+            .replace("\u2026", "...")
         text = text
             .replace(";", ",")
             .replace("\n", " ")
             .replace("\r", "")
-
-        // 3. (Optional) Decompose accented characters to their base form (e.g. é -> e)
         text = Normalizer.normalize(text, Normalizer.Form.NFD)
         text = text.replace("[\\p{InCombiningDiacriticalMarks}]".toRegex(), "")
-
         return text.trim()
     }
 
@@ -219,8 +165,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.reasonForNotCalibrating,
                 row.pvRequired,
                 row.desiredCop,
-
-
                 row.productDescription,
                 row.productLibraryReference,
                 row.productLibraryNumber,
@@ -228,8 +172,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.productWidth,
                 row.productHeight,
                 row.productDetailsEngineerNotes,
-
-
                 row.detectionSettingAsFound1,
                 row.detectionSettingAsFound2,
                 row.detectionSettingAsFound3,
@@ -239,71 +181,51 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.detectionSettingAsFound7,
                 row.detectionSettingAsFound8,
                 row.detectionSettingAsFoundEngineerNotes,
-
-
                 row.sensitivityRequirementFerrous,
                 row.sensitivityRequirementNonFerrous,
                 row.sensitivityRequirementStainless,
                 row.sensitivityRequirementEngineerNotes,
                 row.sensitivityAccessRestriction,
-
-
-
                 row.sensitivityAsFoundFerrous,
                 row.sampleCertificateNumberAsFoundFerrous,
                 "${ row.detectRejectAsFoundFerrousLeading } (${row.peakSignalAsFoundFerrousLeading})".trim(),
                 "${ row.detectRejectAsFoundFerrousMiddle } (${row.peakSignalAsFoundFerrousMiddle})".trim(),
                 "${ row.detectRejectAsFoundFerrousTrailing } (${row.peakSignalAsFoundFerrousTrailing})".trim(),
-
-
                 row.sensitivityAsFoundNonFerrous,
                 row.sampleCertificateNumberAsFoundNonFerrous,
                 "${row.detectRejectAsFoundNonFerrousLeading} (${row.peakSignalAsFoundNonFerrousLeading})".trim(),
                 "${row.detectRejectAsFoundNonFerrousMiddle} (${row.peakSignalAsFoundNonFerrousMiddle})".trim(),
                 "${row.detectRejectAsFoundNonFerrousTrailing} (${row.peakSignalAsFoundNonFerrousTrailing})".trim(),
-
-
                 row.sensitivityAsFoundStainless,
                 row.sampleCertificateNumberAsFoundStainless,
                 "${row.detectRejectAsFoundStainlessLeading} (${row.peakSignalAsFoundStainlessLeading})".trim(),
                 "${row.detectRejectAsFoundStainlessMiddle} (${row.peakSignalAsFoundStainlessMiddle})".trim(),
                 "${row.detectRejectAsFoundStainlessTrailing} (${row.peakSignalAsFoundStainlessTrailing})".trim(),
-
-
                 row.productPeakSignalAsFound,
                 row.ferrousAsFoundEngineerNotes,
                 row.nonFerrousAsFoundEngineerNotes,
                 row.stainlessAsFoundEngineerNotes,
-
                 row.sensitivityAsLeftFerrous,
                 row.sampleCertificateNumberFerrous,
                 "${row.detectRejectFerrousLeading} (${row.detectRejectFerrousLeadingPeakSignal})".trim(),
                 "${row.detectRejectFerrousMiddle} (${row.detectRejectFerrousMiddlePeakSignal})".trim(),
                 "${row.detectRejectFerrousTrailing} (${row.detectRejectFerrousTrailingPeakSignal})".trim(),
                 row.ferrousTestEngineerNotes,
-
-
                 row.sensitivityAsLeftNonFerrous,
                 row.sampleCertificateNumberNonFerrous,
                 "${row.detectRejectNonFerrousLeading} (${row.detectRejectNonFerrousLeadingPeakSignal})".trim(),
                 "${row.detectRejectNonFerrousMiddle} (${row.detectRejectNonFerrousMiddlePeakSignal})".trim(),
                 "${row.detectRejectNonFerrousTrailing} (${row.detectRejectNonFerrousTrailingPeakSignal})".trim(),
                 row.nonFerrousTestEngineerNotes,
-
-
                 row.sensitivityAsLeftStainless,
                 row.sampleCertificateNumberStainless,
                 "${row.detectRejectStainlessLeading} (${row.detectRejectStainlessLeadingPeakSignal})".trim(),
                 "${row.detectRejectStainlessMiddle} (${row.detectRejectStainlessMiddlePeakSignal})".trim(),
                 "${row.detectRejectStainlessTrailing} (${row.detectRejectStainlessTrailingPeakSignal})".trim(),
                 row.stainlessTestEngineerNotes,
-
-
                 row.detectRejectLargeMetal,
                 row.sampleCertificateNumberLargeMetal,
                 row.largeMetalTestEngineerNotes,
-
-
                 row.detectionSettingAsLeft1,
                 row.detectionSettingAsLeft2,
                 row.detectionSettingAsLeft3,
@@ -313,14 +235,10 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.detectionSettingAsLeft7,
                 row.detectionSettingAsLeft8,
                 row.detectionSettingAsLeftEngineerNotes,
-
-
                 "${row.rejectDelaySetting} ${row.rejectDelayUnits}".trim(),
                 "${row.rejectDurationSetting} ${row.rejectDurationUnits}".trim(),
                 "${row.rejectConfirmWindowSetting} ${row.rejectConfirmWindowUnits}".trim(),
                 row.rejectSettingsEngineerNotes,
-
-
                 row.infeedBeltHeight,
                 row.outfeedBeltHeight,
                 row.conveyorLength,
@@ -329,8 +247,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.rejectDevice,
                 row.rejectDeviceOther,
                 row.conveyorDetailsEngineerNotes,
-
-
                 row.beltCondition,
                 row.beltConditionComments,
                 row.guardCondition,
@@ -344,8 +260,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.screwsCondition,
                 row.screwsConditionComments,
                 row.systemChecklistEngineerNotes,
-
-
                 "${row.indicator6colour} (${row.indicator6label})".trim(),
                 "${row.indicator5colour} (${row.indicator5label})".trim(),
                 "${row.indicator4colour} (${row.indicator4label})".trim(),
@@ -353,8 +267,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 "${row.indicator2colour} (${row.indicator2label})".trim(),
                 "${row.indicator1colour} (${row.indicator1label})".trim(),
                 row.indicatorsEngineerNotes,
-
-
                 row.infeedSensorFitted,
                 row.infeedSensorTestMethod,
                 row.infeedSensorTestMethodOther,
@@ -362,8 +274,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.infeedSensorEngineerNotes,
                 row.infeedSensorLatched,
                 row.infeedSensorCR,
-
-
                 row.rejectConfirmSensorFitted,
                 row.rejectConfirmSensorTestMethod,
                 row.rejectConfirmSensorTestMethodOther,
@@ -372,8 +282,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.rejectConfirmSensorLatched,
                 row.rejectConfirmSensorCR,
                 row.rejectConfirmSensorStopPosition,
-
-
                 row.binFullSensorFitted,
                 row.binFullSensorTestMethod,
                 row.binFullSensorTestMethodOther,
@@ -381,8 +289,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.binFullSensorEngineerNotes,
                 row.binFullSensorLatched,
                 row.binFullSensorCR,
-
-
                 row.backupSensorFitted,
                 row.backupSensorTestMethod,
                 row.backupSensorTestMethodOther,
@@ -390,8 +296,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.backupSensorEngineerNotes,
                 row.backupSensorLatched,
                 row.backupSensorCR,
-
-
                 row.airPressureSensorFitted,
                 row.airPressureSensorTestMethod,
                 row.airPressureSensorTestMethodOther,
@@ -399,8 +303,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.airPressureSensorEngineerNotes,
                 row.airPressureSensorLatched,
                 row.airPressureSensorCR,
-
-
                 row.packCheckSensorFitted,
                 row.packCheckSensorTestMethod,
                 row.packCheckSensorTestMethodOther,
@@ -408,8 +310,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.packCheckSensorEngineerNotes,
                 row.packCheckSensorLatched,
                 row.packCheckSensorCR,
-
-
                 row.speedSensorFitted,
                 row.speedSensorTestMethod,
                 row.speedSensorTestMethodOther,
@@ -417,12 +317,8 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.speedSensorEngineerNotes,
                 row.speedSensorLatched,
                 row.speedSensorCR,
-
-
                 row.detectNotificationResult,
                 row.detectNotificationEngineerNotes,
-
-
                 row.binDoorMonitorFitted,
                 row.binDoorStatusAsFound,
                 row.binDoorUnlockedIndication,
@@ -432,8 +328,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.binDoorLatched,
                 row.binDoorCR,
                 row.binDoorEngineerNotes,
-
-
                 row.operatorName,
                 row.operatorTestWitnessed,
                 row.operatorTestResultFerrous,
@@ -446,8 +340,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.operatorTestResultCertNumberLargeMetal,
                 row.smeName,
                 row.smeEngineerNotes,
-
-
                 row.detectionSetting1label,
                 row.detectionSetting2label,
                 row.detectionSetting3label,
@@ -457,8 +349,6 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.detectionSetting7label,
                 row.detectionSetting8label,
                 row.detectionSettingPvResult,
-
-
                 row.ferrousTestPvResult,
                 row.nonFerrousTestPvResult,
                 row.stainlessTestPvResult,
@@ -473,11 +363,7 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.speedSensorTestPvResult,
                 row.binDoorMonitorTestPvResult,
                 row.detectNotificationTestPvResult,
-
-
                 row.productPeakSignalAsLeft,
-
-
                 row.operatorTestWitnessedInfeed,
                 row.operatorTestWitnessedRejectConfirm,
                 row.operatorTestWitnessedBinFull,
@@ -486,19 +372,16 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.operatorTestWitnessedPackCheck,
                 row.operatorTestWitnessedSpeedSensor,
                 row.operatorTestWitnessedBackup,
-
-
+                row.equipmentOscilloscopeId,
+                row.equipmentMultimeterId,
+                row.equipmentTachometerId
             )
 
-            // Sanitise: Apply normalisation to every field
             val sanitizedData = rawData.map { normalizeForCsv(it) }
-
-            // Write as UTF-8 WITHOUT a BOM (Byte Order Mark) 
-            // Microsoft Access can misinterpret the BOM as literal characters (ï»¿).
             csvFile.outputStream().use { out ->
                 out.bufferedWriter(Charsets.UTF_8).use { writer ->
                     writer.write(sanitizedData.joinToString(";"))
-                    writer.write("\r\n") // Windows-style line ending
+                    writer.write("\r\n")
                 }
             }
             csvFile
@@ -506,9 +389,7 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
             InAppLogger.e("CSV Creation Error: ${e.message}")
             null
         }
-
     }
-
 
     suspend fun updateCalibrationStart(update: CalibrationStartUpdate) {
         calibrationDao.updateCalibrationStart(
@@ -890,6 +771,15 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
             binDoorCR = update.binDoorCR,
             binDoorEngineerNotes = update.binDoorEngineerNotes,
             binDoorMonitorTestPvResult = update.binDoorMonitorTestPvResult,
+            calibrationId = update.calibrationId
+        )
+    }
+
+    suspend fun updateEquipmentUsed(update: EquipmentUsedUpdate) {
+        calibrationDao.updateEquipmentUsed(
+            oscilloscopeId = update.equipmentOscilloscopeId,
+            multimeterId = update.equipmentMultimeterId,
+            tachometerId = update.equipmentTachometerId,
             calibrationId = update.calibrationId
         )
     }

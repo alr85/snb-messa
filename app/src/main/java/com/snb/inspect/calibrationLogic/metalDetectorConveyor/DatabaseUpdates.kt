@@ -859,6 +859,22 @@ fun CalibrationMetalDetectorConveyorViewModel.toBinDoorMonitorUpdate(): BinDoorM
     )
 }
 
+data class EquipmentUsedUpdate(
+    val equipmentOscilloscopeId: Int?,
+    val equipmentMultimeterId: Int?,
+    val equipmentTachometerId: Int?,
+    val calibrationId: String
+)
+
+fun CalibrationMetalDetectorConveyorViewModel.toEquipmentUsedUpdate(): EquipmentUsedUpdate {
+    return EquipmentUsedUpdate(
+        equipmentOscilloscopeId = equipmentOscilloscopeId.value,
+        equipmentMultimeterId = equipmentMultimeterId.value,
+        equipmentTachometerId = equipmentTachometerId.value,
+        calibrationId = calibrationId.value
+    )
+}
+
 data class OperatorTestUpdate(
     val operatorName: String,
     val operatorTestWitnessed: String,
@@ -977,45 +993,3 @@ fun CalibrationMetalDetectorConveyorViewModel.toCalibrationEndUpdate(): Calibrat
         calibrationId = calibrationId.value
     )
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

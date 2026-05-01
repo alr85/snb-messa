@@ -77,6 +77,7 @@ import com.snb.inspect.calibrationViewModels.NoticeViewModel
 import com.snb.inspect.network.NetworkMonitor
 import com.snb.inspect.network.rememberIsOffline
 import com.snb.inspect.repositories.CustomerRepository
+import com.snb.inspect.repositories.MeasuringEquipmentRepository
 import com.snb.inspect.repositories.MetalDetectorSystemsRepository
 import com.snb.inspect.repositories.MetalDetectorConveyorCalibrationRepository
 import com.snb.inspect.repositories.MetalDetectorModelsRepository
@@ -133,6 +134,7 @@ class MainActivity : ComponentActivity() {
         val systemTypeRepository = SystemTypeRepository(apiService, db)
         val mdModelsRepository = MetalDetectorModelsRepository(apiService, db)
         val retailerSensitivitiesRepository = RetailerSensitivitiesRepository(apiService, db)
+        val measuringEquipmentRepository = MeasuringEquipmentRepository(apiService, db)
 
         // ViewModels
         userViewModel = UserViewModel(userRepository)
@@ -189,6 +191,7 @@ class MainActivity : ComponentActivity() {
                         systemTypeRepository = systemTypeRepository,
                         mdModelsRepository = mdModelsRepository,
                         retailerSensitivitiesRepository = retailerSensitivitiesRepository,
+                        measuringEquipmentRepository = measuringEquipmentRepository,
                         syncPrefs = syncPrefs
                     )
                 }
@@ -381,6 +384,7 @@ fun MyApp(
     systemTypeRepository: SystemTypeRepository,
     mdModelsRepository: MetalDetectorModelsRepository,
     retailerSensitivitiesRepository: RetailerSensitivitiesRepository,
+    measuringEquipmentRepository: MeasuringEquipmentRepository,
     syncPrefs: SyncPreferences
 ) {
 
@@ -475,6 +479,7 @@ fun MyApp(
                     retailerSensitivitiesRepository.fetchAndStoreConveyor()
                     retailerSensitivitiesRepository.fetchAndStoreFreefall()
                     retailerSensitivitiesRepository.fetchAndStorePipeline()
+                    measuringEquipmentRepository.fetchAndStoreEquipment()
                     
                     withContext(Dispatchers.Main) {
                         snackbarHostState.showSnackbar("✅ Background sync complete")

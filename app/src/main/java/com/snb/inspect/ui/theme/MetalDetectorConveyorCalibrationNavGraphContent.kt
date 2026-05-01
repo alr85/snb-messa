@@ -8,34 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.snb.inspect.ApiService
 import com.snb.inspect.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorAirPressureSensor
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorBackupPEC
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorBinDoorMonitor
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorBinFullPEC
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorCalibrationStart
-//import com.snb.inspect.screens.metaldetectorcalibration.CalMetalDetectorConveyorComplianceConfirmation
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorConveyorDetails
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorDetectNotification
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorDetectionSettingsAsFound
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorDetectionSettingsAsLeft
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorFerrousTest
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorFerrousTestAsFound
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorIndicators
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorInfeedPEC
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorLargeMetalTest
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorNonFerrousTest
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorNonFerrousTestAsFound
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorPackCheckSensor
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorProductDetails
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorRejectConfirmPEC
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorRejectSettings
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorSensitivityRequirements
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorSmeDetails
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorSpeedSensor
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorStainlessTest
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorStainlessTestAsFound
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorSummary
-import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorSystemChecklist
+import com.snb.inspect.screens.service.mdCalibration.*
 
 @Composable
 fun MetalDetectorConveyorCalibrationNavGraphContent(
@@ -80,12 +53,6 @@ fun MetalDetectorConveyorCalibrationNavGraphContent(
                 CalMetalDetectorConveyorDetectionSettingsAsFound(viewModel)
             }
         }
-
-//        composable("CalMetalDetectorConveyorSensitivityAsFound") {
-//            onScreenChanged {
-//                CalMetalDetectorConveyorSensitivityAsFound(viewModel)
-//            }
-//        }
 
         composable("CalMetalDetectorConveyorFerrousTestAsFound") {
             onScreenChanged {
@@ -228,12 +195,12 @@ fun MetalDetectorConveyorCalibrationNavGraphContent(
             }
         }
 
-//        // -------------------- COMPLIANCE CONFIRMATION --------------------
-//        composable("CalMetalDetectorConveyorComplianceConfirmation") {
-//            onScreenChanged {
-//                CalMetalDetectorConveyorComplianceConfirmation(navController, viewModel)
-//            }
-//        }
+        // -------------------- EQUIPMENT USED --------------------
+        composable("CalMetalDetectorConveyorEquipmentUsed") {
+            onScreenChanged {
+                CalMetalDetectorConveyorEquipmentUsed(viewModel)
+            }
+        }
 
         // -------------------- SUMMARY --------------------
         composable("CalMetalDetectorConveyorSummary") {

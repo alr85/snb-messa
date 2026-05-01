@@ -5,10 +5,12 @@ import androidx.lifecycle.ViewModelProvider
 import com.snb.inspect.ApiService
 import com.snb.inspect.daos.CustomerDAO
 import com.snb.inspect.daos.MdModelsDAO
+import com.snb.inspect.daos.MeasuringEquipmentDAO
 import com.snb.inspect.daos.MetalDetectorConveyorCalibrationDAO
 import com.snb.inspect.daos.MetalDetectorSystemsDAO
 import com.snb.inspect.daos.SystemTypeDAO
 import com.snb.inspect.dataClasses.MetalDetectorWithFullDetails
+import com.snb.inspect.repositories.MeasuringEquipmentRepository
 import com.snb.inspect.repositories.MetalDetectorConveyorCalibrationRepository
 import com.snb.inspect.repositories.MetalDetectorSystemsRepository
 import com.snb.inspect.repositories.RetailerSensitivitiesRepository
@@ -22,6 +24,8 @@ class CalibrationMetalDetectorConveyorViewModelFactory(
     private val retailerSensitivitiesRepo: RetailerSensitivitiesRepository,
     private val calibrationRepository: MetalDetectorConveyorCalibrationRepository,
     private val customersDao: CustomerDAO,
+    private val measuringEquipmentRepository: MeasuringEquipmentRepository,
+    private val measuringEquipmentDAO: MeasuringEquipmentDAO,
     private val apiService: ApiService,
     private val calibrationId: String,
     private val system: MetalDetectorWithFullDetails,
@@ -49,6 +53,8 @@ class CalibrationMetalDetectorConveyorViewModelFactory(
                 customerDAO = customersDao,
                 systemTypeDAO = systemTypeDao,
                 repository = repository,
+                measuringEquipmentRepository = measuringEquipmentRepository,
+                measuringEquipmentDAO = measuringEquipmentDAO,
                 calibrationId = calibrationId,
                 system = system,
                 detectionSetting1label = detectionSetting1label,

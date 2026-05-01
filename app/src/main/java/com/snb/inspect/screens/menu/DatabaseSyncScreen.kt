@@ -41,6 +41,7 @@ fun DatabaseSyncScreen(
     repositoryMdSystems: MetalDetectorSystemsRepository,
     repositorySystemTypes: SystemTypeRepository,
     detectionRepo: RetailerSensitivitiesRepository,
+    measuringEquipmentRepo: MeasuringEquipmentRepository,
     snackbarHostState: SnackbarHostState
 ) {
     val context = LocalContext.current
@@ -63,6 +64,12 @@ fun DatabaseSyncScreen(
             },
             SyncTask("Metal Detector Models") {
                 when (val r = repositoryMdModels.fetchAndStoreMdModels()) {
+                    is FetchResult.Success -> r.message
+                    is FetchResult.Failure -> "Failed: ${r.errorMessage}"
+                }
+            },
+            SyncTask("Measuring Equipment") {
+                when (val r = measuringEquipmentRepo.fetchAndStoreEquipment()) {
                     is FetchResult.Success -> r.message
                     is FetchResult.Failure -> "Failed: ${r.errorMessage}"
                 }

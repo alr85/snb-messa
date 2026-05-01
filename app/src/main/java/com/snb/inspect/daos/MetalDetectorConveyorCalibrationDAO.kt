@@ -17,21 +17,11 @@ interface MetalDetectorConveyorCalibrationDAO {
     @Query("UPDATE MetalDetectorConveyorCalibrations SET isSynced = :isSynced WHERE calibrationId = :calibrationId")
     suspend fun updateIsSynced(calibrationId: String, isSynced: Boolean)
 
-//    @Query("SELECT * FROM MetalDetectorConveyorCalibrations WHERE (cloudSystemId = :systemId OR tempSystemId = :systemId) AND (endDate IS NULL OR endDate = '')")
-//    fun getUnfinishedCalibrations(systemId: Int): Flow<List<MetalDetectorConveyorCalibrationLocal>>
-
     @Query("SELECT * FROM MetalDetectorConveyorCalibrations WHERE (endDate IS NULL OR endDate = '')")
     fun getAllUnfinishedCalibrations(): Flow<List<MetalDetectorConveyorCalibrationLocal>>
 
-//    @Query("SELECT * FROM MetalDetectorConveyorCalibrations WHERE (cloudSystemId = :systemId OR tempSystemId = :systemId) AND (isSynced IS NULL OR isSynced = 0) AND endDate IS NOT NULL AND endDate != ''")
-//    fun getPendingCalibrations(systemId: Int): Flow<List<MetalDetectorConveyorCalibrationLocal>>
-
     @Query("SELECT * FROM MetalDetectorConveyorCalibrations WHERE (isSynced IS NULL OR isSynced = 0) AND endDate IS NOT NULL AND endDate != ''")
     fun getAllPendingCalibrations(): Flow<List<MetalDetectorConveyorCalibrationLocal>>
-
-
-//    @Query("SELECT * FROM MetalDetectorConveyorCalibrations WHERE (cloudSystemId = :systemId OR tempSystemId = :systemId) AND (isSynced = True OR isSynced = 1) AND endDate IS NOT NULL AND endDate != ''")
-//    fun getCompletedCalibrations(systemId: Int): Flow<List<MetalDetectorConveyorCalibrationLocal>>
 
     @Query("SELECT * FROM MetalDetectorConveyorCalibrations WHERE (isSynced = True OR isSynced = 1) AND endDate IS NOT NULL AND endDate != ''")
     fun getAllCompletedCalibrations(): Flow<List<MetalDetectorConveyorCalibrationLocal>>
@@ -66,9 +56,7 @@ interface MetalDetectorConveyorCalibrationDAO {
         reasonForNotCalibrating: String,
         pvRequired: Boolean,
         startCalibrationNotes: String,
-
         calibrationId: String
-
     )
 
     // Save Sensitivity Requirements to database
@@ -745,6 +733,21 @@ interface MetalDetectorConveyorCalibrationDAO {
         calibrationId: String
     )
 
+    // Save Equipment Used to database
+    @Query(
+        "UPDATE MetalDetectorConveyorCalibrations " +
+                "SET equipmentOscilloscopeId = :oscilloscopeId, " +
+                "equipmentMultimeterId = :multimeterId, " +
+                "equipmentTachometerId = :tachometerId " +
+                "WHERE calibrationId = :calibrationId"
+    )
+    suspend fun updateEquipmentUsed(
+        oscilloscopeId: Int?,
+        multimeterId: Int?,
+        tachometerId: Int?,
+        calibrationId: String
+    )
+
     // Save Operator Test to database
     @Query(
         "UPDATE MetalDetectorConveyorCalibrations " +
@@ -795,27 +798,6 @@ interface MetalDetectorConveyorCalibrationDAO {
         smeTestPvResult: String,
         calibrationId: String
     )
-
-    // Save Retailer Compliance to database
-//    @Query(
-//        "UPDATE MetalDetectorConveyorCalibrations " +
-//                "SET sensitivityCompliance = :sensitivityCompliance, " +
-//                "essentialRequirementCompliance = :essentialRequirementCompliance, " +
-//                "failsafeCompliance = :failsafeCompliance," +
-//                "bestSensitivityCompliance = :bestSensitivityCompliance," +
-//                "sensitivityRecommendations = :sensitivityRecommendations, " +
-//                "performanceValidationIssued = :performanceValidationIssued " +
-//                "WHERE calibrationId = :calibrationId"
-//    )
-//    suspend fun updateComplianceConfirmation(
-//        sensitivityCompliance: String,
-//        essentialRequirementCompliance: String,
-//        failsafeCompliance: String,
-//        bestSensitivityCompliance: String,
-//        sensitivityRecommendations: String,
-//        performanceValidationIssued: String,
-//        calibrationId: String
-//    )
 
     // Save Detection Setting labels to database
     @Query(

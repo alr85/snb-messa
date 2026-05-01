@@ -14,6 +14,7 @@ import com.snb.inspect.RetrofitClient
 import com.snb.inspect.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.snb.inspect.calibrationViewModels.CalibrationMetalDetectorConveyorViewModelFactory
 import com.snb.inspect.dataClasses.MetalDetectorWithFullDetails
+import com.snb.inspect.repositories.MeasuringEquipmentRepository
 import com.snb.inspect.repositories.MetalDetectorConveyorCalibrationRepository
 import com.snb.inspect.repositories.MetalDetectorSystemsRepository
 import com.snb.inspect.repositories.RetailerSensitivitiesRepository
@@ -30,6 +31,7 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
     private val mdSystemsDAO by lazy { db.mdSystemDAO() }
     private val systemTypeDAO by lazy { db.systemTypeDAO() }
     private val customerDAO by lazy { db.customerDao() }
+    private val measuringEquipmentDAO by lazy { db.measuringEquipmentDAO() }
 
     // API / repos
     private val apiService: ApiService by lazy { RetrofitClient.instance }
@@ -44,6 +46,10 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
 
     private val calibrationRepository by lazy {
         MetalDetectorConveyorCalibrationRepository(calibrationDao)
+    }
+
+    private val measuringEquipmentRepository by lazy {
+        MeasuringEquipmentRepository(apiService, db)
     }
 
     private lateinit var calibrationViewModel: CalibrationMetalDetectorConveyorViewModel
@@ -82,6 +88,8 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
             retailerSensitivitiesRepo = retailerSensitivitiesRepo,
             calibrationRepository = calibrationRepository,
             customersDao = customerDAO,
+            measuringEquipmentRepository = measuringEquipmentRepository,
+            measuringEquipmentDAO = measuringEquipmentDAO,
             apiService = apiService,
             calibrationId = calibrationId,
             system = system,
