@@ -142,7 +142,7 @@ fun CalMetalDetectorConveyorStainlessTest(
                     secondInputLabel = "Cert No.",
                     secondInputValue = sampleCertificateNumberStainless,
                     onSecondInputValueChange = { newValue ->
-                        viewModel.setSampleCertificateNumberStainless(newValue)
+                        viewModel.setSampleCertificateNumberStainless(newValue.uppercase())
                         viewModel.autoUpdateStainlessPvResult()
                     },
                     helpText = """

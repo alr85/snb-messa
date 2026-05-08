@@ -111,7 +111,7 @@ fun CalMetalDetectorConveyorNonFerrousTestAsFound(
                     secondInputLabel = "Cert No.",
                     secondInputValue = sampleCert,
                     onSecondInputValueChange = { newValue ->
-                        viewModel.setSampleCertificateNumberAsFoundNonFerrous(newValue)
+                        viewModel.setSampleCertificateNumberAsFoundNonFerrous(newValue.uppercase())
                     },
                     helpText = """
                         Enter the achieved Non-Ferrous sensitivity and the certificate number.

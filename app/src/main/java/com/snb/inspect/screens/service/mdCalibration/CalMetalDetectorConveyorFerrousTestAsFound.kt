@@ -111,7 +111,7 @@ fun CalMetalDetectorConveyorFerrousTestAsFound(
                     secondInputLabel = "Cert No.",
                     secondInputValue = sampleCert,
                     onSecondInputValueChange = { newValue ->
-                        viewModel.setSampleCertificateNumberAsFoundFerrous(newValue)
+                        viewModel.setSampleCertificateNumberAsFoundFerrous(newValue.uppercase())
                     },
                     helpText = """
                         Enter the achieved Ferrous sensitivity and the certificate number.

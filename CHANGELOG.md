@@ -7,8 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.11] - 08/05/2026
 ### Fixed
-- Serial numbers are now auto-capitalised
+- Update logic to correctly identify non-conveyor systems (gravity/pipe/pharma) and suppress product dimension requirements.
+- Enable the N/A toggle for Ferrous tests within the Operator test section.
 ### Added
+- Auto-capitalise test stick certificate numbers across all calibration screens.
+- Auto-capitalise serial number input
 - Added a 'General' section to the user manuals screen for inverter manuals, wiring diagrams etc
 - Added a pinch to zoom feature on the user manuals. Double tap to reset the view
 - Added 'Double Bag (Latched)' to the option list for Detect Notifications

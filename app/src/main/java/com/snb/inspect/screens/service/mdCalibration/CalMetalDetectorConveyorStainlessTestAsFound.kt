@@ -111,7 +111,7 @@ fun CalMetalDetectorConveyorStainlessTestAsFound(
                     secondInputLabel = "Cert No.",
                     secondInputValue = sampleCert,
                     onSecondInputValueChange = { newValue ->
-                        viewModel.setSampleCertificateNumberAsFoundStainless(newValue)
+                        viewModel.setSampleCertificateNumberAsFoundStainless(newValue.uppercase())
                     },
                     helpText = """
                         Enter the achieved Stainless sensitivity and the certificate number.

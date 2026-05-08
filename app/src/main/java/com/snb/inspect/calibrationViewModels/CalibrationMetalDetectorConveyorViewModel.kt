@@ -1449,7 +1449,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         _productWidth.value = newWidth
     }
 
-    private val _isConveyor = mutableStateOf(true)
+    private val _isConveyor = mutableStateOf(system.systemTypeId == 1)
     val isConveyor: State<Boolean> = _isConveyor
 
     // Function to update product height
@@ -1493,14 +1493,17 @@ class CalibrationMetalDetectorConveyorViewModel(
 
                 3 -> {
                     InAppLogger.d("System type = 3, getting sensitivities by aperture height...")
-                    setIsConveyor(true)
+                    setIsConveyor(false)
                     val aperture = system.apertureHeight.toDouble()
                     InAppLogger.d("Aperture = $aperture")
                     retailerSensitivitiesRepo
                         .getFreefallSensitivitiesByAperture(aperture)
                 }
 
-                else -> null
+                else -> {
+                    setIsConveyor(systemTypeId.value == 1)
+                    null
+                }
             }
 
             InAppLogger.d("Sensitivity result = ${_sensitivityData.value}")

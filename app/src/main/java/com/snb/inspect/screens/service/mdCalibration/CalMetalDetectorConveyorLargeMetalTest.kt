@@ -97,7 +97,7 @@ fun CalMetalDetectorConveyorLargeMetalTest(
                     helpText = "Select if there was satisfactory Detection and Rejection of the metal sample and note the certificate number",
                     inputLabel = "Cert Number",
                     inputValue = certNo,
-                    onInputValueChange = viewModel::setSampleCertificateNumberLargeMetal,
+                    onInputValueChange = { viewModel.setSampleCertificateNumberLargeMetal(it.uppercase()) },
                     inputMaxLength = 12,
                     inputKeyboardType = KeyboardType.Text,
                     pvStatus = if (pvRequired) rules.find { it.ruleId == "LARGE_METAL_DETECT_REJECT" }?.status?.name else null,
