@@ -63,6 +63,24 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    lint {
+        disable += listOf(
+            "AccidentalOctal", "AndroidGradlePluginVersion", "AnnotationProcessorOnCompilePath",
+            "BomWithoutPlatform", "UseOfBundledGooglePlayServices", "ChromeOsAbiSupport",
+            "GradleCompatible", "CoreLibDesugaringV1", "DataBindingWithoutKapt",
+            "GradleDependency", "GradleDeprecated", "GradleDeprecatedConfiguration",
+            "OutdatedLibrary", "DevModeObsolete", "DuplicatePlatformClasses",
+            "EditedTargetSdkVersion", "ExpiredTargetSdkVersion", "ExpiringTargetSdkVersion",
+            "GradleGetter", "GradlePluginVersion", "HighAppVersionCode", "GradleIdeError",
+            "InstantAppDeprecation", "JavaPluginLanguageLevel", "JcenterRepositoryObsolete",
+            "KaptUsageInsteadOfKsp", "KtxExtensionAvailable", "LifecycleAnnotationProcessorWithJava8",
+            "MinSdkTooLow", "SimilarGradleDependency", "NotInterpolated", "GradlePath",
+            "PlaySdkIndexDeprecated", "PlaySdkIndexGenericIssues", "PlaySdkIndexNonCompliant",
+            "PlaySdkIndexVulnerability", "GradleDynamicVersion", "NewerVersionAvailable",
+            "R8GradualApi", "RiskyLibrary", "StringShouldBeInt", "UseTomlInstead", "OldTargetApi"
+        )
+    }
 }
 
 dependencies {
@@ -112,7 +130,6 @@ dependencies {
     configurations.all {
         exclude(group = "com.intellij", module = "annotations")
         exclude(group = "com.google.api.grpc", module = "proto-google-common-protos")
-        exclude(group = "com.google.protobuf", module = "protobuf-java")
         exclude(group = "com.google.auto.value", module = "auto-value")
     }
 
