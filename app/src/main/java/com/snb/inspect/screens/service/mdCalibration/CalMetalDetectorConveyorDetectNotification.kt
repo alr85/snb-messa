@@ -47,6 +47,7 @@ fun CalMetalDetectorConveyorDetectNotification(
             "Belt Stops (Not Latched)",
             "In-feed Belt Stops",
             "Out-feed Belt Stops",
+            "Double Bag Stop (Latched)",
             "Other"
         )
     }

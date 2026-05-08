@@ -25,7 +25,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -44,7 +43,6 @@ fun AboutAppScreen(
 
     val context = LocalContext.current
     val appVersion = getAppVersion()  // Get the app version
-    FontFamily(Font(R.font.audiowide))
 
     // Automatically load the latest changes from the raw/changelog.md file
     val latestChanges = remember {

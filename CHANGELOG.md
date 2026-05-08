@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.11] - 08/05/2026
+### Fixed
+- Serial numbers are now auto-capitalised
+### Added
+- Added a 'General' section to the user manuals screen for inverter manuals, wiring diagrams etc
+- Added a pinch to zoom feature on the user manuals. Double tap to reset the view
+- Added 'Double Bag (Latched)' to the option list for Detect Notifications
+
+
 ## [1.0.10] - 01/05/2026
 ### Fixed
 - Increased max length of 'Product Peak Signal (As Found)' to 25 characters and moved from the bottom of the screen to the top of the screen.

@@ -43,6 +43,7 @@ fun UserManualsListScreen(
     // Mapping display names to API abbreviations
     val categories = listOf(
         "All" to null,
+        "General" to "GE",
         "Metal Detector" to "MD",
         "Checkweigher" to "CW",
         "X-Ray" to "XR",

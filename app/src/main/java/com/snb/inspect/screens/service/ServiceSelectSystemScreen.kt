@@ -149,7 +149,7 @@ fun ServiceSelectSystemScreen(
 
             OutlinedTextField(
                 value = searchQuery,
-                onValueChange = { searchQuery = it },
+                onValueChange = { searchQuery = it.uppercase() },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("Search Serial Number...") },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
