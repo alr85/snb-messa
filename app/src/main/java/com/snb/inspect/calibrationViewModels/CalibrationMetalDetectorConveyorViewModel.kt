@@ -9,7 +9,22 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.snb.inspect.ApiService
 import com.snb.inspect.FetchResult
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateAirPressureSensorPvResult
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateAllPvResults
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateBackupSensorPvResult
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateBinDoorMonitorPvResult
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateBinFullSensorPvResult
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateDetectNotificationPvResult
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateDetectionSettingPvResult
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateFerrousPvResult
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateInfeedSensorPvResult
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateLargeMetalPvResult
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateNonFerrousPvResult
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdatePackCheckSensorPvResult
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateRejectConfirmSensorPvResult
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateSmePvResult
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateSpeedSensorPvResult
+import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateStainlessPvResult
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.setAllPvResultsNa
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.toAirPressureSensorUpdate
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.toBackupSensorUpdate
@@ -1368,7 +1383,10 @@ class CalibrationMetalDetectorConveyorViewModel(
     fun setPvRequired(pvRequired: Boolean) {
         _pvRequired.value = pvRequired
         if (!pvRequired) {
-            setAllPvResultsNa()}
+            setAllPvResultsNa()
+        } else {
+            autoUpdateAllPvResults()
+        }
     }
 
     private var _reasonForNotCalibrating = mutableStateOf("")
@@ -1455,6 +1473,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     // Function to update product height
     fun setIsConveyor(value: Boolean) {
         _isConveyor.value = value
+        autoUpdateAllPvResults()
     }
 
     private val _productHeight = mutableStateOf("")
@@ -1633,6 +1652,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setSensitivityRequirementFerrous(newValue: String) {
         _sensitivityRequirementFerrous.value = newValue
+        autoUpdateFerrousPvResult()
     }
 
     private val _sensitivityRequirementNonFerrous = mutableStateOf("")
@@ -1641,6 +1661,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setSensitivityRequirementNonFerrous(newValue: String) {
         _sensitivityRequirementNonFerrous.value = newValue
+        autoUpdateNonFerrousPvResult()
     }
 
     private val _sensitivityRequirementStainless = mutableStateOf("")
@@ -1649,6 +1670,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setSensitivityRequirementStainless(newValue: String) {
         _sensitivityRequirementStainless.value = newValue
+        autoUpdateStainlessPvResult()
     }
 
 
@@ -1958,6 +1980,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setSampleCertificateNumberFerrous(newSampleCertificateNumberFerrous: String) {
         _sampleCertificateNumberFerrous.value = newSampleCertificateNumberFerrous
+        autoUpdateFerrousPvResult()
     }
 
     // Leading edge detection & signal
@@ -1966,6 +1989,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setDetectRejectFerrousLeading(newValue: YesNoState) {
         _detectRejectFerrousLeading.value = newValue
+        autoUpdateFerrousPvResult()
     }
 
     private val _peakSignalFerrousLeading = mutableStateOf("")
@@ -1973,6 +1997,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setPeakSignalFerrousLeading(newPeakSignalFerrousLeading: String) {
         _peakSignalFerrousLeading.value = newPeakSignalFerrousLeading
+        autoUpdateFerrousPvResult()
     }
 
     // Middle detection & signal
@@ -1981,6 +2006,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setDetectRejectFerrousMiddle(newValue: YesNoState) {
         _detectRejectFerrousMiddle.value = newValue
+        autoUpdateFerrousPvResult()
     }
 
     private val _peakSignalFerrousMiddle = mutableStateOf("")
@@ -1988,6 +2014,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setPeakSignalFerrousMiddle(newPeakSignalFerrousMiddle: String) {
         _peakSignalFerrousMiddle.value = newPeakSignalFerrousMiddle
+        autoUpdateFerrousPvResult()
     }
 
     // Trailing edge detection & signal
@@ -1997,6 +2024,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setDetectRejectFerrousTrailing(newValue: YesNoState) {
         _detectRejectFerrousTrailing.value = newValue
+        autoUpdateFerrousPvResult()
     }
 
     private val _peakSignalFerrousTrailing = mutableStateOf("")
@@ -2004,6 +2032,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setPeakSignalFerrousTrailing(newPeakSignalFerrousTrailing: String) {
         _peakSignalFerrousTrailing.value = newPeakSignalFerrousTrailing
+        autoUpdateFerrousPvResult()
     }
 
     private val _ferrousTestEngineerNotes = mutableStateOf("")
@@ -2031,6 +2060,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setSensitivityAsLeftNonFerrous(newSensitivityAsLeftNonFerrous: String) {
         _sensitivityAsLeftNonFerrous.value = newSensitivityAsLeftNonFerrous
+        autoUpdateNonFerrousPvResult()
     }
 
     //-----
@@ -2040,6 +2070,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setDetectRejectNonFerrousLeading(newValue: YesNoState) {
         _detectRejectNonFerrousLeading.value = newValue
+        autoUpdateNonFerrousPvResult()
     }
 
     //-----
@@ -2049,6 +2080,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setDetectRejectNonFerrousMiddle(newValue: YesNoState) {
         _detectRejectNonFerrousMiddle.value = newValue
+        autoUpdateNonFerrousPvResult()
     }
 
     //-----
@@ -2058,6 +2090,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setDetectRejectNonFerrousTrailing(newValue: YesNoState) {
         _detectRejectNonFerrousTrailing.value = newValue
+        autoUpdateNonFerrousPvResult()
     }
 
     //-----
@@ -2067,6 +2100,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setPeakSignalNonFerrousLeading(newPeakSignalNonFerrousLeading: String) {
         _peakSignalNonFerrousLeading.value = newPeakSignalNonFerrousLeading
+        autoUpdateNonFerrousPvResult()
     }
 
     //-----
@@ -2076,6 +2110,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setPeakSignalNonFerrousMiddle(newPeakSignalNonFerrousMiddle: String) {
         _peakSignalNonFerrousMiddle.value = newPeakSignalNonFerrousMiddle
+        autoUpdateNonFerrousPvResult()
     }
 
     //-----
@@ -2085,6 +2120,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setPeakSignalNonFerrousTrailing(newPeakSignalNonFerrousTrailing: String) {
         _peakSignalNonFerrousTrailing.value = newPeakSignalNonFerrousTrailing
+        autoUpdateNonFerrousPvResult()
     }
 
     //-----
@@ -2095,6 +2131,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setSampleCertificateNumberNonFerrous(newSampleCertificateNumberNonFerrous: String) {
         _sampleCertificateNumberNonFerrous.value = newSampleCertificateNumberNonFerrous
+        autoUpdateNonFerrousPvResult()
     }
 
     //-----
@@ -2122,6 +2159,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setSensitivityAsLeftStainless(newSensitivityAsLeftStainless: String) {
         _sensitivityAsLeftStainless.value = newSensitivityAsLeftStainless
+        autoUpdateStainlessPvResult()
     }
 
 
@@ -2132,6 +2170,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setPeakSignalStainlessLeading(newPeakSignalStainlessLeading: String) {
         _peakSignalStainlessLeading.value = newPeakSignalStainlessLeading
+        autoUpdateStainlessPvResult()
     }
 
     //-----
@@ -2141,6 +2180,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setPeakSignalStainlessMiddle(newPeakSignalStainlessMiddle: String) {
         _peakSignalStainlessMiddle.value = newPeakSignalStainlessMiddle
+        autoUpdateStainlessPvResult()
     }
 
     //------
@@ -2150,6 +2190,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setPeakSignalStainlessTrailing(newPeakSignalStainlessTrailing: String) {
         _peakSignalStainlessTrailing.value = newPeakSignalStainlessTrailing
+        autoUpdateStainlessPvResult()
     }
 
     //------
@@ -2160,6 +2201,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setSampleCertificateNumberStainless(newSampleCertificateNumberStainless: String) {
         _sampleCertificateNumberStainless.value = newSampleCertificateNumberStainless
+        autoUpdateStainlessPvResult()
     }
 
     //-----
@@ -2170,6 +2212,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setDetectRejectStainlessLeading(newValue: YesNoState) {
         _detectRejectStainlessLeading.value = newValue
+        autoUpdateStainlessPvResult()
     }
 
     //-----
@@ -2179,6 +2222,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setDetectRejectStainlessMiddle(newValue: YesNoState) {
         _detectRejectStainlessMiddle.value = newValue
+        autoUpdateStainlessPvResult()
     }
 
     //-----
@@ -2188,6 +2232,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setDetectRejectStainlessTrailing(newValue: YesNoState) {
         _detectRejectStainlessTrailing.value = newValue
+        autoUpdateStainlessPvResult()
     }
 
     //------
@@ -2216,6 +2261,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setDetectRejectLargeMetal(newValue: YesNoState) {
         _detectRejectLargeMetal.value = newValue
+        autoUpdateLargeMetalPvResult()
     }
 
     //-----
@@ -2227,6 +2273,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setSampleCertificateNumberLargeMetal(newSampleCertificateNumberLargeMetal: String) {
         _sampleCertificateNumberLargeMetal.value = newSampleCertificateNumberLargeMetal
+        autoUpdateLargeMetalPvResult()
     }
 
     private val _largeMetalTestEngineerNotes = mutableStateOf("")
@@ -2693,6 +2740,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setInfeedSensorFitted(newValue: YesNoState) {
         _infeedSensorFitted.value = newValue
+        autoUpdateInfeedSensorPvResult()
     }
 
     private val _infeedSensorDetail = mutableStateOf("")
@@ -2709,6 +2757,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setInfeedSensorTestMethod(newValue: String) {
         _infeedSensorTestMethod.value = newValue
+        autoUpdateInfeedSensorPvResult()
     }
 
     private val _infeedSensorTestMethodOther = mutableStateOf("")
@@ -2725,6 +2774,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setInfeedSensorTestResult(newValue: List<String>) {
         _infeedSensorTestResult.value = newValue
+        autoUpdateInfeedSensorPvResult()
     }
 
 
@@ -2740,6 +2790,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setInfeedSensorLatched(newValue: YesNoState) {
         _infeedSensorLatched.value = newValue
+        autoUpdateInfeedSensorPvResult()
     }
 
     private val _infeedSensorCR = mutableStateOf(YesNoState.NO)
@@ -2747,6 +2798,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setInfeedSensorCR(newValue: YesNoState) {
         _infeedSensorCR.value = newValue
+        autoUpdateInfeedSensorPvResult()
     }
 
     private val _infeedSensorTestPvResult = mutableStateOf("")
@@ -2763,6 +2815,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setRejectConfirmSensorFitted(newValue: YesNoState) {
         _rejectConfirmSensorFitted.value = newValue
+        autoUpdateRejectConfirmSensorPvResult()
     }
 
     private val _rejectConfirmSensorDetail = mutableStateOf("")
@@ -2779,6 +2832,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setRejectConfirmSensorTestMethod(newValue: String) {
         _rejectConfirmSensorTestMethod.value = newValue
+        autoUpdateRejectConfirmSensorPvResult()
     }
 
     private val _rejectConfirmSensorTestMethodOther = mutableStateOf("")
@@ -2794,6 +2848,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setRejectConfirmSensorTestResult(newValue: List<String>) {
         _rejectConfirmSensorTestResult.value = newValue
+        autoUpdateRejectConfirmSensorPvResult()
     }
 
     private val _rejectConfirmSensorEngineerNotes = mutableStateOf("")
@@ -2809,6 +2864,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setRejectConfirmSensorLatched(newValue: YesNoState) {
         _rejectConfirmSensorLatched.value = newValue
+        autoUpdateRejectConfirmSensorPvResult()
     }
 
     private val _rejectConfirmSensorCR = mutableStateOf(YesNoState.NO)
@@ -2816,6 +2872,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setRejectConfirmSensorCR(newValue: YesNoState) {
         _rejectConfirmSensorCR.value = newValue
+        autoUpdateRejectConfirmSensorPvResult()
     }
 
     private val _rejectConfirmSensorStopPosition = mutableStateOf("")
@@ -2823,6 +2880,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setRejectConfirmSensorStopPosition(newValue: String) {
         _rejectConfirmSensorStopPosition.value = newValue
+        autoUpdateRejectConfirmSensorPvResult()
     }
 
     private val _rejectConfirmSensorTestPvResult = mutableStateOf("")
@@ -2838,6 +2896,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBinFullSensorFitted(newValue: YesNoState) {
         _binFullSensorFitted.value = newValue
+        autoUpdateBinFullSensorPvResult()
     }
 
     private val _binFullSensorDetail = mutableStateOf("")
@@ -2854,6 +2913,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBinFullSensorTestMethod(newValue: String) {
         _binFullSensorTestMethod.value = newValue
+        autoUpdateBinFullSensorPvResult()
     }
 
     private val _binFullSensorTestMethodOther = mutableStateOf("")
@@ -2870,6 +2930,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBinFullSensorTestResult(newValue: List<String>) {
         _binFullSensorTestResult.value = newValue
+        autoUpdateBinFullSensorPvResult()
     }
 
     private val _binFullSensorEngineerNotes = mutableStateOf("")
@@ -2885,6 +2946,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBinFullSensorLatched(newValue: YesNoState) {
         _binFullSensorLatched.value = newValue
+        autoUpdateBinFullSensorPvResult()
     }
 
     private val _binFullSensorCR = mutableStateOf(YesNoState.NO)
@@ -2892,6 +2954,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBinFullSensorCR(newValue: YesNoState) {
         _binFullSensorCR.value = newValue
+        autoUpdateBinFullSensorPvResult()
     }
 
     private val _binFullSensorTestPvResult = mutableStateOf("")
@@ -2907,6 +2970,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBackupSensorFitted(newValue: YesNoState) {
         _backupSensorFitted.value = newValue
+        autoUpdateBackupSensorPvResult()
     }
 
     private val _backupSensorDetail = mutableStateOf("")
@@ -2923,6 +2987,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBackupSensorTestMethod(newValue: String) {
         _backupSensorTestMethod.value = newValue
+        autoUpdateBackupSensorPvResult()
     }
 
     private val _backupSensorTestMethodOther = mutableStateOf("")
@@ -2939,6 +3004,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBackupSensorTestResult(newValue: List<String>) {
         _backupSensorTestResult.value = newValue
+        autoUpdateBackupSensorPvResult()
     }
 
     private val _backupSensorEngineerNotes = mutableStateOf("")
@@ -2954,6 +3020,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBackupSensorLatched(newValue: YesNoState) {
         _backupSensorLatched.value = newValue
+        autoUpdateBackupSensorPvResult()
     }
 
     private val _backupSensorCR = mutableStateOf(YesNoState.NO)
@@ -2961,6 +3028,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBackupSensorCR(newValue: YesNoState) {
         _backupSensorCR.value = newValue
+        autoUpdateBackupSensorPvResult()
     }
 
     private val _backupSensorTestPvResult = mutableStateOf("")
@@ -2976,6 +3044,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setAirPressureSensorFitted(newValue: YesNoState) {
         _airPressureSensorFitted.value = newValue
+        autoUpdateAirPressureSensorPvResult()
     }
 
     private val _airPressureSensorDetail = mutableStateOf("")
@@ -2992,6 +3061,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setAirPressureSensorTestMethod(newValue: String) {
         _airPressureSensorTestMethod.value = newValue
+        autoUpdateAirPressureSensorPvResult()
     }
 
     private val _airPressureSensorTestMethodOther = mutableStateOf("")
@@ -3008,6 +3078,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setAirPressureSensorTestResult(newValue: List<String>) {
         _airPressureSensorTestResult.value = newValue
+        autoUpdateAirPressureSensorPvResult()
     }
 
     private val _airPressureSensorEngineerNotes = mutableStateOf("")
@@ -3023,6 +3094,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setAirPressureSensorLatched(newValue: YesNoState) {
         _airPressureSensorLatched.value = newValue
+        autoUpdateAirPressureSensorPvResult()
     }
 
     private val _airPressureSensorCR = mutableStateOf(YesNoState.NO)
@@ -3030,6 +3102,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setAirPressureSensorCR(newValue: YesNoState) {
         _airPressureSensorCR.value = newValue
+        autoUpdateAirPressureSensorPvResult()
     }
 
     private val _airPressureSensorTestPvResult = mutableStateOf("")
@@ -3045,6 +3118,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setPackCheckSensorFitted(newValue: YesNoState) {
         _packCheckSensorFitted.value = newValue
+        autoUpdatePackCheckSensorPvResult()
     }
 
     private val _packCheckSensorDetail = mutableStateOf("")
@@ -3061,6 +3135,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setPackCheckSensorTestMethod(newValue: String) {
         _packCheckSensorTestMethod.value = newValue
+        autoUpdatePackCheckSensorPvResult()
     }
 
     private val _packCheckSensorTestMethodOther = mutableStateOf("")
@@ -3077,6 +3152,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setPackCheckSensorTestResult(newValue: List<String>) {
         _packCheckSensorTestResult.value = newValue
+        autoUpdatePackCheckSensorPvResult()
     }
 
     private val _packCheckSensorEngineerNotes = mutableStateOf("")
@@ -3092,6 +3168,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setPackCheckSensorLatched(newValue: YesNoState) {
         _packCheckSensorLatched.value = newValue
+        autoUpdatePackCheckSensorPvResult()
     }
 
     private val _packCheckSensorCR = mutableStateOf(YesNoState.NO)
@@ -3099,6 +3176,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setPackCheckSensorCR(newValue: YesNoState) {
         _packCheckSensorCR.value = newValue
+        autoUpdatePackCheckSensorPvResult()
     }
 
     private val _packCheckSensorTestPvResult = mutableStateOf("")
@@ -3115,6 +3193,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setSpeedSensorFitted(newValue: YesNoState) {
         _speedSensorFitted.value = newValue
+        autoUpdateSpeedSensorPvResult()
     }
 
     private val _speedSensorDetail = mutableStateOf("")
@@ -3131,6 +3210,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setSpeedSensorTestMethod(newValue: String) {
         _speedSensorTestMethod.value = newValue
+        autoUpdateSpeedSensorPvResult()
     }
 
     private val _speedSensorTestMethodOther = mutableStateOf("")
@@ -3147,6 +3227,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setSpeedSensorTestResult(newValue: List<String>) {
         _speedSensorTestResult.value = newValue
+        autoUpdateSpeedSensorPvResult()
     }
 
     private val _speedSensorEngineerNotes = mutableStateOf("")
@@ -3162,6 +3243,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setSpeedSensorLatched(newValue: YesNoState) {
         _speedSensorLatched.value = newValue
+        autoUpdateSpeedSensorPvResult()
     }
 
     private val _speedSensorCR = mutableStateOf(YesNoState.NO)
@@ -3169,6 +3251,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setSpeedSensorCR(newValue: YesNoState) {
         _speedSensorCR.value = newValue
+        autoUpdateSpeedSensorPvResult()
     }
 
     private val _speedSensorTestPvResult = mutableStateOf("")
@@ -3185,6 +3268,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setDetectNotificationResult(newValue: List<String>) {
         _detectNotificationResult.value = newValue
+        autoUpdateDetectNotificationPvResult()
     }
 
     private val _detectNotificationTestPvResult = mutableStateOf("")
@@ -3209,6 +3293,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBinDoorMonitorFitted(newValue: YesNoState) {
         _binDoorMonitorFitted.value = newValue
+        autoUpdateBinDoorMonitorPvResult()
     }
 
     private val _binDoorMonitorDetail = mutableStateOf("")
@@ -3233,6 +3318,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBinDoorUnlockedIndication(newValue: List<String>) {
         _binDoorUnlockedIndication.value = newValue
+        autoUpdateBinDoorMonitorPvResult()
     }
 
     private val _binDoorOpenIndication = MutableStateFlow(listOf<String>())
@@ -3241,6 +3327,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBinDoorOpenIndication(newValue: List<String>) {
         _binDoorOpenIndication.value = newValue
+        autoUpdateBinDoorMonitorPvResult()
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -3250,6 +3337,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBinDoorTimeoutTimer(newValue: String) {
         _binDoorTimeoutTimer.value = newValue
+        autoUpdateBinDoorMonitorPvResult()
     }
 
     private val _binDoorTimeoutResult = MutableStateFlow(listOf<String>())
@@ -3258,6 +3346,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBinDoorTimeoutResult(newValue: List<String>) {
         _binDoorTimeoutResult.value = newValue
+        autoUpdateBinDoorMonitorPvResult()
     }
 
     private val _binDoorLatched = mutableStateOf(YesNoState.NO)
@@ -3266,6 +3355,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBinDoorLatched(newValue: YesNoState) {
         _binDoorLatched.value = newValue
+        autoUpdateBinDoorMonitorPvResult()
     }
 
     private val _binDoorCR = mutableStateOf(YesNoState.NO)
@@ -3274,6 +3364,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBinDoorCR(newValue: YesNoState) {
         _binDoorCR.value = newValue
+        autoUpdateBinDoorMonitorPvResult()
     }
 
     private val _binDoorEngineerNotes = mutableStateOf("")
@@ -3300,6 +3391,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setOperatorName(newValue: String) {
         _operatorName.value = newValue
+        autoUpdateSmePvResult()
     }
 
 
@@ -3308,6 +3400,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setOperatorTestWitnessed(newValue: YesNoState) {
         _operatorTestWitnessed.value = newValue
+        autoUpdateSmePvResult()
     }
 
     private val _operatorTestResultFerrous = mutableStateOf("")
@@ -3383,6 +3476,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setSmeName(newValue: String) {
         _smeName.value = newValue
+        autoUpdateSmePvResult()
     }
 
     private val _operatorTestWitnessedInfeed = mutableStateOf(YesNoState.NO)

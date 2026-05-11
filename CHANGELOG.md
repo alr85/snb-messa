@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.12] - 11/05/2026
+### Fixed
+- Further improvements to the P.V. logic, specifically for non-conveyor systems and the Fe/NonFe/SS tests.
+
 ## [1.0.11] - 08/05/2026
 ### Fixed
 - Update logic to correctly identify non-conveyor systems (gravity/pipe/pharma) and suppress product dimension requirements.

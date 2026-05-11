@@ -306,6 +306,5 @@ fun copyFerrousTestAsFoundToAsLeft(viewModel: CalibrationMetalDetectorConveyorVi
     viewModel.setPeakSignalFerrousMiddle(viewModel.peakSignalAsFoundFerrousMiddle.value)
     viewModel.setDetectRejectFerrousTrailing(viewModel.detectRejectAsFoundFerrousTrailing.value)
     viewModel.setPeakSignalFerrousTrailing(viewModel.peakSignalAsFoundFerrousTrailing.value)
-
-
+    viewModel.autoUpdateFerrousPvResult()
 }

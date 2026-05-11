@@ -99,70 +99,109 @@ private fun CalibrationMetalDetectorConveyorViewModel.getSensitivityRules(
         ruleId = "${prefix}_CERT"
     ))
 
-    // --- Leading Edge Rules ---
-    rules.add(PvRule(
-        description = "Leading edge detection and rejection.",
-        status = when (drLeading) {
-            YesNoState.YES -> PvRuleStatus.Pass
-            YesNoState.NA -> PvRuleStatus.NA
-            else -> PvRuleStatus.Fail
-        },
-        ruleId = "${prefix}_DR_LEADING"
-    ))
+    if(isConveyor.value) {
 
-    rules.add(PvRule(
-        description = "Leading edge signal strength must be recorded.",
-        status = when {
-            drLeading == YesNoState.NA -> PvRuleStatus.NA // Follows the toggle
-            drLeadingSignal.isNotBlank() -> PvRuleStatus.Pass
-            else -> PvRuleStatus.Fail
-        },
-        ruleId = "${prefix}_DR_LEADING_SIGNAL"
-    ))
+        // --- Leading Edge Rules ---
+        rules.add(
+            PvRule(
+                description = "Leading edge detection and rejection.",
+                status = when (drLeading) {
+                    YesNoState.YES -> PvRuleStatus.Pass
+                    YesNoState.NA -> PvRuleStatus.NA
+                    else -> PvRuleStatus.Fail
+                },
+                ruleId = "${prefix}_DR_LEADING"
+            )
+        )
+
+        rules.add(
+            PvRule(
+                description = "Leading edge signal strength must be recorded.",
+                status = when {
+                    drLeading == YesNoState.NA -> PvRuleStatus.NA // Follows the toggle
+                    drLeadingSignal.isNotBlank() -> PvRuleStatus.Pass
+                    else -> PvRuleStatus.Fail
+                },
+                ruleId = "${prefix}_DR_LEADING_SIGNAL"
+            )
+        )
 
 // --- Middle Rules ---
-    rules.add(PvRule(
-        description = "Middle detection and rejection.",
-        status = when (drMiddle) {
-            YesNoState.YES -> PvRuleStatus.Pass
-            YesNoState.NA -> PvRuleStatus.NA
-            else -> PvRuleStatus.Fail
-        },
-        ruleId = "${prefix}_DR_MIDDLE"
-    ))
+        rules.add(
+            PvRule(
+                description = "Middle detection and rejection.",
+                status = when (drMiddle) {
+                    YesNoState.YES -> PvRuleStatus.Pass
+                    YesNoState.NA -> PvRuleStatus.NA
+                    else -> PvRuleStatus.Fail
+                },
+                ruleId = "${prefix}_DR_MIDDLE"
+            )
+        )
 
-    rules.add(PvRule(
-        description = "Middle signal strength must be recorded.",
-        status = when {
-            drMiddle == YesNoState.NA -> PvRuleStatus.NA
-            drMiddleSignal.isNotBlank() -> PvRuleStatus.Pass
-            else -> PvRuleStatus.Fail
-        },
-        ruleId = "${prefix}_DR_MIDDLE_SIGNAL"
-    ))
+        rules.add(
+            PvRule(
+                description = "Middle signal strength must be recorded.",
+                status = when {
+                    drMiddle == YesNoState.NA -> PvRuleStatus.NA
+                    drMiddleSignal.isNotBlank() -> PvRuleStatus.Pass
+                    else -> PvRuleStatus.Fail
+                },
+                ruleId = "${prefix}_DR_MIDDLE_SIGNAL"
+            )
+        )
 
 // --- Trailing Rules ---
-    rules.add(PvRule(
-        description = "Trailing edge detection and rejection.",
-        status = when (drTrailing) {
-            YesNoState.YES -> PvRuleStatus.Pass
-            YesNoState.NA -> PvRuleStatus.NA
-            else -> PvRuleStatus.Fail
-        },
-        ruleId = "${prefix}_DR_TRAILING"
-    ))
+        rules.add(
+            PvRule(
+                description = "Trailing edge detection and rejection.",
+                status = when (drTrailing) {
+                    YesNoState.YES -> PvRuleStatus.Pass
+                    YesNoState.NA -> PvRuleStatus.NA
+                    else -> PvRuleStatus.Fail
+                },
+                ruleId = "${prefix}_DR_TRAILING"
+            )
+        )
 
-    rules.add(PvRule(
-        description = "Trailing signal strength must be recorded.",
-        status = when {
-            drTrailing == YesNoState.NA -> PvRuleStatus.NA
-            drTrailingSignal.isNotBlank() -> PvRuleStatus.Pass
-            else -> PvRuleStatus.Fail
-        },
-        ruleId = "${prefix}_DR_TRAILING_SIGNAL"
-    ))
+        rules.add(
+            PvRule(
+                description = "Trailing signal strength must be recorded.",
+                status = when {
+                    drTrailing == YesNoState.NA -> PvRuleStatus.NA
+                    drTrailingSignal.isNotBlank() -> PvRuleStatus.Pass
+                    else -> PvRuleStatus.Fail
+                },
+                ruleId = "${prefix}_DR_TRAILING_SIGNAL"
+            )
+        )
+    }
+    else {
+        // Single test pass for non-conveyor systems
+        rules.add(
+            PvRule(
+                description = "Detection and rejection.",
+                status = when (drLeading) {
+                    YesNoState.YES -> PvRuleStatus.Pass
+                    YesNoState.NA -> PvRuleStatus.NA
+                    else -> PvRuleStatus.Fail
+                },
+                ruleId = "${prefix}_DR_LEADING"
+            )
+        )
 
-
+        rules.add(
+            PvRule(
+                description = "Signal strength must be recorded.",
+                status = when {
+                    drLeading == YesNoState.NA -> PvRuleStatus.NA
+                    drLeadingSignal.isNotBlank() -> PvRuleStatus.Pass
+                    else -> PvRuleStatus.Fail
+                },
+                ruleId = "${prefix}_DR_LEADING_SIGNAL"
+            )
+        )
+    }
 
     return rules
 }
@@ -267,7 +306,8 @@ private fun getFailsafeRules(
 fun CalibrationMetalDetectorConveyorViewModel.getInfeedSensorPvRules(): List<PvRule> =
     getFailsafeRules("INFEED", infeedSensorFitted.value, infeedSensorTestMethod.value,
         infeedSensorTestMethodOther.value, infeedSensorTestResult.value,
-        infeedSensorLatched.value, infeedSensorCR.value)
+        infeedSensorLatched.value, infeedSensorCR.value,
+        requireBeltStop = isConveyor.value)
 
 fun CalibrationMetalDetectorConveyorViewModel.autoUpdateInfeedSensorPvResult() {
     val result = if (!pvRequired.value) "N/A" else getInfeedSensorPvRules().calculateOverallStatus()
@@ -285,7 +325,8 @@ fun CalibrationMetalDetectorConveyorViewModel.getRejectConfirmSensorPvRules(): L
         rejectConfirmSensorTestMethodOther.value,
         rejectConfirmSensorTestResult.value,
         rejectConfirmSensorLatched.value,
-        rejectConfirmSensorCR.value
+        rejectConfirmSensorCR.value,
+        requireBeltStop = isConveyor.value
     ).toMutableList()
 
     // Add specific check for stop position only if fitted
@@ -313,7 +354,8 @@ fun CalibrationMetalDetectorConveyorViewModel.autoUpdateRejectConfirmSensorPvRes
 fun CalibrationMetalDetectorConveyorViewModel.getBinFullSensorPvRules(): List<PvRule> =
     getFailsafeRules("BIN_FULL", binFullSensorFitted.value, binFullSensorTestMethod.value,
         binFullSensorTestMethodOther.value, binFullSensorTestResult.value,
-        binFullSensorLatched.value, binFullSensorCR.value)
+        binFullSensorLatched.value, binFullSensorCR.value,
+        requireBeltStop = isConveyor.value)
 
 fun CalibrationMetalDetectorConveyorViewModel.autoUpdateBinFullSensorPvResult() {
     val result = if (!pvRequired.value) "N/A" else getBinFullSensorPvRules().calculateOverallStatus()
@@ -326,7 +368,8 @@ fun CalibrationMetalDetectorConveyorViewModel.autoUpdateBinFullSensorPvResult() 
 fun CalibrationMetalDetectorConveyorViewModel.getBackupSensorPvRules(): List<PvRule> =
     getFailsafeRules("BACKUP", backupSensorFitted.value, backupSensorTestMethod.value,
         backupSensorTestMethodOther.value, backupSensorTestResult.value,
-        backupSensorLatched.value, backupSensorCR.value)
+        backupSensorLatched.value, backupSensorCR.value,
+        requireBeltStop = isConveyor.value)
 
 fun CalibrationMetalDetectorConveyorViewModel.autoUpdateBackupSensorPvResult() {
     val result = if (!pvRequired.value) "N/A" else getBackupSensorPvRules().calculateOverallStatus()
@@ -339,7 +382,8 @@ fun CalibrationMetalDetectorConveyorViewModel.autoUpdateBackupSensorPvResult() {
 fun CalibrationMetalDetectorConveyorViewModel.getAirPressureSensorPvRules(): List<PvRule> =
     getFailsafeRules("AIR", airPressureSensorFitted.value, airPressureSensorTestMethod.value,
         airPressureSensorTestMethodOther.value, airPressureSensorTestResult.value,
-        airPressureSensorLatched.value, airPressureSensorCR.value)
+        airPressureSensorLatched.value, airPressureSensorCR.value,
+        requireBeltStop = isConveyor.value)
 
 fun CalibrationMetalDetectorConveyorViewModel.autoUpdateAirPressureSensorPvResult() {
     val result = if (!pvRequired.value) "N/A" else getAirPressureSensorPvRules().calculateOverallStatus()
@@ -352,7 +396,8 @@ fun CalibrationMetalDetectorConveyorViewModel.autoUpdateAirPressureSensorPvResul
 fun CalibrationMetalDetectorConveyorViewModel.getPackCheckSensorPvRules(): List<PvRule> =
     getFailsafeRules("PACK", packCheckSensorFitted.value, packCheckSensorTestMethod.value,
         packCheckSensorTestMethodOther.value, packCheckSensorTestResult.value,
-        packCheckSensorLatched.value, packCheckSensorCR.value)
+        packCheckSensorLatched.value, packCheckSensorCR.value,
+        requireBeltStop = isConveyor.value)
 
 fun CalibrationMetalDetectorConveyorViewModel.autoUpdatePackCheckSensorPvResult() {
     val result = if (!pvRequired.value) "N/A" else getPackCheckSensorPvRules().calculateOverallStatus()
@@ -550,6 +595,28 @@ fun CalibrationMetalDetectorConveyorViewModel.autoUpdateSmePvResult() {
     val result = if (!pvRequired.value) "N/A" else getSmePvRules().calculateOverallStatus()
     setSmeTestPvResult(result)
 }
+
+// ---------------------------------------------------------
+// Trigger all PV updates
+// ---------------------------------------------------------
+fun CalibrationMetalDetectorConveyorViewModel.autoUpdateAllPvResults() {
+    autoUpdateDetectionSettingPvResult()
+    autoUpdateFerrousPvResult()
+    autoUpdateNonFerrousPvResult()
+    autoUpdateStainlessPvResult()
+    autoUpdateLargeMetalPvResult()
+    autoUpdateInfeedSensorPvResult()
+    autoUpdateRejectConfirmSensorPvResult()
+    autoUpdateBinFullSensorPvResult()
+    autoUpdateBackupSensorPvResult()
+    autoUpdateAirPressureSensorPvResult()
+    autoUpdatePackCheckSensorPvResult()
+    autoUpdateSpeedSensorPvResult()
+    autoUpdateDetectNotificationPvResult()
+    autoUpdateBinDoorMonitorPvResult()
+    autoUpdateSmePvResult()
+}
+
 
 // ---------------------------------------------------------
 // Set all PV results to N/A
