@@ -159,6 +159,7 @@ fun CalMetalDetectorConveyorSummaryDetails(
                 SummaryItem(label = "Conveyor Handing", value = viewModel.conveyorHanding.value)
                 SummaryItem(label = "Belt Speed", value = viewModel.beltSpeed.value)
                 SummaryItem(label = "Reject System", value = viewModel.rejectDevice.value)
+                SummaryItem(label = "Reject System (Other)", value = viewModel.rejectDeviceOther.value)
                 SummaryItem(label = "Engineer Notes", value = viewModel.conveyorDetailsEngineerNotes.value)
             }
 

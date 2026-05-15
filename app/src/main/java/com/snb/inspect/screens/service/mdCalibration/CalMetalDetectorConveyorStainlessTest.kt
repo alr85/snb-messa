@@ -306,5 +306,6 @@ fun copyStainlessTestAsFoundToAsLeft(viewModel: CalibrationMetalDetectorConveyor
     viewModel.setPeakSignalStainlessMiddle(viewModel.peakSignalAsFoundStainlessMiddle.value)
     viewModel.setDetectRejectStainlessTrailing(viewModel.detectRejectAsFoundStainlessTrailing.value)
     viewModel.setPeakSignalStainlessTrailing(viewModel.peakSignalAsFoundStainlessTrailing.value)
+    viewModel.setStainlessTestEngineerNotes(viewModel.stainlessTestAsFoundEngineerNotes.value)
     viewModel.autoUpdateStainlessPvResult()
 }

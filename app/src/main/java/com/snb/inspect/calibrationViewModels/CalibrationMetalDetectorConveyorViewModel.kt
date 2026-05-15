@@ -221,6 +221,9 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _ferrousTestEngineerNotes.value =
                     existingCalibration.ferrousTestEngineerNotes
 
+                _ferrousTestAsFoundEngineerNotes.value =
+                    existingCalibration.ferrousAsFoundEngineerNotes
+
 
                 _sensitivityAsFoundNonFerrous.value =
                     existingCalibration.sensitivityAsFoundNonFerrous
@@ -249,6 +252,9 @@ class CalibrationMetalDetectorConveyorViewModel(
 
                 _nonFerrousTestEngineerNotes.value =
                     existingCalibration.nonFerrousTestEngineerNotes
+
+                _nonFerrousTestAsFoundEngineerNotes.value =
+                    existingCalibration.nonFerrousAsFoundEngineerNotes
 
 
                 _sensitivityAsFoundStainless.value =
@@ -288,6 +294,9 @@ class CalibrationMetalDetectorConveyorViewModel(
 
                 _productPeakSignalAsFound.value =
                     existingCalibration.productPeakSignalAsFound
+
+                _stainlessTestAsFoundEngineerNotes.value =
+                    existingCalibration.stainlessAsFoundEngineerNotes
 
 
 

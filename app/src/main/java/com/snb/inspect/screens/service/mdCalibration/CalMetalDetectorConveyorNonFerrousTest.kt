@@ -306,5 +306,6 @@ fun copyNonFerrousTestAsFoundToAsLeft(viewModel: CalibrationMetalDetectorConveyo
     viewModel.setPeakSignalNonFerrousMiddle(viewModel.peakSignalAsFoundNonFerrousMiddle.value)
     viewModel.setDetectRejectNonFerrousTrailing(viewModel.detectRejectAsFoundNonFerrousTrailing.value)
     viewModel.setPeakSignalNonFerrousTrailing(viewModel.peakSignalAsFoundNonFerrousTrailing.value)
+    viewModel.setNonFerrousTestEngineerNotes(viewModel.nonFerrousTestAsFoundEngineerNotes.value)
     viewModel.autoUpdateNonFerrousPvResult()
 }
