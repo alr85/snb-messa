@@ -205,7 +205,11 @@ fun CalMetalDetectorConveyorSmeDetails(
                         label = "Ferrous Test",
                         firstInputLabel = "Size (mm)",
                         firstInputValue = ferrousSize,
-                        onFirstInputValueChange = { viewModel.setOperatorTestResultFerrous(it); viewModel.autoUpdateSmePvResult() },
+                        onFirstInputValueChange = {
+                            viewModel.setOperatorTestResultFerrous(it)
+                            if (it == "N/A") viewModel.setOperatorTestResultCertNumberFerrous("N/A")
+                            viewModel.autoUpdateSmePvResult()
+                        },
                         secondInputLabel = "Cert No.",
                         secondInputValue = ferrousCert,
                         onSecondInputValueChange = { viewModel.setOperatorTestResultCertNumberFerrous(it.uppercase()); viewModel.autoUpdateSmePvResult() },
@@ -239,7 +243,11 @@ fun CalMetalDetectorConveyorSmeDetails(
                         label = "Non-Ferrous Test",
                         firstInputLabel = "Size (mm)",
                         firstInputValue = nonFerrousSize,
-                        onFirstInputValueChange = { viewModel.setOperatorTestResultNonFerrous(it); viewModel.autoUpdateSmePvResult() },
+                        onFirstInputValueChange = {
+                            viewModel.setOperatorTestResultNonFerrous(it)
+                            if (it == "N/A") viewModel.setOperatorTestResultCertNumberNonFerrous("N/A")
+                            viewModel.autoUpdateSmePvResult()
+                        },
                         secondInputLabel = "Cert No.",
                         secondInputValue = nonFerrousCert,
                         onSecondInputValueChange = { viewModel.setOperatorTestResultCertNumberNonFerrous(it.uppercase()); viewModel.autoUpdateSmePvResult() },
@@ -273,7 +281,11 @@ fun CalMetalDetectorConveyorSmeDetails(
                         label = "Stainless Test",
                         firstInputLabel = "Size (mm)",
                         firstInputValue = stainlessSize,
-                        onFirstInputValueChange = { viewModel.setOperatorTestResultStainless(it); viewModel.autoUpdateSmePvResult() },
+                        onFirstInputValueChange = {
+                            viewModel.setOperatorTestResultStainless(it)
+                            if (it == "N/A") viewModel.setOperatorTestResultCertNumberStainless("N/A")
+                            viewModel.autoUpdateSmePvResult()
+                        },
                         secondInputLabel = "Cert No.",
                         secondInputValue = stainlessCert,
                         onSecondInputValueChange = { viewModel.setOperatorTestResultCertNumberStainless(it.uppercase()); viewModel.autoUpdateSmePvResult() },
@@ -307,7 +319,11 @@ fun CalMetalDetectorConveyorSmeDetails(
                         label = "Large Metal",
                         firstInputLabel = "Size (mm)",
                         firstInputValue = largeMetalSize,
-                        onFirstInputValueChange = { viewModel.setOperatorTestResultLargeMetal(it); viewModel.autoUpdateSmePvResult() },
+                        onFirstInputValueChange = {
+                            viewModel.setOperatorTestResultLargeMetal(it)
+                            if (it == "N/A") viewModel.setOperatorTestResultCertNumberLargeMetal("N/A")
+                            viewModel.autoUpdateSmePvResult()
+                        },
                         secondInputLabel = "Cert No.",
                         secondInputValue = largeMetalCert,
                         onSecondInputValueChange = { viewModel.setOperatorTestResultCertNumberLargeMetal(it.uppercase()); viewModel.autoUpdateSmePvResult() },

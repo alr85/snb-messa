@@ -190,7 +190,8 @@ fun AddNewMetalDetectorScreen(
                 },
                 helpText = "Enter the site location reference.",
                 keyboardType = KeyboardType.Text,
-                isNAToggleEnabled = false
+                isNAToggleEnabled = false,
+                maxLength = 30
             )
 
 

@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.snb.inspect.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.snb.inspect.formModules.CalibrationHeader
+import com.snb.inspect.formModules.LabeledDropdownWithHelp
 import com.snb.inspect.formModules.LabeledRadioButtonWithHelp
 import com.snb.inspect.formModules.LabeledReadOnlyField
 import com.snb.inspect.formModules.LabeledTextFieldWithHelp
@@ -93,7 +94,7 @@ fun CalMetalDetectorConveyorCalibrationStart(
                 onValueChange = viewModel::setNewLocation,
                 helpText = "Edit if the system has moved.",
                 isNAToggleEnabled = false,
-                maxLength = 20,
+                maxLength = 30,
                 showInputLabel = false
             )
 
@@ -112,7 +113,7 @@ fun CalMetalDetectorConveyorCalibrationStart(
                         viewModel.setCanPerformCalibration(newValue)
                     }
                 },
-                helpText = "..."
+                helpText = "Are you able to complete a calibration/PV procedure today?"
             )
 
             FormSpacer()
@@ -120,24 +121,62 @@ fun CalMetalDetectorConveyorCalibrationStart(
             if (!canPerformCalibration) {
                 Spacer(Modifier.height(8.dp))
 
-                LabeledTextFieldWithHelp(
+                val commonReasons = remember {
+                    listOf(
+                        "No product available",
+                        "No power/air supply",
+                        "Unable to locate",
+                        "System unsafe",
+                        "System faulty/inoperative",
+                        "Other"
+                    )
+                }
+
+                var isOtherSelected by remember {
+                    mutableStateOf(reasonForNotCalibrating.isNotEmpty() && reasonForNotCalibrating !in commonReasons.dropLast(1))
+                }
+
+                LabeledDropdownWithHelp(
                     label = "Reason for not calibrating",
-                    value = reasonForNotCalibrating,
-                    onValueChange = viewModel::setReasonForNotCalibrating,
-                    helpText = "Explain why calibration cannot be performed.",
-                    isNAToggleEnabled = false,
-                    maxLength = 50,
-                    showInputLabel = false
+                    options = commonReasons,
+                    selectedOption = if (isOtherSelected) "Other" else reasonForNotCalibrating,
+                    onSelectionChange = { selection ->
+                        if (selection == "Other") {
+                            isOtherSelected = true
+                            if (reasonForNotCalibrating in commonReasons.dropLast(1)) {
+                                viewModel.setReasonForNotCalibrating("")
+                            }
+                        } else {
+                            isOtherSelected = false
+                            viewModel.setReasonForNotCalibrating(selection)
+                        }
+                    },
+                    helpText = "Select a reason why calibration cannot be performed.",
+                    isNAToggleEnabled = false
                 )
 
                 FormSpacer()
+
+                if (isOtherSelected) {
+                    LabeledTextFieldWithHelp(
+                        label = "Other reason",
+                        value = reasonForNotCalibrating,
+                        onValueChange = viewModel::setReasonForNotCalibrating,
+                        helpText = "Explain why calibration cannot be performed.",
+                        isNAToggleEnabled = false,
+                        maxLength = 50,
+                        showInputLabel = false
+                    )
+
+                    FormSpacer()
+                }
             }
 
 
 
             if (canPerformCalibration) {
                 LabeledRadioButtonWithHelp(
-                    label = "P.V. Required?",
+                    label = "M&S Performance Verification (PV) Required?",
                     value = pvRequired,
                     onValueChange = viewModel::setPvRequired,
                     helpText = "Select 'Yes' if machine runs M&S products."

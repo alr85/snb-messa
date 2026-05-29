@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.13] - 29/05/2026
+### Fixed
+- Increased max length of machine location to 30 characters
+- Enabled 'N/A' toggle for Product Peak Signal fields
+- Further refinement of PV logic for Reject Bin Door and Operator Test screens
+- Limited the main and calibration activities to portrait orientation to prevent user being logged out on rotation.
+- Improved machine cloud ID synchronisation
+- Improved Operator Test logic to automatically set certificate numbers to "N/A" when the test is "N/A".
+- Fixed field reset logic to use empty lists instead of lists containing empty strings for sensor results.
+### Added
+- Implemented a dropdown menu for "Reason for not calibrating" with an optional "Other" text field.
+
 ## [1.0.12] - 11/05/2026
 ### Fixed
 - Further improvements to the P.V. logic, specifically for non-conveyor systems and the Fe/NonFe/SS tests.

@@ -429,7 +429,7 @@ fun CalibrationMetalDetectorConveyorViewModel.getLargeMetalPvRules(): List<PvRul
 
     // Handle the specific N/A selection
     if (dAndR == YesNoState.NA) {
-        return listOf(PvRule("Test marked as N/A", PvRuleStatus.NA, "LARGE_METAL_NA"))
+        return listOf(PvRule("20mm Ferrous Test Sample test skipped (N/A).", PvRuleStatus.NA, "LARGE_METAL_DETECT_REJECT"))
     }
 
     val rules = mutableListOf<PvRule>()
@@ -461,8 +461,8 @@ fun CalibrationMetalDetectorConveyorViewModel.getBinDoorMonitorPvRules(): List<P
 
         return listOf(
             PvRule("Sensor fitted to meet safety standards.", st, "${prefix}_FITTED"),
-            PvRule("Indication of door open.", subSt, "${prefix}_OPEN"),
-            PvRule("Indication of door unlocked.", subSt, "${prefix}_UNLOCKED"),
+            PvRule("Indication of door open.", subSt, "${prefix}_OPEN_INDICATION"),
+            PvRule("Indication of door unlocked.", subSt, "${prefix}_UNLOCKED_INDICATION"),
             PvRule("Timeout timer recorded.", subSt, "${prefix}_TIMEOUT"),
             PvRule("Timeout result recorded.", subSt, "${prefix}_TIMEOUT_RESULT"),
             PvRule("Condition latched.", subSt, "${prefix}_LATCHED"),
@@ -474,26 +474,25 @@ fun CalibrationMetalDetectorConveyorViewModel.getBinDoorMonitorPvRules(): List<P
     rules.add(PvRule("Sensor fitted.", PvRuleStatus.Pass, "${prefix}_FITTED"))
 
     // 2. Indication of door open
-    // If it's a list, use .any with .contains inside
-    val openPass = binDoorOpenIndication.value.any { it.contains("System Stop", ignoreCase = true) || it.contains("Indicator", ignoreCase = true) } ||
+    val openPass = binDoorOpenIndication.value.any { it.contains("Notification", ignoreCase = true) } ||
             (binDoorOpenIndication.value.isNotEmpty() &&
-                    !binDoorOpenIndication.value.any { it.contains("No Indication", ignoreCase = true) })
+                    !binDoorOpenIndication.value.any { it.contains("No Result", ignoreCase = true) })
 
     rules.add(PvRule(
         description = "Visual indication must be observed when door is opened.",
         status = if (openPass) PvRuleStatus.Pass else PvRuleStatus.Fail,
-        ruleId = "${prefix}_OPEN"
+        ruleId = "${prefix}_OPEN_INDICATION"
     ))
 
     // 3. Indication of door unlocked
-    val unlockedPass = binDoorUnlockedIndication.value.any { it.contains("Indicator", ignoreCase = true) } ||
+    val unlockedPass = binDoorUnlockedIndication.value.any { it.contains("Notification", ignoreCase = true) } ||
             (binDoorUnlockedIndication.value.isNotEmpty() &&
-                    !binDoorUnlockedIndication.value.any { it.contains("No Indication", ignoreCase = true) })
+                    !binDoorUnlockedIndication.value.any { it.contains("No Result", ignoreCase = true) })
 
     rules.add(PvRule(
         description = "Visual indication must be observed when door is unlocked.",
         status = if (unlockedPass) PvRuleStatus.Pass else PvRuleStatus.Fail,
-        ruleId = "${prefix}_UNLOCKED"
+        ruleId = "${prefix}_UNLOCKED_INDICATION"
     ))
 
     // 4. Timeout Timer (String check)
@@ -503,18 +502,8 @@ fun CalibrationMetalDetectorConveyorViewModel.getBinDoorMonitorPvRules(): List<P
         ruleId = "${prefix}_TIMEOUT"
     ))
 
-    // 5. Timeout Result (IMPORTANT FIX HERE)
-    // If binDoorTimeoutResult is a LIST, we use .any.
-    // If it is a STRING, we use .contains directly.
-    val timeoutResultPass = binDoorTimeoutResult.value.let { result ->
-        // This logic works whether result is a String OR a List<String>
-        if (result is List<*>) {
-            result.any { it.contains("System Stop", ignoreCase = true) }
-        } else {
-            result.toString().contains("System Stop", ignoreCase = true)
-        }
-    }
-
+    // 5. Timeout Result
+    val timeoutResultPass = binDoorTimeoutResult.value.any { it.contains("System Belt Stops", ignoreCase = true) }
     rules.add(PvRule(
         description = "The system must stop when the timeout occurs.",
         status = if (timeoutResultPass) PvRuleStatus.Pass else PvRuleStatus.Fail,
@@ -570,23 +559,76 @@ fun CalibrationMetalDetectorConveyorViewModel.getSmePvRules(): List<PvRule> {
     if (!pvRequired.value) return emptyList()
 
     val rules = mutableListOf<PvRule>()
-    val witnessed = operatorTestWitnessed.value
-    val opName = operatorName.value
-    val smeName = smeName.value
 
     // 1. Witnessed
+    val witnessed = operatorTestWitnessed.value
     rules.add(PvRule(
         description = "The operator test must be witnessed by the engineer.",
-        status = if (witnessed == YesNoState.YES) PvRuleStatus.Pass else PvRuleStatus.Fail,
-        ruleId = "SME_WITNESSED"
+        status = if (witnessed == YesNoState.YES) PvRuleStatus.Pass else if (witnessed == YesNoState.NO) PvRuleStatus.Fail else PvRuleStatus.Incomplete,
+        ruleId = "OPERATOR_TEST_WITNESSED"
     ))
+
+    if (witnessed != YesNoState.YES) {
+        val st = if (witnessed == YesNoState.NA) PvRuleStatus.NA else PvRuleStatus.Incomplete
+        rules.add(PvRule("Operator name recorded.", st, "OPERATOR_NAME"))
+        rules.add(PvRule("Ferrous test recorded.", st, "OPERATOR_TEST_FERR"))
+        rules.add(PvRule("Non-Ferrous test recorded.", st, "OPERATOR_TEST_NON_FERR"))
+        rules.add(PvRule("Stainless test recorded.", st, "OPERATOR_TEST_STAINLESS"))
+        rules.add(PvRule("Large Metal test recorded.", st, "OPERATOR_TEST_LM"))
+        rules.add(PvRule("Infeed sensor test witnessed.", st, "OPERATOR_TEST_INFEED"))
+        rules.add(PvRule("Reject confirm sensor test witnessed.", st, "OPERATOR_TEST_REJECT_CONFIRM"))
+        rules.add(PvRule("Bin full sensor test witnessed.", st, "OPERATOR_TEST_BIN_FULL"))
+        rules.add(PvRule("Bin door monitor test witnessed.", st, "OPERATOR_TEST_BIN_DOOR"))
+        rules.add(PvRule("Air pressure sensor test witnessed.", st, "OPERATOR_TEST_AIR_FAIL"))
+        rules.add(PvRule("Pack check sensor test witnessed.", st, "OPERATOR_TEST_PACK_CHECK"))
+        rules.add(PvRule("Speed sensor test witnessed.", st, "OPERATOR_TEST_SPEED_SENSOR"))
+        rules.add(PvRule("Backup sensor test witnessed.", st, "OPERATOR_TEST_BACKUP"))
+        rules.add(PvRule("SME name recorded.", st, "SME_NAME"))
+        return rules
+    }
 
     // 2. Names
     rules.add(PvRule(
-        description = "Operator and SME names must be recorded.",
-        status = if (opName.isNotBlank() && smeName.isNotBlank()) PvRuleStatus.Pass else PvRuleStatus.Fail,
-        ruleId = "SME_NAMES"
+        description = "Operator name must be recorded.",
+        status = if (operatorName.value.isNotBlank() && operatorName.value != "N/A") PvRuleStatus.Pass else PvRuleStatus.Fail,
+        ruleId = "OPERATOR_NAME"
     ))
+
+    rules.add(PvRule(
+        description = "SME name must be recorded.",
+        status = if (smeName.value.isNotBlank() && smeName.value != "N/A") PvRuleStatus.Pass else PvRuleStatus.Fail,
+        ruleId = "SME_NAME"
+    ))
+
+    // 3. Tests
+    fun getTestStatus(size: String, cert: String): PvRuleStatus {
+        return when {
+            size == "N/A" || cert == "N/A" -> PvRuleStatus.NA
+            size.isNotBlank() && cert.isNotBlank() -> PvRuleStatus.Pass
+            else -> PvRuleStatus.Fail
+        }
+    }
+
+    rules.add(PvRule("Ferrous size and certificate recorded.", getTestStatus(operatorTestResultFerrous.value, operatorTestResultCertNumberFerrous.value), "OPERATOR_TEST_FERR"))
+    rules.add(PvRule("Non-Ferrous size and certificate recorded.", getTestStatus(operatorTestResultNonFerrous.value, operatorTestResultCertNumberNonFerrous.value), "OPERATOR_TEST_NON_FERR"))
+    rules.add(PvRule("Stainless size and certificate recorded.", getTestStatus(operatorTestResultStainless.value, operatorTestResultCertNumberStainless.value), "OPERATOR_TEST_STAINLESS"))
+    rules.add(PvRule("Large Metal size and certificate recorded.", getTestStatus(operatorTestResultLargeMetal.value, operatorTestResultCertNumberLargeMetal.value), "OPERATOR_TEST_LM"))
+
+    // 4. Failsafe Tests Witnessed
+    fun getWitnessStatus(state: YesNoState) = when(state) {
+        YesNoState.YES -> PvRuleStatus.Pass
+        YesNoState.NA -> PvRuleStatus.NA
+        else -> PvRuleStatus.Fail
+    }
+
+    rules.add(PvRule("Infeed sensor test witnessed.", getWitnessStatus(operatorTestWitnessedInfeed.value), "OPERATOR_TEST_INFEED"))
+    rules.add(PvRule("Reject confirm sensor test witnessed.", getWitnessStatus(operatorTestWitnessedRejectConfirm.value), "OPERATOR_TEST_REJECT_CONFIRM"))
+    rules.add(PvRule("Bin full sensor test witnessed.", getWitnessStatus(operatorTestWitnessedBinFull.value), "OPERATOR_TEST_BIN_FULL"))
+    rules.add(PvRule("Bin door monitor test witnessed.", getWitnessStatus(operatorTestWitnessedBinDoor.value), "OPERATOR_TEST_BIN_DOOR"))
+    rules.add(PvRule("Air pressure sensor test witnessed.", getWitnessStatus(operatorTestWitnessedAirFail.value), "OPERATOR_TEST_AIR_FAIL"))
+    rules.add(PvRule("Pack check sensor test witnessed.", getWitnessStatus(operatorTestWitnessedPackCheck.value), "OPERATOR_TEST_PACK_CHECK"))
+    rules.add(PvRule("Speed sensor test witnessed.", getWitnessStatus(operatorTestWitnessedSpeedSensor.value), "OPERATOR_TEST_SPEED_SENSOR"))
+    rules.add(PvRule("Backup sensor test witnessed.", getWitnessStatus(operatorTestWitnessedBackup.value), "OPERATOR_TEST_BACKUP"))
 
     return rules
 }

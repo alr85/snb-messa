@@ -89,7 +89,7 @@ fun CalMetalDetectorConveyorDetectionSettingsAsLeft(
                     value = viewModel.productPeakSignalAsLeft.value,
                     onValueChange = viewModel::setProductPeakSignalAsLeft,
                     helpText = "Enter the product peak signal value at the 'As Left' settings",
-                    isNAToggleEnabled = false,
+                    isNAToggleEnabled = true,
                     maxLength = 25
                 )
 

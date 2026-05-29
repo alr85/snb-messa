@@ -108,9 +108,14 @@ class CalibrationMetalDetectorConveyorViewModel(
     ) : ViewModel() {
 
 
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    private var refreshJob: kotlinx.coroutines.Job? = null
+
     init {
         viewModelScope.launch {
-
+            _isLoading.value = true
             InAppLogger.d("MD Calibration started. Checking for existing calibration...")
             val existingCalibration = calibrationDao.getCalibrationById(calibrationId)
 
@@ -286,12 +291,6 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _stainlessTestEngineerNotes.value =
                     existingCalibration.stainlessTestEngineerNotes
 
-                _sensitivityAsFoundNonFerrous.value =
-                    existingCalibration.sensitivityAsFoundNonFerrous
-
-                _sensitivityAsFoundStainless.value =
-                    existingCalibration.sensitivityAsFoundStainless
-
                 _productPeakSignalAsFound.value =
                     existingCalibration.productPeakSignalAsFound
 
@@ -315,8 +314,6 @@ class CalibrationMetalDetectorConveyorViewModel(
                     existingCalibration.detectRejectFerrousTrailing.toYesNoState()
                 _peakSignalFerrousTrailing.value =
                     existingCalibration.detectRejectFerrousTrailingPeakSignal
-                _ferrousTestEngineerNotes.value =
-                    existingCalibration.ferrousTestEngineerNotes
                 _ferrousTestPvResult.value =
                     existingCalibration.ferrousTestPvResult
 
@@ -338,8 +335,6 @@ class CalibrationMetalDetectorConveyorViewModel(
                     existingCalibration.detectRejectNonFerrousTrailing.toYesNoState()
                 _peakSignalNonFerrousTrailing.value =
                     existingCalibration.detectRejectNonFerrousTrailingPeakSignal
-                _nonFerrousTestEngineerNotes.value =
-                    existingCalibration.nonFerrousTestEngineerNotes
                 _nonFerrousTestPvResult.value =
                     existingCalibration.nonFerrousTestPvResult
 
@@ -362,8 +357,6 @@ class CalibrationMetalDetectorConveyorViewModel(
                     existingCalibration.detectRejectStainlessTrailing.toYesNoState()
                 _peakSignalStainlessTrailing.value =
                     existingCalibration.detectRejectStainlessTrailingPeakSignal
-                _stainlessTestEngineerNotes.value =
-                    existingCalibration.stainlessTestEngineerNotes
                 _stainlessTestPvResult.value =
                     existingCalibration.stainlessTestPvResult
 
@@ -681,6 +674,7 @@ class CalibrationMetalDetectorConveyorViewModel(
                 InAppLogger.d("No existing calibration found. Starting a new one.")
                 saveNewCalibration()
             }
+            _isLoading.value = false
         }
     }
 
@@ -1495,7 +1489,8 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
     private fun refreshSensitivities() {
-        viewModelScope.launch {
+        refreshJob?.cancel()
+        refreshJob = viewModelScope.launch {
             InAppLogger.d("Refreshing M&S Sensitivities...")
 
             _sensitivityData.value = when (systemTypeId.value) {
@@ -3670,6 +3665,15 @@ class CalibrationMetalDetectorConveyorViewModel(
                 tempId = tempSystemId.value
             )
 
+            // 3.5. Refresh the cloudSystemId in the calibration record to ensure sync
+            val updatedSystem = mdSystemsDAO.getSystemByLocalId(systemId.value)
+            val newCloudId = updatedSystem?.cloudId ?: 0
+            if (newCloudId != 0) {
+                InAppLogger.d("Updating calibration with new cloudSystemId: $newCloudId")
+                calibrationDao.updateCalibrationWithCloudId(tempSystemId.value, newCloudId)
+                _cloudSystemId.intValue = newCloudId
+            }
+
             // 4. Perform locked upload using the Repository's centralized method
             // This prevents concurrent background syncs from uploading the same file.
             InAppLogger.d("Initiating locked upload for ${calibrationId.value}")
@@ -3709,7 +3713,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     private val utcResetActions: List<() -> Unit> = listOf(
 
-        { setDesiredCop(listOf("")) },
+        { setDesiredCop(emptyList()) },
         { setProductDescription("") },
         { setProductLibraryReference("") },
         { setProductLibraryNumber("") },
@@ -3820,7 +3824,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         { setInfeedSensorDetail("") },
         { setInfeedSensorTestMethod("") },
         { setInfeedSensorTestMethodOther("") },
-        { setInfeedSensorTestResult(listOf("")) },
+        { setInfeedSensorTestResult(emptyList()) },
         { setInfeedSensorEngineerNotes("") },
         { setInfeedSensorLatched(YesNoState.NA) },
         { setInfeedSensorCR(YesNoState.NA) },
@@ -3828,7 +3832,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         { setRejectConfirmSensorDetail("") },
         { setRejectConfirmSensorTestMethod("") },
         { setRejectConfirmSensorTestMethodOther("") },
-        { setRejectConfirmSensorTestResult(listOf("")) },
+        { setRejectConfirmSensorTestResult(emptyList()) },
         { setRejectConfirmSensorEngineerNotes("") },
         { setRejectConfirmSensorLatched(YesNoState.NA) },
         { setRejectConfirmSensorCR(YesNoState.NA) },
@@ -3837,7 +3841,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         { setBinFullSensorDetail("") },
         { setBinFullSensorTestMethod("") },
         { setBinFullSensorTestMethodOther("") },
-        { setBinFullSensorTestResult(listOf("")) },
+        { setBinFullSensorTestResult(emptyList()) },
         { setBinFullSensorEngineerNotes("") },
         { setBinFullSensorLatched(YesNoState.NA) },
         { setBinFullSensorCR(YesNoState.NA) },
@@ -3845,7 +3849,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         { setBackupSensorDetail("") },
         { setBackupSensorTestMethod("") },
         { setBackupSensorTestMethodOther("") },
-        { setBackupSensorTestResult(listOf("")) },
+        { setBackupSensorTestResult(emptyList()) },
         { setBackupSensorEngineerNotes("") },
         { setBackupSensorLatched(YesNoState.NA) },
         { setBackupSensorCR(YesNoState.NA) },
@@ -3853,7 +3857,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         { setAirPressureSensorDetail("") },
         { setAirPressureSensorTestMethod("") },
         { setAirPressureSensorTestMethodOther("") },
-        { setAirPressureSensorTestResult(listOf("")) },
+        { setAirPressureSensorTestResult(emptyList()) },
         { setAirPressureSensorEngineerNotes("") },
         { setAirPressureSensorLatched(YesNoState.NA) },
         { setAirPressureSensorCR(YesNoState.NA) },
@@ -3861,7 +3865,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         { setPackCheckSensorDetail("") },
         { setPackCheckSensorTestMethod("") },
         { setPackCheckSensorTestMethodOther("") },
-        { setPackCheckSensorTestResult(listOf("")) },
+        { setPackCheckSensorTestResult(emptyList()) },
         { setPackCheckSensorEngineerNotes("") },
         { setPackCheckSensorLatched(YesNoState.NA) },
         { setPackCheckSensorCR(YesNoState.NA) },
@@ -3869,19 +3873,19 @@ class CalibrationMetalDetectorConveyorViewModel(
         { setSpeedSensorDetail("") },
         { setSpeedSensorTestMethod("") },
         { setSpeedSensorTestMethodOther("") },
-        { setSpeedSensorTestResult(listOf("")) },
+        { setSpeedSensorTestResult(emptyList()) },
         { setSpeedSensorEngineerNotes("") },
         { setSpeedSensorLatched(YesNoState.NA) },
         { setSpeedSensorCR(YesNoState.NA) },
-        { setDetectNotificationResult(listOf("")) },
+        { setDetectNotificationResult(emptyList()) },
         { setDetectNotificationEngineerNotes("") },
         { setBinDoorMonitorFitted(YesNoState.NA) },
         { setBinDoorMonitorDetail("") },
         { setBinDoorStatusAsFound("") },
-        { setBinDoorUnlockedIndication(listOf("")) },
-        { setBinDoorOpenIndication(listOf("")) },
+        { setBinDoorUnlockedIndication(emptyList()) },
+        { setBinDoorOpenIndication(emptyList()) },
         { setBinDoorTimeoutTimer("") },
-        { setBinDoorTimeoutResult(listOf("")) },
+        { setBinDoorTimeoutResult(emptyList()) },
         { setBinDoorLatched(YesNoState.NA) },
         { setBinDoorCR(YesNoState.NA) },
         { setBinDoorEngineerNotes("") },

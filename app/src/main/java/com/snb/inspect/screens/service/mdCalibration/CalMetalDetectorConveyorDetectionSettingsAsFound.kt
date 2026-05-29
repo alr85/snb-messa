@@ -138,7 +138,7 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
                     value = viewModel.productPeakSignalAsFound.value,
                     onValueChange = viewModel::setProductPeakSignalAsFound,
                     helpText = "Enter the product peak signal value at the 'As Found' settings",
-                    isNAToggleEnabled = false,
+                    isNAToggleEnabled = true,
                     maxLength = 25
                 )
 
