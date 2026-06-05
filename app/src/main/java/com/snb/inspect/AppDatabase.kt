@@ -27,6 +27,8 @@ import com.snb.inspect.dataClasses.MeasuringEquipmentLocal
 import com.snb.inspect.dataClasses.MetalDetectorConveyorCalibrationLocal
 import com.snb.inspect.dataClasses.NoticeLocal
 import com.snb.inspect.dataClasses.PipelineRetailerSensitivitiesEntity
+import com.snb.inspect.daos.SensitivityOptimisationValidationDAO
+import com.snb.inspect.dataClasses.SensitivityOptimisationValidationLocal
 import com.snb.inspect.dataClasses.SystemTypeLocal
 import com.snb.inspect.dataClasses.UserEntity
 import com.snb.inspect.dataClasses.UserManualLocal
@@ -44,10 +46,11 @@ import com.snb.inspect.dataClasses.UserManualLocal
         PipelineRetailerSensitivitiesEntity::class,
         NoticeLocal::class,
         UserManualLocal::class,
-        MeasuringEquipmentLocal::class
+        MeasuringEquipmentLocal::class,
+        SensitivityOptimisationValidationLocal::class
 
     ],
-    version = 62,
+    version = 64,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -59,6 +62,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun mdSystemDAO(): MetalDetectorSystemsDAO
     abstract fun systemTypeDAO(): SystemTypeDAO
     abstract fun metalDetectorConveyorCalibrationDAO(): MetalDetectorConveyorCalibrationDAO
+    abstract fun sensitivityOptimisationValidationDAO(): SensitivityOptimisationValidationDAO
 
     abstract fun conveyorDao(): ConveyorDao
     abstract fun freefallDao(): FreefallDao

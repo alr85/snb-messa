@@ -54,6 +54,7 @@ import androidx.navigation.NavHostController
 import com.snb.inspect.AppChromeViewModel
 import com.snb.inspect.PreferencesHelper
 import com.snb.inspect.activities.MetalDetectorConveyorCalibrationActivity
+import com.snb.inspect.activities.SensitivityOptimisationValidationActivity
 import com.snb.inspect.daos.MetalDetectorConveyorCalibrationDAO
 import com.snb.inspect.dataClasses.MdModelsLocal
 import com.snb.inspect.dataClasses.MetalDetectorWithFullDetails
@@ -147,6 +148,28 @@ fun MetalDetectorConveyorSystemScreen(
             putExtra("DETECTION_SETTING_8_LABEL", modelDetails?.detectionSetting8)
         }
 
+        context.startActivity(intent)
+    }
+
+    fun startSov() {
+        val system = mdSystem ?: return
+        val newSovId = System.currentTimeMillis().toString(36) + "-" + (100..999).random()
+        val (_, _, engineerId) = PreferencesHelper.getCredentials(context)
+
+        val intent = Intent(context, SensitivityOptimisationValidationActivity::class.java).apply {
+            putExtra("SOV_ID", newSovId)
+            putExtra("SYSTEM_FULL_DETAILS", system)
+            putExtra("ENGINEER_ID", engineerId ?: 0)
+            // detection labels
+            putExtra("DETECTION_SETTING_1_LABEL", modelDetails?.detectionSetting1)
+            putExtra("DETECTION_SETTING_2_LABEL", modelDetails?.detectionSetting2)
+            putExtra("DETECTION_SETTING_3_LABEL", modelDetails?.detectionSetting3)
+            putExtra("DETECTION_SETTING_4_LABEL", modelDetails?.detectionSetting4)
+            putExtra("DETECTION_SETTING_5_LABEL", modelDetails?.detectionSetting5)
+            putExtra("DETECTION_SETTING_6_LABEL", modelDetails?.detectionSetting6)
+            putExtra("DETECTION_SETTING_7_LABEL", modelDetails?.detectionSetting7)
+            putExtra("DETECTION_SETTING_8_LABEL", modelDetails?.detectionSetting8)
+        }
         context.startActivity(intent)
     }
 
@@ -313,6 +336,31 @@ fun MetalDetectorConveyorSystemScreen(
                                 Icon(Icons.Default.Tune, "Calibration", modifier = Modifier.size(24.dp))
                                 Text(
                                     text = "New Calibration",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
+
+                        // Start SOV
+                        FloatingActionButton(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                showActions = false
+                                startSov()
+                            },
+                            containerColor = Color.White,
+                            contentColor = SnbRed,
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(Icons.Default.Tune, "SOV", modifier = Modifier.size(24.dp))
+                                Text(
+                                    text = "Sensitivity Optimisation",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier.weight(1f)

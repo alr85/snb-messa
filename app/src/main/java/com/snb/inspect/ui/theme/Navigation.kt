@@ -42,12 +42,14 @@ import com.snb.inspect.screens.menu.DatabaseSyncScreen
 import com.snb.inspect.screens.menu.MDFailsafesScreen
 import com.snb.inspect.screens.menu.MSSensitivitiesScreen
 import com.snb.inspect.screens.menu.MyCalibrationsScreen
+import com.snb.inspect.screens.menu.MyValidationsScreen
 import com.snb.inspect.screens.menu.UserManualsListScreen
 import com.snb.inspect.screens.menu.WeekendRotaScreen
 import com.snb.inspect.screens.service.AddNewMetalDetectorScreen
 import com.snb.inspect.screens.service.ManualViewerScreen
 import com.snb.inspect.screens.service.MetalDetectorConveyorSystemScreen
 import com.snb.inspect.screens.service.ServiceSelectSystemScreen
+import com.snb.inspect.repositories.SensitivityOptimisationValidationRepository
 import com.snb.inspect.util.LogConsole
 import com.snb.inspect.util.SyncPreferences
 import java.net.URLDecoder
@@ -246,6 +248,20 @@ fun AppNavGraph(
                 snackbarHostState = snackbarHostState
             )
 
+        }
+
+        composable("myValidations") {
+            val dao = db.sensitivityOptimisationValidationDAO()
+            val sovRepository = SensitivityOptimisationValidationRepository(dao)
+
+            MyValidationsScreen(
+                dao = dao,
+                customerRepository = repositoryCustomer,
+                systemsRepository = repositoryMdSystems,
+                sovRepository = sovRepository,
+                apiService = apiService,
+                snackbarHostState = snackbarHostState
+            )
         }
 
         composable("addNewMetalDetectorScreen/{customerID}/{customerName}"){ backStackEntry ->

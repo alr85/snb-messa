@@ -219,7 +219,7 @@ fun MyCalibrationsScreen(
 }
 
 @Composable
-fun SectionHeader(title: String, icon: ImageVector) {
+private fun SectionHeader(title: String, icon: ImageVector) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(bottom = 8.dp)
@@ -338,7 +338,7 @@ fun ModernCalibrationItem(
 }
 
 @Composable
-fun StatusBadge(text: String, color: Color, isUploading: Boolean) {
+private fun StatusBadge(text: String, color: Color, isUploading: Boolean) {
     Surface(
         color = color.copy(alpha = 0.1f),
         shape = RoundedCornerShape(8.dp)
