@@ -358,9 +358,9 @@ fun MetalDetectorConveyorSystemScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Icon(Icons.Default.Tune, "SOV", modifier = Modifier.size(24.dp))
+                                Icon(Icons.Default.Tune, "Validation", modifier = Modifier.size(24.dp))
                                 Text(
-                                    text = "Sensitivity Optimisation",
+                                    text = "Validation",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier.weight(1f)

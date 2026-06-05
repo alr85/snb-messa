@@ -8,6 +8,8 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.navigation.compose.rememberNavController
 import com.snb.inspect.AppDatabase
+import com.snb.inspect.MyApplication
+import com.snb.inspect.ApiService
 import com.snb.inspect.calibrationViewModels.SensitivityOptimisationValidationViewModel
 import com.snb.inspect.calibrationViewModels.SensitivityOptimisationValidationViewModelFactory
 import com.snb.inspect.dataClasses.MetalDetectorWithFullDetails
@@ -19,7 +21,9 @@ class SensitivityOptimisationValidationActivity : ComponentActivity() {
 
     private val db by lazy { AppDatabase.getDatabase(applicationContext) }
     private val sovDao by lazy { db.sensitivityOptimisationValidationDAO() }
-    private val repository by lazy { SensitivityOptimisationValidationRepository(sovDao) }
+    private val mdSystemDAO by lazy { db.mdSystemDAO() }
+    private val repository by lazy { SensitivityOptimisationValidationRepository(sovDao, mdSystemDAO) }
+    private val apiService by lazy { (application as MyApplication).apiService }
 
     private lateinit var viewModel: SensitivityOptimisationValidationViewModel
 
@@ -68,7 +72,8 @@ class SensitivityOptimisationValidationActivity : ComponentActivity() {
                 SovScreenWrapper(
                     navController = navController,
                     viewModel = viewModel,
-                    windowSizeClass = windowSizeClass
+                    windowSizeClass = windowSizeClass,
+                    apiService = apiService
                 )
             }
         }

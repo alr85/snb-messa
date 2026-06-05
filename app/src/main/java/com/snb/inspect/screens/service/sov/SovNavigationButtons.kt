@@ -96,7 +96,7 @@ fun SovNavigationButtons(
         AlertDialog(
             onDismissRequest = { showDialog = false },
             title = { Text("Are you sure?") },
-            text = { Text("Cancelling will discard all SOV data.") },
+            text = { Text("Cancelling will discard all Validation data.") },
             confirmButton = {
                 TextButton(
                     onClick = {

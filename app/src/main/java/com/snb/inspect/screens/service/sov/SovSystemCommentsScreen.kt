@@ -11,7 +11,7 @@ import com.snb.inspect.ui.theme.FormSpacer
 import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 
 @Composable
-fun SovCommentsScreen(viewModel: SensitivityOptimisationValidationViewModel) {
+fun SovSystemCommentsScreen(viewModel: SensitivityOptimisationValidationViewModel) {
     ScrollableWithScrollbar(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 16.dp)
@@ -26,19 +26,6 @@ fun SovCommentsScreen(viewModel: SensitivityOptimisationValidationViewModel) {
                 value = viewModel.systemComments.value,
                 onValueChange = { viewModel.systemComments.value = it },
                 helpText = "Comments on system details, application and condition with respect to any possible performance restrictions: Examples include, insufficient metal free area, excessive vibration, low level belt contamination, earth loops, evident RF or mains interference or other environmental influences.",
-                singleLine = false
-            )
-            FormSpacer()
-
-            Spacer(Modifier.height(16.dp))
-            CalibrationHeader("Product Details & Presentation Comments")
-            Spacer(Modifier.height(16.dp))
-
-            LabeledTextFieldWithHelp(
-                label = "Product Comments",
-                value = viewModel.productComments.value,
-                onValueChange = { viewModel.productComments.value = it },
-                helpText = "Comments on product details, presentation and fluctuations with respect to any possible performance restrictions, examples include large diffrences in conductivity, changes in size, ransom presentation, double stacking, packaging inconsistencies",
                 singleLine = false
             )
             FormSpacer()

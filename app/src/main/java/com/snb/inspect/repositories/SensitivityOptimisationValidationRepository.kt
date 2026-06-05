@@ -4,6 +4,7 @@ import android.content.Context
 import com.snb.inspect.ApiService
 import com.snb.inspect.FetchResult
 import com.snb.inspect.daos.SensitivityOptimisationValidationDAO
+import com.snb.inspect.daos.MetalDetectorSystemsDAO
 import com.snb.inspect.dataClasses.SensitivityOptimisationValidationLocal
 import com.snb.inspect.network.isNetworkAvailable
 import com.snb.inspect.util.CsvUploader
@@ -16,7 +17,10 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.Normalizer
 
-class SensitivityOptimisationValidationRepository(private val sovDao: SensitivityOptimisationValidationDAO) {
+class SensitivityOptimisationValidationRepository(
+    private val sovDao: SensitivityOptimisationValidationDAO,
+    private val mdSystemsDAO: MetalDetectorSystemsDAO
+) {
 
     private val uploadMutex = Mutex()
 
@@ -25,6 +29,10 @@ class SensitivityOptimisationValidationRepository(private val sovDao: Sensitivit
     }
 
     suspend fun getById(id: String) = sovDao.getById(id)
+
+    suspend fun updateSystemLocation(systemId: Int, lastLocation: String) {
+        mdSystemsDAO.updateLastLocation(systemId, lastLocation)
+    }
 
     suspend fun uploadUnsynced(
         context: Context,
@@ -96,20 +104,82 @@ class SensitivityOptimisationValidationRepository(private val sovDao: Sensitivit
 
         try {
             val data = listOf(
-                sov.sovId, sov.mapVersion, sov.systemId, sov.cloudSystemId, sov.serialNumber, sov.lastLocation,
+                sov.sovId, sov.mapVersion, sov.systemId, sov.cloudSystemId, sov.serialNumber, sov.lastLocation, sov.newLocation,
                 sov.engineerId, sov.customerId, sov.startDate, sov.endDate,
                 sov.productDescription, sov.productLibraryReference, sov.productLibraryNumber, sov.beltSpeed,
-                sov.sensitivityAsFoundFerrous, sov.sensitivityAsFoundNonFerrous, sov.sensitivityAsFoundStainless,
+
+                // AS FOUND - FERROUS
+                sov.sensitivityAsFoundFerrous, sov.sampleCertAsFoundFerrous,
+                sov.detectRejectAsFoundFerrousLeading, sov.peakAsFoundFerrousLeading,
+                sov.detectRejectAsFoundFerrousMiddle, sov.peakAsFoundFerrousMiddle,
+                sov.detectRejectAsFoundFerrousTrailing, sov.peakAsFoundFerrousTrailing,
+                sov.notesAsFoundFerrous,
+
+                // AS FOUND - NON-FERROUS
+                sov.sensitivityAsFoundNonFerrous, sov.sampleCertAsFoundNonFerrous,
+                sov.detectRejectAsFoundNonFerrousLeading, sov.peakAsFoundNonFerrousLeading,
+                sov.detectRejectAsFoundNonFerrousMiddle, sov.peakAsFoundNonFerrousMiddle,
+                sov.detectRejectAsFoundNonFerrousTrailing, sov.peakAsFoundNonFerrousTrailing,
+                sov.notesAsFoundNonFerrous,
+
+                // AS FOUND - STAINLESS
+                sov.sensitivityAsFoundStainless, sov.sampleCertAsFoundStainless,
+                sov.detectRejectAsFoundStainlessLeading, sov.peakAsFoundStainlessLeading,
+                sov.detectRejectAsFoundStainlessMiddle, sov.peakAsFoundStainlessMiddle,
+                sov.detectRejectAsFoundStainlessTrailing, sov.peakAsFoundStainlessTrailing,
+                sov.notesAsFoundStainless,
+
                 sov.sensitivityAsFoundOther1, sov.sensitivityAsFoundOther2,
+
                 sov.detectionSettingAsFound1, sov.detectionSettingAsFound2, sov.detectionSettingAsFound3, sov.detectionSettingAsFound4,
                 sov.detectionSettingAsFound5, sov.detectionSettingAsFound6, sov.detectionSettingAsFound7, sov.detectionSettingAsFound8,
-                sov.validationTest1Description, sov.validationTest1Passes, sov.validationTest1Successes,
-                sov.validationTest2Description, sov.validationTest2Passes, sov.validationTest2Successes,
-                sov.validationTest3Description, sov.validationTest3Passes, sov.validationTest3Successes,
-                sov.sensitivityAsLeftFerrous, sov.sensitivityAsLeftNonFerrous, sov.sensitivityAsLeftStainless,
+                sov.notesAsFoundDetectionSettings, sov.productPeakSignalAsFound,
+
+                // VALIDATION 1
+                sov.validationTest1Description,
+                sov.val1LeadingPasses, sov.val1LeadingSuccesses,
+                sov.val1MiddlePasses, sov.val1MiddleSuccesses,
+                sov.val1TrailingPasses, sov.val1TrailingSuccesses,
+
+                // VALIDATION 2
+                sov.validationTest2Description,
+                sov.val2LeadingPasses, sov.val2LeadingSuccesses,
+                sov.val2MiddlePasses, sov.val2MiddleSuccesses,
+                sov.val2TrailingPasses, sov.val2TrailingSuccesses,
+
+                // VALIDATION 3
+                sov.validationTest3Description,
+                sov.val3LeadingPasses, sov.val3LeadingSuccesses,
+                sov.val3MiddlePasses, sov.val3MiddleSuccesses,
+                sov.val3TrailingPasses, sov.val3TrailingSuccesses,
+
+                // AS LEFT - FERROUS
+                sov.sensitivityAsLeftFerrous, sov.sampleCertAsLeftFerrous,
+                sov.detectRejectAsLeftFerrousLeading, sov.peakAsLeftFerrousLeading,
+                sov.detectRejectAsLeftFerrousMiddle, sov.peakAsLeftFerrousMiddle,
+                sov.detectRejectAsLeftFerrousTrailing, sov.peakAsLeftFerrousTrailing,
+                sov.notesAsLeftFerrous,
+
+                // AS LEFT - NON-FERROUS
+                sov.sensitivityAsLeftNonFerrous, sov.sampleCertAsLeftNonFerrous,
+                sov.detectRejectAsLeftNonFerrousLeading, sov.peakAsLeftNonFerrousLeading,
+                sov.detectRejectAsLeftNonFerrousMiddle, sov.peakAsLeftNonFerrousMiddle,
+                sov.detectRejectAsLeftNonFerrousTrailing, sov.peakAsLeftNonFerrousTrailing,
+                sov.notesAsLeftNonFerrous,
+
+                // AS LEFT - STAINLESS
+                sov.sensitivityAsLeftStainless, sov.sampleCertAsLeftStainless,
+                sov.detectRejectAsLeftStainlessLeading, sov.peakAsLeftStainlessLeading,
+                sov.detectRejectAsLeftStainlessMiddle, sov.peakAsLeftStainlessMiddle,
+                sov.detectRejectAsLeftStainlessTrailing, sov.peakAsLeftStainlessTrailing,
+                sov.notesAsLeftStainless,
+
                 sov.sensitivityAsLeftOther1, sov.sensitivityAsLeftOther2,
+
                 sov.detectionSettingAsLeft1, sov.detectionSettingAsLeft2, sov.detectionSettingAsLeft3, sov.detectionSettingAsLeft4,
                 sov.detectionSettingAsLeft5, sov.detectionSettingAsLeft6, sov.detectionSettingAsLeft7, sov.detectionSettingAsLeft8,
+                sov.notesAsLeftDetectionSettings, sov.productPeakSignalAsLeft,
+
                 sov.systemComments, sov.productComments,
                 sov.customerName,
                 sov.detectionSetting1label, sov.detectionSetting2label, sov.detectionSetting3label, sov.detectionSetting4label,

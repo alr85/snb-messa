@@ -7,6 +7,7 @@ import androidx.compose.ui.unit.dp
 import com.snb.inspect.calibrationViewModels.SensitivityOptimisationValidationViewModel
 import com.snb.inspect.formModules.CalibrationHeader
 import com.snb.inspect.formModules.LabeledReadOnlyField
+import com.snb.inspect.formModules.LabeledTextFieldWithHelp
 import com.snb.inspect.ui.theme.FormSpacer
 import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 
@@ -18,7 +19,7 @@ fun SovStartScreen(viewModel: SensitivityOptimisationValidationViewModel) {
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Spacer(Modifier.height(16.dp))
-            CalibrationHeader("SOV Start")
+            CalibrationHeader("Validation Start")
             Spacer(Modifier.height(16.dp))
 
             LabeledReadOnlyField(
@@ -46,6 +47,14 @@ fun SovStartScreen(viewModel: SensitivityOptimisationValidationViewModel) {
                 label = "System Type",
                 value = viewModel.system.systemType,
                 helpText = "Type of system."
+            )
+            FormSpacer()
+
+            LabeledTextFieldWithHelp(
+                label = "Location",
+                value = viewModel.newLocation.value,
+                onValueChange = viewModel::setNewLocation,
+                helpText = "Verify or update the system location reference."
             )
             FormSpacer()
 

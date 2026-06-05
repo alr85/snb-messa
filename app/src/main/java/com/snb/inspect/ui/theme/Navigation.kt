@@ -252,7 +252,8 @@ fun AppNavGraph(
 
         composable("myValidations") {
             val dao = db.sensitivityOptimisationValidationDAO()
-            val sovRepository = SensitivityOptimisationValidationRepository(dao)
+            val mdSystemDao = db.mdSystemDAO()
+            val sovRepository = SensitivityOptimisationValidationRepository(dao, mdSystemDao)
 
             MyValidationsScreen(
                 dao = dao,

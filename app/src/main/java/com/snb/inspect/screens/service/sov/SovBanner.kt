@@ -46,8 +46,8 @@ fun SovBanner(
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "Sensitivity Optimisation & Validation", style = MaterialTheme.typography.titleMedium)
-                    Text(text = "SOV ID: ${viewModel.sovId}", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                    Text(text = "Validation", style = MaterialTheme.typography.titleMedium)
+                    Text(text = "ID: ${viewModel.sovId}", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
                 }
             }
         }

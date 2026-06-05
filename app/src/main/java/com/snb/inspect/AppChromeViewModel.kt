@@ -107,6 +107,13 @@ class AppChromeViewModel : ViewModel() {
                 showMenu = false
             )
 
+            route == "myValidations" -> TopBarState(
+                title = "My Validations",
+                showBack = true,
+                showCall = false,
+                showMenu = false
+            )
+
             route == "checkweigherAccuracy" -> TopBarState(
                 title = "Accuracy Calculator",
                 showBack = true,

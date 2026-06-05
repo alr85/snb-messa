@@ -4,41 +4,61 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.snb.inspect.ApiService
 import com.snb.inspect.calibrationViewModels.SensitivityOptimisationValidationViewModel
 
 @Composable
 fun SovNavGraphContent(
     navController: NavHostController,
     viewModel: SensitivityOptimisationValidationViewModel,
+    apiService: ApiService,
     onScreenChanged: @Composable (content: @Composable () -> Unit) -> Unit
 ) {
     NavHost(
         navController = navController,
-        startDestination = "SovStart"
+        startDestination = "ValidationStart"
     ) {
-        composable("SovStart") {
+        composable("ValidationStart") {
             onScreenChanged { SovStartScreen(viewModel) }
         }
-        composable("SovProductDetails") {
+        composable("ValidationSystemComments") {
+            onScreenChanged { SovSystemCommentsScreen(viewModel) }
+        }
+        composable("ValidationProductDetails") {
             onScreenChanged { SovProductDetailsScreen(viewModel) }
         }
-        composable("SovAsFound") {
-            onScreenChanged { SovAsFoundScreen(viewModel) }
+        composable("ValidationProductComments") {
+            onScreenChanged { SovProductCommentsScreen(viewModel) }
         }
-        composable("SovOptimisation") {
+        composable("ValidationDetectionSettingsAsFound") {
+            onScreenChanged { SovDetectionSettingsAsFoundScreen(viewModel) }
+        }
+        composable("ValidationFerrousTestAsFound") {
+            onScreenChanged { SovFerrousTestAsFoundScreen(viewModel) }
+        }
+        composable("ValidationNonFerrousTestAsFound") {
+            onScreenChanged { SovNonFerrousTestAsFoundScreen(viewModel) }
+        }
+        composable("ValidationStainlessTestAsFound") {
+            onScreenChanged { SovStainlessTestAsFoundScreen(viewModel) }
+        }
+        composable("ValidationOptimisation") {
             onScreenChanged { SovOptimisationScreen(viewModel) }
         }
-        composable("SovValidation") {
-            onScreenChanged { SovValidationScreen(viewModel) }
+        composable("ValidationDetectionSettingsAsLeft") {
+            onScreenChanged { SovDetectionSettingsAsLeftScreen(viewModel) }
         }
-        composable("SovAsLeft") {
-            onScreenChanged { SovAsLeftScreen(viewModel) }
+        composable("ValidationFerrousTestAsLeft") {
+            onScreenChanged { SovFerrousTestAsLeftScreen(viewModel) }
         }
-        composable("SovComments") {
-            onScreenChanged { SovCommentsScreen(viewModel) }
+        composable("ValidationNonFerrousTestAsLeft") {
+            onScreenChanged { SovNonFerrousTestAsLeftScreen(viewModel) }
         }
-        composable("SovSummary") {
-            onScreenChanged { SovSummaryScreen(viewModel) }
+        composable("ValidationStainlessTestAsLeft") {
+            onScreenChanged { SovStainlessTestAsLeftScreen(viewModel) }
+        }
+        composable("ValidationSummary") {
+            onScreenChanged { SovSummaryScreen(viewModel, apiService) }
         }
     }
 }

@@ -14,6 +14,7 @@ class SensitivityOptimisationValidationLocal(
     var cloudSystemId: Int = 0
     var serialNumber: String = ""
     var lastLocation: String = ""
+    var newLocation: String = ""
     var engineerId: Int = 0
     var customerId: Int = 0
     var startDate: String = LocalDateTime.now().toString()
@@ -28,8 +29,35 @@ class SensitivityOptimisationValidationLocal(
 
     // AS FOUND
     var sensitivityAsFoundFerrous: String = ""
+    var sampleCertAsFoundFerrous: String = ""
+    var detectRejectAsFoundFerrousLeading: String = ""
+    var peakAsFoundFerrousLeading: String = ""
+    var detectRejectAsFoundFerrousMiddle: String = ""
+    var peakAsFoundFerrousMiddle: String = ""
+    var detectRejectAsFoundFerrousTrailing: String = ""
+    var peakAsFoundFerrousTrailing: String = ""
+    var notesAsFoundFerrous: String = ""
+
     var sensitivityAsFoundNonFerrous: String = ""
+    var sampleCertAsFoundNonFerrous: String = ""
+    var detectRejectAsFoundNonFerrousLeading: String = ""
+    var peakAsFoundNonFerrousLeading: String = ""
+    var detectRejectAsFoundNonFerrousMiddle: String = ""
+    var peakAsFoundNonFerrousMiddle: String = ""
+    var detectRejectAsFoundNonFerrousTrailing: String = ""
+    var peakAsFoundNonFerrousTrailing: String = ""
+    var notesAsFoundNonFerrous: String = ""
+
     var sensitivityAsFoundStainless: String = ""
+    var sampleCertAsFoundStainless: String = ""
+    var detectRejectAsFoundStainlessLeading: String = ""
+    var peakAsFoundStainlessLeading: String = ""
+    var detectRejectAsFoundStainlessMiddle: String = ""
+    var peakAsFoundStainlessMiddle: String = ""
+    var detectRejectAsFoundStainlessTrailing: String = ""
+    var peakAsFoundStainlessTrailing: String = ""
+    var notesAsFoundStainless: String = ""
+
     var sensitivityAsFoundOther1: String = ""
     var sensitivityAsFoundOther2: String = ""
     
@@ -41,24 +69,65 @@ class SensitivityOptimisationValidationLocal(
     var detectionSettingAsFound6: String = ""
     var detectionSettingAsFound7: String = ""
     var detectionSettingAsFound8: String = ""
+    var notesAsFoundDetectionSettings: String = ""
+    var productPeakSignalAsFound: String = ""
 
     // VALIDATION (30 passes)
     var validationTest1Description: String = "" // e.g. "Ferrous 1.0mm" or "Stainless 1.2mm"
-    var validationTest1Passes: Int = 0
-    var validationTest1Successes: Int = 0
+    var val1LeadingPasses: Int = 0
+    var val1LeadingSuccesses: Int = 0
+    var val1MiddlePasses: Int = 0
+    var val1MiddleSuccesses: Int = 0
+    var val1TrailingPasses: Int = 0
+    var val1TrailingSuccesses: Int = 0
     
     var validationTest2Description: String = ""
-    var validationTest2Passes: Int = 0
-    var validationTest2Successes: Int = 0
+    var val2LeadingPasses: Int = 0
+    var val2LeadingSuccesses: Int = 0
+    var val2MiddlePasses: Int = 0
+    var val2MiddleSuccesses: Int = 0
+    var val2TrailingPasses: Int = 0
+    var val2TrailingSuccesses: Int = 0
     
     var validationTest3Description: String = ""
-    var validationTest3Passes: Int = 0
-    var validationTest3Successes: Int = 0
+    var val3LeadingPasses: Int = 0
+    var val3LeadingSuccesses: Int = 0
+    var val3MiddlePasses: Int = 0
+    var val3MiddleSuccesses: Int = 0
+    var val3TrailingPasses: Int = 0
+    var val3TrailingSuccesses: Int = 0
 
     // AS LEFT
     var sensitivityAsLeftFerrous: String = ""
+    var sampleCertAsLeftFerrous: String = ""
+    var detectRejectAsLeftFerrousLeading: String = ""
+    var peakAsLeftFerrousLeading: String = ""
+    var detectRejectAsLeftFerrousMiddle: String = ""
+    var peakAsLeftFerrousMiddle: String = ""
+    var detectRejectAsLeftFerrousTrailing: String = ""
+    var peakAsLeftFerrousTrailing: String = ""
+    var notesAsLeftFerrous: String = ""
+
     var sensitivityAsLeftNonFerrous: String = ""
+    var sampleCertAsLeftNonFerrous: String = ""
+    var detectRejectAsLeftNonFerrousLeading: String = ""
+    var peakAsLeftNonFerrousLeading: String = ""
+    var detectRejectAsLeftNonFerrousMiddle: String = ""
+    var peakAsLeftNonFerrousMiddle: String = ""
+    var detectRejectAsLeftNonFerrousTrailing: String = ""
+    var peakAsLeftNonFerrousTrailing: String = ""
+    var notesAsLeftNonFerrous: String = ""
+
     var sensitivityAsLeftStainless: String = ""
+    var sampleCertAsLeftStainless: String = ""
+    var detectRejectAsLeftStainlessLeading: String = ""
+    var peakAsLeftStainlessLeading: String = ""
+    var detectRejectAsLeftStainlessMiddle: String = ""
+    var peakAsLeftStainlessMiddle: String = ""
+    var detectRejectAsLeftStainlessTrailing: String = ""
+    var peakAsLeftStainlessTrailing: String = ""
+    var notesAsLeftStainless: String = ""
+
     var sensitivityAsLeftOther1: String = ""
     var sensitivityAsLeftOther2: String = ""
 
@@ -70,6 +139,8 @@ class SensitivityOptimisationValidationLocal(
     var detectionSettingAsLeft6: String = ""
     var detectionSettingAsLeft7: String = ""
     var detectionSettingAsLeft8: String = ""
+    var notesAsLeftDetectionSettings: String = ""
+    var productPeakSignalAsLeft: String = ""
 
     // COMMENTS
     var systemComments: String = "" // Performance restrictions (metal free area, vibration etc)
