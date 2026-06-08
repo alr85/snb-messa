@@ -1,7 +1,6 @@
 package com.snb.inspect.screens.service.sov
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
@@ -15,6 +14,12 @@ import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 fun SovFerrousTestAsLeftScreen(viewModel: SensitivityOptimisationValidationViewModel) {
     val sensitivity by viewModel.sensitivityAsLeftFerrous
     val sampleCert by viewModel.sampleCertAsLeftFerrous
+    val detectLeading by viewModel.detectRejectAsLeftFerrousLeading
+    val peakLeading by viewModel.peakSignalAsLeftFerrousLeading
+    val detectMiddle by viewModel.detectRejectAsLeftFerrousMiddle
+    val peakMiddle by viewModel.peakSignalAsLeftFerrousMiddle
+    val detectTrailing by viewModel.detectRejectAsLeftFerrousTrailing
+    val peakTrailing by viewModel.peakSignalAsLeftFerrousTrailing
     val notes by viewModel.notesAsLeftFerrous
     
     val leadingSuccesses by viewModel.val1LeadingSuccesses
@@ -27,6 +32,11 @@ fun SovFerrousTestAsLeftScreen(viewModel: SensitivityOptimisationValidationViewM
     val isNextStepEnabled = sensitivity.isNotBlank() &&
             sampleCert.isNotBlank() &&
             (sensitivity == "N/A" || (
+                (detectLeading != YesNoState.YES || peakLeading.isNotBlank()) &&
+                (!isConveyor || (
+                    (detectMiddle != YesNoState.YES || peakMiddle.isNotBlank()) &&
+                    (detectTrailing != YesNoState.YES || peakTrailing.isNotBlank())
+                )) &&
                 // 30 Pass Validation
                 (leadingSuccesses.toIntOrNull() ?: 0) >= (if (isConveyor) 10 else 30) &&
                 (!isConveyor || (
@@ -71,6 +81,44 @@ fun SovFerrousTestAsLeftScreen(viewModel: SensitivityOptimisationValidationViewM
                 FormSpacer()
 
                 if (sensitivity != "N/A") {
+                    LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
+                        label = if (isConveyor) "Detected & Rejected (Leading)" else "Detected & Rejected",
+                        currentState = detectLeading,
+                        onStateChange = { viewModel.detectRejectAsLeftFerrousLeading.value = it },
+                        helpText = if (isConveyor) "Leading edge test result & signal." else "Test result & signal.",
+                        inputLabel = "Produced Signal",
+                        inputValue = peakLeading,
+                        onInputValueChange = { viewModel.peakSignalAsLeftFerrousLeading.value = it },
+                        inputMaxLength = 12,
+                    )
+
+                    if (isConveyor) {
+                        FormSpacer()
+                        LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
+                            label = "Detected & Rejected (Middle)",
+                            currentState = detectMiddle,
+                            onStateChange = { viewModel.detectRejectAsLeftFerrousMiddle.value = it },
+                            helpText = "Middle test result & signal.",
+                            inputLabel = "Produced Signal",
+                            inputValue = peakMiddle,
+                            onInputValueChange = { viewModel.peakSignalAsLeftFerrousMiddle.value = it },
+                            inputMaxLength = 12,
+                        )
+
+                        FormSpacer()
+                        LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
+                            label = "Detected & Rejected (Trailing)",
+                            currentState = detectTrailing,
+                            onStateChange = { viewModel.detectRejectAsLeftFerrousTrailing.value = it },
+                            helpText = "Trailing-edge test result & signal.",
+                            inputLabel = "Produced Signal",
+                            inputValue = peakTrailing,
+                            onInputValueChange = { viewModel.peakSignalAsLeftFerrousTrailing.value = it },
+                            inputMaxLength = 12,
+                        )
+                        FormSpacer()
+                    }
+
                     CalibrationHeader(if (isConveyor) "30 Pass Validation (10x per edge)" else "30 Pass Validation")
                     FormSpacer()
 

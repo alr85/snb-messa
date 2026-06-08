@@ -27,8 +27,8 @@ fun SovOptimisationScreen(viewModel: SensitivityOptimisationValidationViewModel)
 
             LabeledTextFieldWithHelp(
                 label = "Optimisation Notes",
-                value = viewModel.systemComments.value, // Reusing systemComments for notes temporarily or use a specific field
-                onValueChange = { viewModel.systemComments.value = it },
+                value = viewModel.optimisationNotes.value,
+                onValueChange = { viewModel.optimisationNotes.value = it },
                 helpText = "Document the optimisation process, settings changed, and false reject rate observed."
             )
             FormSpacer()

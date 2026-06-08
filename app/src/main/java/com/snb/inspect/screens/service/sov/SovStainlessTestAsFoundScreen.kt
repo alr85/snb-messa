@@ -16,11 +16,11 @@ fun SovStainlessTestAsFoundScreen(viewModel: SensitivityOptimisationValidationVi
     val sensitivity by viewModel.sensitivityAsFoundStainless
     val sampleCert by viewModel.sampleCertAsFoundStainless
     val detectLeading by viewModel.detectRejectAsFoundStainlessLeading
-    val peakLeading by viewModel.peakAsFoundStainlessLeading
+    val peakLeading by viewModel.peakSignalAsFoundStainlessLeading
     val detectMiddle by viewModel.detectRejectAsFoundStainlessMiddle
-    val peakMiddle by viewModel.peakAsFoundStainlessMiddle
+    val peakMiddle by viewModel.peakSignalAsFoundStainlessMiddle
     val detectTrailing by viewModel.detectRejectAsFoundStainlessTrailing
-    val peakTrailing by viewModel.peakAsFoundStainlessTrailing
+    val peakTrailing by viewModel.peakSignalAsFoundStainlessTrailing
     val notes by viewModel.notesAsFoundStainless
     
     val isConveyor = viewModel.system.systemTypeId == 1
@@ -77,7 +77,7 @@ fun SovStainlessTestAsFoundScreen(viewModel: SensitivityOptimisationValidationVi
                         helpText = if (isConveyor) "Leading edge test result & signal." else "Test result & signal.",
                         inputLabel = "Produced Signal",
                         inputValue = peakLeading,
-                        onInputValueChange = { viewModel.peakAsFoundStainlessLeading.value = it },
+                        onInputValueChange = { viewModel.peakSignalAsFoundStainlessLeading.value = it },
                         inputMaxLength = 12,
                     )
 
@@ -90,7 +90,7 @@ fun SovStainlessTestAsFoundScreen(viewModel: SensitivityOptimisationValidationVi
                             helpText = "Middle test result & signal.",
                             inputLabel = "Produced Signal",
                             inputValue = peakMiddle,
-                            onInputValueChange = { viewModel.peakAsFoundStainlessMiddle.value = it },
+                            onInputValueChange = { viewModel.peakSignalAsFoundStainlessMiddle.value = it },
                             inputMaxLength = 12,
                         )
 
@@ -102,7 +102,7 @@ fun SovStainlessTestAsFoundScreen(viewModel: SensitivityOptimisationValidationVi
                             helpText = "Trailing-edge test result & signal.",
                             inputLabel = "Produced Signal",
                             inputValue = peakTrailing,
-                            onInputValueChange = { viewModel.peakAsFoundStainlessTrailing.value = it },
+                            onInputValueChange = { viewModel.peakSignalAsFoundStainlessTrailing.value = it },
                             inputMaxLength = 12,
                         )
                         FormSpacer()
@@ -112,7 +112,7 @@ fun SovStainlessTestAsFoundScreen(viewModel: SensitivityOptimisationValidationVi
                 LabeledTextFieldWithHelp(
                     label = "Engineer Notes",
                     value = notes,
-                    onValueChange = { viewModel.notesAsLeftStainless.value = it },
+                    onValueChange = { viewModel.notesAsFoundStainless.value = it },
                     helpText = "Relevant notes for this section.",
                     maxLength = 50,
                 )

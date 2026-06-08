@@ -16,11 +16,11 @@ fun SovNonFerrousTestAsFoundScreen(viewModel: SensitivityOptimisationValidationV
     val sensitivity by viewModel.sensitivityAsFoundNonFerrous
     val sampleCert by viewModel.sampleCertAsFoundNonFerrous
     val detectLeading by viewModel.detectRejectAsFoundNonFerrousLeading
-    val peakLeading by viewModel.peakAsFoundNonFerrousLeading
+    val peakLeading by viewModel.peakSignalAsFoundNonFerrousLeading
     val detectMiddle by viewModel.detectRejectAsFoundNonFerrousMiddle
-    val peakMiddle by viewModel.peakAsFoundNonFerrousMiddle
+    val peakMiddle by viewModel.peakSignalAsFoundNonFerrousMiddle
     val detectTrailing by viewModel.detectRejectAsFoundNonFerrousTrailing
-    val peakTrailing by viewModel.peakAsFoundNonFerrousTrailing
+    val peakTrailing by viewModel.peakSignalAsFoundNonFerrousTrailing
     val notes by viewModel.notesAsFoundNonFerrous
     
     val isConveyor = viewModel.system.systemTypeId == 1
@@ -77,7 +77,7 @@ fun SovNonFerrousTestAsFoundScreen(viewModel: SensitivityOptimisationValidationV
                         helpText = if (isConveyor) "Leading edge test result & signal." else "Test result & signal.",
                         inputLabel = "Produced Signal",
                         inputValue = peakLeading,
-                        onInputValueChange = { viewModel.peakAsFoundNonFerrousLeading.value = it },
+                        onInputValueChange = { viewModel.peakSignalAsFoundNonFerrousLeading.value = it },
                         inputMaxLength = 12,
                     )
 
@@ -90,7 +90,7 @@ fun SovNonFerrousTestAsFoundScreen(viewModel: SensitivityOptimisationValidationV
                             helpText = "Middle test result & signal.",
                             inputLabel = "Produced Signal",
                             inputValue = peakMiddle,
-                            onInputValueChange = { viewModel.peakAsFoundNonFerrousMiddle.value = it },
+                            onInputValueChange = { viewModel.peakSignalAsFoundNonFerrousMiddle.value = it },
                             inputMaxLength = 12,
                         )
 
@@ -102,7 +102,7 @@ fun SovNonFerrousTestAsFoundScreen(viewModel: SensitivityOptimisationValidationV
                             helpText = "Trailing-edge test result & signal.",
                             inputLabel = "Produced Signal",
                             inputValue = peakTrailing,
-                            onInputValueChange = { viewModel.peakAsFoundNonFerrousTrailing.value = it },
+                            onInputValueChange = { viewModel.peakSignalAsFoundNonFerrousTrailing.value = it },
                             inputMaxLength = 12,
                         )
                         FormSpacer()
@@ -112,7 +112,7 @@ fun SovNonFerrousTestAsFoundScreen(viewModel: SensitivityOptimisationValidationV
                 LabeledTextFieldWithHelp(
                     label = "Engineer Notes",
                     value = notes,
-                    onValueChange = { viewModel.notesAsLeftNonFerrous.value = it },
+                    onValueChange = { viewModel.notesAsFoundNonFerrous.value = it },
                     helpText = "Relevant notes for this section.",
                     maxLength = 50,
                 )
