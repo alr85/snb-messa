@@ -203,7 +203,7 @@ fun CalMetalDetectorConveyorFerrousTest(
                             viewModel.setPeakSignalFerrousLeading(it)
                             viewModel.autoUpdateFerrousPvResult()
                         },
-                        inputMaxLength = 12,
+                        inputMaxLength = 20,
                         pvStatus = if (viewModel.pvRequired.value) leadingRules.calculateOverallStatus() else null,
                         pvRules = leadingRules
                     )
@@ -228,7 +228,7 @@ fun CalMetalDetectorConveyorFerrousTest(
                                 viewModel.setPeakSignalFerrousMiddle(it)
                                 viewModel.autoUpdateFerrousPvResult()
                             },
-                            inputMaxLength = 12,
+                            inputMaxLength = 20,
                             pvStatus = if (viewModel.pvRequired.value) middleRules.calculateOverallStatus() else null,
                             pvRules = middleRules
                         )
@@ -251,7 +251,7 @@ fun CalMetalDetectorConveyorFerrousTest(
                                 viewModel.setPeakSignalFerrousTrailing(it)
                                 viewModel.autoUpdateFerrousPvResult()
                             },
-                            inputMaxLength = 12,
+                            inputMaxLength = 20,
                             pvStatus = if (viewModel.pvRequired.value) trailingRules.calculateOverallStatus() else null,
                             pvRules = trailingRules
                         )

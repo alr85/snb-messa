@@ -163,7 +163,7 @@ fun CalMetalDetectorConveyorFerrousTestAsFound(
                         onInputValueChange = {
                             viewModel.setPeakSignalAsFoundFerrousLeading(it)
                         },
-                        inputMaxLength = 12,
+                        inputMaxLength = 20,
                     )
 
                     FormSpacer()
@@ -181,7 +181,7 @@ fun CalMetalDetectorConveyorFerrousTestAsFound(
                             onInputValueChange = {
                                 viewModel.setPeakSignalAsFoundFerrousMiddle(it)
                             },
-                            inputMaxLength = 12,
+                            inputMaxLength = 20,
                         )
 
                         FormSpacer()
@@ -198,7 +198,7 @@ fun CalMetalDetectorConveyorFerrousTestAsFound(
                             onInputValueChange = {
                                 viewModel.setPeakSignalAsFoundFerrousTrailing(it)
                             },
-                            inputMaxLength = 12,
+                            inputMaxLength = 20,
                         )
 
                         FormSpacer()

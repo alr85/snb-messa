@@ -203,7 +203,7 @@ fun CalMetalDetectorConveyorStainlessTest(
                             viewModel.setPeakSignalStainlessLeading(it)
                             viewModel.autoUpdateStainlessPvResult()
                         },
-                        inputMaxLength = 12,
+                        inputMaxLength = 20,
                         pvStatus = if (viewModel.pvRequired.value) leadingRules.calculateOverallStatus() else null,
                         pvRules = leadingRules
                     )
@@ -228,7 +228,7 @@ fun CalMetalDetectorConveyorStainlessTest(
                                 viewModel.setPeakSignalStainlessMiddle(it)
                                 viewModel.autoUpdateStainlessPvResult()
                             },
-                            inputMaxLength = 12,
+                            inputMaxLength = 20,
                             pvStatus = if (viewModel.pvRequired.value) middleRules.calculateOverallStatus() else null,
                             pvRules = middleRules
                         )
@@ -251,7 +251,7 @@ fun CalMetalDetectorConveyorStainlessTest(
                                 viewModel.setPeakSignalStainlessTrailing(it)
                                 viewModel.autoUpdateStainlessPvResult()
                             },
-                            inputMaxLength = 12,
+                            inputMaxLength = 20,
                             pvStatus = if (viewModel.pvRequired.value) trailingRules.calculateOverallStatus() else null,
                             pvRules = trailingRules
                         )
