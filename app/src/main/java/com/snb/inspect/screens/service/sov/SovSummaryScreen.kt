@@ -72,6 +72,35 @@ fun SovSummaryScreen(viewModel: SensitivityOptimisationValidationViewModel, apiS
             Text("${viewModel.validationTest3Description.value}: $val3TotalSuccesses / $val3TotalPasses")
             FormSpacer()
 
+            if (viewModel.sensitivityAsLeftFerrous.value != "N/A" || viewModel.sensitivityAsLeftNonFerrous.value != "N/A" || viewModel.sensitivityAsLeftStainless.value != "N/A") {
+                CalibrationHeader("Lowest Signals")
+                FormSpacer()
+                
+                if (viewModel.sensitivityAsLeftFerrous.value != "N/A") {
+                    val ferrousSignal = if (viewModel.system.systemTypeId == 1) 
+                        "${viewModel.minSignalAsLeftFerrousLeading.value} / ${viewModel.minSignalAsLeftFerrousMiddle.value} / ${viewModel.minSignalAsLeftFerrousTrailing.value}"
+                        else viewModel.minSignalAsLeftFerrousLeading.value
+                    LabeledReadOnlyField(label = "Ferrous (L/M/T)", value = ferrousSignal)
+                    FormSpacer()
+                }
+
+                if (viewModel.sensitivityAsLeftNonFerrous.value != "N/A") {
+                    val nonFerrousSignal = if (viewModel.system.systemTypeId == 1) 
+                        "${viewModel.minSignalAsLeftNonFerrousLeading.value} / ${viewModel.minSignalAsLeftNonFerrousMiddle.value} / ${viewModel.minSignalAsLeftNonFerrousTrailing.value}"
+                        else viewModel.minSignalAsLeftNonFerrousLeading.value
+                    LabeledReadOnlyField(label = "Non-Ferrous (L/M/T)", value = nonFerrousSignal)
+                    FormSpacer()
+                }
+
+                if (viewModel.sensitivityAsLeftStainless.value != "N/A") {
+                    val stainlessSignal = if (viewModel.system.systemTypeId == 1) 
+                        "${viewModel.minSignalAsLeftStainlessLeading.value} / ${viewModel.minSignalAsLeftStainlessMiddle.value} / ${viewModel.minSignalAsLeftStainlessTrailing.value}"
+                        else viewModel.minSignalAsLeftStainlessLeading.value
+                    LabeledReadOnlyField(label = "Stainless (L/M/T)", value = stainlessSignal)
+                    FormSpacer()
+                }
+            }
+
             LabeledTextFieldWithHelp(
                 label = "Customer Name",
                 value = viewModel.customerName.value,

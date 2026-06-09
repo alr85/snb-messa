@@ -1,7 +1,6 @@
 package com.snb.inspect.screens.service.sov
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
@@ -15,12 +14,9 @@ import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 fun SovNonFerrousTestAsLeftScreen(viewModel: SensitivityOptimisationValidationViewModel) {
     val sensitivity by viewModel.sensitivityAsLeftNonFerrous
     val sampleCert by viewModel.sampleCertAsLeftNonFerrous
-    val detectLeading by viewModel.detectRejectAsLeftNonFerrousLeading
-    val peakLeading by viewModel.peakSignalAsLeftNonFerrousLeading
-    val detectMiddle by viewModel.detectRejectAsLeftNonFerrousMiddle
-    val peakMiddle by viewModel.peakSignalAsLeftNonFerrousMiddle
-    val detectTrailing by viewModel.detectRejectAsLeftNonFerrousTrailing
-    val peakTrailing by viewModel.peakSignalAsLeftNonFerrousTrailing
+    val minSignalLeading by viewModel.minSignalAsLeftNonFerrousLeading
+    val minSignalMiddle by viewModel.minSignalAsLeftNonFerrousMiddle
+    val minSignalTrailing by viewModel.minSignalAsLeftNonFerrousTrailing
     val notes by viewModel.notesAsLeftNonFerrous
     
     val leadingSuccesses by viewModel.val2LeadingSuccesses
@@ -33,11 +29,8 @@ fun SovNonFerrousTestAsLeftScreen(viewModel: SensitivityOptimisationValidationVi
     val isNextStepEnabled = sensitivity.isNotBlank() &&
             sampleCert.isNotBlank() &&
             (sensitivity == "N/A" || (
-                (detectLeading != YesNoState.YES || peakLeading.isNotBlank()) &&
-                (!isConveyor || (
-                    (detectMiddle != YesNoState.YES || peakMiddle.isNotBlank()) &&
-                    (detectTrailing != YesNoState.YES || peakTrailing.isNotBlank())
-                )) &&
+                minSignalLeading.isNotBlank() &&
+                (!isConveyor || (minSignalMiddle.isNotBlank() && minSignalTrailing.isNotBlank())) &&
                 // 30 Pass Validation
                 (leadingSuccesses.toIntOrNull() ?: 0) >= (if (isConveyor) 10 else 30) &&
                 (!isConveyor || (
@@ -82,69 +75,58 @@ fun SovNonFerrousTestAsLeftScreen(viewModel: SensitivityOptimisationValidationVi
                 FormSpacer()
 
                 if (sensitivity != "N/A") {
-                    LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
-                        label = if (isConveyor) "Detected & Rejected (Leading)" else "Detected & Rejected",
-                        currentState = detectLeading,
-                        onStateChange = { viewModel.detectRejectAsLeftNonFerrousLeading.value = it },
-                        helpText = if (isConveyor) "Leading edge test result & signal." else "Test result & signal.",
-                        inputLabel = "Produced Signal",
-                        inputValue = peakLeading,
-                        onInputValueChange = { viewModel.peakSignalAsLeftNonFerrousLeading.value = it },
-                        inputMaxLength = 12,
-                    )
-
-                    if (isConveyor) {
-                        FormSpacer()
-                        LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
-                            label = "Detected & Rejected (Middle)",
-                            currentState = detectMiddle,
-                            onStateChange = { viewModel.detectRejectAsLeftNonFerrousMiddle.value = it },
-                            helpText = "Middle test result & signal.",
-                            inputLabel = "Produced Signal",
-                            inputValue = peakMiddle,
-                            onInputValueChange = { viewModel.peakSignalAsLeftNonFerrousMiddle.value = it },
-                            inputMaxLength = 12,
-                        )
-
-                        FormSpacer()
-                        LabeledYesNoSegmentedSwitchAndTextInputWithHelp(
-                            label = "Detected & Rejected (Trailing)",
-                            currentState = detectTrailing,
-                            onStateChange = { viewModel.detectRejectAsLeftNonFerrousTrailing.value = it },
-                            helpText = "Trailing-edge test result & signal.",
-                            inputLabel = "Produced Signal",
-                            inputValue = peakTrailing,
-                            onInputValueChange = { viewModel.peakSignalAsLeftNonFerrousTrailing.value = it },
-                            inputMaxLength = 12,
-                        )
-                        FormSpacer()
-                    }
-
                     CalibrationHeader(if (isConveyor) "30 Pass Validation (10x per edge)" else "30 Pass Validation")
                     FormSpacer()
 
-                    ValidationSuccessInput(
-                        label = if (isConveyor) "Leading Edge" else "Results",
-                        successes = leadingSuccesses,
-                        onSuccessesChange = { viewModel.val2LeadingSuccesses.value = it },
-                        minSuccesses = if (isConveyor) 10 else 30
+                    LabeledTwoTextInputsWithHelp(
+                        label = if (isConveyor) "Leading Edge Results" else "Validation Results",
+                        firstInputLabel = "Successes",
+                        firstInputValue = leadingSuccesses,
+                        onFirstInputValueChange = { viewModel.val2LeadingSuccesses.value = it },
+                        secondInputLabel = "Min Signal",
+                        secondInputValue = minSignalLeading,
+                        onSecondInputValueChange = { viewModel.minSignalAsLeftNonFerrousLeading.value = it },
+                        helpText = "Enter the number of successful detections (min ${if (isConveyor) 10 else 30}) and the lowest signal observed.",
+                        firstInputKeyboardType = KeyboardType.Number,
+                        secondInputKeyboardType = KeyboardType.Text,
+                        isNAToggleEnabled = false,
+                        firstMaxLength = 2,
+                        secondMaxLength = 12
                     )
 
                     if (isConveyor) {
                         FormSpacer()
-                        ValidationSuccessInput(
-                            label = "Middle",
-                            successes = middleSuccesses,
-                            onSuccessesChange = { viewModel.val2MiddleSuccesses.value = it },
-                            minSuccesses = 10
+                        LabeledTwoTextInputsWithHelp(
+                            label = "Middle Results",
+                            firstInputLabel = "Successes",
+                            firstInputValue = middleSuccesses,
+                            onFirstInputValueChange = { viewModel.val2MiddleSuccesses.value = it },
+                            secondInputLabel = "Min Signal",
+                            secondInputValue = minSignalMiddle,
+                            onSecondInputValueChange = { viewModel.minSignalAsLeftNonFerrousMiddle.value = it },
+                            helpText = "Enter the number of successful detections (min 10) and the lowest signal observed.",
+                            firstInputKeyboardType = KeyboardType.Number,
+                            secondInputKeyboardType = KeyboardType.Text,
+                            isNAToggleEnabled = false,
+                            firstMaxLength = 2,
+                            secondMaxLength = 12
                         )
 
                         FormSpacer()
-                        ValidationSuccessInput(
-                            label = "Trailing Edge",
-                            successes = trailingSuccesses,
-                            onSuccessesChange = { viewModel.val2TrailingSuccesses.value = it },
-                            minSuccesses = 10
+                        LabeledTwoTextInputsWithHelp(
+                            label = "Trailing Edge Results",
+                            firstInputLabel = "Successes",
+                            firstInputValue = trailingSuccesses,
+                            onFirstInputValueChange = { viewModel.val2TrailingSuccesses.value = it },
+                            secondInputLabel = "Min Signal",
+                            secondInputValue = minSignalTrailing,
+                            onSecondInputValueChange = { viewModel.minSignalAsLeftNonFerrousTrailing.value = it },
+                            helpText = "Enter the number of successful detections (min 10) and the lowest signal observed.",
+                            firstInputKeyboardType = KeyboardType.Number,
+                            secondInputKeyboardType = KeyboardType.Text,
+                            isNAToggleEnabled = false,
+                            firstMaxLength = 2,
+                            secondMaxLength = 12
                         )
                     }
                     FormSpacer()

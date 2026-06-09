@@ -156,23 +156,17 @@ class SensitivityOptimisationValidationRepository(
 
                 // AS LEFT - FERROUS
                 sov.sensitivityAsLeftFerrous, sov.sampleCertAsLeftFerrous,
-                sov.detectRejectAsLeftFerrousLeading, sov.peakSignalAsLeftFerrousLeading,
-                sov.detectRejectAsLeftFerrousMiddle, sov.peakSignalAsLeftFerrousMiddle,
-                sov.detectRejectAsLeftFerrousTrailing, sov.peakSignalAsLeftFerrousTrailing,
+                sov.minSignalAsLeftFerrousLeading, sov.minSignalAsLeftFerrousMiddle, sov.minSignalAsLeftFerrousTrailing,
                 sov.notesAsLeftFerrous,
 
                 // AS LEFT - NON-FERROUS
                 sov.sensitivityAsLeftNonFerrous, sov.sampleCertAsLeftNonFerrous,
-                sov.detectRejectAsLeftNonFerrousLeading, sov.peakSignalAsLeftNonFerrousLeading,
-                sov.detectRejectAsLeftNonFerrousMiddle, sov.peakSignalAsLeftNonFerrousMiddle,
-                sov.detectRejectAsLeftNonFerrousTrailing, sov.peakSignalAsLeftNonFerrousTrailing,
+                sov.minSignalAsLeftNonFerrousLeading, sov.minSignalAsLeftNonFerrousMiddle, sov.minSignalAsLeftNonFerrousTrailing,
                 sov.notesAsLeftNonFerrous,
 
                 // AS LEFT - STAINLESS
                 sov.sensitivityAsLeftStainless, sov.sampleCertAsLeftStainless,
-                sov.detectRejectAsLeftStainlessLeading, sov.peakSignalAsLeftStainlessLeading,
-                sov.detectRejectAsLeftStainlessMiddle, sov.peakSignalAsLeftStainlessMiddle,
-                sov.detectRejectAsLeftStainlessTrailing, sov.peakSignalAsLeftStainlessTrailing,
+                sov.minSignalAsLeftStainlessLeading, sov.minSignalAsLeftStainlessMiddle, sov.minSignalAsLeftStainlessTrailing,
                 sov.notesAsLeftStainless,
 
                 sov.sensitivityAsLeftOther1, sov.sensitivityAsLeftOther2,

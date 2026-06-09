@@ -50,7 +50,7 @@ import com.snb.inspect.dataClasses.UserManualLocal
         SensitivityOptimisationValidationLocal::class
 
     ],
-    version = 67,
+    version = 68,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
