@@ -72,7 +72,8 @@ class SensitivityOptimisationValidationRepository(
                 val success = CsvUploader.uploadCsvFile(
                     csvFile = csvFile,
                     apiService = apiService,
-                    fileName = "SOV_${sov.sovId}"
+                    fileName = "SOV_${sov.sovId}",
+                    isValidation = true
                 )
 
                 if (success) {

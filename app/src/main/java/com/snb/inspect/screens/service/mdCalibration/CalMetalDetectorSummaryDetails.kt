@@ -112,6 +112,10 @@ fun CalMetalDetectorConveyorSummaryDetails(
         }
 
         // Collect all StateFlows properly
+        val canPerformCalibration by viewModel.canPerformCalibration
+        val reasonForNotCalibrating by viewModel.reasonForNotCalibrating.collectAsState()
+        val reasonForNotCalibratingOther by viewModel.reasonForNotCalibratingOther
+
         val infeedSensorTestResult by viewModel.infeedSensorTestResult.collectAsState()
         val rejectConfirmSensorTestResult by viewModel.rejectConfirmSensorTestResult.collectAsState()
         val binFullSensorTestResult by viewModel.binFullSensorTestResult.collectAsState()
@@ -144,8 +148,13 @@ fun CalMetalDetectorConveyorSummaryDetails(
             SummaryItem(label = "PV required", value = if (viewModel.pvRequired.value) "Yes" else "No")
             SummaryItem(label = "Able to calibrate", value = if (viewModel.canPerformCalibration.value) "Yes" else "No")
             
-            if (!viewModel.canPerformCalibration.value) {
-                SummaryItem(label = "Reason for not calibrating", value = viewModel.reasonForNotCalibrating.value)
+            if (!canPerformCalibration) {
+                val combinedReasons = reasonForNotCalibrating.toMutableList()
+                if (combinedReasons.contains("Other") && reasonForNotCalibratingOther.isNotBlank()) {
+                    combinedReasons.remove("Other")
+                    combinedReasons.add("Other: $reasonForNotCalibratingOther")
+                }
+                SummaryItem(label = "Reason for not calibrating", value = combinedReasons.joinToString(", "))
             }
         }
 

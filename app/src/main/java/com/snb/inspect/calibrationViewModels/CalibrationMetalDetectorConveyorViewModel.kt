@@ -155,6 +155,17 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _lastLocation.value = existingCalibration.lastLocation
                 _canPerformCalibration.value = existingCalibration.canPerformCalibration.toBoolean()
                 _reasonForNotCalibrating.value = existingCalibration.reasonForNotCalibrating
+                    .removeSurrounding("[", "]")
+                    .split(",")
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
+                
+                // If there's an "Other" component in the string, we might want to extract it
+                // But for now, let's just populate the list. The UI logic handles the "Other" text field.
+                // Actually, looking at the sensor implementation, they don't seem to have a separate 'Other' field in the DB
+                // for the results, they just store it in the joined string if it was manually entered?
+                // Wait, if it's a multi-select, "Other" is an option, and there's a separate text field.
+                // Let's check how other "Other" fields are handled.
                 _pvRequired.value = existingCalibration.pvRequired
 
 
@@ -888,7 +899,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun shouldSkipToSummary(): Boolean {
         return !canPerformCalibration.value &&
-                reasonForNotCalibrating.value.isNotBlank()
+                reasonForNotCalibrating.value.isNotEmpty()
     }
 
 
@@ -1392,11 +1403,18 @@ class CalibrationMetalDetectorConveyorViewModel(
         }
     }
 
-    private var _reasonForNotCalibrating = mutableStateOf("")
-    val reasonForNotCalibrating: State<String> = _reasonForNotCalibrating
+    private var _reasonForNotCalibrating = MutableStateFlow(listOf<String>())
+    val reasonForNotCalibrating: StateFlow<List<String>> = _reasonForNotCalibrating
 
-    fun setReasonForNotCalibrating(reason: String) {
+    fun setReasonForNotCalibrating(reason: List<String>) {
         _reasonForNotCalibrating.value = reason
+    }
+
+    private var _reasonForNotCalibratingOther = mutableStateOf("")
+    val reasonForNotCalibratingOther: State<String> = _reasonForNotCalibratingOther
+
+    fun setReasonForNotCalibratingOther(value: String) {
+        _reasonForNotCalibratingOther.value = value
     }
 
 //    private val _appVersion = mutableStateOf("")

@@ -338,7 +338,8 @@ fun MetalDetectorConveyorSystemScreen(
                                     text = "New Calibration",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
+                                    color = SnbDarkGrey
                                 )
                             }
                         }
@@ -360,10 +361,11 @@ fun MetalDetectorConveyorSystemScreen(
                             ) {
                                 Icon(Icons.Default.Tune, "Validation", modifier = Modifier.size(24.dp))
                                 Text(
-                                    text = "Validation",
+                                    text = "New Validation",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
+                                    color = SnbDarkGrey
                                 )
                             }
                         }
@@ -390,7 +392,8 @@ fun MetalDetectorConveyorSystemScreen(
                                         text = "View Technical Manual",
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.weight(1f),
+                                        color = SnbDarkGrey
                                     )
                                 }
                             }
@@ -428,7 +431,8 @@ fun MetalDetectorConveyorSystemScreen(
                                     text = if (mdSystem?.isSynced == true) "Synced" else "Sync to Cloud",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
+                                    color = SnbDarkGrey
                                 )
                             }
                         }

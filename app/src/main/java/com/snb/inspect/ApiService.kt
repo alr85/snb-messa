@@ -56,6 +56,12 @@ interface ApiService {
         @Part file: MultipartBody.Part
     ): Call<ResponseBody>
 
+    @Multipart
+    @POST("MdCalibrationCsvUpload/uploadMdValidationCSV")
+    fun uploadMdValidationCSV(
+        @Part file: MultipartBody.Part
+    ): Call<ResponseBody>
+
     @PUT("MdSystems/{id}")
     suspend fun updateMdSystem(
         @Path("id") id: Int,

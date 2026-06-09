@@ -251,7 +251,8 @@ fun ServiceSelectSystemScreen(
                                     text = "New Metal Detector",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
+                                    color = SnbDarkGrey
                                 )
 
                             }
@@ -281,7 +282,8 @@ fun ServiceSelectSystemScreen(
                                     text = "Navigate to Site",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
+                                    color = SnbDarkGrey
                                 )
 
                             }
@@ -324,7 +326,8 @@ fun ServiceSelectSystemScreen(
                                     text = "Refresh Database",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
+                                    color = SnbDarkGrey
                                 )
 
                             }

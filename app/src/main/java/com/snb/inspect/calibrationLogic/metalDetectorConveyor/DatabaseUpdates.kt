@@ -77,11 +77,17 @@ data class CalibrationStartUpdate(
 )
 
 fun CalibrationMetalDetectorConveyorViewModel.toCalibrationStartUpdate(): CalibrationStartUpdate {
+    val combinedReasons = reasonForNotCalibrating.value.toMutableList()
+    if (combinedReasons.contains("Other") && reasonForNotCalibratingOther.value.isNotBlank()) {
+        combinedReasons.remove("Other")
+        combinedReasons.add("Other: ${reasonForNotCalibratingOther.value}")
+    }
+    
     return CalibrationStartUpdate(
         newLocation = newLocation.value,
         lastLocation = lastLocation.value,
         canPerformCalibration = canPerformCalibration.value.toString(),
-        reasonForNotCalibrating = reasonForNotCalibrating.value,
+        reasonForNotCalibrating = combinedReasons.joinToString(", "),
         startCalibrationNotes = startCalibrationNotes.value,
         pvRequired = pvRequired.value,
         calibrationId = calibrationId.value

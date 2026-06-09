@@ -21,7 +21,8 @@ object CsvUploader {
     suspend fun uploadCsvFile(
         csvFile: File,
         apiService: ApiService,
-        fileName: String
+        fileName: String,
+        isValidation: Boolean = false
     ): Boolean = withContext(Dispatchers.IO) {
         try {
             if (!csvFile.exists() || !csvFile.isFile) {
@@ -37,10 +38,16 @@ object CsvUploader {
             val part = MultipartBody.Part.createFormData("File", safeName, body)
 
             InAppLogger.d(
-                "Preparing upload: $safeName (${csvFile.length()} bytes) from ${csvFile.absolutePath}"
+                "Preparing upload: $safeName (${csvFile.length()} bytes) from ${csvFile.absolutePath} (Validation=$isValidation)"
             )
 
-            val response = apiService.uploadMdCalibrationCSV(part).execute()
+            val call = if (isValidation) {
+                apiService.uploadMdValidationCSV(part)
+            } else {
+                apiService.uploadMdCalibrationCSV(part)
+            }
+
+            val response = call.execute()
 
             if (response.isSuccessful) {
                 InAppLogger.d("CSV upload successful (HTTP ${response.code()})")

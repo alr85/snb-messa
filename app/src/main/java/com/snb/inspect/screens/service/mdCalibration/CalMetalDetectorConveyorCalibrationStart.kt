@@ -18,9 +18,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.collectAsState
 import com.snb.inspect.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.snb.inspect.formModules.CalibrationHeader
-import com.snb.inspect.formModules.LabeledDropdownWithHelp
+import com.snb.inspect.formModules.LabeledMultiSelectDropdownWithHelp
 import com.snb.inspect.formModules.LabeledRadioButtonWithHelp
 import com.snb.inspect.formModules.LabeledReadOnlyField
 import com.snb.inspect.formModules.LabeledTextFieldWithHelp
@@ -35,7 +36,8 @@ fun CalMetalDetectorConveyorCalibrationStart(
 ) {
     val lastLocation by viewModel.lastLocation
     val canPerformCalibration by viewModel.canPerformCalibration
-    val reasonForNotCalibrating by viewModel.reasonForNotCalibrating
+    val reasonForNotCalibrating by viewModel.reasonForNotCalibrating.collectAsState()
+    val reasonForNotCalibratingOther by viewModel.reasonForNotCalibratingOther
     val pvRequired by viewModel.pvRequired
     var showConfirmDialog by remember { mutableStateOf(false) }
     var pendingValue by remember { mutableStateOf<Boolean?>(null) }
@@ -48,7 +50,7 @@ fun CalMetalDetectorConveyorCalibrationStart(
     }
 
     val isNextStepEnabled =
-        canPerformCalibration || reasonForNotCalibrating.isNotBlank()
+        canPerformCalibration || (reasonForNotCalibrating.isNotEmpty() && (!reasonForNotCalibrating.contains("Other") || reasonForNotCalibratingOther.isNotBlank()))
 
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
@@ -132,36 +134,25 @@ fun CalMetalDetectorConveyorCalibrationStart(
                     )
                 }
 
-                var isOtherSelected by remember {
-                    mutableStateOf(reasonForNotCalibrating.isNotEmpty() && reasonForNotCalibrating !in commonReasons.dropLast(1))
-                }
-
-                LabeledDropdownWithHelp(
+                LabeledMultiSelectDropdownWithHelp(
                     label = "Reason for not calibrating",
                     options = commonReasons,
-                    selectedOption = if (isOtherSelected) "Other" else reasonForNotCalibrating,
+                    value = reasonForNotCalibrating.joinToString(", "),
+                    selectedOptions = reasonForNotCalibrating,
                     onSelectionChange = { selection ->
-                        if (selection == "Other") {
-                            isOtherSelected = true
-                            if (reasonForNotCalibrating in commonReasons.dropLast(1)) {
-                                viewModel.setReasonForNotCalibrating("")
-                            }
-                        } else {
-                            isOtherSelected = false
-                            viewModel.setReasonForNotCalibrating(selection)
-                        }
+                        viewModel.setReasonForNotCalibrating(selection)
                     },
-                    helpText = "Select a reason why calibration cannot be performed.",
+                    helpText = "Select reasons why calibration cannot be performed.",
                     isNAToggleEnabled = false
                 )
 
                 FormSpacer()
 
-                if (isOtherSelected) {
+                if (reasonForNotCalibrating.contains("Other")) {
                     LabeledTextFieldWithHelp(
                         label = "Other reason",
-                        value = reasonForNotCalibrating,
-                        onValueChange = viewModel::setReasonForNotCalibrating,
+                        value = reasonForNotCalibratingOther,
+                        onValueChange = viewModel::setReasonForNotCalibratingOther,
                         helpText = "Explain why calibration cannot be performed.",
                         isNAToggleEnabled = false,
                         maxLength = 50,
