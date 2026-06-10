@@ -154,18 +154,22 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _newLocation.value = existingCalibration.newLocation
                 _lastLocation.value = existingCalibration.lastLocation
                 _canPerformCalibration.value = existingCalibration.canPerformCalibration.toBoolean()
-                _reasonForNotCalibrating.value = existingCalibration.reasonForNotCalibrating
+                val reasons = existingCalibration.reasonForNotCalibrating
                     .removeSurrounding("[", "]")
                     .split(",")
                     .map { it.trim() }
                     .filter { it.isNotBlank() }
-                
-                // If there's an "Other" component in the string, we might want to extract it
-                // But for now, let's just populate the list. The UI logic handles the "Other" text field.
-                // Actually, looking at the sensor implementation, they don't seem to have a separate 'Other' field in the DB
-                // for the results, they just store it in the joined string if it was manually entered?
-                // Wait, if it's a multi-select, "Other" is an option, and there's a separate text field.
-                // Let's check how other "Other" fields are handled.
+
+                val processedReasons = reasons.map { reason ->
+                    if (reason.startsWith("Other:")) {
+                        _reasonForNotCalibratingOther.value = reason.substringAfter("Other:").trim()
+                        "Other"
+                    } else {
+                        reason
+                    }
+                }
+                _reasonForNotCalibrating.value = processedReasons
+
                 _pvRequired.value = existingCalibration.pvRequired
 
 
@@ -649,6 +653,16 @@ class CalibrationMetalDetectorConveyorViewModel(
                     existingCalibration.operatorTestResultCertNumberStainless
                 _operatorTestResultCertNumberLargeMetal.value =
                     existingCalibration.operatorTestResultCertNumberLargeMetal
+
+                _operatorTestWitnessedInfeed.value = existingCalibration.operatorTestWitnessedInfeed.toYesNoState()
+                _operatorTestWitnessedRejectConfirm.value = existingCalibration.operatorTestWitnessedRejectConfirm.toYesNoState()
+                _operatorTestWitnessedBinFull.value = existingCalibration.operatorTestWitnessedBinFull.toYesNoState()
+                _operatorTestWitnessedBinDoor.value = existingCalibration.operatorTestWitnessedBinDoor.toYesNoState()
+                _operatorTestWitnessedAirFail.value = existingCalibration.operatorTestWitnessedAirFail.toYesNoState()
+                _operatorTestWitnessedPackCheck.value = existingCalibration.operatorTestWitnessedPackCheck.toYesNoState()
+                _operatorTestWitnessedSpeedSensor.value = existingCalibration.operatorTestWitnessedSpeedSensor.toYesNoState()
+                _operatorTestWitnessedBackup.value = existingCalibration.operatorTestWitnessedBackup.toYesNoState()
+
                 _smeName.value = existingCalibration.smeName
                 _smeEngineerNotes.value = existingCalibration.smeEngineerNotes
                 _smeTestPvResult.value = existingCalibration.smeTestPvResult
@@ -1398,9 +1412,35 @@ class CalibrationMetalDetectorConveyorViewModel(
         _pvRequired.value = pvRequired
         if (!pvRequired) {
             setAllPvResultsNa()
+            resetSmeData()
         } else {
             autoUpdateAllPvResults()
         }
+    }
+
+    fun resetSmeData() {
+        val na = "N/A"
+        setOperatorName(na)
+        setOperatorTestWitnessed(YesNoState.NA)
+        setOperatorTestResultFerrous(na)
+        setOperatorTestResultNonFerrous(na)
+        setOperatorTestResultStainless(na)
+        setOperatorTestResultLargeMetal(na)
+        setOperatorTestResultCertNumberFerrous(na)
+        setOperatorTestResultCertNumberNonFerrous(na)
+        setOperatorTestResultCertNumberStainless(na)
+        setOperatorTestResultCertNumberLargeMetal(na)
+        setSmeName(na)
+        setOperatorTestWitnessedInfeed(YesNoState.NA)
+        setOperatorTestWitnessedRejectConfirm(YesNoState.NA)
+        setOperatorTestWitnessedBinFull(YesNoState.NA)
+        setOperatorTestWitnessedBinDoor(YesNoState.NA)
+        setOperatorTestWitnessedAirFail(YesNoState.NA)
+        setOperatorTestWitnessedPackCheck(YesNoState.NA)
+        setOperatorTestWitnessedSpeedSensor(YesNoState.NA)
+        setOperatorTestWitnessedBackup(YesNoState.NA)
+        setSmeEngineerNotes("")
+        setSmeTestPvResult(na)
     }
 
     private var _reasonForNotCalibrating = MutableStateFlow(listOf<String>())

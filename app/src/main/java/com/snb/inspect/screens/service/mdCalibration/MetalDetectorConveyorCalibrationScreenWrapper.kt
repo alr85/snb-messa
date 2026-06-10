@@ -45,9 +45,11 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
     // Holds the currently visible screen composable
     var currentScreen by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }
 
+    val pvRequired by viewModel.pvRequired
+
     // Route order for progress & forward/back detection
-    val routeOrder = remember {
-        listOf(
+    val routeOrder = remember(pvRequired) {
+        listOfNotNull(
             "MetalDetectorConveyorCalibrationStart/{calibrationId}",
             "CalMetalDetectorConveyorConveyorDetails",
             "CalMetalDetectorConveyorSystemChecklist",
@@ -73,7 +75,7 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
             "CalMetalDetectorConveyorPackCheckSensor",
             "CalMetalDetectorConveyorSpeedSensor",
             "CalMetalDetectorConveyorDetectNotification",
-            "CalMetalDetectorConveyorSmeDetails",
+            if (pvRequired) "CalMetalDetectorConveyorSmeDetails" else null,
             "CalMetalDetectorConveyorEquipmentUsed",
             "CalMetalDetectorConveyorSummary"
         )

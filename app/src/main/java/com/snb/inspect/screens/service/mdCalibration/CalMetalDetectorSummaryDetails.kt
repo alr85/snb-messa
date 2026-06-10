@@ -375,12 +375,11 @@ fun CalMetalDetectorConveyorSummaryDetails(
 
             Section(title = "Infeed PEC") {
                 SummaryItem(label = "Fitted", value = viewModel.infeedSensorFitted.value.toString())
-                SummaryItem(label = "Detail", value = viewModel.infeedSensorDetail.value)
                 SummaryItem(label = "Test Method", value = "${viewModel.infeedSensorTestMethod.value} ")
                 SummaryItem(label = "Test Method (Other)", value = "${viewModel.infeedSensorTestMethodOther.value} ")
                 SummaryItem(label = "Test Result", value = infeedSensorTestResult.joinToString(", "))
                 SummaryItem(label = "Latched", value = viewModel.infeedSensorLatched.value.toString())
-                SummaryItem(label = "Critical", value = viewModel.infeedSensorCR.value.toString())
+                SummaryItem(label = "Controlled Restart", value = viewModel.infeedSensorCR.value.toString())
                 SummaryItem(label = "P.V. Result", value = viewModel.infeedSensorTestPvResult.value)
                 SummaryItem(label = "Engineer Notes", value = viewModel.infeedSensorEngineerNotes.value)
             }
@@ -389,63 +388,58 @@ fun CalMetalDetectorConveyorSummaryDetails(
 
             Section(title = "Reject Confirm/Activation PEC") {
                 SummaryItem(label = "Fitted", value = viewModel.rejectConfirmSensorFitted.value.toString())
-                SummaryItem(label = "Detail", value = viewModel.rejectConfirmSensorDetail.value)
                 SummaryItem(label = "Test Method", value = viewModel.rejectConfirmSensorTestMethod.value)
                 SummaryItem(label = "Test Method (Other)", value = viewModel.rejectConfirmSensorTestMethodOther.value)
                 SummaryItem(label = "Test Result", value = rejectConfirmSensorTestResult.joinToString(", "))
                 SummaryItem(label = "Stop Position", value = viewModel.rejectConfirmSensorStopPosition.value)
                 SummaryItem(label = "Latched", value = viewModel.rejectConfirmSensorLatched.value.toString())
-                SummaryItem(label = "Critical", value = viewModel.rejectConfirmSensorCR.value.toString())
+                SummaryItem(label = "Controlled Restart", value = viewModel.rejectConfirmSensorCR.value.toString())
                 SummaryItem(label = "P.V. Result", value = viewModel.rejectConfirmSensorTestPvResult.value)
                 SummaryItem(label = "Engineer Notes", value = viewModel.rejectConfirmSensorEngineerNotes.value)
             }
 
             Section(title = "Bin Full PEC") {
                 SummaryItem(label = "Fitted", value = viewModel.binFullSensorFitted.value.toString())
-                SummaryItem(label = "Detail", value = viewModel.binFullSensorDetail.value)
                 SummaryItem(label = "Test Method", value = viewModel.binFullSensorTestMethod.value)
                 SummaryItem(label = "Test Method (Other)", value = viewModel.binFullSensorTestMethodOther.value)
                 SummaryItem(label = "Test Result", value = binFullSensorTestResult.joinToString(", "))
                 SummaryItem(label = "Latched", value = viewModel.binFullSensorLatched.value.toString())
-                SummaryItem(label = "Critical", value = viewModel.binFullSensorCR.value.toString())
+                SummaryItem(label = "Controlled Restart", value = viewModel.binFullSensorCR.value.toString())
                 SummaryItem(label = "P.V. Result", value = viewModel.binFullSensorTestPvResult.value)
                 SummaryItem(label = "Engineer Notes", value = viewModel.binFullSensorEngineerNotes.value)
             }
 
             Section(title = "Air Pressure Sensor") {
                 SummaryItem(label = "Fitted", value = viewModel.airPressureSensorFitted.value.toString())
-                SummaryItem(label = "Detail", value = viewModel.airPressureSensorDetail.value)
                 SummaryItem(label = "Test Method", value = viewModel.airPressureSensorTestMethod.value)
                 SummaryItem(label = "Test Method (Other)", value = viewModel.airPressureSensorTestMethodOther.value)
                 SummaryItem(label = "Test Result", value = airPressureSensorTestResult.joinToString(", "))
                 SummaryItem(label = "Latched", value = viewModel.airPressureSensorLatched.value.toString())
-                SummaryItem(label = "Critical", value = viewModel.airPressureSensorCR.value.toString())
+                SummaryItem(label = "Controlled Restart", value = viewModel.airPressureSensorCR.value.toString())
                 SummaryItem(label = "P.V. Result", value = viewModel.airPressureSensorTestPvResult.value)
                 SummaryItem(label = "Engineer Notes", value = viewModel.airPressureSensorEngineerNotes.value)
             }
 
             Section(title = "Bin Door Monitor") {
                 SummaryItem(label = "Fitted", value = viewModel.binDoorMonitorFitted.value.toString())
-                SummaryItem(label = "Detail", value = viewModel.binDoorMonitorDetail.value)
                 SummaryItem(label = "Status As Found", value = viewModel.binDoorStatusAsFound.value)
                 SummaryItem(label = "Open Indication", value = binDoorOpenIndication.joinToString(", "))
                 SummaryItem(label = "Unlocked Indication", value = binDoorUnlockedIndication.joinToString(", "))
                 SummaryItem(label = "Timeout Timer", value = viewModel.binDoorTimeoutTimer.value)
                 SummaryItem(label = "Timeout Result", value = binDoorTimeoutResult.joinToString(", "))
                 SummaryItem(label = "Latched", value = viewModel.binDoorLatched.value.toString())
-                SummaryItem(label = "Critical", value = viewModel.binDoorCR.value.toString())
+                SummaryItem(label = "Controlled Restart", value = viewModel.binDoorCR.value.toString())
                 SummaryItem(label = "P.V. Result", value = viewModel.binDoorMonitorTestPvResult.value)
                 SummaryItem(label = "Engineer Notes", value = viewModel.binDoorEngineerNotes.value)
             }
 
             Section(title = "Backup PEC") {
                 SummaryItem(label = "Fitted", value = viewModel.backupSensorFitted.value.toString())
-                SummaryItem(label = "Detail", value = viewModel.backupSensorDetail.value)
                 SummaryItem(label = "Test Method", value = viewModel.backupSensorTestMethod.value)
                 SummaryItem(label = "Test Method (Other)", value = viewModel.backupSensorTestMethodOther.value)
                 SummaryItem(label = "Test Result", value = backupSensorTestResult.joinToString(", "))
                 SummaryItem(label = "Latched", value = viewModel.backupSensorLatched.value.toString())
-                SummaryItem(label = "Critical", value = viewModel.backupSensorCR.value.toString())
+                SummaryItem(label = "Controlled Restart", value = viewModel.backupSensorCR.value.toString())
                 SummaryItem(label = "P.V. Result", value = viewModel.backupSensorTestPvResult.value)
                 SummaryItem(label = "Engineer Notes", value = viewModel.backupSensorEngineerNotes.value)
             }
@@ -454,24 +448,20 @@ fun CalMetalDetectorConveyorSummaryDetails(
 
             Section(title = "Pack Check Sensor") {
                 SummaryItem(label = "Fitted", value = viewModel.packCheckSensorFitted.value.toString())
-                SummaryItem(label = "Detail", value = viewModel.packCheckSensorDetail.value)
                 SummaryItem(label = "Test Method", value = viewModel.packCheckSensorTestMethod.value)
                 SummaryItem(label = "Test Method (Other)", value = viewModel.packCheckSensorTestMethodOther.value)
                 SummaryItem(label = "Test Result", value = packCheckSensorTestResult.joinToString(", "))
                 SummaryItem(label = "Latched", value = viewModel.packCheckSensorLatched.value.toString())
-                SummaryItem(label = "Critical", value = viewModel.packCheckSensorCR.value.toString())
+                SummaryItem(label = "Controlled Restart", value = viewModel.packCheckSensorCR.value.toString())
                 SummaryItem(label = "P.V. Result", value = viewModel.packCheckSensorTestPvResult.value)
                 SummaryItem(label = "Engineer Notes", value = viewModel.packCheckSensorEngineerNotes.value)
             }
 
             Section(title = "Speed Sensor") {
                 SummaryItem(label = "Fitted", value = viewModel.speedSensorFitted.value.toString())
-                SummaryItem(label = "Detail", value = viewModel.speedSensorDetail.value)
                 SummaryItem(label = "Test Method", value = viewModel.speedSensorTestMethod.value)
                 SummaryItem(label = "Test Method (Other)", value = viewModel.speedSensorTestMethodOther.value)
                 SummaryItem(label = "Test Result", value = speedSensorTestResult.joinToString(", "))
-                SummaryItem(label = "Latched", value = viewModel.speedSensorLatched.value.toString())
-                SummaryItem(label = "Critical", value = viewModel.speedSensorCR.value.toString())
                 SummaryItem(label = "P.V. Result", value = viewModel.speedSensorTestPvResult.value)
                 SummaryItem(label = "Engineer Notes", value = viewModel.speedSensorEngineerNotes.value)
             }

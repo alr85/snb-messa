@@ -19,7 +19,6 @@ import com.snb.inspect.formModules.CalibrationHeader
 import com.snb.inspect.formModules.LabeledDropdownWithHelp
 import com.snb.inspect.formModules.LabeledMultiSelectDropdownWithHelp
 import com.snb.inspect.formModules.LabeledTextFieldWithHelp
-import com.snb.inspect.formModules.LabeledTriStateSwitchWithHelp
 import com.snb.inspect.formModules.LabeledYesNoNaSegmentedSwitchWithHelp
 import com.snb.inspect.formModules.PvSectionSummaryCard
 import com.snb.inspect.formModules.YesNoState
@@ -35,8 +34,6 @@ fun CalMetalDetectorConveyorSpeedSensor(
     val testMethodOther by viewModel.speedSensorTestMethodOther
     val testResult by viewModel.speedSensorTestResult.collectAsState()
     val notes by viewModel.speedSensorEngineerNotes
-    val latched by viewModel.speedSensorLatched
-    val controlledRestart by viewModel.speedSensorCR
     val ind1label by viewModel.indicator1label
     val ind1colour by viewModel.indicator1colour
     val ind2label by viewModel.indicator2label
@@ -87,8 +84,6 @@ fun CalMetalDetectorConveyorSpeedSensor(
         YesNoState.YES -> {
             testMethod.isNotBlank() &&
                     testResult.isNotEmpty() &&
-                    latched != YesNoState.NA &&
-                    controlledRestart != YesNoState.NA &&
                     (testMethod != "Other" || testMethodOther.isNotBlank())
         }
         else -> false
@@ -102,9 +97,7 @@ fun CalMetalDetectorConveyorSpeedSensor(
         fitted,
         testMethod,
         testMethodOther,
-        testResult,
-        latched,
-        controlledRestart
+        testResult
     ) {
         viewModel.getSpeedSensorPvRules()
     }
@@ -201,36 +194,6 @@ fun CalMetalDetectorConveyorSpeedSensor(
                         isNAToggleEnabled = false,
                         pvStatus = if (pvRequired) rules.find { it.ruleId == "SPEED_RESULT" }?.status?.name else null,
                         pvRules = if (pvRequired) rules.filter { it.ruleId == "SPEED_RESULT" } else emptyList()
-                    )
-
-                    FormSpacer()
-
-                    LabeledTriStateSwitchWithHelp(
-                        label = "Fault Latched?",
-                        currentState = latched,
-                        onStateChange = {
-                            viewModel.setSpeedSensorLatched(it)
-                            viewModel.autoUpdateSpeedSensorPvResult()
-                        },
-                        helpText = "Is the fault output latched, or does it clear automatically?",
-                        isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.find { it.ruleId == "SPEED_LATCHED" }?.status?.name else null,
-                        pvRules = if (pvRequired) rules.filter { it.ruleId == "SPEED_LATCHED" } else emptyList()
-                    )
-
-                    FormSpacer()
-
-                    LabeledTriStateSwitchWithHelp(
-                        label = "Controlled Restart?",
-                        currentState = controlledRestart,
-                        onStateChange = {
-                            viewModel.setSpeedSensorCR(it)
-                            viewModel.autoUpdateSpeedSensorPvResult()
-                        },
-                        helpText = "Is a controlled restart required after a fault?",
-                        isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.find { it.ruleId == "SPEED_CR" }?.status?.name else null,
-                        pvRules = if (pvRequired) rules.filter { it.ruleId == "SPEED_CR" } else emptyList()
                     )
 
                     if (!pvRequired) FormSpacer()

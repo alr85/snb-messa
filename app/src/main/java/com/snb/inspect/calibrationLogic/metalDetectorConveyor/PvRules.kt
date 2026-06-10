@@ -253,7 +253,8 @@ private fun getFailsafeRules(
     results: List<String>,
     latched: YesNoState,
     cr: YesNoState,
-    requireBeltStop: Boolean = true
+    requireBeltStop: Boolean = true,
+    includeLatchedCr: Boolean = true
 ): List<PvRule> {
     val rules = mutableListOf<PvRule>()
 
@@ -271,8 +272,10 @@ private fun getFailsafeRules(
         val st = if (fitted == YesNoState.NA) PvRuleStatus.NA else PvRuleStatus.Incomplete
         rules.add(PvRule("Test method selected.", st, "${prefix}_METHOD"))
         rules.add(PvRule("Test result recorded.", st, "${prefix}_RESULT"))
-        rules.add(PvRule("Fault condition latched.", st, "${prefix}_LATCHED"))
-        rules.add(PvRule("Controlled restart required.", st, "${prefix}_CR"))
+        if (includeLatchedCr) {
+            rules.add(PvRule("Fault condition latched.", st, "${prefix}_LATCHED"))
+            rules.add(PvRule("Controlled restart required.", st, "${prefix}_CR"))
+        }
         return rules
     }
 
@@ -291,11 +294,13 @@ private fun getFailsafeRules(
         ruleId = "${prefix}_RESULT"
     ))
 
-    // 4. Fault latched
-    rules.add(PvRule("The failsafe condition must be latched (Stop/Alarm).", if (latched == YesNoState.YES) PvRuleStatus.Pass else if (latched == YesNoState.NO) PvRuleStatus.Fail else PvRuleStatus.Incomplete, "${prefix}_LATCHED"))
+    if (includeLatchedCr) {
+        // 4. Fault latched
+        rules.add(PvRule("The failsafe condition must be latched (Stop/Alarm).", if (latched == YesNoState.YES) PvRuleStatus.Pass else if (latched == YesNoState.NO) PvRuleStatus.Fail else PvRuleStatus.Incomplete, "${prefix}_LATCHED"))
 
-    // 5. Controlled restart
-    rules.add(PvRule("A manual reset/restart must be required to resume operation.", if (cr == YesNoState.YES) PvRuleStatus.Pass else if (cr == YesNoState.NO) PvRuleStatus.Fail else PvRuleStatus.Incomplete, "${prefix}_CR"))
+        // 5. Controlled restart
+        rules.add(PvRule("A manual reset/restart must be required to resume operation.", if (cr == YesNoState.YES) PvRuleStatus.Pass else if (cr == YesNoState.NO) PvRuleStatus.Fail else PvRuleStatus.Incomplete, "${prefix}_CR"))
+    }
 
     return rules
 }
@@ -411,7 +416,8 @@ fun CalibrationMetalDetectorConveyorViewModel.getSpeedSensorPvRules(): List<PvRu
     getFailsafeRules("SPEED", speedSensorFitted.value, speedSensorTestMethod.value,
         speedSensorTestMethodOther.value, speedSensorTestResult.value,
         speedSensorLatched.value, speedSensorCR.value,
-        requireBeltStop = false)
+        requireBeltStop = false,
+        includeLatchedCr = false)
 
 fun CalibrationMetalDetectorConveyorViewModel.autoUpdateSpeedSensorPvResult() {
     val result = if (!pvRequired.value) "N/A" else getSpeedSensorPvRules().calculateOverallStatus()
@@ -461,8 +467,6 @@ fun CalibrationMetalDetectorConveyorViewModel.getBinDoorMonitorPvRules(): List<P
 
         return listOf(
             PvRule("Sensor fitted to meet safety standards.", st, "${prefix}_FITTED"),
-            PvRule("Indication of door open.", subSt, "${prefix}_OPEN_INDICATION"),
-            PvRule("Indication of door unlocked.", subSt, "${prefix}_UNLOCKED_INDICATION"),
             PvRule("Timeout timer recorded.", subSt, "${prefix}_TIMEOUT"),
             PvRule("Timeout result recorded.", subSt, "${prefix}_TIMEOUT_RESULT"),
             PvRule("Condition latched.", subSt, "${prefix}_LATCHED"),
@@ -473,36 +477,15 @@ fun CalibrationMetalDetectorConveyorViewModel.getBinDoorMonitorPvRules(): List<P
     val rules = mutableListOf<PvRule>()
     rules.add(PvRule("Sensor fitted.", PvRuleStatus.Pass, "${prefix}_FITTED"))
 
-    // 2. Indication of door open
-    val openPass = binDoorOpenIndication.value.any { it.contains("Notification", ignoreCase = true) } ||
-            (binDoorOpenIndication.value.isNotEmpty() &&
-                    !binDoorOpenIndication.value.any { it.contains("No Result", ignoreCase = true) })
-
+    // 2. Timeout Timer (String check)
+    val timeoutValue = binDoorTimeoutTimer.value.toIntOrNull()
     rules.add(PvRule(
-        description = "Visual indication must be observed when door is opened.",
-        status = if (openPass) PvRuleStatus.Pass else PvRuleStatus.Fail,
-        ruleId = "${prefix}_OPEN_INDICATION"
-    ))
-
-    // 3. Indication of door unlocked
-    val unlockedPass = binDoorUnlockedIndication.value.any { it.contains("Notification", ignoreCase = true) } ||
-            (binDoorUnlockedIndication.value.isNotEmpty() &&
-                    !binDoorUnlockedIndication.value.any { it.contains("No Result", ignoreCase = true) })
-
-    rules.add(PvRule(
-        description = "Visual indication must be observed when door is unlocked.",
-        status = if (unlockedPass) PvRuleStatus.Pass else PvRuleStatus.Fail,
-        ruleId = "${prefix}_UNLOCKED_INDICATION"
-    ))
-
-    // 4. Timeout Timer (String check)
-    rules.add(PvRule(
-        description = "The timeout timer value must be recorded.",
-        status = if (binDoorTimeoutTimer.value.isNotBlank()) PvRuleStatus.Pass else PvRuleStatus.Fail,
+        description = "The timeout timer value must be recorded and be 30 seconds or less.",
+        status = if (timeoutValue != null && timeoutValue <= 30) PvRuleStatus.Pass else PvRuleStatus.Fail,
         ruleId = "${prefix}_TIMEOUT"
     ))
 
-    // 5. Timeout Result
+    // 3. Timeout Result
     val timeoutResultPass = binDoorTimeoutResult.value.any { it.contains("System Belt Stops", ignoreCase = true) }
     rules.add(PvRule(
         description = "The system must stop when the timeout occurs.",
@@ -510,7 +493,7 @@ fun CalibrationMetalDetectorConveyorViewModel.getBinDoorMonitorPvRules(): List<P
         ruleId = "${prefix}_TIMEOUT_RESULT"
     ))
 
-    // 6. Latched & CR
+    // 4. Latched & CR
     rules.add(PvRule(
         description = "Fault condition must be latched.",
         status = if (binDoorLatched.value == YesNoState.YES) PvRuleStatus.Pass else PvRuleStatus.Fail,
