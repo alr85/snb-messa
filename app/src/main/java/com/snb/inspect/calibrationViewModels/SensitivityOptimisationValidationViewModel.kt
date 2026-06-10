@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.snb.inspect.dataClasses.SensitivityOptimisationValidationLocal
 import com.snb.inspect.repositories.SensitivityOptimisationValidationRepository
+import com.snb.inspect.repositories.MetalDetectorSystemsRepository
 import com.snb.inspect.dataClasses.MetalDetectorWithFullDetails
 import com.snb.inspect.formModules.YesNoState
 import com.snb.inspect.util.toYesNoState
@@ -15,6 +16,7 @@ import java.time.LocalDateTime
 
 class SensitivityOptimisationValidationViewModel(
     private val repository: SensitivityOptimisationValidationRepository,
+    private val mdSystemsRepository: MetalDetectorSystemsRepository,
     val sovId: String,
     val system: MetalDetectorWithFullDetails,
     val engineerId: Int,
@@ -644,6 +646,19 @@ class SensitivityOptimisationValidationViewModel(
     ) {
         try {
             _isUploading.value = true
+            
+            // 1. Update system location locally
+            updateSystemLocationLocally()
+            
+            // 2. Sync system with cloud to push the new location
+            mdSystemsRepository.updateSystem(
+                context = context,
+                cloudId = system.cloudId,
+                localId = system.id,
+                tempId = system.tempId
+            )
+
+            // 3. Save SOV and set end date
             saveSov() // Ensure all current state is saved
             
             val existing = repository.getById(sovId)
@@ -652,6 +667,7 @@ class SensitivityOptimisationValidationViewModel(
                 repository.insertOrUpdate(existing)
             }
 
+            // 4. Upload the SOV CSV
             val result = repository.uploadUnsynced(context, apiService, sovId)
             if (result is com.snb.inspect.FetchResult.Success) {
                 onResult("✅ SOV completed and uploaded.")

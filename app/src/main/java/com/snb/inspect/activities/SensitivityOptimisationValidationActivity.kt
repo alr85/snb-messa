@@ -14,6 +14,7 @@ import com.snb.inspect.calibrationViewModels.SensitivityOptimisationValidationVi
 import com.snb.inspect.calibrationViewModels.SensitivityOptimisationValidationViewModelFactory
 import com.snb.inspect.dataClasses.MetalDetectorWithFullDetails
 import com.snb.inspect.repositories.SensitivityOptimisationValidationRepository
+import com.snb.inspect.repositories.MetalDetectorSystemsRepository
 import com.snb.inspect.screens.service.sov.SovScreenWrapper
 import com.snb.inspect.ui.theme.MyAppTheme
 
@@ -23,6 +24,7 @@ class SensitivityOptimisationValidationActivity : ComponentActivity() {
     private val sovDao by lazy { db.sensitivityOptimisationValidationDAO() }
     private val mdSystemDAO by lazy { db.mdSystemDAO() }
     private val repository by lazy { SensitivityOptimisationValidationRepository(sovDao, mdSystemDAO) }
+    private val mdSystemsRepository by lazy { MetalDetectorSystemsRepository(apiService, db) }
     private val apiService by lazy { (application as MyApplication).apiService }
 
     private lateinit var viewModel: SensitivityOptimisationValidationViewModel
@@ -49,6 +51,7 @@ class SensitivityOptimisationValidationActivity : ComponentActivity() {
 
         val factory = SensitivityOptimisationValidationViewModelFactory(
             repository = repository,
+            mdSystemsRepository = mdSystemsRepository,
             sovId = sovId,
             system = system,
             engineerId = engineerId,
