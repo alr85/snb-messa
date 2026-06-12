@@ -2,6 +2,7 @@ package com.snb.inspect
 
 import com.snb.inspect.dataClasses.ApiMeasuringEquipment
 import com.snb.inspect.dataClasses.CloudUser
+import com.snb.inspect.dataClasses.CodeOfPractice
 import com.snb.inspect.dataClasses.ConveyorRetailerSensitivitiesEntity
 import com.snb.inspect.dataClasses.Customer
 import com.snb.inspect.dataClasses.FreefallThroatRetailerSensitivitiesEntity
@@ -85,6 +86,9 @@ interface ApiService {
 
     @GET("UserManuals")
     suspend fun getUserManuals(): Response<List<UserManual>>
+
+    @GET("CodesOfPractice")
+    suspend fun getCodesOfPractice(): Response<List<CodeOfPractice>>
 
     @GET("MeasuringEquipment") // Adjust the endpoint path to match your API
     suspend fun getMeasuringEquipment(): Response<List<ApiMeasuringEquipment>>

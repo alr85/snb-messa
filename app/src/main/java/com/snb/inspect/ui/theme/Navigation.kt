@@ -18,10 +18,12 @@ import com.snb.inspect.AppChromeViewModel
 import com.snb.inspect.AppDatabase
 import com.snb.inspect.RetrofitClient
 import com.snb.inspect.UserViewModel
+import com.snb.inspect.calibrationViewModels.CodesOfPracticeViewModel
 import com.snb.inspect.calibrationViewModels.CustomerViewModel
 import com.snb.inspect.calibrationViewModels.NoticeViewModel
 import com.snb.inspect.calibrationViewModels.UserManualsViewModel
 import com.snb.inspect.calibrationViewModels.WeekendRotaViewModel
+import com.snb.inspect.repositories.CodesOfPracticeRepository
 import com.snb.inspect.repositories.CustomerRepository
 import com.snb.inspect.repositories.MeasuringEquipmentRepository
 import com.snb.inspect.repositories.MetalDetectorModelsRepository
@@ -38,6 +40,7 @@ import com.snb.inspect.screens.mainmenu.SettingsScreen
 import com.snb.inspect.screens.menu.AboutAppScreen
 import com.snb.inspect.screens.menu.CheckweigherAccuracyScreen
 import com.snb.inspect.screens.menu.CheckweigherSpeedCalculatorScreen
+import com.snb.inspect.screens.menu.CodesOfPracticeListScreen
 import com.snb.inspect.screens.menu.DatabaseSyncScreen
 import com.snb.inspect.screens.menu.MDFailsafesScreen
 import com.snb.inspect.screens.menu.MSSensitivitiesScreen
@@ -86,6 +89,8 @@ fun AppNavGraph(
     val userRepository = UserRepository(db.userDao(), apiService)
 
     val manualRepository = UserManualsRepository(apiService, db)
+
+    val codesRepository = CodesOfPracticeRepository(apiService, db)
 
 
     NavHost(
@@ -151,6 +156,25 @@ fun AppNavGraph(
             
             UserManualsListScreen(
                 viewModel = manualsViewModel,
+                navController = navController,
+                chromeVm = chromeVm
+            )
+        }
+
+        composable("codesOfPracticeList") {
+            val codesViewModel: CodesOfPracticeViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return CodesOfPracticeViewModel(codesRepository) as T
+                    }
+                }
+            )
+            // Sync on entry
+            LaunchedEffect(Unit) { codesViewModel.syncCodes() }
+
+            CodesOfPracticeListScreen(
+                viewModel = codesViewModel,
                 navController = navController,
                 chromeVm = chromeVm
             )

@@ -6,6 +6,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.snb.inspect.daos.CodesOfPracticeDAO
 import com.snb.inspect.daos.ConveyorDao
 import com.snb.inspect.daos.CustomerDAO
 import com.snb.inspect.daos.FreefallDao
@@ -18,6 +19,7 @@ import com.snb.inspect.daos.PipelineDao
 import com.snb.inspect.daos.SystemTypeDAO
 import com.snb.inspect.daos.UserDao
 import com.snb.inspect.daos.UserManualsDAO
+import com.snb.inspect.dataClasses.CodeOfPracticeLocal
 import com.snb.inspect.dataClasses.ConveyorRetailerSensitivitiesEntity
 import com.snb.inspect.dataClasses.CustomerLocal
 import com.snb.inspect.dataClasses.FreefallThroatRetailerSensitivitiesEntity
@@ -47,10 +49,11 @@ import com.snb.inspect.dataClasses.UserManualLocal
         NoticeLocal::class,
         UserManualLocal::class,
         MeasuringEquipmentLocal::class,
-        SensitivityOptimisationValidationLocal::class
+        SensitivityOptimisationValidationLocal::class,
+        CodeOfPracticeLocal::class
 
     ],
-    version = 68,
+    version = 69,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -70,6 +73,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun noticesDAO(): NoticesDAO
     abstract fun userManualsDAO(): UserManualsDAO
+    abstract fun codesOfPracticeDAO(): CodesOfPracticeDAO
 
     abstract fun measuringEquipmentDAO(): MeasuringEquipmentDAO
 

@@ -83,8 +83,14 @@ fun SettingsScreen(
             SettingItem("My Calibrations", Icons.Filled.EditNote, "myCalibrations"),
             SettingItem("My Validations", Icons.Filled.EditNote, "myValidations"),
             SettingItem("Weekend Rota", Icons.Default.CalendarMonth, "weekendRota"),
-            SettingItem("User Manuals", Icons.Default.Description, "userManualsList"),
             SettingItem("Service Calls", Icons.Default.Construction, "COMING_SOON", isComingSoon = true)
+        )
+    }
+
+    val documentationItems = remember {
+        listOf(
+            SettingItem("User Manuals", Icons.Default.Description, "userManualsList"),
+            SettingItem("Codes of Practice", Icons.Default.Description, "codesOfPracticeList")
         )
     }
 
@@ -116,6 +122,16 @@ fun SettingsScreen(
             SettingsHeader("Service")
         }
         items(serviceItems) { item ->
+            SettingRow(item, navController, showDialog)
+        }
+
+        item { Spacer(Modifier.height(16.dp)) }
+
+        // --- DOCUMENTATION SECTION ---
+        item {
+            SettingsHeader("Documentation")
+        }
+        items(documentationItems) { item ->
             SettingRow(item, navController, showDialog)
         }
 
