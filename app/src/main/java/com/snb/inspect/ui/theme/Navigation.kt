@@ -25,6 +25,7 @@ import com.snb.inspect.calibrationViewModels.UserManualsViewModel
 import com.snb.inspect.calibrationViewModels.WeekendRotaViewModel
 import com.snb.inspect.repositories.CodesOfPracticeRepository
 import com.snb.inspect.repositories.CustomerRepository
+import com.snb.inspect.repositories.MdSystemNotesRepository
 import com.snb.inspect.repositories.MeasuringEquipmentRepository
 import com.snb.inspect.repositories.MetalDetectorModelsRepository
 import com.snb.inspect.repositories.MetalDetectorSystemsRepository
@@ -70,7 +71,8 @@ fun AppNavGraph(
     chromeVm: AppChromeViewModel,
     snackbarHostState: SnackbarHostState,
     repositoryMdSystems: MetalDetectorSystemsRepository,
-    calibrationRepository: MetalDetectorConveyorCalibrationRepository
+    calibrationRepository: MetalDetectorConveyorCalibrationRepository,
+    notesRepository: MdSystemNotesRepository
 ) {
     val apiService = RetrofitClient.instance
 
@@ -91,7 +93,6 @@ fun AppNavGraph(
     val manualRepository = UserManualsRepository(apiService, db)
 
     val codesRepository = CodesOfPracticeRepository(apiService, db)
-
 
     NavHost(
         navController = navController,
@@ -198,6 +199,7 @@ fun AppNavGraph(
                 repositoryMdModels = repositoryMdModels,
                 repositoryMdSystems = repositoryMdSystems,
                 repositorySystemTypes = repositorySystemTypes,
+                repositoryMdSystemNotes = notesRepository,
                 detectionRepo = detectionRepo,
                 measuringEquipmentRepo = measuringEquipmentRepo,
                 snackbarHostState = snackbarHostState
@@ -253,6 +255,7 @@ fun AppNavGraph(
                 repositoryMD = repositoryMdSystems,
                 dao = dao,
                 repositoryModels = repositoryMdModels,
+                notesRepository = notesRepository,
                 systemId = systemId,
                 chromeVm = chromeVm,
                 snackbarHostState = snackbarHostState

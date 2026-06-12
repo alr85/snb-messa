@@ -85,21 +85,7 @@ fun CalMetalDetectorConveyorRejectSettings(
 //
 //                FormSpacer()
 
-                LabeledDropdownWithTextInput(
-                    label = "Reject Duration",
-                    dropdownLabel = "Units",
-                    options = rejectTimerUnitOptions,
-                    selectedOption = rejectDurationUnits,
-                    onOptionChange = viewModel::setRejectDurationUnits,
-                    helpText = "Select the units for the reject duration.",
-                    inputLabel = "Duration",
-                    inputValue = rejectDurationSetting,
-                    onInputValueChange = viewModel::setRejectDurationSetting,
-                    inputKeyboardType = KeyboardType.Decimal,
-                    inputMaxLength = 5
-                )
 
-                FormSpacer()
 
                 LabeledDropdownWithTextInput(
                     label = "Reject Delay",
@@ -111,6 +97,22 @@ fun CalMetalDetectorConveyorRejectSettings(
                     inputLabel = "Delay",
                     inputValue = rejectDelaySetting,
                     onInputValueChange = viewModel::setRejectDelaySetting,
+                    inputKeyboardType = KeyboardType.Decimal,
+                    inputMaxLength = 5
+                )
+
+                FormSpacer()
+
+                LabeledDropdownWithTextInput(
+                    label = "Reject Duration",
+                    dropdownLabel = "Units",
+                    options = rejectTimerUnitOptions,
+                    selectedOption = rejectDurationUnits,
+                    onOptionChange = viewModel::setRejectDurationUnits,
+                    helpText = "Select the units for the reject duration.",
+                    inputLabel = "Duration",
+                    inputValue = rejectDurationSetting,
+                    onInputValueChange = viewModel::setRejectDurationSetting,
                     inputKeyboardType = KeyboardType.Decimal,
                     inputMaxLength = 5
                 )

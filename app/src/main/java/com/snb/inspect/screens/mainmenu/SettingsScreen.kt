@@ -1,6 +1,7 @@
 package com.snb.inspect.screens.mainmenu
 
 import android.content.Intent
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,7 +31,9 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.AlertDialog
@@ -54,10 +57,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.navigation.NavHostController
+import androidx.core.content.FileProvider
 import com.snb.inspect.PreferencesHelper
 import com.snb.inspect.UserViewModel
 import com.snb.inspect.ui.theme.SnbDarkGrey
 import com.snb.inspect.ui.theme.SnbRed
+import java.io.File
 import kotlin.system.exitProcess
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -81,16 +86,17 @@ fun SettingsScreen(
     val serviceItems = remember {
         listOf(
             SettingItem("My Calibrations", Icons.Filled.EditNote, "myCalibrations"),
-            SettingItem("My Validations", Icons.Filled.EditNote, "myValidations"),
+            SettingItem("My Validations", Icons.Filled.EditNote, "myValidations",isComingSoon = true),
+            SettingItem("Service Calls", Icons.Default.Construction, "COMING_SOON", isComingSoon = true),
             SettingItem("Weekend Rota", Icons.Default.CalendarMonth, "weekendRota"),
-            SettingItem("Service Calls", Icons.Default.Construction, "COMING_SOON", isComingSoon = true)
         )
     }
 
     val documentationItems = remember {
         listOf(
             SettingItem("User Manuals", Icons.Default.Description, "userManualsList"),
-            SettingItem("Codes of Practice", Icons.Default.Description, "codesOfPracticeList")
+            SettingItem("Codes of Practice", Icons.Default.Description, "codesOfPracticeList"),
+            SettingItem("Passwords", Icons.Default.LockOpen, "codesOfPracticeList", isComingSoon = true)
         )
     }
 
@@ -105,6 +111,7 @@ fun SettingsScreen(
     val appManagementItems = remember {
         listOf(
             SettingItem("Database Sync", Icons.Default.CloudSync, "databaseSync"),
+            SettingItem("Export Database", Icons.Default.Share, "EXPORT_DB_TRIGGER"),
             SettingItem("Debug Logs", Icons.AutoMirrored.Filled.ListAlt, "logsScreen"),
             SettingItem("About App", Icons.Default.Info, "aboutApp"),
             SettingItem("Logout", Icons.Default.Refresh, "LOGOUT_TRIGGER")
@@ -211,6 +218,7 @@ fun SettingRow(
                 .clickable(enabled = !item.isComingSoon) {
                     when {
                         item.route == "LOGOUT_TRIGGER" -> showDialog.value = true
+                        item.route == "EXPORT_DB_TRIGGER" -> exportDatabase(context)
                         item.route.startsWith("http") -> {
                             val intent = Intent(Intent.ACTION_VIEW, item.route.toUri())
                             context.startActivity(intent)
@@ -294,4 +302,46 @@ fun LogoutConfirmationDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
             }
         }
     )
+}
+
+fun exportDatabase(context: android.content.Context) {
+    try {
+        val dbName = "app_database"
+        val dbFile = context.getDatabasePath(dbName)
+        val shmFile = context.getDatabasePath("$dbName-shm")
+        val walFile = context.getDatabasePath("$dbName-wal")
+
+        val filesToShare = listOf(dbFile, shmFile, walFile).filter { it.exists() }
+
+        if (filesToShare.isEmpty()) {
+            Toast.makeText(context, "Database files not found", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Copy files to cache to make sharing easier/safer
+        val cacheDir = File(context.cacheDir, "db_export")
+        cacheDir.mkdirs()
+
+        val uris = filesToShare.map { file ->
+            val destFile = File(cacheDir, file.name + (if (file.name == dbName) ".db" else ""))
+            file.inputStream().use { input ->
+                destFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+            FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", destFile)
+        }
+
+        val intent = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+            type = "application/octet-stream"
+            putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+
+        context.startActivity(Intent.createChooser(intent, "Export Database"))
+
+    } catch (e: Exception) {
+        Toast.makeText(context, "Export failed: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+        e.printStackTrace()
+    }
 }

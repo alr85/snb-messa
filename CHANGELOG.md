@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1] - 12/06/2026
+### Fixed
+- Removed the 'Latched' and 'Controlled Restart' inputs for Speed Sensor failsafe test
+- Removed 'Operator Test' screen for non-PV calibrations
+- Added a 30-second bin door timeout PV rule
+- Removed bin door open/unlocked notification PV rules
+- Operator failsafe tests are now persistent when returning to a previously started calibration
+- Made the 'Reason for not calibrating' drop down a multi select list
+- Reversed the reject delay and duration order in the Reject Settings screen
+- Moved the 'Detection Settings (As Found)' screen. This is now before the 'As Found' Sensitivities
+- 
+### Added
+- Added a new Codes of Practice area to the settings menu
+- Added a 'Export Database' button to the settings menu. This will help with diagnostics/debugging
+- Added an 'OK' condition to the System Checklist
+
+
+
 ## [1.0.13] - 29/05/2026
 ### Fixed
 - Increased max length of machine location to 30 characters

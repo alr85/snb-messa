@@ -77,6 +77,7 @@ import com.snb.inspect.calibrationViewModels.NoticeViewModel
 import com.snb.inspect.network.NetworkMonitor
 import com.snb.inspect.network.rememberIsOffline
 import com.snb.inspect.repositories.CustomerRepository
+import com.snb.inspect.repositories.MdSystemNotesRepository
 import com.snb.inspect.repositories.MeasuringEquipmentRepository
 import com.snb.inspect.repositories.MetalDetectorSystemsRepository
 import com.snb.inspect.repositories.MetalDetectorConveyorCalibrationRepository
@@ -105,6 +106,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var noticeViewModel: NoticeViewModel
     private lateinit var mdSystemsRepository: MetalDetectorSystemsRepository
     private lateinit var calibrationRepository: MetalDetectorConveyorCalibrationRepository
+    private lateinit var mdSystemNotesRepository: MdSystemNotesRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -129,6 +131,7 @@ class MainActivity : ComponentActivity() {
         val noticeRepository = NoticeRepository(apiService, db)
         mdSystemsRepository = MetalDetectorSystemsRepository(apiService, db)
         calibrationRepository = MetalDetectorConveyorCalibrationRepository(db.metalDetectorConveyorCalibrationDAO())
+        mdSystemNotesRepository = MdSystemNotesRepository(apiService, db)
 
         // Additional repositories for background sync
         val systemTypeRepository = SystemTypeRepository(apiService, db)
@@ -192,6 +195,7 @@ class MainActivity : ComponentActivity() {
                         mdModelsRepository = mdModelsRepository,
                         retailerSensitivitiesRepository = retailerSensitivitiesRepository,
                         measuringEquipmentRepository = measuringEquipmentRepository,
+                        mdSystemNotesRepository = mdSystemNotesRepository,
                         syncPrefs = syncPrefs
                     )
                 }
@@ -385,6 +389,7 @@ fun MyApp(
     mdModelsRepository: MetalDetectorModelsRepository,
     retailerSensitivitiesRepository: RetailerSensitivitiesRepository,
     measuringEquipmentRepository: MeasuringEquipmentRepository,
+    mdSystemNotesRepository: MdSystemNotesRepository,
     syncPrefs: SyncPreferences
 ) {
 
@@ -480,6 +485,11 @@ fun MyApp(
                     retailerSensitivitiesRepository.fetchAndStoreFreefall()
                     retailerSensitivitiesRepository.fetchAndStorePipeline()
                     measuringEquipmentRepository.fetchAndStoreEquipment()
+
+                    // 6. SYNC NOTES
+                    InAppLogger.d("BACKGROUND SYNC: Step 6 - Syncing Notes...")
+                    mdSystemNotesRepository.syncAllUnsyncedNotes(context)
+                    mdSystemNotesRepository.fetchAndStoreAllNotes()
                     
                     withContext(Dispatchers.Main) {
                         snackbarHostState.showSnackbar("✅ Background sync complete")
@@ -644,7 +654,8 @@ fun MyApp(
                     chromeVm = chromeVm,
                     snackbarHostState = snackbarHostState, // optional but recommended
                     repositoryMdSystems = mdSystemsRepository,
-                    calibrationRepository = calibrationRepository
+                    calibrationRepository = calibrationRepository,
+                    notesRepository = mdSystemNotesRepository
                 )
             }
 

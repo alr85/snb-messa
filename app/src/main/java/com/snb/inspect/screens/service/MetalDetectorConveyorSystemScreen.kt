@@ -21,20 +21,31 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.NoteAdd
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +59,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.navigation.NavHostController
@@ -57,8 +69,10 @@ import com.snb.inspect.activities.MetalDetectorConveyorCalibrationActivity
 import com.snb.inspect.activities.SensitivityOptimisationValidationActivity
 import com.snb.inspect.daos.MetalDetectorConveyorCalibrationDAO
 import com.snb.inspect.dataClasses.MdModelsLocal
+import com.snb.inspect.dataClasses.MdSystemNoteLocal
 import com.snb.inspect.dataClasses.MetalDetectorWithFullDetails
 import com.snb.inspect.formatDate
+import com.snb.inspect.repositories.MdSystemNotesRepository
 import com.snb.inspect.repositories.MetalDetectorModelsRepository
 import com.snb.inspect.repositories.MetalDetectorSystemsRepository
 import com.snb.inspect.ui.theme.DetailItem
@@ -77,6 +91,7 @@ fun MetalDetectorConveyorSystemScreen(
     repositoryMD: MetalDetectorSystemsRepository,
     dao: MetalDetectorConveyorCalibrationDAO,
     repositoryModels: MetalDetectorModelsRepository,
+    notesRepository: MdSystemNotesRepository,
     systemId: Int,
     chromeVm: AppChromeViewModel,
     snackbarHostState: SnackbarHostState
@@ -91,6 +106,9 @@ fun MetalDetectorConveyorSystemScreen(
 
     var showActions by rememberSaveable { mutableStateOf(false) }
 
+    val notes by notesRepository.observeNotesForSystem(systemId).collectAsState(initial = emptyList())
+    var showAddNoteDialog by remember { mutableStateOf(false) }
+
     suspend fun refresh() {
         mdSystem = repositoryMD
             .getMetalDetectorsWithFullDetailsUsingLocalId(systemId)
@@ -99,6 +117,11 @@ fun MetalDetectorConveyorSystemScreen(
         modelDetails = mdSystem?.modelId
             ?.takeIf { it != 0 }
             ?.let { repositoryModels.getMdModelDetails(it) }
+
+        // Sync notes when refreshing
+        mdSystem?.let {
+            notesRepository.syncNotes(context, systemId, it.cloudId)
+        }
     }
 
     // Initial load
@@ -276,6 +299,30 @@ fun MetalDetectorConveyorSystemScreen(
             item { Spacer(Modifier.height(16.dp)) }
 
             item {
+                ExpandableSection("Notes (${notes.size})", false) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        if (notes.isEmpty()) {
+                            Text(
+                                "No notes found for this system.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.Gray,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            )
+                        } else {
+                            notes.forEach { note ->
+                                NoteItem(note)
+                            }
+                        }
+                    }
+                }
+            }
+
+            item { Spacer(Modifier.height(16.dp)) }
+
+            item {
                 ExpandableSection("Database Info", false) {
 
                     DetailItem("Cloud Synced", if (mdSystem?.isSynced == true) "Yes" else "No")
@@ -344,29 +391,46 @@ fun MetalDetectorConveyorSystemScreen(
                             }
                         }
 
-                        // Start SOV
+                        // Start SOV (Coming Soon)
+                        val isSovComingSoon = true
                         FloatingActionButton(
                             modifier = Modifier.fillMaxWidth(),
                             onClick = {
-                                showActions = false
-                                startSov()
+                                if (!isSovComingSoon) {
+                                    showActions = false
+                                    startSov()
+                                }
                             },
-                            containerColor = Color.White,
-                            contentColor = SnbRed,
+                            containerColor = if (isSovComingSoon) Color(0xFFF5F5F5) else Color.White,
+                            contentColor = if (isSovComingSoon) Color.Gray else SnbRed,
                         ) {
                             Row(
                                 modifier = Modifier.padding(horizontal = 16.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Icon(Icons.Default.Tune, "Validation", modifier = Modifier.size(24.dp))
-                                Text(
-                                    text = "New Validation",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.weight(1f),
-                                    color = SnbDarkGrey
+                                Icon(
+                                    imageVector = Icons.Default.Tune,
+                                    contentDescription = "Validation",
+                                    modifier = Modifier.size(24.dp),
+                                    tint = if (isSovComingSoon) Color.Gray else SnbRed
                                 )
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "New Validation",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isSovComingSoon) Color.Gray else SnbDarkGrey
+                                    )
+                                    if (isSovComingSoon) {
+                                        Text(
+                                            text = "COMING SOON",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = Color.Gray,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
                             }
                         }
 
@@ -396,6 +460,32 @@ fun MetalDetectorConveyorSystemScreen(
                                         color = SnbDarkGrey
                                     )
                                 }
+                            }
+                        }
+
+                        // Add Note
+                        FloatingActionButton(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                showActions = false
+                                showAddNoteDialog = true
+                            },
+                            containerColor = Color.White,
+                            contentColor = SnbRed,
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(Icons.Default.NoteAdd, "Add Note", modifier = Modifier.size(24.dp))
+                                Text(
+                                    text = "Add System Note",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.weight(1f),
+                                    color = SnbDarkGrey
+                                )
                             }
                         }
 
@@ -463,4 +553,124 @@ fun MetalDetectorConveyorSystemScreen(
             }
         }
     }
+
+    if (showAddNoteDialog) {
+        AddNoteDialog(
+            onDismiss = { showAddNoteDialog = false },
+            onConfirm = { noteText, isImportant ->
+                scope.launch {
+                    val (_, _, engineerId) = PreferencesHelper.getCredentials(context)
+                    notesRepository.addNote(
+                        systemId = systemId,
+                        cloudSystemId = mdSystem?.cloudId,
+                        addedBy = engineerId ?: 0,
+                        noteText = noteText,
+                        isImportant = isImportant
+                    )
+                    showAddNoteDialog = false
+                    // Trigger sync
+                    notesRepository.syncNotes(context, systemId, mdSystem?.cloudId)
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun NoteItem(note: MdSystemNoteLocal) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = if (note.isImportant) Color(0xFFFFEBEE) else Color(0xFFF5F5F5)
+        ),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (note.isImportant) "IMPORTANT" else note.noteType ?: "Note",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = if (note.isImportant) SnbRed else Color.Gray
+                )
+                Text(
+                    text = runCatching { formatDate(note.addedDate) }.getOrElse { note.addedDate },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.Gray
+                )
+            }
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = note.noteText,
+                style = MaterialTheme.typography.bodyMedium,
+                color = SnbDarkGrey
+            )
+            if (!note.isSynced) {
+                Spacer(Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.CloudUpload,
+                        contentDescription = "Pending Sync",
+                        modifier = Modifier.size(12.dp),
+                        tint = Color.Gray
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        "Pending Sync",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.Gray
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AddNoteDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (String, Boolean) -> Unit
+) {
+    var noteText by remember { mutableStateOf("") }
+    var isImportant by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Add System Note") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = noteText,
+                    onValueChange = { noteText = it },
+                    label = { Text("Note content") },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 3
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = isImportant,
+                        onCheckedChange = { isImportant = it }
+                    )
+                    Text("Mark as Important", style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { if (noteText.isNotBlank()) onConfirm(noteText, isImportant) },
+                colors = ButtonDefaults.buttonColors(containerColor = SnbRed)
+            ) {
+                Text("Add Note")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }

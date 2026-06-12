@@ -9,6 +9,7 @@ import com.snb.inspect.dataClasses.FreefallThroatRetailerSensitivitiesEntity
 import com.snb.inspect.dataClasses.MdModel
 import com.snb.inspect.dataClasses.MdSystem
 import com.snb.inspect.dataClasses.MdSystemCloud
+import com.snb.inspect.dataClasses.MdSystemNoteCloud
 import com.snb.inspect.dataClasses.NoticeCloud
 import com.snb.inspect.dataClasses.PipelineRetailerSensitivitiesEntity
 import com.snb.inspect.dataClasses.SystemType
@@ -90,6 +91,18 @@ interface ApiService {
     @GET("CodesOfPractice")
     suspend fun getCodesOfPractice(): Response<List<CodeOfPractice>>
 
-    @GET("MeasuringEquipment") // Adjust the endpoint path to match your API
+    @GET("MeasuringEquipment")
     suspend fun getMeasuringEquipment(): Response<List<ApiMeasuringEquipment>>
+
+    @GET("MdSystemNotes")
+    suspend fun getAllMdSystemNotes(): Response<List<MdSystemNoteCloud>>
+
+    @GET("MdSystemNotes/{systemId}")
+    suspend fun getMdSystemNotes(@Path("systemId") systemId: Int): Response<List<MdSystemNoteCloud>>
+
+    @POST("MdSystemNotes")
+    suspend fun postMdSystemNote(@Body note: MdSystemNoteCloud): Response<MdSystemNoteCloud>
+
+    @PUT("MdSystemNotes/{id}")
+    suspend fun updateMdSystemNote(@Path("id") id: Int, @Body note: MdSystemNoteCloud): Response<Unit>
 }

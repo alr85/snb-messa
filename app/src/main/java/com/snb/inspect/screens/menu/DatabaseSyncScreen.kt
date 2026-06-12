@@ -40,6 +40,7 @@ fun DatabaseSyncScreen(
     repositoryMdModels: MetalDetectorModelsRepository,
     repositoryMdSystems: MetalDetectorSystemsRepository,
     repositorySystemTypes: SystemTypeRepository,
+    repositoryMdSystemNotes: MdSystemNotesRepository,
     detectionRepo: RetailerSensitivitiesRepository,
     measuringEquipmentRepo: MeasuringEquipmentRepository,
     snackbarHostState: SnackbarHostState
@@ -100,6 +101,14 @@ fun DatabaseSyncScreen(
             },
             SyncTask("M&S Target Sensitivities (Pipeline)") {
                 when (val r = detectionRepo.fetchAndStorePipeline()) {
+                    is FetchResult.Success -> r.message
+                    is FetchResult.Failure -> "Failed: ${r.errorMessage}"
+                }
+            },
+            SyncTask("System Notes") {
+                // Upload first, then pull
+                repositoryMdSystemNotes.syncAllUnsyncedNotes(context)
+                when (val r = repositoryMdSystemNotes.fetchAndStoreAllNotes()) {
                     is FetchResult.Success -> r.message
                     is FetchResult.Failure -> "Failed: ${r.errorMessage}"
                 }
