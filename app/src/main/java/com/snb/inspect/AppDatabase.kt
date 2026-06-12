@@ -56,7 +56,7 @@ import com.snb.inspect.dataClasses.UserManualLocal
         MdSystemNoteLocal::class
 
     ],
-    version = 70,
+    version = 72,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

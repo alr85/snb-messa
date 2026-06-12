@@ -598,14 +598,14 @@ fun NoteItem(note: MdSystemNoteLocal) {
                     color = if (note.isImportant) SnbRed else Color.Gray
                 )
                 Text(
-                    text = runCatching { formatDate(note.addedDate) }.getOrElse { note.addedDate },
+                    text = runCatching { formatDate(note.addedDate ?: "") }.getOrElse { note.addedDate ?: "" },
                     style = MaterialTheme.typography.labelSmall,
                     color = Color.Gray
                 )
             }
             Spacer(Modifier.height(4.dp))
             Text(
-                text = note.noteText,
+                text = note.noteText ?: "",
                 style = MaterialTheme.typography.bodyMedium,
                 color = SnbDarkGrey
             )
