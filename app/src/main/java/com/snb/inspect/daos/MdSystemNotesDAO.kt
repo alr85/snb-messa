@@ -35,6 +35,15 @@ interface MdSystemNotesDAO {
     @Query("SELECT * FROM MdSystemNotes WHERE cloudId IS NOT NULL")
     suspend fun getAllSyncedNotes(): List<MdSystemNoteLocal>
 
-    @Query("SELECT * FROM MdSystemNotes WHERE cloudId = :cloudId LIMIT 1")
-    suspend fun getNoteByCloudId(cloudId: Int): MdSystemNoteLocal?
+    @Query("DELETE FROM MdSystemNotes WHERE systemId = :systemId AND isSynced = 1 AND cloudId NOT IN (:cloudIds)")
+    suspend fun deleteSyncedNotesNotIn(systemId: Int, cloudIds: List<Int>)
+
+    @Query("DELETE FROM MdSystemNotes WHERE systemId = :systemId AND isSynced = 1")
+    suspend fun deleteAllSyncedNotesForSystem(systemId: Int)
+
+    @Query("DELETE FROM MdSystemNotes WHERE isSynced = 1 AND cloudId NOT IN (:cloudIds)")
+    suspend fun deleteSyncedNotesNotIn(cloudIds: List<Int>)
+
+    @Query("DELETE FROM MdSystemNotes WHERE isSynced = 1")
+    suspend fun deleteAllSyncedNotes()
 }

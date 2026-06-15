@@ -80,7 +80,10 @@ fun CalMetalDetectorConveyorNonFerrousTestAsFound(
 
     Column(Modifier.fillMaxSize()) {
 
-        CalibrationHeader("Non-Ferrous Sensitivity (As Found)")
+        CalibrationHeader(
+            label = "Non-Ferrous Sensitivity (As Found)",
+            isValid = isNextStepEnabled
+        )
 
         ScrollableWithScrollbar(
             modifier = Modifier

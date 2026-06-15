@@ -1,5 +1,6 @@
 package com.snb.inspect.activities
 
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -32,6 +33,7 @@ class SensitivityOptimisationValidationActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         val sovId = intent.getStringExtra("SOV_ID") ?: error("Missing SOV_ID")
         val engineerId = intent.getIntExtra("ENGINEER_ID", 0)

@@ -22,6 +22,11 @@ import com.snb.inspect.formModules.PvRuleStatus
 import com.snb.inspect.ui.theme.FormSpacer
 import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalMetalDetectorConveyorDetectionSettingsAsFound(
@@ -75,19 +80,40 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
         viewModel::setDetectionSettingAsFound8
     )
 
-    // Validation
+    // Validation: All rows must have a valid label/value pair, OR be set to N/A
     val isNextStepEnabled =
-        labels.all { it.value.isNotBlank() } &&
-                values.all { it.value.isNotBlank() } &&
-                sensitivityAccessRestriction.isNotBlank()
+        labels.indices.all { i ->
+            val v = values[i].value
+            val l = labels[i].value
+            v == "N/A" || (l.isNotBlank() && v.isNotBlank())
+        } && sensitivityAccessRestriction.isNotBlank()
 
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
+    // Auto-set N/A if label or value indicates an unused or invalid setting
+    LaunchedEffect(Unit) {
+        labels.indices.forEach { index ->
+            val label = labels[index].value
+            val value = values[index].value
+
+            if (label.isBlank() || label == "-" || label.lowercase() == "null") {
+                // If label is missing, dash, or "null", N/A the module value but leave label as is
+                valueSetters[index]("N/A")
+            } else if (value == "-" || value.lowercase() == "null") {
+                // If label is valid but value is dash or "null", N/A the value
+                valueSetters[index]("N/A")
+            }
+        }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
 
-        CalibrationHeader("Detection Settings (As Found)")
+        CalibrationHeader(
+            label = "Detection Settings (As Found)",
+            isValid = isNextStepEnabled
+        )
 
         ScrollableWithScrollbar(
             modifier = Modifier
@@ -159,7 +185,6 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
                     )
 
                     FormSpacer()
-
                 }
 
 

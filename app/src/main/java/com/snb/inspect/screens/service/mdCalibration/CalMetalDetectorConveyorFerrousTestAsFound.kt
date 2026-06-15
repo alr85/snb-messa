@@ -80,7 +80,10 @@ fun CalMetalDetectorConveyorFerrousTestAsFound(
 
     Column(Modifier.fillMaxSize()) {
 
-        CalibrationHeader("Ferrous Sensitivity (As Found)")
+        CalibrationHeader(
+            label = "Ferrous Sensitivity (As Found)",
+            isValid = isNextStepEnabled
+        )
 
         ScrollableWithScrollbar(
             modifier = Modifier

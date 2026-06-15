@@ -407,10 +407,10 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _rejectConfirmWindowUnits.value = existingCalibration.rejectConfirmWindowUnits
                 _rejectSettingsEngineerNotes.value = existingCalibration.rejectSettingsEngineerNotes
 
-                _infeedBeltHeight.value = existingCalibration.infeedBeltHeight
-                _outfeedBeltHeight.value = existingCalibration.outfeedBeltHeight
-                _conveyorLength.value = existingCalibration.conveyorLength
-                _conveyorHanding.value = existingCalibration.conveyorHanding
+                _infeedBeltHeight.value = existingCalibration.infeedBeltHeight.ifBlank { "N/A" }
+                _outfeedBeltHeight.value = existingCalibration.outfeedBeltHeight.ifBlank { "N/A" }
+                _conveyorLength.value = existingCalibration.conveyorLength.ifBlank { "N/A" }
+                _conveyorHanding.value = existingCalibration.conveyorHanding.ifBlank { "N/A" }
                 _beltSpeed.value = existingCalibration.beltSpeed
                 _rejectDevice.value = existingCalibration.rejectDevice
                 _rejectDeviceOther.value = existingCalibration.rejectDeviceOther
@@ -692,6 +692,9 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _equipmentMultimeterId.value = existingCalibration.equipmentMultimeterId
                 _equipmentTachometerId.value = existingCalibration.equipmentTachometerId
 
+                // Force initial validity check based on loaded data
+                revalidateAllScreens()
+
                 //endregion
 
             } else {
@@ -711,8 +714,126 @@ class CalibrationMetalDetectorConveyorViewModel(
     private val _currentScreenNextEnabled = MutableStateFlow(true)
     val currentScreenNextEnabled = _currentScreenNextEnabled
 
+    private val _screenValidities = MutableStateFlow<Map<String, Boolean>>(emptyMap())
+    val screenValidities: StateFlow<Map<String, Boolean>> = _screenValidities
+
     fun setCurrentScreenNextEnabled(enabled: Boolean) {
         _currentScreenNextEnabled.value = enabled
+    }
+
+    fun setScreenValidity(route: String, isValid: Boolean) {
+        val baseRoute = route.split("/").first()
+        if (_screenValidities.value[baseRoute] != isValid) {
+            val updatedMap = _screenValidities.value.toMutableMap()
+            updatedMap[baseRoute] = isValid
+            _screenValidities.value = updatedMap
+        }
+    }
+
+    fun isCalibrationValid(routeOrder: List<String>): Boolean {
+        // We check all screens except the summary itself
+        return routeOrder.filter { !it.contains("Summary") }.all { route ->
+            isScreenValid(route)
+        }
+    }
+
+    fun isScreenValid(route: String): Boolean {
+        val baseRoute = route.split("/").first()
+        // If we have a live validity from the UI, use it
+        _screenValidities.value[baseRoute]?.let { return it }
+
+        // Fallback: Check persistence or database state if possible
+        // For now, if it's not in the map, we assume invalid until the screen loads
+        // and reports its state.
+        return false
+    }
+
+    fun getDisplayNameForRoute(route: String): String {
+        return when (route.split("/").first()) {
+            "MetalDetectorConveyorCalibrationStart" -> "Calibration Start"
+            "CalMetalDetectorConveyorConveyorDetails" -> "Conveyor Details"
+            "CalMetalDetectorConveyorSystemChecklist" -> "System Checklist"
+            "CalMetalDetectorConveyorIndicators" -> "Indicators"
+            "CalMetalDetectorConveyorProductDetails" -> "Product Details"
+            "CalMetalDetectorConveyorSensitivityRequirements" -> "Sensitivity Requirements"
+            "CalMetalDetectorConveyorDetectionSettingsAsFound" -> "Detection Settings (As Found)"
+            "CalMetalDetectorConveyorFerrousTestAsFound" -> "Ferrous Test (As Found)"
+            "CalMetalDetectorConveyorNonFerrousTestAsFound" -> "Non-Ferrous Test (As Found)"
+            "CalMetalDetectorConveyorStainlessTestAsFound" -> "Stainless Test (As Found)"
+            "CalMetalDetectorConveyorFerrousTest" -> "Ferrous Test (As Left)"
+            "CalMetalDetectorConveyorNonFerrousTest" -> "Non-Ferrous Test (As Left)"
+            "CalMetalDetectorConveyorStainlessTest" -> "Stainless Test (As Left)"
+            "CalMetalDetectorConveyorDetectionSettingsAsLeft" -> "Detection Settings (As Left)"
+            "CalMetalDetectorConveyorRejectSettings" -> "Reject Settings"
+            "CalMetalDetectorConveyorLargeMetalTest" -> "Large Metal Test"
+            "CalMetalDetectorConveyorInfeedPEC" -> "Infeed PEC"
+            "CalMetalDetectorConveyorRejectConfirmPEC" -> "Reject Confirm PEC"
+            "CalMetalDetectorConveyorBinFullPEC" -> "Bin Full PEC"
+            "CalMetalDetectorConveyorAirPressureSensor" -> "Air Pressure Sensor"
+            "CalMetalDetectorConveyorBinDoorMonitor" -> "Bin Door Monitor"
+            "CalMetalDetectorConveyorBackupPEC" -> "Backup PEC"
+            "CalMetalDetectorConveyorPackCheckSensor" -> "Pack Check Sensor"
+            "CalMetalDetectorConveyorSpeedSensor" -> "Speed Sensor"
+            "CalMetalDetectorConveyorDetectNotification" -> "Detect Notification"
+            "CalMetalDetectorConveyorSmeDetails" -> "Operator Test"
+            "CalMetalDetectorConveyorEquipmentUsed" -> "Equipment Used"
+            "CalMetalDetectorConveyorSummary" -> "Summary"
+            else -> route
+        }
+    }
+
+    private fun revalidateAllScreens() {
+        val validMap = mutableMapOf<String, Boolean>()
+
+        validMap["MetalDetectorConveyorCalibrationStart"] =
+            canPerformCalibration.value || (reasonForNotCalibrating.value.isNotEmpty())
+
+        validMap["CalMetalDetectorConveyorProductDetails"] =
+            _productDescription.value.isNotBlank()
+
+        validMap["CalMetalDetectorConveyorDetectionSettingsAsFound"] =
+            listOf(
+                _detectionSettingAsFound1, _detectionSettingAsFound2, _detectionSettingAsFound3,
+                _detectionSettingAsFound4, _detectionSettingAsFound5, _detectionSettingAsFound6,
+                _detectionSettingAsFound7, _detectionSettingAsFound8
+            ).zip(
+                listOf(
+                    _detectionSetting1label, _detectionSetting2label, _detectionSetting3label,
+                    _detectionSetting4label, _detectionSetting5label, _detectionSetting6label,
+                    _detectionSetting7label, _detectionSetting8label
+                )
+            ).all { (v, l) -> v.value == "N/A" || (l.value.isNotBlank() && v.value.isNotBlank()) } &&
+                    _sensitivityAccessRestriction.value.isNotBlank()
+
+        validMap["CalMetalDetectorConveyorDetectionSettingsAsLeft"] =
+            listOf(
+                _detectionSettingAsLeft1, _detectionSettingAsLeft2, _detectionSettingAsLeft3,
+                _detectionSettingAsLeft4, _detectionSettingAsLeft5, _detectionSettingAsLeft6,
+                _detectionSettingAsLeft7, _detectionSettingAsLeft8
+            ).zip(
+                listOf(
+                    _detectionSetting1label, _detectionSetting2label, _detectionSetting3label,
+                    _detectionSetting4label, _detectionSetting5label, _detectionSetting6label,
+                    _detectionSetting7label, _detectionSetting8label
+                )
+            ).all { (v, l) -> v.value == "N/A" || (l.value.isNotBlank() && v.value.isNotBlank()) } &&
+                    _productPeakSignalAsLeft.value.isNotBlank()
+
+        // Default others to true or check their specific simple criteria
+        validMap["CalMetalDetectorConveyorConveyorDetails"] = true
+        validMap["CalMetalDetectorConveyorSystemChecklist"] = true
+        validMap["CalMetalDetectorConveyorIndicators"] = true
+        validMap["CalMetalDetectorConveyorSensitivityRequirements"] = true
+
+        // Tests usually require a certificate number if not N/A
+        validMap["CalMetalDetectorConveyorFerrousTestAsFound"] =
+            _sampleCertificateNumberAsFoundFerrous.value.isNotBlank()
+        validMap["CalMetalDetectorConveyorNonFerrousTestAsFound"] =
+            _sampleCertificateNumberAsFoundNonFerrous.value.isNotBlank()
+        validMap["CalMetalDetectorConveyorStainlessTestAsFound"] =
+            _sampleCertificateNumberAsFoundStainless.value.isNotBlank()
+
+        _screenValidities.value = validMap
     }
 
     // -----------------------------------------------------------------------------
@@ -2515,7 +2636,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     //------------------------------------------------------------------------------Conveyor Details
 
-    private val _infeedBeltHeight = mutableStateOf("")
+    private val _infeedBeltHeight = mutableStateOf("N/A")
     val infeedBeltHeight: State<String> = _infeedBeltHeight
 
 
@@ -2523,7 +2644,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         _infeedBeltHeight.value = newInfeedBeltHeight
     }
 
-    private val _outfeedBeltHeight = mutableStateOf("")
+    private val _outfeedBeltHeight = mutableStateOf("N/A")
     val outfeedBeltHeight: State<String> = _outfeedBeltHeight
 
 
@@ -2531,7 +2652,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         _outfeedBeltHeight.value = newOutfeedBeltHeight
     }
 
-    private val _conveyorLength = mutableStateOf("")
+    private val _conveyorLength = mutableStateOf("N/A")
     val conveyorLength: State<String> = _conveyorLength
 
 
@@ -2539,7 +2660,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         _conveyorLength.value = newConveyorLength
     }
 
-    private val _conveyorHanding = mutableStateOf("")
+    private val _conveyorHanding = mutableStateOf("N/A")
     val conveyorHanding: State<String> = _conveyorHanding
 
 
@@ -3844,10 +3965,10 @@ class CalibrationMetalDetectorConveyorViewModel(
         { setRejectConfirmWindowSetting("") },
         { setRejectConfirmWindowUnits("") },
         { setRejectSettingsEngineerNotes("") },
-        { setInfeedBeltHeight("") },
-        { setOutfeedBeltHeight("") },
-        { setConveyorLength("") },
-        { setConveyorHanding("") },
+        { setInfeedBeltHeight("N/A") },
+        { setOutfeedBeltHeight("N/A") },
+        { setConveyorLength("N/A") },
+        { setConveyorHanding("N/A") },
         { setBeltSpeed("") },
         { setRejectDevice("") },
         { setRejectDeviceOther("") },

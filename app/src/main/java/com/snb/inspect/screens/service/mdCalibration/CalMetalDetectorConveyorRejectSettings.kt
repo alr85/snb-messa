@@ -61,7 +61,10 @@ fun CalMetalDetectorConveyorRejectSettings(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        CalibrationHeader("Reject Settings")
+        CalibrationHeader(
+            label = "Reject Settings",
+            isValid = isNextStepEnabled
+        )
 
         ScrollableWithScrollbar(
             modifier = Modifier

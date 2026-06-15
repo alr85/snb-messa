@@ -113,7 +113,10 @@ fun CalMetalDetectorConveyorBackupPEC(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        CalibrationHeader("Failsafe Tests - Backup Sensor")
+        CalibrationHeader(
+            label = "Failsafe Tests - Backup Sensor",
+            isValid = isNextStepEnabled
+        )
 
         ScrollableWithScrollbar(
             modifier = Modifier.fillMaxSize(),

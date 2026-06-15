@@ -23,6 +23,9 @@ import com.snb.inspect.formModules.LabeledTextFieldWithHelp
 import com.snb.inspect.ui.theme.FormSpacer
 import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalMetalDetectorConveyorDetectionSettingsAsLeft(
@@ -53,16 +56,50 @@ fun CalMetalDetectorConveyorDetectionSettingsAsLeft(
 
     val engineerNotes by viewModel.detectionSettingAsLeftEngineerNotes
 
-    // Validation
-    val isNextStepEnabled = asLeftStates.all { it.value.isNotBlank() && viewModel.productPeakSignalAsLeft.value.isNotBlank() }
+    val valueSetters = listOf(
+        viewModel::setDetectionSettingAsLeft1,
+        viewModel::setDetectionSettingAsLeft2,
+        viewModel::setDetectionSettingAsLeft3,
+        viewModel::setDetectionSettingAsLeft4,
+        viewModel::setDetectionSettingAsLeft5,
+        viewModel::setDetectionSettingAsLeft6,
+        viewModel::setDetectionSettingAsLeft7,
+        viewModel::setDetectionSettingAsLeft8
+    )
+
+    // Validation: All rows must have a valid label/value pair, OR be set to N/A
+    val isNextStepEnabled = asLeftStates.indices.all { i ->
+        val v = asLeftStates[i].value
+        val l = labelStates[i].value
+        v == "N/A" || (l.isNotBlank() && v.isNotBlank())
+    } && viewModel.productPeakSignalAsLeft.value.isNotBlank()
 
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
+    // Auto-set N/A if label or value indicates an unused or invalid setting
+    LaunchedEffect(Unit) {
+        labelStates.indices.forEach { index ->
+            val label = labelStates[index].value
+            val value = asLeftStates[index].value
+
+            if (label.isBlank() || label == "-" || label.lowercase() == "null") {
+                // If label is missing, dash, or "null", N/A the module value but leave label as is
+                valueSetters[index]("N/A")
+            } else if (value == "-" || value.lowercase() == "null") {
+                // If label is valid but value is dash or "null", N/A the value
+                valueSetters[index]("N/A")
+            }
+        }
+    }
+
     Column(Modifier.fillMaxSize()) {
 
-        CalibrationHeader("Detection Settings (As Left)")
+        CalibrationHeader(
+            label = "Detection Settings (As Left)",
+            isValid = isNextStepEnabled
+        )
 
         ScrollableWithScrollbar(
             modifier = Modifier

@@ -116,7 +116,10 @@ fun CalMetalDetectorConveyorBinFullPEC(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        CalibrationHeader("Failsafe Tests - Bin Full Sensor")
+        CalibrationHeader(
+            label = "Failsafe Tests - Bin Full Sensor",
+            isValid = isNextStepEnabled
+        )
 
         ScrollableWithScrollbar(
             modifier = Modifier.fillMaxSize(),

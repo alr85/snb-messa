@@ -56,125 +56,131 @@ fun CalMetalDetectorConveyorCalibrationStart(
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
-    ScrollableWithScrollbar(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 16.dp)
-    ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize()) {
 
-            Spacer(Modifier.height(16.dp))
-            CalibrationHeader("Calibration Start")
-            Spacer(Modifier.height(16.dp))
+        CalibrationHeader(
+            label = "Calibration Start",
+            isValid = isNextStepEnabled
+        )
 
-            LabeledReadOnlyField(
-                label = "Serial Number",
-                value = viewModel.serialNumber.value,
-                helpText = "This is the unique identifier for the system."
-            )
+        ScrollableWithScrollbar(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(horizontal = 16.dp)
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
 
-            FormSpacer()
+                Spacer(Modifier.height(16.dp))
 
-            LabeledReadOnlyField(
-                label = "Make/Model",
-                value = viewModel.modelDescription.value,
-                helpText = "This cannot be edited."
-            )
-
-            FormSpacer()
-
-            LabeledReadOnlyField(
-                label = "System Type",
-                value = viewModel.systemTypeDescription.value,
-                helpText = "This cannot be edited."
-            )
-
-            FormSpacer()
-
-            LabeledTextFieldWithHelp(
-                label = "Location",
-                value = viewModel.newLocation.value,
-                onValueChange = viewModel::setNewLocation,
-                helpText = "Edit if the system has moved.",
-                isNAToggleEnabled = false,
-                maxLength = 30,
-                showInputLabel = false
-            )
-
-            FormSpacer()
-
-            LabeledRadioButtonWithHelp(
-                label = "Able to calibrate?",
-                value = canPerformCalibration,
-                onValueChange = { newValue ->
-
-                    // Only confirm when changing true -> false
-                    if (canPerformCalibration && !newValue) {
-                        pendingValue = newValue
-                        showConfirmDialog = true
-                    } else {
-                        viewModel.setCanPerformCalibration(newValue)
-                    }
-                },
-                helpText = "Are you able to complete a calibration/PV procedure today?"
-            )
-
-            FormSpacer()
-
-            if (!canPerformCalibration) {
-                Spacer(Modifier.height(8.dp))
-
-                val commonReasons = remember {
-                    listOf(
-                        "No product available",
-                        "No power/air supply",
-                        "Unable to locate",
-                        "System unsafe",
-                        "System faulty/inoperative",
-                        "Other"
-                    )
-                }
-
-                LabeledMultiSelectDropdownWithHelp(
-                    label = "Reason for not calibrating",
-                    options = commonReasons,
-                    value = reasonForNotCalibrating.joinToString(", "),
-                    selectedOptions = reasonForNotCalibrating,
-                    onSelectionChange = { selection ->
-                        viewModel.setReasonForNotCalibrating(selection)
-                    },
-                    helpText = "Select reasons why calibration cannot be performed.",
-                    isNAToggleEnabled = false
+                LabeledReadOnlyField(
+                    label = "Serial Number",
+                    value = viewModel.serialNumber.value,
+                    helpText = "This is the unique identifier for the system."
                 )
 
                 FormSpacer()
 
-                if (reasonForNotCalibrating.contains("Other")) {
-                    LabeledTextFieldWithHelp(
-                        label = "Other reason",
-                        value = reasonForNotCalibratingOther,
-                        onValueChange = viewModel::setReasonForNotCalibratingOther,
-                        helpText = "Explain why calibration cannot be performed.",
-                        isNAToggleEnabled = false,
-                        maxLength = 50,
-                        showInputLabel = false
+                LabeledReadOnlyField(
+                    label = "Make/Model",
+                    value = viewModel.modelDescription.value,
+                    helpText = "This cannot be edited."
+                )
+
+                FormSpacer()
+
+                LabeledReadOnlyField(
+                    label = "System Type",
+                    value = viewModel.systemTypeDescription.value,
+                    helpText = "This cannot be edited."
+                )
+
+                FormSpacer()
+
+                LabeledTextFieldWithHelp(
+                    label = "Location",
+                    value = viewModel.newLocation.value,
+                    onValueChange = viewModel::setNewLocation,
+                    helpText = "Edit if the system has moved.",
+                    isNAToggleEnabled = false,
+                    maxLength = 30,
+                    showInputLabel = false
+                )
+
+                FormSpacer()
+
+                LabeledRadioButtonWithHelp(
+                    label = "Able to calibrate?",
+                    value = canPerformCalibration,
+                    onValueChange = { newValue ->
+
+                        // Only confirm when changing true -> false
+                        if (canPerformCalibration && !newValue) {
+                            pendingValue = newValue
+                            showConfirmDialog = true
+                        } else {
+                            viewModel.setCanPerformCalibration(newValue)
+                        }
+                    },
+                    helpText = "Are you able to complete a calibration/PV procedure today?"
+                )
+
+                FormSpacer()
+
+                if (!canPerformCalibration) {
+                    Spacer(Modifier.height(8.dp))
+
+                    val commonReasons = remember {
+                        listOf(
+                            "No product available",
+                            "No power/air supply",
+                            "Unable to locate",
+                            "System unsafe",
+                            "System faulty/inoperative",
+                            "Other"
+                        )
+                    }
+
+                    LabeledMultiSelectDropdownWithHelp(
+                        label = "Reason for not calibrating",
+                        options = commonReasons,
+                        value = reasonForNotCalibrating.joinToString(", "),
+                        selectedOptions = reasonForNotCalibrating,
+                        onSelectionChange = { selection ->
+                            viewModel.setReasonForNotCalibrating(selection)
+                        },
+                        helpText = "Select reasons why calibration cannot be performed.",
+                        isNAToggleEnabled = false
                     )
 
                     FormSpacer()
+
+                    if (reasonForNotCalibrating.contains("Other")) {
+                        LabeledTextFieldWithHelp(
+                            label = "Other reason",
+                            value = reasonForNotCalibratingOther,
+                            onValueChange = viewModel::setReasonForNotCalibratingOther,
+                            helpText = "Explain why calibration cannot be performed.",
+                            isNAToggleEnabled = false,
+                            maxLength = 50,
+                            showInputLabel = false
+                        )
+
+                        FormSpacer()
+                    }
                 }
+
+
+
+                if (canPerformCalibration) {
+                    LabeledRadioButtonWithHelp(
+                        label = "M&S Performance Verification (PV) Required?",
+                        value = pvRequired,
+                        onValueChange = viewModel::setPvRequired,
+                        helpText = "Select 'Yes' if machine runs M&S products."
+                    )
+                }
+
+                Spacer(Modifier.height(60.dp))
             }
-
-
-
-            if (canPerformCalibration) {
-                LabeledRadioButtonWithHelp(
-                    label = "M&S Performance Verification (PV) Required?",
-                    value = pvRequired,
-                    onValueChange = viewModel::setPvRequired,
-                    helpText = "Select 'Yes' if machine runs M&S products."
-                )
-            }
-
-            Spacer(Modifier.height(60.dp))
         }
     }
     if (showConfirmDialog) {

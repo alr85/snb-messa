@@ -27,10 +27,6 @@ import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 fun CalMetalDetectorConveyorConveyorDetails(
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
-    val infeedBeltHeight by viewModel.infeedBeltHeight
-    val outfeedBeltHeight by viewModel.outfeedBeltHeight
-    val conveyorLength by viewModel.conveyorLength
-    val conveyorHanding by viewModel.conveyorHanding
     val beltSpeed by viewModel.beltSpeed
     val rejectDevice by viewModel.rejectDevice
     val rejectDeviceOther by viewModel.rejectDeviceOther
@@ -42,11 +38,7 @@ fun CalMetalDetectorConveyorConveyorDetails(
 
     // Validation
     val isNextStepEnabled = if (isConveyor) {
-        infeedBeltHeight.isNotBlank() &&
-                outfeedBeltHeight.isNotBlank() &&
-                conveyorLength.isNotBlank() &&
-                beltSpeed.isNotBlank() &&
-                conveyorHanding.isNotBlank() &&
+        beltSpeed.isNotBlank() &&
                 rejectDevice.isNotBlank() &&
                 (rejectDevice != "Other" || rejectDeviceOther.isNotBlank())
     } else {
@@ -104,7 +96,10 @@ fun CalMetalDetectorConveyorConveyorDetails(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        CalibrationHeader(if(isConveyor) "Conveyor Details" else "System Details")
+        CalibrationHeader(
+            label = if(isConveyor) "Conveyor Details" else "System Details",
+            isValid = isNextStepEnabled
+        )
 
         // Scrollable area with scrollbar
         ScrollableWithScrollbar(
@@ -116,6 +111,7 @@ fun CalMetalDetectorConveyorConveyorDetails(
             Column {
 
                 if (isConveyor) {
+                    /*
                     LabeledTextFieldWithHelp(
                         label = "In-feed Belt Height (mm)",
                         value = infeedBeltHeight,
@@ -154,6 +150,7 @@ fun CalMetalDetectorConveyorConveyorDetails(
                     )
 
                     FormSpacer()
+                    */
 
                     LabeledTextFieldWithHelp(
                         label = "Belt Speed (m/m)",
@@ -168,6 +165,7 @@ fun CalMetalDetectorConveyorConveyorDetails(
 
                     FormSpacer()
 
+                    /*
                     LabeledDropdownWithHelp(
                         label = "Conveyor Handing",
                         options = handingOptions,
@@ -177,6 +175,7 @@ fun CalMetalDetectorConveyorConveyorDetails(
                     )
 
                     FormSpacer()
+                    */
                 }
 
 

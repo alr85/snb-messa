@@ -108,7 +108,10 @@ fun CalMetalDetectorConveyorInfeedPEC(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        CalibrationHeader("Failsafe Tests - Photogating/Infeed Sensor")
+        CalibrationHeader(
+            label = "Failsafe Tests - Photogating/Infeed Sensor",
+            isValid = isNextStepEnabled
+        )
 
         ScrollableWithScrollbar(
             modifier = Modifier.fillMaxSize(),

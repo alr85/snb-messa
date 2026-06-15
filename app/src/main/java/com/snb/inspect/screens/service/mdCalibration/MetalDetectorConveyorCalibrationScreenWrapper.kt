@@ -33,6 +33,12 @@ import com.snb.inspect.ui.theme.FormBackground
 import com.snb.inspect.ui.theme.MetalDetectorConveyorCalibrationNavGraphContent
 import com.snb.inspect.util.InAppLogger
 
+import androidx.compose.runtime.CompositionLocalProvider
+import com.snb.inspect.formModules.LocalCalibrationCurrentRoute
+import com.snb.inspect.formModules.LocalCalibrationNavController
+import com.snb.inspect.formModules.LocalCalibrationRouteOrder
+import com.snb.inspect.formModules.LocalCalibrationViewModel
+
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun MetalDetectorConveyorCalibrationScreenWrapper(
@@ -84,8 +90,14 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
 
-    // Determine direction
-    val previousRoute = remember { mutableStateOf<String?>(null) }
+    CompositionLocalProvider(
+        LocalCalibrationViewModel provides viewModel,
+        LocalCalibrationNavController provides navController,
+        LocalCalibrationRouteOrder provides routeOrder,
+        LocalCalibrationCurrentRoute provides currentRoute
+    ) {
+        // Determine direction
+        val previousRoute = remember { mutableStateOf<String?>(null) }
     val goingForward = remember(currentRoute) {
         val old = routeOrder.indexOf(previousRoute.value)
         val new = routeOrder.indexOf(currentRoute)
@@ -99,7 +111,26 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
 
     val isFirstStep = currentRoute?.startsWith("MetalDetectorConveyorCalibrationStart") == true
 
-    val isNextEnabled by viewModel.currentScreenNextEnabled.collectAsState()
+    val isCurrentScreenValid by viewModel.currentScreenNextEnabled.collectAsState()
+
+    // NEW NAVIGATION LOGIC: 
+    // - Forward navigation is allowed everywhere EXCEPT when moving to the Summary screen.
+    // - Moving to Summary requires ALL screens to be valid.
+    val isNextEnabled = remember(currentRoute, isCurrentScreenValid, routeOrder) {
+        val nextIndex = currentIndex + 1
+        if (nextIndex < routeOrder.size) {
+            val nextRoute = routeOrder[nextIndex]
+            if (nextRoute.contains("Summary")) {
+                // If the next screen is Summary, we must be valid up to this point
+                viewModel.isCalibrationValid(routeOrder)
+            } else {
+                // Allow forward navigation to any other screen
+                true
+            }
+        } else {
+            false
+        }
+    }
 
 
     // For swipe debouncing & accumulation
@@ -256,4 +287,5 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
             windowSizeClass = windowSizeClass
         )
     }
+}
 }

@@ -64,7 +64,10 @@ fun CalMetalDetectorConveyorDetectNotification(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        CalibrationHeader("Failsafe Tests - Detect Notification")
+        CalibrationHeader(
+            label = "Failsafe Tests - Detect Notification",
+            isValid = isNextStepEnabled
+        )
 
         ScrollableWithScrollbar(
             modifier = Modifier

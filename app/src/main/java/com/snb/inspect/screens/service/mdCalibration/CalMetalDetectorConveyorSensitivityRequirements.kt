@@ -73,7 +73,10 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        CalibrationHeader("Customer Sensitivity Requirements")
+        CalibrationHeader(
+            label = "Customer Sensitivity Requirements",
+            isValid = isNextStepEnabled
+        )
 
         ScrollableWithScrollbar(
             modifier = Modifier

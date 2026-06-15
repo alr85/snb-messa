@@ -100,7 +100,10 @@ fun CalMetalDetectorConveyorStainlessTest(
 
     Column(Modifier.fillMaxSize()) {
 
-        CalibrationHeader("Stainless Steel Sensitivity (As Left)")
+        CalibrationHeader(
+            label = "Stainless Steel Sensitivity (As Left)",
+            isValid = isNextStepEnabled
+        )
 
         ScrollableWithScrollbar(
             modifier = Modifier

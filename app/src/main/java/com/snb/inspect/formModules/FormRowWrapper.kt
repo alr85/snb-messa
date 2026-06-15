@@ -124,8 +124,6 @@ fun FormRowWrapper(
                     }
                 }
 
-
-
                 if (onNaClick != null) {
                     val isApplicable = naButtonText != "Edit"
 

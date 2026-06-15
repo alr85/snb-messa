@@ -111,7 +111,10 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        CalibrationHeader("Failsafe Tests - Reject Confirm/Activation Sensor")
+        CalibrationHeader(
+            label = "Failsafe Tests - Reject Confirm/Activation Sensor",
+            isValid = isNextStepEnabled
+        )
 
         ScrollableWithScrollbar(
             modifier = Modifier.fillMaxSize(),

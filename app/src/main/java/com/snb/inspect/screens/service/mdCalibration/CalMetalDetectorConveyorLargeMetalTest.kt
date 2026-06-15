@@ -70,7 +70,10 @@ fun CalMetalDetectorConveyorLargeMetalTest(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        CalibrationHeader("Failsafe Tests - Large Metal Test")
+        CalibrationHeader(
+            label = "Failsafe Tests - Large Metal Test",
+            isValid = isNextStepEnabled
+        )
 
         ScrollableWithScrollbar(
             modifier = Modifier

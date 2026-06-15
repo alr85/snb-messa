@@ -52,7 +52,10 @@ fun CalMetalDetectorConveyorProductDetails(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        CalibrationHeader("Product Details")
+        CalibrationHeader(
+            label = "Product Details",
+            isValid = isNextStepEnabled
+        )
 
         ScrollableWithScrollbar(
             modifier = Modifier

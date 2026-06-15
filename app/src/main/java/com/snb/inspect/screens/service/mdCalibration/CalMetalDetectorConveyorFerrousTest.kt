@@ -100,7 +100,10 @@ fun CalMetalDetectorConveyorFerrousTest(
 
     Column(Modifier.fillMaxSize()) {
 
-        CalibrationHeader("Ferrous Sensitivity (As Left)")
+        CalibrationHeader(
+            label = "Ferrous Sensitivity (As Left)",
+            isValid = isNextStepEnabled
+        )
 
         ScrollableWithScrollbar(
             modifier = Modifier

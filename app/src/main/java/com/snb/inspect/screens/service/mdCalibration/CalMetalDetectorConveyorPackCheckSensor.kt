@@ -112,7 +112,10 @@ fun CalMetalDetectorConveyorPackCheckSensor(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        CalibrationHeader("Failsafe Tests - Pack Check Sensor")
+        CalibrationHeader(
+            label = "Failsafe Tests - Pack Check Sensor",
+            isValid = isNextStepEnabled
+        )
 
         ScrollableWithScrollbar(
             modifier = Modifier.fillMaxSize(),

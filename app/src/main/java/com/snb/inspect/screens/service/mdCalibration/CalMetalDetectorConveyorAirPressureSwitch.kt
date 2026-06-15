@@ -112,7 +112,10 @@ fun CalMetalDetectorConveyorAirPressureSensor(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        CalibrationHeader("Failsafe Tests - Air Pressure Sensor")
+        CalibrationHeader(
+            label = "Failsafe Tests - Air Pressure Sensor",
+            isValid = isNextStepEnabled
+        )
 
         ScrollableWithScrollbar(
             modifier = Modifier.fillMaxSize(),

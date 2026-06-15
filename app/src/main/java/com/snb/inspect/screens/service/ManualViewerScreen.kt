@@ -24,16 +24,23 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.snb.inspect.AppChromeViewModel
 import com.snb.inspect.TopBarState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.Refresh
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
+import java.net.ConnectException
+import java.net.UnknownHostException
 
 @Composable
 fun ManualViewerScreen(
@@ -43,11 +50,11 @@ fun ManualViewerScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var pdfBitmaps by remember { mutableStateOf<List<Bitmap>>(emptyList()) }
+    var retryTrigger by remember { mutableStateOf(0) }
 
     // Update Top Bar
     LaunchedEffect(modelName) {
@@ -61,8 +68,10 @@ fun ManualViewerScreen(
         )
     }
 
-    LaunchedEffect(manualUrl) {
-        scope.launch(Dispatchers.IO) {
+    LaunchedEffect(manualUrl, retryTrigger) {
+        isLoading = true
+        errorMessage = null
+        withContext(Dispatchers.IO) {
             try {
                 // 1. Setup private directory
                 val manualsDir = File(context.filesDir, "manuals")
@@ -78,7 +87,7 @@ fun ManualViewerScreen(
                     val request = Request.Builder().url(manualUrl).build()
                     val response = client.newCall(request).execute()
                     
-                    if (!response.isSuccessful) throw Exception("Download failed: ${response.code}")
+                    if (!response.isSuccessful) throw IOException("Download failed: ${response.code}")
                     
                     response.body?.let { body ->
                         body.byteStream().use { input ->
@@ -86,7 +95,7 @@ fun ManualViewerScreen(
                                 input.copyTo(output)
                             }
                         }
-                    } ?: throw Exception("Response body is null")
+                    } ?: throw IOException("Response body is null")
                 }
 
                 // 3. Render PDF pages to Bitmaps
@@ -116,7 +125,12 @@ fun ManualViewerScreen(
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    errorMessage = e.message
+                    errorMessage = when (e) {
+                        is UnknownHostException -> "No internet connection. Please check your network and try again."
+                        is ConnectException -> "Could not connect to the server. Please check your internet connection."
+                        is IOException -> "Network error occurred while downloading the manual."
+                        else -> e.message ?: "An unexpected error occurred"
+                    }
                     isLoading = false
                 }
             }
@@ -135,15 +149,48 @@ fun ManualViewerScreen(
                 Text("Downloading Manual...", color = Color.White)
             }
         } else if (errorMessage != null) {
+            val isNoInternet = errorMessage?.contains("internet", ignoreCase = true) == true
             Column(
                 modifier = Modifier.fillMaxSize().padding(24.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Error loading manual", style = MaterialTheme.typography.titleLarge, color = Color.White)
-                Text(errorMessage ?: "Unknown error", color = Color.LightGray)
+                Icon(
+                    imageVector = if (isNoInternet) Icons.Default.CloudOff else Icons.Default.ErrorOutline,
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = Color.LightGray
+                )
                 Spacer(Modifier.height(16.dp))
-                Button(onClick = onBack) { Text("Go Back") }
+                Text(
+                    text = if (isNoInternet) "Connection Error" else "Error loading manual",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Color.White
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = errorMessage ?: "Unknown error",
+                    color = Color.LightGray,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(Modifier.height(24.dp))
+                Row {
+                    OutlinedButton(
+                        onClick = onBack,
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                    ) {
+                        Text("Go Back")
+                    }
+                    Spacer(Modifier.width(16.dp))
+                    Button(
+                        onClick = { retryTrigger++ },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Retry")
+                    }
+                }
             }
         } else {
             // Zoom state

@@ -2,6 +2,7 @@ package com.snb.inspect
 
 
 import android.Manifest
+import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Bundle
 import android.view.WindowManager
@@ -70,10 +71,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.snb.inspect.calibrationViewModels.CustomerViewModel
+import com.snb.inspect.calibrationViewModels.CustomerViewModelFactory
 import com.snb.inspect.calibrationViewModels.NoticeViewModel
+import com.snb.inspect.calibrationViewModels.NoticeViewModelFactory
 import com.snb.inspect.network.NetworkMonitor
 import com.snb.inspect.network.rememberIsOffline
 import com.snb.inspect.repositories.CustomerRepository
@@ -111,7 +115,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         android.util.Log.d("MESSA DEBUG", "onCreate. savedInstanceState is null = ${savedInstanceState == null}")
 
@@ -140,12 +144,15 @@ class MainActivity : ComponentActivity() {
         val measuringEquipmentRepository = MeasuringEquipmentRepository(apiService, db)
 
         // ViewModels
-        userViewModel = UserViewModel(userRepository)
-        customerViewModel = CustomerViewModel(customerRepository)
-        noticeViewModel = NoticeViewModel(noticeRepository)
+        userViewModel = ViewModelProvider(this, UserViewModelFactory(userRepository))[UserViewModel::class.java]
+        customerViewModel = ViewModelProvider(this, CustomerViewModelFactory(customerRepository))[CustomerViewModel::class.java]
+        noticeViewModel = ViewModelProvider(this, NoticeViewModelFactory(noticeRepository))[NoticeViewModel::class.java]
 
         val savedCredentials = PreferencesHelper.getCredentials(this)
-        PreferencesHelper.isLoggedIn(this)
+        
+        if (PreferencesHelper.isLoggedIn(this)) {
+            userViewModel.loginStatus.value = true
+        }
 
         // Always sync users on launch
         userViewModel.syncUsers(this)

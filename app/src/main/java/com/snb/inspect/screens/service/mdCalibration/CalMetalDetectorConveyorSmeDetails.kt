@@ -96,7 +96,10 @@ fun CalMetalDetectorConveyorSmeDetails(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        CalibrationHeader("Operator Test")
+        CalibrationHeader(
+            label = "Operator Test",
+            isValid = isNextStepEnabled
+        )
 
         ScrollableWithScrollbar(
             modifier = Modifier.fillMaxSize(),

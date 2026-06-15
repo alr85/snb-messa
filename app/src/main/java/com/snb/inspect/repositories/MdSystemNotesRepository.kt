@@ -1,6 +1,7 @@
 package com.snb.inspect.repositories
 
 import android.content.Context
+import androidx.room.withTransaction
 import com.snb.inspect.ApiService
 import com.snb.inspect.AppDatabase
 import com.snb.inspect.FetchResult
@@ -18,6 +19,10 @@ class MdSystemNotesRepository(private val apiService: ApiService, private val db
 
     fun observeNotesForSystem(systemId: Int): Flow<List<MdSystemNoteLocal>> {
         return dao.observeNotesForSystem(systemId)
+    }
+
+    suspend fun getAuthorName(meaId: Int): String {
+        return db.userDao().getUsernameByMeaId(meaId) ?: "Unknown"
     }
 
     suspend fun addNote(
@@ -45,35 +50,55 @@ class MdSystemNotesRepository(private val apiService: ApiService, private val db
     suspend fun syncNotes(context: Context, systemId: Int, cloudSystemId: Int?): FetchResult {
         if (!isNetworkAvailable(context)) return FetchResult.Failure("Offline")
 
+        var effectiveCloudSystemId = cloudSystemId
+        if (effectiveCloudSystemId == null || effectiveCloudSystemId == 0) {
+            val system = db.mdSystemDAO().getSystemByLocalId(systemId)
+            effectiveCloudSystemId = system?.cloudId
+        }
+
         try {
-            // 1. Pull from cloud if cloudSystemId is available
-            if (cloudSystemId != null && cloudSystemId != 0) {
-                val response = apiService.getMdSystemNotes(cloudSystemId)
-                if (response.isSuccessful) {
-                    val cloudNotes = response.body() ?: emptyList()
-                    val existingNotes = dao.getAllSyncedNotes().associateBy { it.cloudId }
-                    
-                    val localNotes = cloudNotes.map { cloudNote ->
-                        val localMatch = existingNotes[cloudNote.id]
-                        MdSystemNoteLocal(
-                            id = localMatch?.id ?: 0, // Preserve local primary key
-                            cloudId = cloudNote.id,
-                            systemId = systemId,
-                            cloudSystemId = cloudSystemId,
-                            addedBy = cloudNote.addedBy,
-                            addedDate = cloudNote.addedDate,
-                            noteText = cloudNote.noteText,
-                            noteType = cloudNote.noteType,
-                            isImportant = cloudNote.isImportant,
-                            isDeleted = cloudNote.isDeleted,
-                            editedBy = cloudNote.editedBy,
-                            editedDate = cloudNote.editedDate,
-                            deletedBy = cloudNote.deletedBy,
-                            deletedDate = cloudNote.deletedDate,
-                            isSynced = true
-                        )
+            db.withTransaction {
+                // 1. Pull from cloud if cloudSystemId is available
+                if (effectiveCloudSystemId != null && effectiveCloudSystemId != 0) {
+                    val response = apiService.getMdSystemNotes(effectiveCloudSystemId)
+                    if (response.isSuccessful) {
+                        val cloudNotes = response.body() ?: emptyList()
+                        val existingNotes = dao.getAllSyncedNotes().associateBy { it.cloudId }
+
+                        val localNotes = cloudNotes.map { cloudNote ->
+                            val localMatch = if (cloudNote.id != null) existingNotes[cloudNote.id] else null
+                            MdSystemNoteLocal(
+                                id = localMatch?.id ?: 0, // Preserve local primary key
+                                cloudId = cloudNote.id,
+                                systemId = systemId,
+                                cloudSystemId = effectiveCloudSystemId,
+                                addedBy = cloudNote.addedBy,
+                                addedDate = cloudNote.addedDate,
+                                noteText = cloudNote.noteText,
+                                noteType = cloudNote.noteType,
+                                isImportant = cloudNote.isImportant,
+                                isDeleted = cloudNote.isDeleted,
+                                editedBy = cloudNote.editedBy,
+                                editedDate = cloudNote.editedDate,
+                                deletedBy = cloudNote.deletedBy,
+                                deletedDate = cloudNote.deletedDate,
+                                isSynced = true
+                            )
+                        }
+                        dao.insertNotes(localNotes)
+
+                        // PRUNING: Remove local synced notes that are no longer in the cloud for this machine
+                        val cloudIds = cloudNotes.mapNotNull { it.id }
+                        if (cloudIds.isEmpty()) {
+                            dao.deleteAllSyncedNotesForSystem(systemId)
+                        } else {
+                            dao.deleteSyncedNotesNotIn(systemId, cloudIds)
+                        }
+
+                        InAppLogger.d("Synced ${localNotes.size} notes from cloud for system $systemId.")
+                    } else {
+                        InAppLogger.e("Failed to pull notes: ${response.code()}")
                     }
-                    dao.insertNotes(localNotes)
                 }
             }
 
@@ -90,33 +115,46 @@ class MdSystemNotesRepository(private val apiService: ApiService, private val db
             val response = apiService.getAllMdSystemNotes()
             if (response.isSuccessful) {
                 val cloudNotes = response.body() ?: emptyList()
-                val existingNotes = dao.getAllSyncedNotes().associateBy { it.cloudId }
                 
-                val entities = cloudNotes.map { cloudNote ->
-                    val localSystem = db.mdSystemDAO().getSystemByCloudId(cloudNote.systemId)
-                    val localMatch = existingNotes[cloudNote.id]
-                    
-                    MdSystemNoteLocal(
-                        id = localMatch?.id ?: 0, // Preserve local primary key
-                        cloudId = cloudNote.id,
-                        systemId = localSystem?.id ?: 0,
-                        cloudSystemId = cloudNote.systemId,
-                        addedBy = cloudNote.addedBy,
-                        addedDate = cloudNote.addedDate,
-                        noteText = cloudNote.noteText,
-                        noteType = cloudNote.noteType,
-                        isImportant = cloudNote.isImportant,
-                        isDeleted = cloudNote.isDeleted,
-                        editedBy = cloudNote.editedBy,
-                        editedDate = cloudNote.editedDate,
-                        deletedBy = cloudNote.deletedBy,
-                        deletedDate = cloudNote.deletedDate,
-                        isSynced = true
-                    )
-                }.filter { it.systemId != 0 }
+                db.withTransaction {
+                    val existingNotes = dao.getAllSyncedNotes().associateBy { it.cloudId }
+                    val localSystemsMap = db.mdSystemDAO().getAllMdSystems().associateBy { it.cloudId }
 
-                dao.insertNotes(entities)
-                return FetchResult.Success("Bulk notes pull complete")
+                    val entities = cloudNotes.map { cloudNote ->
+                        val localSystem = localSystemsMap[cloudNote.systemId]
+                        val localMatch = if (cloudNote.id != null) existingNotes[cloudNote.id] else null
+
+                        MdSystemNoteLocal(
+                            id = localMatch?.id ?: 0, // Preserve local primary key
+                            cloudId = cloudNote.id,
+                            systemId = localSystem?.id ?: 0,
+                            cloudSystemId = cloudNote.systemId,
+                            addedBy = cloudNote.addedBy,
+                            addedDate = cloudNote.addedDate,
+                            noteText = cloudNote.noteText,
+                            noteType = cloudNote.noteType,
+                            isImportant = cloudNote.isImportant,
+                            isDeleted = cloudNote.isDeleted,
+                            editedBy = cloudNote.editedBy,
+                            editedDate = cloudNote.editedDate,
+                            deletedBy = cloudNote.deletedBy,
+                            deletedDate = cloudNote.deletedDate,
+                            isSynced = true
+                        )
+                    }.filter { it.systemId != 0 }
+
+                    dao.insertNotes(entities)
+
+                    // PRUNING: Remove any synced note that wasn't in this full list
+                    val allCloudIds = cloudNotes.mapNotNull { it.id }
+                    if (allCloudIds.isEmpty()) {
+                        dao.deleteAllSyncedNotes()
+                    } else {
+                        dao.deleteSyncedNotesNotIn(allCloudIds)
+                    }
+                }
+
+                return FetchResult.Success("Bulk notes pull complete (${cloudNotes.size} notes processed)")
             }
             return FetchResult.Failure("Server error: ${response.code()}")
         } catch (e: Exception) {

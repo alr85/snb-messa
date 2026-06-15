@@ -4,35 +4,36 @@ import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
 // This data class represents the structure of the data returned by the API
 data class MdSystem(
-    val id: Int,
-    val modelId: Int,
-    val customerId: Int,
-    val serialNumber: String,
-    val apertureWidth: Int,
-    val apertureHeight: Int,
-    val lastCalibration: String?,
-    val addedDate: String,
-    val calibrationInterval: Int,
-    val systemTypeId: Int,
-    val lastLocation: String
+    @SerializedName("id", alternate = ["Id"]) val id: Int,
+    @SerializedName("modelId", alternate = ["ModelId"]) val modelId: Int,
+    @SerializedName("customerId", alternate = ["CustomerId"]) val customerId: Int,
+    @SerializedName("serialNumber", alternate = ["SerialNumber"]) val serialNumber: String,
+    @SerializedName("apertureWidth", alternate = ["ApertureWidth"]) val apertureWidth: Int,
+    @SerializedName("apertureHeight", alternate = ["ApertureHeight"]) val apertureHeight: Int,
+    @SerializedName("lastCalibration", alternate = ["LastCalibration"]) val lastCalibration: String?,
+    @SerializedName("addedDate", alternate = ["AddedDate"]) val addedDate: String,
+    @SerializedName("calibrationInterval", alternate = ["CalibrationInterval"]) val calibrationInterval: Int,
+    @SerializedName("systemTypeId", alternate = ["SystemTypeId"]) val systemTypeId: Int,
+    @SerializedName("lastLocation", alternate = ["LastLocation"]) val lastLocation: String
 )
 
 // This is for posting new systems to the cloud
 data class MdSystemCloud(
-    val modelId: Int?,
-    val customerId: Int,
-    val serialNumber: String,
-    val apertureWidth: Int,
-    val apertureHeight: Int,
-    val lastCalibration: String?,
-    val addedDate: String,
-    val calibrationInterval: Int,
-    val systemTypeId: Int,
-    val lastLocation: String
+    @SerializedName("modelId", alternate = ["ModelId"]) val modelId: Int?,
+    @SerializedName("customerId", alternate = ["CustomerId"]) val customerId: Int,
+    @SerializedName("serialNumber", alternate = ["SerialNumber"]) val serialNumber: String,
+    @SerializedName("apertureWidth", alternate = ["ApertureWidth"]) val apertureWidth: Int,
+    @SerializedName("apertureHeight", alternate = ["ApertureHeight"]) val apertureHeight: Int,
+    @SerializedName("lastCalibration", alternate = ["LastCalibration"]) val lastCalibration: String?,
+    @SerializedName("addedDate", alternate = ["AddedDate"]) val addedDate: String,
+    @SerializedName("calibrationInterval", alternate = ["CalibrationInterval"]) val calibrationInterval: Int,
+    @SerializedName("systemTypeId", alternate = ["SystemTypeId"]) val systemTypeId: Int,
+    @SerializedName("lastLocation", alternate = ["LastLocation"]) val lastLocation: String
 )
 
 

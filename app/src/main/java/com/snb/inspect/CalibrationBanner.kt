@@ -47,6 +47,16 @@ import com.snb.inspect.calibrationViewModels.CalibrationMetalDetectorConveyorVie
 import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorSummaryDetails
 import com.snb.inspect.ui.theme.FormBackground
 import com.snb.inspect.ui.theme.SnbRed
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.UnfoldMore
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.collectAsState
+import androidx.navigation.NavController
 
 @Suppress(
     "AssignedValueIsNeverRead"
@@ -106,16 +116,19 @@ fun CalibrationBanner(
                     .fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     val type = if (!pvRequired) "Metal Detector Calibration" else "Metal Detector Performance Verification"
-                    Text(
 
-
-                        text = type,
-                        style = if (isCompact){
-                            MaterialTheme.typography.titleSmall
-                        } else MaterialTheme.typography.titleLarge
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = type,
+                            style = if (isCompact){
+                                MaterialTheme.typography.titleSmall
+                            } else MaterialTheme.typography.titleLarge
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(2.dp))
 

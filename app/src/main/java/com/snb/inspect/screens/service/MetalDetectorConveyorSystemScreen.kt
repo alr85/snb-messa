@@ -1,12 +1,14 @@
 package com.snb.inspect.screens.service
 
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandIn
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,11 +24,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.NoteAdd
+import androidx.compose.material.icons.filled.PriorityHigh
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -58,6 +63,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -107,7 +113,21 @@ fun MetalDetectorConveyorSystemScreen(
     var showActions by rememberSaveable { mutableStateOf(false) }
 
     val notes by notesRepository.observeNotesForSystem(systemId).collectAsState(initial = emptyList())
+    var authorNames by remember { mutableStateOf<Map<Int, String>>(emptyMap()) }
     var showAddNoteDialog by remember { mutableStateOf(false) }
+    var showReportDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(notes) {
+        val newNames = authorNames.toMutableMap()
+        var changed = false
+        notes.forEach { note ->
+            if (!newNames.containsKey(note.addedBy)) {
+                newNames[note.addedBy] = notesRepository.getAuthorName(note.addedBy)
+                changed = true
+            }
+        }
+        if (changed) authorNames = newNames
+    }
 
     suspend fun refresh() {
         mdSystem = repositoryMD
@@ -243,6 +263,9 @@ fun MetalDetectorConveyorSystemScreen(
 
                         dao.updateCalibrationWithCloudId(system.tempId, newCloudId)
 
+                        // SYNC NOTES: Ensure notes written while machine was local-only are uploaded
+                        notesRepository.syncNotes(context, system.id, newCloudId)
+
                         repositoryMD.fetchAndStoreMdSystems()
 
                         snackbarHostState.showSnackbar("✅ System added to cloud.")
@@ -299,7 +322,7 @@ fun MetalDetectorConveyorSystemScreen(
             item { Spacer(Modifier.height(16.dp)) }
 
             item {
-                ExpandableSection("Notes (${notes.size})", false) {
+                ExpandableSection("Notes (${notes.size})", true) {
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -313,7 +336,7 @@ fun MetalDetectorConveyorSystemScreen(
                             )
                         } else {
                             notes.forEach { note ->
-                                NoteItem(note)
+                                NoteItem(note, authorNames[note.addedBy] ?: "...")
                             }
                         }
                     }
@@ -489,6 +512,32 @@ fun MetalDetectorConveyorSystemScreen(
                             }
                         }
 
+                        // Report Data Issue
+                        FloatingActionButton(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                showActions = false
+                                showReportDialog = true
+                            },
+                            containerColor = Color.White,
+                            contentColor = SnbRed,
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(Icons.Default.ErrorOutline, "Report Issue", modifier = Modifier.size(24.dp))
+                                Text(
+                                    text = "Report Data Issue",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.weight(1f),
+                                    color = SnbDarkGrey
+                                )
+                            }
+                        }
+
                         // Sync with Cloud
                         FloatingActionButton(
                             modifier = Modifier.fillMaxWidth(),
@@ -574,47 +623,84 @@ fun MetalDetectorConveyorSystemScreen(
             }
         )
     }
+
+    if (showReportDialog && mdSystem != null) {
+        ReportDiscrepancyDialog(
+            system = mdSystem!!,
+            onDismiss = { showReportDialog = false },
+            onConfirm = { reportText ->
+                val (username, _, _) = PreferencesHelper.getCredentials(context)
+                sendReportEmail(context, mdSystem!!, reportText, username ?: "Unknown Engineer")
+                showReportDialog = false
+            }
+        )
+    }
 }
 
 @Composable
-fun NoteItem(note: MdSystemNoteLocal) {
+fun NoteItem(note: MdSystemNoteLocal, authorName: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = if (note.isImportant) Color(0xFFFFEBEE) else Color(0xFFF5F5F5)
+            containerColor = if (note.isImportant) Color(0xFFFFF4F4) else Color(0xFFF8F9FA)
         ),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = if (note.isImportant) BorderStroke(1.dp, SnbRed.copy(alpha = 0.5f)) else null
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (note.isImportant) "IMPORTANT" else note.noteType ?: "Note",
-                    style = MaterialTheme.typography.labelSmall,
+                    text = authorName,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = if (note.isImportant) SnbRed else Color.Gray
+                    color = if (note.isImportant) SnbRed else SnbDarkGrey,
+                    modifier = Modifier.weight(1f)
                 )
-                Text(
-                    text = runCatching { formatDate(note.addedDate ?: "") }.getOrElse { note.addedDate ?: "" },
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.Gray
-                )
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = runCatching { formatDate(note.addedDate ?: "") }.getOrElse { note.addedDate ?: "" },
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.Gray
+                    )
+
+                    if (note.isImportant) {
+                        Spacer(Modifier.width(8.dp))
+                        Icon(
+                            imageVector = Icons.Default.PriorityHigh,
+                            contentDescription = "Important",
+                            tint = SnbRed,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
             }
-            Spacer(Modifier.height(4.dp))
+
+            Spacer(Modifier.height(8.dp))
+
             Text(
                 text = note.noteText ?: "",
                 style = MaterialTheme.typography.bodyMedium,
-                color = SnbDarkGrey
+                color = SnbDarkGrey,
+                lineHeight = 20.sp
             )
+
             if (!note.isSynced) {
-                Spacer(Modifier.height(4.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .background(Color.Gray.copy(alpha = 0.1f), RoundedCornerShape(4.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
                     Icon(
                         Icons.Default.CloudUpload,
-                        contentDescription = "Pending Sync",
+                        contentDescription = null,
                         modifier = Modifier.size(12.dp),
                         tint = Color.Gray
                     )
@@ -648,7 +734,8 @@ fun AddNoteDialog(
                     onValueChange = { noteText = it },
                     label = { Text("Note content") },
                     modifier = Modifier.fillMaxWidth(),
-                    minLines = 3
+                    minLines = 3,
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(
@@ -673,4 +760,85 @@ fun AddNoteDialog(
             }
         }
     )
+}
+
+@Composable
+fun ReportDiscrepancyDialog(
+    system: MetalDetectorWithFullDetails,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit
+) {
+    var reportText by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Report Data Issue") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    "Describe what information is incorrect (e.g., wrong serial, model, or dimensions). The office will be notified via email.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+                OutlinedTextField(
+                    value = reportText,
+                    onValueChange = { reportText = it },
+                    label = { Text("Correct information / Details") },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 4,
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { if (reportText.isNotBlank()) onConfirm(reportText) },
+                colors = ButtonDefaults.buttonColors(containerColor = SnbRed)
+            ) {
+                Text("Send Report")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+fun sendReportEmail(
+    context: android.content.Context,
+    system: MetalDetectorWithFullDetails,
+    reportText: String,
+    engineerName: String
+) {
+    val subject = "SNB Inspect app data discrepancy"
+    val body = """
+        
+        Engineer: $engineerName
+        Serial Number: ${system.serialNumber}
+        Customer: ${system.customerName}
+        
+        REPORTED ISSUE: $reportText
+        
+        --- Current Database Info ---
+        Model: ${system.modelDescription}
+        Aperture: ${system.apertureWidth}mm x ${system.apertureHeight}mm
+        Location: ${system.lastLocation}
+        Local ID: ${system.id}
+        Cloud ID: ${system.cloudId ?: "Not Synced"}
+    """.trimIndent()
+
+    val intent = Intent(Intent.ACTION_SENDTO).apply {
+        data = Uri.parse("mailto:")
+        putExtra(Intent.EXTRA_EMAIL, arrayOf("snb@metaldetector-rentals.co.uk"))
+        putExtra(Intent.EXTRA_SUBJECT, subject)
+        putExtra(Intent.EXTRA_TEXT, body)
+    }
+
+    try {
+        context.startActivity(Intent.createChooser(intent, "Choose Email Client"))
+    } catch (e: Exception) {
+        // Handle case where no email app is installed
+    }
 }

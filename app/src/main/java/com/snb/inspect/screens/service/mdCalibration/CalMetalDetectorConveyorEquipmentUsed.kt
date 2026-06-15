@@ -40,7 +40,10 @@ fun CalMetalDetectorConveyorEquipmentUsed(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        CalibrationHeader("Measuring Equipment Used")
+        CalibrationHeader(
+            label = "Measuring Equipment Used",
+            isValid = true
+        )
 
         ScrollableWithScrollbar(
             modifier = Modifier.fillMaxSize(),

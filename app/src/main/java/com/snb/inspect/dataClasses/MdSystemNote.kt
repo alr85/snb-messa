@@ -2,6 +2,7 @@ package com.snb.inspect.dataClasses
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.gson.annotations.SerializedName
 
 @Entity(tableName = "MdSystemNotes")
 data class MdSystemNoteLocal(
@@ -23,16 +24,16 @@ data class MdSystemNoteLocal(
 )
 
 data class MdSystemNoteCloud(
-    val id: Int? = null,
-    val systemId: Int,
-    val addedBy: Int,
-    val addedDate: String?,
-    val noteText: String?,
-    val noteType: String?,
-    val isImportant: Boolean,
-    val isDeleted: Boolean,
-    val editedBy: Int?,
-    val editedDate: String?,
-    val deletedBy: Int?,
-    val deletedDate: String?
+    @SerializedName("id", alternate = ["Id"]) val id: Int? = null,
+    @SerializedName("systemId", alternate = ["SystemId"]) val systemId: Int,
+    @SerializedName("addedBy", alternate = ["AddedBy"]) val addedBy: Int,
+    @SerializedName("addedDate", alternate = ["AddedDate"]) val addedDate: String?,
+    @SerializedName("noteText", alternate = ["NoteText"]) val noteText: String?,
+    @SerializedName("noteType", alternate = ["NoteType"]) val noteType: String?,
+    @SerializedName("isImportant", alternate = ["IsImportant"]) val isImportant: Boolean,
+    @SerializedName("isDeleted", alternate = ["IsDeleted"]) val isDeleted: Boolean,
+    @SerializedName("editedBy", alternate = ["EditedBy"]) val editedBy: Int?,
+    @SerializedName("editedDate", alternate = ["EditedDate"]) val editedDate: String?,
+    @SerializedName("deletedBy", alternate = ["DeletedBy"]) val deletedBy: Int?,
+    @SerializedName("deletedDate", alternate = ["DeletedDate"]) val deletedDate: String?
 )

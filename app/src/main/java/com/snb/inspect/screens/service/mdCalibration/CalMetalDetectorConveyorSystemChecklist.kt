@@ -165,7 +165,10 @@ fun CalMetalDetectorConveyorSystemChecklist(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        CalibrationHeader("System Checklist")
+        CalibrationHeader(
+            label = "System Checklist",
+            isValid = isNextStepEnabled
+        )
 
         LazyColumnWithScrollbar(
             modifier = Modifier

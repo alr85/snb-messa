@@ -119,7 +119,10 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        CalibrationHeader("Failsafe Tests - Bin Door Monitor")
+        CalibrationHeader(
+            label = "Failsafe Tests - Bin Door Monitor",
+            isValid = isNextStepEnabled
+        )
 
         ScrollableWithScrollbar(
             modifier = Modifier.fillMaxSize(),
