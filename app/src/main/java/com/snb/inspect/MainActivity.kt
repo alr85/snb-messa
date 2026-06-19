@@ -149,10 +149,6 @@ class MainActivity : ComponentActivity() {
         noticeViewModel = ViewModelProvider(this, NoticeViewModelFactory(noticeRepository))[NoticeViewModel::class.java]
 
         val savedCredentials = PreferencesHelper.getCredentials(this)
-        
-        if (PreferencesHelper.isLoggedIn(this)) {
-            userViewModel.loginStatus.value = true
-        }
 
         // Always sync users on launch
         userViewModel.syncUsers(this)

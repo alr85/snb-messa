@@ -5,28 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1] - 12/06/2026
+
+
+## [1.1.1] - 19/06/2026
 ### Fixed
 - Improved the portrait only mode lock to prevent user being logged out upon screen rotation
-- Redesigned the calibration process to allow flexible navigation
-- Removed the 'Latched' and 'Controlled Restart' inputs for Speed Sensor failsafe test
-- Removed 'Operator Test' screen for non-PV calibrations
-- Added a 30-second bin door timeout PV rule
-- Removed bin door open/unlocked notification PV rules
 - Operator failsafe tests are now persistent when returning to an incomplete calibration
-- Made the 'Reason for not calibrating' drop down a multi select list
-- Reversed the reject delay and duration order in the Reject Settings screen
-- Moved the 'Detection Settings (As Found)' screen. This is now before the 'As Found' Sensitivities
 - Empty 'Detection Setting' slots are now default N/A
-- Removed the conveyor dimension inputs
-- Made the title of 'Calibration Start' screen sticky when scrolling down
+- Made the title of 'Calibration Start' screen sticky when scrolling
 - Error messages when trying to download user manuals are more descriptive
+
+### Changed
+- Redesigned the calibration process to allow flexible navigation
+- Made the 'Reason for not calibrating' drop down a multi select list
+- Moved the 'Detection Settings (As Found)' screen. This is now before the 'As Found' Sensitivities
+- Reversed the reject delay and duration order in the Reject Settings screen
+
 ### Added
-- Added a new Codes of Practice area to the settings menu
-- Added an 'Export Database' button to the settings menu. This will help with diagnostics/debugging
-- Added an 'OK' condition to the System Checklist in metal detector calibrations
+- Added a 30-second bin door timeout PV rule in Metal Detector Calibrations
+- Added an 'OK' condition to the System Checklist in Metal Detector Calibrations
 - Added a 'Notes' function to the metal detector System Details screen.
 - Added a 'Report Data Issue' function to metal detector System Details screen. If you notice any discrepancies in the system details, or the notes someone has added, report it via this button.
+- Added a new Codes of Practice area to the Settings menu
+- Added an 'Export Database' button to the Settings menu. This will help with diagnostics/debugging
+- Added buttons for upcoming features including Metal Detector Validations, and Passwords
+
+### Removed
+- Removed 'Operator Test' screen for non-PV calibrations
+- Removed the 'Latched' and 'Controlled Restart' inputs for Speed Sensor failsafe test
+- Removed bin door open/unlocked notification PV rules
+- Removed the conveyor dimension inputs
 
 
 

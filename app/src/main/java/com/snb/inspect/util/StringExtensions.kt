@@ -15,7 +15,7 @@ fun String.toYesNoState(): YesNoState {
 fun String.toConditionState(): ConditionState {
     return when (this.uppercase()) {
         "GOOD" -> ConditionState.GOOD
-        "SATISFACTORY" -> ConditionState.SATISFACTORY
+        "OK", "SATISFACTORY" -> ConditionState.OK
         "POOR" -> ConditionState.POOR
         "NA" -> ConditionState.NA
         else -> ConditionState.UNSPECIFIED

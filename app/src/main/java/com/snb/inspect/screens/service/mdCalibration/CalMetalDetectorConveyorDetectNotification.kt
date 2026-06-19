@@ -102,8 +102,8 @@ fun CalMetalDetectorConveyorDetectNotification(
                     If "No Result" is selected, all other options will be cleared.
                 """.trimIndent(),
                     isNAToggleEnabled = false,
-                    pvStatus = if (pvRequired) rules.find { it.ruleId == "DETECT_NOTIFICATION" }?.status?.name else null,
-                    pvRules = if (pvRequired) rules.filter { it.ruleId == "DETECT_NOTIFICATION" } else emptyList()
+                    pvStatus = if (pvRequired) rules.find { it.ruleId == "DETECT_NOTIFY_RESULT" }?.status?.name else null,
+                    pvRules = if (pvRequired) rules.filter { it.ruleId == "DETECT_NOTIFY_RESULT" } else emptyList()
 
 
 

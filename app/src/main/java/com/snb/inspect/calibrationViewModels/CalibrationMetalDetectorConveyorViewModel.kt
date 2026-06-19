@@ -827,11 +827,202 @@ class CalibrationMetalDetectorConveyorViewModel(
 
         // Tests usually require a certificate number if not N/A
         validMap["CalMetalDetectorConveyorFerrousTestAsFound"] =
-            _sampleCertificateNumberAsFoundFerrous.value.isNotBlank()
+            _sensitivityAsFoundFerrous.value.isNotBlank() &&
+                    _sampleCertificateNumberAsFoundFerrous.value.isNotBlank() &&
+                    (_detectRejectAsFoundFerrousLeading.value != YesNoState.YES || _peakSignalAsFoundFerrousLeading.value.isNotBlank()) &&
+                    (!_isConveyor.value || (
+                            (_detectRejectAsFoundFerrousMiddle.value != YesNoState.YES || _peakSignalAsFoundFerrousMiddle.value.isNotBlank()) &&
+                                    (_detectRejectAsFoundFerrousTrailing.value != YesNoState.YES || _peakSignalAsFoundFerrousTrailing.value.isNotBlank())
+                            ))
+
         validMap["CalMetalDetectorConveyorNonFerrousTestAsFound"] =
-            _sampleCertificateNumberAsFoundNonFerrous.value.isNotBlank()
+            _sensitivityAsFoundNonFerrous.value.isNotBlank() &&
+                    _sampleCertificateNumberAsFoundNonFerrous.value.isNotBlank() &&
+                    (_detectRejectAsFoundNonFerrousLeading.value != YesNoState.YES || _peakSignalAsFoundNonFerrousLeading.value.isNotBlank()) &&
+                    (!_isConveyor.value || (
+                            (_detectRejectAsFoundNonFerrousMiddle.value != YesNoState.YES || _peakSignalAsFoundNonFerrousMiddle.value.isNotBlank()) &&
+                                    (_detectRejectAsFoundNonFerrousTrailing.value != YesNoState.YES || _peakSignalAsFoundNonFerrousTrailing.value.isNotBlank())
+                            ))
+
         validMap["CalMetalDetectorConveyorStainlessTestAsFound"] =
-            _sampleCertificateNumberAsFoundStainless.value.isNotBlank()
+            _sensitivityAsFoundStainless.value.isNotBlank() &&
+                    _sampleCertificateNumberAsFoundStainless.value.isNotBlank() &&
+                    (_detectRejectAsFoundStainlessLeading.value != YesNoState.YES || _peakSignalAsFoundStainlessLeading.value.isNotBlank()) &&
+                    (!_isConveyor.value || (
+                            (_detectRejectAsFoundStainlessMiddle.value != YesNoState.YES || _peakSignalAsFoundStainlessMiddle.value.isNotBlank()) &&
+                                    (_detectRejectAsFoundStainlessTrailing.value != YesNoState.YES || _peakSignalAsFoundStainlessTrailing.value.isNotBlank())
+                            ))
+
+        validMap["CalMetalDetectorConveyorFerrousTest"] =
+            _sensitivityAsLeftFerrous.value.isNotBlank() &&
+                    _sampleCertificateNumberFerrous.value.isNotBlank() &&
+                    (_detectRejectFerrousLeading.value != YesNoState.YES || _peakSignalFerrousLeading.value.isNotBlank()) &&
+                    (!_isConveyor.value || (
+                            (_detectRejectFerrousMiddle.value != YesNoState.YES || _peakSignalFerrousMiddle.value.isNotBlank()) &&
+                                    (_detectRejectFerrousTrailing.value != YesNoState.YES || _peakSignalFerrousTrailing.value.isNotBlank())
+                            ))
+
+        validMap["CalMetalDetectorConveyorNonFerrousTest"] =
+            _sensitivityAsLeftNonFerrous.value.isNotBlank() &&
+                    _sampleCertificateNumberNonFerrous.value.isNotBlank() &&
+                    (_detectRejectNonFerrousLeading.value != YesNoState.YES || _peakSignalNonFerrousLeading.value.isNotBlank()) &&
+                    (!_isConveyor.value || (
+                            (_detectRejectNonFerrousMiddle.value != YesNoState.YES || _peakSignalNonFerrousMiddle.value.isNotBlank()) &&
+                                    (_detectRejectNonFerrousTrailing.value != YesNoState.YES || _peakSignalNonFerrousTrailing.value.isNotBlank())
+                            ))
+
+        validMap["CalMetalDetectorConveyorStainlessTest"] =
+            _sensitivityAsLeftStainless.value.isNotBlank() &&
+                    _sampleCertificateNumberStainless.value.isNotBlank() &&
+                    (_detectRejectStainlessLeading.value != YesNoState.YES || _peakSignalStainlessLeading.value.isNotBlank()) &&
+                    (!_isConveyor.value || (
+                            (_detectRejectStainlessMiddle.value != YesNoState.YES || _peakSignalStainlessMiddle.value.isNotBlank()) &&
+                                    (_detectRejectStainlessTrailing.value != YesNoState.YES || _peakSignalStainlessTrailing.value.isNotBlank())
+                            ))
+
+        validMap["CalMetalDetectorConveyorLargeMetalTest"] =
+            when (_detectRejectLargeMetal.value) {
+                YesNoState.NA -> true
+                YesNoState.YES, YesNoState.NO -> _sampleCertificateNumberLargeMetal.value.isNotBlank()
+                else -> false
+            }
+
+        validMap["CalMetalDetectorConveyorRejectSettings"] =
+            _rejectDelaySetting.value.isNotBlank() &&
+                    _rejectDurationSetting.value.isNotBlank() &&
+                    _rejectConfirmWindowSetting.value.isNotBlank() &&
+                    _rejectDelayUnits.value.isNotBlank() &&
+                    _rejectDurationUnits.value.isNotBlank() &&
+                    _rejectConfirmWindowUnits.value.isNotBlank() &&
+                    (_rejectSynchronisationSetting.value != YesNoState.YES || _rejectSynchronisationDetail.value.isNotBlank())
+
+        validMap["CalMetalDetectorConveyorInfeedPEC"] =
+            when (_infeedSensorFitted.value) {
+                YesNoState.NO, YesNoState.NA -> true
+                YesNoState.YES -> {
+                    _infeedSensorTestMethod.value.isNotBlank() &&
+                            _infeedSensorTestResult.value.isNotEmpty() &&
+                            _infeedSensorLatched.value != YesNoState.NA &&
+                            _infeedSensorCR.value != YesNoState.NA &&
+                            (_infeedSensorTestMethod.value != "Other" || _infeedSensorTestMethodOther.value.isNotBlank())
+                }
+                else -> false
+            }
+
+        validMap["CalMetalDetectorConveyorRejectConfirmPEC"] =
+            when (_rejectConfirmSensorFitted.value) {
+                YesNoState.NO, YesNoState.NA -> true
+                YesNoState.YES -> {
+                    _rejectConfirmSensorTestMethod.value.isNotBlank() &&
+                            _rejectConfirmSensorTestResult.value.isNotEmpty() &&
+                            _rejectConfirmSensorLatched.value != YesNoState.NA &&
+                            _rejectConfirmSensorCR.value != YesNoState.NA &&
+                            (_rejectConfirmSensorTestMethod.value != "Other" || _rejectConfirmSensorTestMethodOther.value.isNotBlank())
+                }
+                else -> false
+            }
+
+        validMap["CalMetalDetectorConveyorBinFullPEC"] =
+            when (_binFullSensorFitted.value) {
+                YesNoState.NO, YesNoState.NA -> true
+                YesNoState.YES -> {
+                    _binFullSensorTestMethod.value.isNotBlank() &&
+                            _binFullSensorTestResult.value.isNotEmpty() &&
+                            _binFullSensorLatched.value != YesNoState.NA &&
+                            _binFullSensorCR.value != YesNoState.NA &&
+                            (_binFullSensorTestMethod.value != "Other" || _binFullSensorTestMethodOther.value.isNotBlank())
+                }
+                else -> false
+            }
+
+        validMap["CalMetalDetectorConveyorBackupPEC"] =
+            when (_backupSensorFitted.value) {
+                YesNoState.NO, YesNoState.NA -> true
+                YesNoState.YES -> {
+                    _backupSensorTestMethod.value.isNotBlank() &&
+                            _backupSensorTestResult.value.isNotEmpty() &&
+                            _backupSensorLatched.value != YesNoState.NA &&
+                            _backupSensorCR.value != YesNoState.NA &&
+                            (_backupSensorTestMethod.value != "Other" || _backupSensorTestMethodOther.value.isNotBlank())
+                }
+                else -> false
+            }
+
+        validMap["CalMetalDetectorConveyorAirPressureSensor"] =
+            when (_airPressureSensorFitted.value) {
+                YesNoState.NO, YesNoState.NA -> true
+                YesNoState.YES -> {
+                    _airPressureSensorTestMethod.value.isNotBlank() &&
+                            _airPressureSensorTestResult.value.isNotEmpty() &&
+                            _airPressureSensorLatched.value != YesNoState.NA &&
+                            _airPressureSensorCR.value != YesNoState.NA &&
+                            (_airPressureSensorTestMethod.value != "Other" || _airPressureSensorTestMethodOther.value.isNotBlank())
+                }
+                else -> false
+            }
+
+        validMap["CalMetalDetectorConveyorPackCheckSensor"] =
+            when (_packCheckSensorFitted.value) {
+                YesNoState.NO, YesNoState.NA -> true
+                YesNoState.YES -> {
+                    _packCheckSensorTestMethod.value.isNotBlank() &&
+                            _packCheckSensorTestResult.value.isNotEmpty() &&
+                            _packCheckSensorLatched.value != YesNoState.NA &&
+                            _packCheckSensorCR.value != YesNoState.NA &&
+                            (_packCheckSensorTestMethod.value != "Other" || _packCheckSensorTestMethodOther.value.isNotBlank())
+                }
+                else -> false
+            }
+
+        validMap["CalMetalDetectorConveyorSpeedSensor"] =
+            when (_speedSensorFitted.value) {
+                YesNoState.NO, YesNoState.NA -> true
+                YesNoState.YES -> {
+                    _speedSensorTestMethod.value.isNotBlank() &&
+                            _speedSensorTestResult.value.isNotEmpty() &&
+                            _speedSensorLatched.value != YesNoState.NA &&
+                            _speedSensorCR.value != YesNoState.NA &&
+                            (_speedSensorTestMethod.value != "Other" || _speedSensorTestMethodOther.value.isNotBlank())
+                }
+                else -> false
+            }
+
+        validMap["CalMetalDetectorConveyorBinDoorMonitor"] =
+            when (_binDoorMonitorFitted.value) {
+                YesNoState.NO, YesNoState.NA -> true
+                YesNoState.YES -> {
+                    _binDoorUnlockedIndication.value.isNotEmpty() &&
+                            _binDoorOpenIndication.value.isNotEmpty() &&
+                            _binDoorTimeoutTimer.value.isNotBlank() &&
+                            _binDoorTimeoutResult.value.isNotEmpty() &&
+                            _binDoorLatched.value != YesNoState.NA &&
+                            _binDoorCR.value != YesNoState.NA
+                }
+                else -> false
+            }
+
+        validMap["CalMetalDetectorConveyorDetectNotification"] =
+            _detectNotificationResult.value.isNotEmpty()
+
+        validMap["CalMetalDetectorConveyorSmeDetails"] =
+            when (_operatorTestWitnessed.value) {
+                YesNoState.NO, YesNoState.NA -> true
+                YesNoState.YES -> {
+                    _operatorName.value.isNotBlank() &&
+                            _operatorTestResultFerrous.value.isNotBlank() &&
+                            _operatorTestResultNonFerrous.value.isNotBlank() &&
+                            _operatorTestResultStainless.value.isNotBlank() &&
+                            _operatorTestResultLargeMetal.value.isNotBlank() &&
+                            _operatorTestResultCertNumberFerrous.value.isNotBlank() &&
+                            _operatorTestResultCertNumberNonFerrous.value.isNotBlank() &&
+                            _operatorTestResultCertNumberStainless.value.isNotBlank() &&
+                            _operatorTestResultCertNumberLargeMetal.value.isNotBlank() &&
+                            _smeName.value.isNotBlank()
+                }
+                else -> false
+            }
+
+        validMap["CalMetalDetectorConveyorEquipmentUsed"] = true
 
         _screenValidities.value = validMap
     }
@@ -866,13 +1057,15 @@ class CalibrationMetalDetectorConveyorViewModel(
     // Ferrous As Found
 
     fun enableFerrousAsFound(){
-        _sampleCertificateNumberAsFoundFerrous.value = ""
-        _detectRejectAsFoundFerrousLeading.value = YesNoState.NO
-        _detectRejectAsFoundFerrousMiddle.value = YesNoState.NO
-        _detectRejectAsFoundFerrousTrailing.value = YesNoState.NO
-        _peakSignalAsFoundFerrousLeading.value = ""
-        _peakSignalAsFoundFerrousMiddle.value = ""
-        _peakSignalAsFoundFerrousTrailing.value = ""
+        if (_sampleCertificateNumberAsFoundFerrous.value == "N/A") {
+            _sampleCertificateNumberAsFoundFerrous.value = ""
+            _detectRejectAsFoundFerrousLeading.value = YesNoState.NO
+            _detectRejectAsFoundFerrousMiddle.value = YesNoState.NO
+            _detectRejectAsFoundFerrousTrailing.value = YesNoState.NO
+            _peakSignalAsFoundFerrousLeading.value = ""
+            _peakSignalAsFoundFerrousMiddle.value = ""
+            _peakSignalAsFoundFerrousTrailing.value = ""
+        }
     }
     fun disableFerrousAsFound(){
         _sampleCertificateNumberAsFoundFerrous.value = "N/A"
@@ -887,13 +1080,15 @@ class CalibrationMetalDetectorConveyorViewModel(
     // Non-Ferrous As Found
 
     fun enableNonFerrousAsFound(){
-        _sampleCertificateNumberAsFoundNonFerrous.value = ""
-        _detectRejectAsFoundNonFerrousLeading.value = YesNoState.NO
-        _detectRejectAsFoundNonFerrousMiddle.value = YesNoState.NO
-        _detectRejectAsFoundNonFerrousTrailing.value = YesNoState.NO
-        _peakSignalAsFoundNonFerrousLeading.value = ""
-        _peakSignalAsFoundNonFerrousMiddle.value = ""
-        _peakSignalAsFoundNonFerrousTrailing.value = ""
+        if (_sampleCertificateNumberAsFoundNonFerrous.value == "N/A") {
+            _sampleCertificateNumberAsFoundNonFerrous.value = ""
+            _detectRejectAsFoundNonFerrousLeading.value = YesNoState.NO
+            _detectRejectAsFoundNonFerrousMiddle.value = YesNoState.NO
+            _detectRejectAsFoundNonFerrousTrailing.value = YesNoState.NO
+            _peakSignalAsFoundNonFerrousLeading.value = ""
+            _peakSignalAsFoundNonFerrousMiddle.value = ""
+            _peakSignalAsFoundNonFerrousTrailing.value = ""
+        }
     }
     fun disableNonFerrousAsFound(){
         _sampleCertificateNumberAsFoundNonFerrous.value = "N/A"
@@ -908,13 +1103,15 @@ class CalibrationMetalDetectorConveyorViewModel(
     // Stainless As Found
 
     fun enableStainlessAsFound(){
-        _sampleCertificateNumberAsFoundStainless.value = ""
-        _detectRejectAsFoundStainlessLeading.value = YesNoState.NO
-        _detectRejectAsFoundStainlessMiddle.value = YesNoState.NO
-        _detectRejectAsFoundStainlessTrailing.value = YesNoState.NO
-        _peakSignalAsFoundStainlessLeading.value = ""
-        _peakSignalAsFoundStainlessMiddle.value = ""
-        _peakSignalAsFoundStainlessTrailing.value = ""
+        if (_sampleCertificateNumberAsFoundStainless.value == "N/A") {
+            _sampleCertificateNumberAsFoundStainless.value = ""
+            _detectRejectAsFoundStainlessLeading.value = YesNoState.NO
+            _detectRejectAsFoundStainlessMiddle.value = YesNoState.NO
+            _detectRejectAsFoundStainlessTrailing.value = YesNoState.NO
+            _peakSignalAsFoundStainlessLeading.value = ""
+            _peakSignalAsFoundStainlessMiddle.value = ""
+            _peakSignalAsFoundStainlessTrailing.value = ""
+        }
     }
     fun disableStainlessAsFound(){
         _sampleCertificateNumberAsFoundStainless.value = "N/A"
@@ -930,14 +1127,16 @@ class CalibrationMetalDetectorConveyorViewModel(
     // Ferrous As Left
 
     fun enableFerrousTest(){
-        _sampleCertificateNumberFerrous.value = ""
-        _detectRejectFerrousLeading.value = YesNoState.NO
-        _detectRejectFerrousMiddle.value = YesNoState.NO
-        _detectRejectFerrousTrailing.value = YesNoState.NO
-        _peakSignalFerrousLeading.value = ""
-        _peakSignalFerrousMiddle.value = ""
-        _peakSignalFerrousTrailing.value = ""
-        _ferrousTestPvResult.value = ""
+        if (_sampleCertificateNumberFerrous.value == "N/A") {
+            _sampleCertificateNumberFerrous.value = ""
+            _detectRejectFerrousLeading.value = YesNoState.NO
+            _detectRejectFerrousMiddle.value = YesNoState.NO
+            _detectRejectFerrousTrailing.value = YesNoState.NO
+            _peakSignalFerrousLeading.value = ""
+            _peakSignalFerrousMiddle.value = ""
+            _peakSignalFerrousTrailing.value = ""
+            _ferrousTestPvResult.value = ""
+        }
     }
 
     fun disableFerrousTest(){
@@ -967,14 +1166,16 @@ class CalibrationMetalDetectorConveyorViewModel(
 
 
     fun enableNonFerrousTest(){
-        _sampleCertificateNumberNonFerrous.value = ""
-        _detectRejectNonFerrousLeading.value = YesNoState.NO
-        _detectRejectNonFerrousMiddle.value = YesNoState.NO
-        _detectRejectNonFerrousTrailing.value = YesNoState.NO
-        _peakSignalNonFerrousLeading.value = ""
-        _peakSignalNonFerrousMiddle.value = ""
-        _peakSignalNonFerrousTrailing.value = ""
-        _nonFerrousTestPvResult.value = ""
+        if (_sampleCertificateNumberNonFerrous.value == "N/A") {
+            _sampleCertificateNumberNonFerrous.value = ""
+            _detectRejectNonFerrousLeading.value = YesNoState.NO
+            _detectRejectNonFerrousMiddle.value = YesNoState.NO
+            _detectRejectNonFerrousTrailing.value = YesNoState.NO
+            _peakSignalNonFerrousLeading.value = ""
+            _peakSignalNonFerrousMiddle.value = ""
+            _peakSignalNonFerrousTrailing.value = ""
+            _nonFerrousTestPvResult.value = ""
+        }
     }
 
     fun disableStainlessTest(){
@@ -990,15 +1191,16 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
     fun enableStainlessTest(){
-        _sampleCertificateNumberStainless.value = ""
-        _detectRejectStainlessLeading.value = YesNoState.NO
-        _detectRejectStainlessMiddle.value = YesNoState.NO
-        _detectRejectStainlessTrailing.value = YesNoState.NO
-        _peakSignalStainlessLeading.value = ""
-        _peakSignalStainlessMiddle.value = ""
-        _peakSignalStainlessTrailing.value = ""
-        _stainlessTestPvResult.value = ""
-
+        if (_sampleCertificateNumberStainless.value == "N/A") {
+            _sampleCertificateNumberStainless.value = ""
+            _detectRejectStainlessLeading.value = YesNoState.NO
+            _detectRejectStainlessMiddle.value = YesNoState.NO
+            _detectRejectStainlessTrailing.value = YesNoState.NO
+            _peakSignalStainlessLeading.value = ""
+            _peakSignalStainlessMiddle.value = ""
+            _peakSignalStainlessTrailing.value = ""
+            _stainlessTestPvResult.value = ""
+        }
     }
 
 

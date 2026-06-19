@@ -318,7 +318,7 @@ private fun ConditionSegmented(
 ) {
     val options = listOf(
         ConditionState.GOOD to "Good",
-        ConditionState.SATISFACTORY to "OK",
+        ConditionState.OK to "OK",
         ConditionState.POOR to "Poor",
         ConditionState.NA to "N/A"
     )

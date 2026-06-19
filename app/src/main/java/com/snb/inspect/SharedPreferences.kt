@@ -34,7 +34,7 @@ object PreferencesHelper {
     // Clear credentials
     fun clearCredentials(context: Context) {
         val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        sharedPreferences.edit {
+        sharedPreferences.edit(commit = true) {
 
             InAppLogger.d("Credentials before clearing: ${sharedPreferences.all}")
 

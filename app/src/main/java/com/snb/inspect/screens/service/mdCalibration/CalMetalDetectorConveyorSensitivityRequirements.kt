@@ -33,7 +33,6 @@ import com.snb.inspect.formModules.LabeledTextFieldWithHelp
 import com.snb.inspect.ui.theme.FormSpacer
 import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalMetalDetectorConveyorSensitivityRequirements(

@@ -9,7 +9,7 @@ enum class YesNoState {
 
 enum class ConditionState {
     GOOD,
-    SATISFACTORY,
+    OK,
     POOR,
     NA,
     UNSPECIFIED

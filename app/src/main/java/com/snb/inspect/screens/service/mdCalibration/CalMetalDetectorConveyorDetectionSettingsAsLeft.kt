@@ -187,6 +187,7 @@ fun copyAsFoundToAsLeft(viewModel: CalibrationMetalDetectorConveyorViewModel) {
     viewModel.setDetectionSettingAsLeft7(viewModel.detectionSettingAsFound7.value)
     viewModel.setDetectionSettingAsLeft8(viewModel.detectionSettingAsFound8.value)
     viewModel.setProductPeakSignalAsLeft(viewModel.productPeakSignalAsFound.value)
+    viewModel.setDetectionSettingAsLeftEngineerNotes(viewModel.detectionSettingAsFoundEngineerNotes.value)
 }
 
 

@@ -91,7 +91,7 @@ fun CalMetalDetectorConveyorSmeDetails(
     val isSensitivityWarningNonFe = achievedNonFe > customerReqNonFe && achievedNonFe > 0.0 && customerReqNonFe > 0.0
 
     val customerReqStainless = viewModel.sensitivityRequirementStainless.value.replace(",", ".").toDoubleOrNull() ?: 0.0
-    val achievedStainless = nonFerrousSize.replace(",", ".").toDoubleOrNull() ?: 0.0
+    val achievedStainless = stainlessSize.replace(",", ".").toDoubleOrNull() ?: 0.0
     val isSensitivityWarningStainless = achievedStainless > customerReqStainless && achievedStainless > 0.0 && customerReqStainless > 0.0
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -130,6 +130,8 @@ fun CalMetalDetectorConveyorSmeDetails(
                             viewModel.setOperatorTestWitnessedBinDoor(YesNoState.NA)
                             viewModel.setOperatorTestWitnessedAirFail(YesNoState.NA)
                             viewModel.setOperatorTestWitnessedPackCheck(YesNoState.NA)
+                            viewModel.setOperatorTestWitnessedSpeedSensor(YesNoState.NA)
+                            viewModel.setOperatorTestWitnessedBackup(YesNoState.NA)
                             viewModel.setSmeName(na)
                         } else if (newState == YesNoState.YES) {
                             viewModel.setOperatorName("")
@@ -176,6 +178,18 @@ fun CalMetalDetectorConveyorSmeDetails(
                             }
                             else {
                                 viewModel.setOperatorTestWitnessedPackCheck(YesNoState.NO)
+                            }
+                            if (viewModel.operatorTestWitnessedSpeedSensor.value == YesNoState.NA) {
+                                viewModel.setOperatorTestWitnessedSpeedSensor(YesNoState.NA)
+                            }
+                            else {
+                                viewModel.setOperatorTestWitnessedSpeedSensor(YesNoState.NO)
+                            }
+                            if (viewModel.operatorTestWitnessedBackup.value == YesNoState.NA) {
+                                viewModel.setOperatorTestWitnessedBackup(YesNoState.NA)
+                            }
+                            else {
+                                viewModel.setOperatorTestWitnessedBackup(YesNoState.NO)
                             }
 
                             viewModel.setSmeName("")
