@@ -47,19 +47,10 @@ import com.snb.inspect.calibrationViewModels.CalibrationMetalDetectorConveyorVie
 import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorSummaryDetails
 import com.snb.inspect.ui.theme.FormBackground
 import com.snb.inspect.ui.theme.SnbRed
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.UnfoldMore
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.runtime.collectAsState
-import androidx.navigation.NavController
+
 
 @Suppress(
-    "AssignedValueIsNeverRead"
+    "AssignedValueIsNeverRead",
 )
 @Composable
 fun CalibrationBanner(
@@ -67,8 +58,8 @@ fun CalibrationBanner(
     viewModel: CalibrationMetalDetectorConveyorViewModel,
     windowSizeClass: WindowSizeClass
 ) {
-    var showDetailsDialog by remember { mutableStateOf(false) }
-    var showBackDisabledDialog by remember { mutableStateOf(false) }
+    var showDetailsDialog by remember { mutableStateOf(value = false) }
+    var showBackDisabledDialog by remember { mutableStateOf(value = false) }
 
     val isCompact = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
     val pvRequired = viewModel.pvRequired.value
@@ -178,9 +169,7 @@ fun CalibrationBanner(
     }
 
     if (showBackDisabledDialog) {
-        BackDisabledDialog(
-            onDismiss = { showBackDisabledDialog = false }
-        )
+        BackDisabledDialog { showBackDisabledDialog = false }
     }
 
 

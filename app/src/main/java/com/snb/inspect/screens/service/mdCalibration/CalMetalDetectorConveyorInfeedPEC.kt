@@ -28,7 +28,7 @@ import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 
 @Composable
 fun CalMetalDetectorConveyorInfeedPEC(
-    viewModel: CalibrationMetalDetectorConveyorViewModel
+    viewModel: CalibrationMetalDetectorConveyorViewModel,
 ) {
 
     val fitted by viewModel.infeedSensorFitted
@@ -68,19 +68,19 @@ fun CalMetalDetectorConveyorInfeedPEC(
     ) {
         buildList {
             add("No Result")
-            if (ind6label.isNotBlank() && ind6label != "N/A") add("Indicator 6 ($ind6colour)")
-            if (ind5label.isNotBlank() && ind5label != "N/A") add("Indicator 5 ($ind5colour)")
-            if (ind4label.isNotBlank() && ind4label != "N/A") add("Indicator 4 ($ind4colour)")
-            if (ind3label.isNotBlank() && ind3label != "N/A") add("Indicator 3 ($ind3colour)")
-            if (ind2label.isNotBlank() && ind2label != "N/A") add("Indicator 2 ($ind2colour)")
-            if (ind1label.isNotBlank() && ind1label != "N/A") add("Indicator 1 ($ind1colour)")
+            if ((ind6label.isNotBlank() && ind6label != "N/A")) add("Indicator 6 ($ind6colour)")
+            if ((ind5label.isNotBlank() && ind5label != "N/A")) add("Indicator 5 ($ind5colour)")
+            if ((ind4label.isNotBlank() && ind4label != "N/A")) add("Indicator 4 ($ind4colour)")
+            if ((ind3label.isNotBlank() && ind3label != "N/A")) add("Indicator 3 ($ind3colour)")
+            if ((ind2label.isNotBlank() && ind2label != "N/A")) add("Indicator 2 ($ind2colour)")
+            if ((ind1label.isNotBlank() && ind1label != "N/A")) add("Indicator 1 ($ind1colour)")
             addAll(
                 listOf(
                     "On-Screen Notification",
                     "System Belt Stops",
                     "In-feed Belt Stops",
                     "Out-feed Belt Stops",
-                    "Other"
+                    "Other",
                 )
             )
         }

@@ -28,7 +28,7 @@ import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalMetalDetectorConveyorLargeMetalTest(
-    viewModel: CalibrationMetalDetectorConveyorViewModel
+    viewModel: CalibrationMetalDetectorConveyorViewModel,
 ) {
 
     val dr by viewModel.detectRejectLargeMetal

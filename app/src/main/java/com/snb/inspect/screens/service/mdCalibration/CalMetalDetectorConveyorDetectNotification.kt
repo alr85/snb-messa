@@ -24,7 +24,7 @@ import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 
 @Composable
 fun CalMetalDetectorConveyorDetectNotification(
-    viewModel: CalibrationMetalDetectorConveyorViewModel
+    viewModel: CalibrationMetalDetectorConveyorViewModel,
 ) {
 
 
@@ -48,7 +48,7 @@ fun CalMetalDetectorConveyorDetectNotification(
             "In-feed Belt Stops",
             "Out-feed Belt Stops",
             "Double Bag Stop (Latched)",
-            "Other"
+            "Other",
         )
     }
 

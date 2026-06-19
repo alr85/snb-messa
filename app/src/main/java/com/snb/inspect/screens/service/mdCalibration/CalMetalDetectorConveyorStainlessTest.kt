@@ -32,7 +32,7 @@ import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalMetalDetectorConveyorStainlessTest(
-    viewModel: CalibrationMetalDetectorConveyorViewModel
+    viewModel: CalibrationMetalDetectorConveyorViewModel,
 ) {
     // Pull state from VM
     val sensitivityAsLeftStainless by viewModel.sensitivityAsLeftStainless
@@ -65,7 +65,7 @@ fun CalMetalDetectorConveyorStainlessTest(
     // Sensitivity Warning Logic
     val customerReq = viewModel.sensitivityRequirementStainless.value.replace(",", ".").toDoubleOrNull() ?: 0.0
     val achieved = sensitivityAsLeftStainless.replace(",", ".").toDoubleOrNull() ?: 0.0
-    val isSensitivityWarning = achieved > customerReq && achieved > 0.0 && customerReq > 0.0
+    val isSensitivityWarning = (achieved > customerReq) && (achieved > 0.0) && (customerReq > 0.0)
 
     // Validation
     val isNextStepEnabled =
@@ -89,10 +89,12 @@ fun CalMetalDetectorConveyorStainlessTest(
         sensitivityAsLeftStainless == "N/A" -> "N/A"
 
         // Otherwise, evaluate the specific rules for Compliance and Cert
-        rules.filter { it.ruleId.contains("SENSITIVITY") || it.ruleId.contains("CERT") }
+        rules.asSequence()
+            .filter { it.ruleId.contains("SENSITIVITY") || it.ruleId.contains("CERT") }
             .any { it.status == PvRuleStatus.Fail } -> "Fail"
 
-        rules.filter { it.ruleId.contains("SENSITIVITY") || it.ruleId.contains("CERT") }
+        rules.asSequence()
+            .filter { it.ruleId.contains("SENSITIVITY") || it.ruleId.contains("CERT") }
             .any { it.status == PvRuleStatus.Incomplete || it.status == PvRuleStatus.Warning } -> "Warning"
 
         else -> "Pass"
@@ -119,8 +121,7 @@ fun CalMetalDetectorConveyorStainlessTest(
                     AnimatedActionPill(
                         text = "Copy from ‘As Found’",
                         icon = Icons.Outlined.ContentPasteGo,
-                        onClick = { copyStainlessTestAsFoundToAsLeft(viewModel) }
-                    )
+                    ) { copyStainlessTestAsFoundToAsLeft(viewModel) }
                 }
 
                 Spacer(Modifier.height(6.dp))

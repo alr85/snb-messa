@@ -21,11 +21,11 @@ class UserManualsViewModel(private val repository: UserManualsRepository) : View
     val filteredManuals = combine(
         repository.allManuals,
         _searchQuery,
-        _selectedType
+        _selectedType,
     ) { manuals, query, type ->
         manuals.filter { manual ->
-            (type == null || manual.systemType == type) &&
-            (query.isEmpty() || manual.description.contains(query, ignoreCase = true))
+            ((type == null || manual.systemType == type)) &&
+            ((query.isEmpty() || manual.description.contains(query, ignoreCase = true)))
         }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 

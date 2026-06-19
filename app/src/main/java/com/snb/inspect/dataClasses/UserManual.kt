@@ -11,7 +11,7 @@ data class UserManual(
     @SerializedName("Url") val url: String,
     @SerializedName("Notes") val notes: String?,
     @SerializedName("CreatedAt") val createdAt: String?,
-    @SerializedName("SystemType") val systemType: String?
+    @SerializedName("SystemType") val systemType: String?,
 )
 
 // Entity for local Room database (keeping camelCase for local Room table)
