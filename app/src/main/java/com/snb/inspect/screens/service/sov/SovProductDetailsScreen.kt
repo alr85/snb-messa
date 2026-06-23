@@ -1,8 +1,12 @@
 package com.snb.inspect.screens.service.sov
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.snb.inspect.calibrationViewModels.SensitivityOptimisationValidationViewModel
 import com.snb.inspect.formModules.CalibrationHeader
@@ -12,6 +16,12 @@ import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 
 @Composable
 fun SovProductDetailsScreen(viewModel: SensitivityOptimisationValidationViewModel) {
+    val isNextStepEnabled = viewModel.productDescription.value.isNotBlank()
+    
+    LaunchedEffect(isNextStepEnabled) {
+        viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
+    }
+
     ScrollableWithScrollbar(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 16.dp)
@@ -29,27 +39,26 @@ fun SovProductDetailsScreen(viewModel: SensitivityOptimisationValidationViewMode
             )
             FormSpacer()
 
-            LabeledTextFieldWithHelp(
-                label = "Library Reference",
-                value = viewModel.productLibraryReference.value,
-                onValueChange = { viewModel.productLibraryReference.value = it },
-                helpText = "Internal library reference name."
-            )
-            FormSpacer()
+            if (viewModel.productDescription.value.isNotBlank()) {
+                Text(
+                    text = "Please ensure a new product library page has been created on the detector titled:",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = "VAL - ${viewModel.productDescription.value}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                FormSpacer()
+            }
 
             LabeledTextFieldWithHelp(
-                label = "Library Number",
-                value = viewModel.productLibraryNumber.value,
-                onValueChange = { viewModel.productLibraryNumber.value = it },
-                helpText = "Internal library number."
-            )
-            FormSpacer()
-
-            LabeledTextFieldWithHelp(
-                label = "Belt Speed",
-                value = viewModel.beltSpeed.value,
-                onValueChange = { viewModel.beltSpeed.value = it },
-                helpText = "Operating speed of the belt/system."
+                label = "Product Comments",
+                value = viewModel.productComments.value,
+                onValueChange = { viewModel.productComments.value = it },
+                helpText = "Comments on product details, presentation and fluctuations with respect to any possible performance restrictions, examples include large differences in conductivity, changes in size, random presentation, double stacking, packaging inconsistencies",
+                singleLine = false
             )
             FormSpacer()
 

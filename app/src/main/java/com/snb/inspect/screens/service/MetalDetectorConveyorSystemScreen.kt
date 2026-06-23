@@ -415,7 +415,7 @@ fun MetalDetectorConveyorSystemScreen(
                         }
 
                         // Start SOV (Coming Soon)
-                        val isSovComingSoon = true
+                        val isSovComingSoon = false
                         FloatingActionButton(
                             modifier = Modifier.fillMaxWidth(),
                             onClick = {

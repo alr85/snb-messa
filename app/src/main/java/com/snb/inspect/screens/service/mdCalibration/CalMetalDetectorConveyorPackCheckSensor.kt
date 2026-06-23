@@ -140,8 +140,8 @@ fun CalMetalDetectorConveyorPackCheckSensor(
                             viewModel.setPackCheckSensorTestMethod("")
                             viewModel.setPackCheckSensorTestMethodOther("")
                             viewModel.setPackCheckSensorTestResult(emptyList())
-                            viewModel.setPackCheckSensorLatched(YesNoState.NO)
-                            viewModel.setPackCheckSensorCR(YesNoState.NO)
+                            viewModel.setPackCheckSensorLatched(YesNoState.UNSPECIFIED)
+                            viewModel.setPackCheckSensorCR(YesNoState.UNSPECIFIED)
                         }
                         viewModel.autoUpdatePackCheckSensorPvResult()
                     },

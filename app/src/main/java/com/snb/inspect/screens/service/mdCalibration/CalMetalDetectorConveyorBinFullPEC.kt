@@ -145,8 +145,8 @@ fun CalMetalDetectorConveyorBinFullPEC(
                             viewModel.setBinFullSensorTestMethod("")
                             viewModel.setBinFullSensorTestMethodOther("")
                             viewModel.setBinFullSensorTestResult(emptyList())
-                            viewModel.setBinFullSensorLatched(YesNoState.NO)
-                            viewModel.setBinFullSensorCR(YesNoState.NO)
+                            viewModel.setBinFullSensorLatched(YesNoState.UNSPECIFIED)
+                            viewModel.setBinFullSensorCR(YesNoState.UNSPECIFIED)
                         }
                         viewModel.autoUpdateBinFullSensorPvResult()
                     },

@@ -142,6 +142,9 @@ class SensitivityOptimisationValidationLocal(
     var engineerSignature: String = ""
     var customerSignature: String = ""
     var customerName: String = ""
+
+    // NEW VALIDATION
+    var packValidationPassed: Boolean = false
     
     // Labels for detection settings (carried from machine model)
     var detectionSetting1label: String = ""

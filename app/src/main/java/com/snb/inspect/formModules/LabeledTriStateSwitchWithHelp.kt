@@ -40,14 +40,14 @@ fun LabeledTriStateSwitchWithHelp(
     // Local mirror so UI responds instantly
     var localState by remember {
         mutableStateOf(
-            if (currentState == YesNoState.UNSPECIFIED) YesNoState.NO else currentState
+            currentState
         )
     }
     var isDisabled by remember { mutableStateOf(currentState == YesNoState.NA) }
 
     LaunchedEffect(currentState) {
         isDisabled = currentState == YesNoState.NA
-        localState = if (currentState == YesNoState.UNSPECIFIED) YesNoState.NO else currentState
+        localState = currentState
     }
 
     FormRowWrapper(

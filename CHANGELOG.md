@@ -12,16 +12,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved the portrait only mode lock to prevent user being logged out upon screen rotation
 - Operator failsafe tests are now persistent when returning to an incomplete calibration
 - Empty 'Detection Setting' slots are now default N/A
+- Sensor Fitted? inputs now default to a null value
 - Made the title of 'Calibration Start' screen sticky when scrolling
 - Error messages when trying to download user manuals are more descriptive
 
 ### Changed
-- Redesigned the calibration process to allow flexible navigation
 - Made the 'Reason for not calibrating' drop down a multi select list
 - Moved the 'Detection Settings (As Found)' screen. This is now before the 'As Found' Sensitivities
 - Reversed the reject delay and duration order in the Reject Settings screen
 
 ### Added
+- Added a new navigation menu in the calibration process to enable short-cuts to specific screens
 - Added a 30-second bin door timeout PV rule in Metal Detector Calibrations
 - Added an 'OK' condition to the System Checklist in Metal Detector Calibrations
 - Added a 'Notes' function to the metal detector System Details screen.

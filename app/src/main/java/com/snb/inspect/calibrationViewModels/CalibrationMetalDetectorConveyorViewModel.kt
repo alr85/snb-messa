@@ -766,12 +766,12 @@ class CalibrationMetalDetectorConveyorViewModel(
             "CalMetalDetectorConveyorDetectionSettingsAsLeft" -> "Detection Settings (As Left)"
             "CalMetalDetectorConveyorRejectSettings" -> "Reject Settings"
             "CalMetalDetectorConveyorLargeMetalTest" -> "Large Metal Test"
-            "CalMetalDetectorConveyorInfeedPEC" -> "Infeed PEC"
-            "CalMetalDetectorConveyorRejectConfirmPEC" -> "Reject Confirm PEC"
-            "CalMetalDetectorConveyorBinFullPEC" -> "Bin Full PEC"
+            "CalMetalDetectorConveyorInfeedPEC" -> "Infeed Sensor"
+            "CalMetalDetectorConveyorRejectConfirmPEC" -> "Reject Confirm Sensor"
+            "CalMetalDetectorConveyorBinFullPEC" -> "Bin Full Sensor"
             "CalMetalDetectorConveyorAirPressureSensor" -> "Air Pressure Sensor"
             "CalMetalDetectorConveyorBinDoorMonitor" -> "Bin Door Monitor"
-            "CalMetalDetectorConveyorBackupPEC" -> "Backup PEC"
+            "CalMetalDetectorConveyorBackupPEC" -> "Backup Sensor"
             "CalMetalDetectorConveyorPackCheckSensor" -> "Pack Check Sensor"
             "CalMetalDetectorConveyorSpeedSensor" -> "Speed Sensor"
             "CalMetalDetectorConveyorDetectNotification" -> "Detect Notification"
@@ -2143,7 +2143,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
     // Leading edge detection & signal
-    private val _detectRejectAsFoundFerrousLeading = mutableStateOf(YesNoState.NO)
+    private val _detectRejectAsFoundFerrousLeading = mutableStateOf(YesNoState.UNSPECIFIED)
     val detectRejectAsFoundFerrousLeading: State<YesNoState> = _detectRejectAsFoundFerrousLeading
 
     fun setDetectRejectAsFoundFerrousLeading(newValue: YesNoState) {
@@ -2158,7 +2158,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
     // Middle detection & signal
-    private val _detectRejectAsFoundFerrousMiddle = mutableStateOf(YesNoState.NO)
+    private val _detectRejectAsFoundFerrousMiddle = mutableStateOf(YesNoState.UNSPECIFIED)
     val detectRejectAsFoundFerrousMiddle: State<YesNoState> = _detectRejectAsFoundFerrousMiddle
 
     fun setDetectRejectAsFoundFerrousMiddle(newValue: YesNoState) {
@@ -2174,7 +2174,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     // Trailing edge detection & signal
 
-    private val _detectRejectAsFoundFerrousTrailing = mutableStateOf(YesNoState.NO)
+    private val _detectRejectAsFoundFerrousTrailing = mutableStateOf(YesNoState.UNSPECIFIED)
     val detectRejectAsFoundFerrousTrailing: State<YesNoState> = _detectRejectAsFoundFerrousTrailing
 
     fun setDetectRejectAsFoundFerrousTrailing(newValue: YesNoState) {
@@ -2217,7 +2217,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
     // Leading edge detection & signal
-    private val _detectRejectAsFoundNonFerrousLeading = mutableStateOf(YesNoState.NO)
+    private val _detectRejectAsFoundNonFerrousLeading = mutableStateOf(YesNoState.UNSPECIFIED)
     val detectRejectAsFoundNonFerrousLeading: State<YesNoState> = _detectRejectAsFoundNonFerrousLeading
 
     fun setDetectRejectAsFoundNonFerrousLeading(newValue: YesNoState) {
@@ -2232,7 +2232,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
     // Middle detection & signal
-    private val _detectRejectAsFoundNonFerrousMiddle = mutableStateOf(YesNoState.NO)
+    private val _detectRejectAsFoundNonFerrousMiddle = mutableStateOf(YesNoState.UNSPECIFIED)
     val detectRejectAsFoundNonFerrousMiddle: State<YesNoState> = _detectRejectAsFoundNonFerrousMiddle
 
     fun setDetectRejectAsFoundNonFerrousMiddle(newValue: YesNoState) {
@@ -2248,7 +2248,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     // Trailing edge detection & signal
 
-    private val _detectRejectAsFoundNonFerrousTrailing = mutableStateOf(YesNoState.NO)
+    private val _detectRejectAsFoundNonFerrousTrailing = mutableStateOf(YesNoState.UNSPECIFIED)
     val detectRejectAsFoundNonFerrousTrailing: State<YesNoState> = _detectRejectAsFoundNonFerrousTrailing
 
     fun setDetectRejectAsFoundNonFerrousTrailing(newValue: YesNoState) {
@@ -2291,7 +2291,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
     // Leading edge detection & signal
-    private val _detectRejectAsFoundStainlessLeading = mutableStateOf(YesNoState.NO)
+    private val _detectRejectAsFoundStainlessLeading = mutableStateOf(YesNoState.UNSPECIFIED)
     val detectRejectAsFoundStainlessLeading: State<YesNoState> = _detectRejectAsFoundStainlessLeading
 
     fun setDetectRejectAsFoundStainlessLeading(newValue: YesNoState) {
@@ -2306,7 +2306,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
     // Middle detection & signal
-    private val _detectRejectAsFoundStainlessMiddle = mutableStateOf(YesNoState.NO)
+    private val _detectRejectAsFoundStainlessMiddle = mutableStateOf(YesNoState.UNSPECIFIED)
     val detectRejectAsFoundStainlessMiddle: State<YesNoState> = _detectRejectAsFoundStainlessMiddle
 
     fun setDetectRejectAsFoundStainlessMiddle(newValue: YesNoState) {
@@ -2322,7 +2322,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     // Trailing edge detection & signal
 
-    private val _detectRejectAsFoundStainlessTrailing = mutableStateOf(YesNoState.NO)
+    private val _detectRejectAsFoundStainlessTrailing = mutableStateOf(YesNoState.UNSPECIFIED)
     val detectRejectAsFoundStainlessTrailing: State<YesNoState> = _detectRejectAsFoundStainlessTrailing
 
     fun setDetectRejectAsFoundStainlessTrailing(newValue: YesNoState) {
@@ -2369,7 +2369,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
     // Leading edge detection & signal
-    private val _detectRejectFerrousLeading = mutableStateOf(YesNoState.NO)
+    private val _detectRejectFerrousLeading = mutableStateOf(YesNoState.UNSPECIFIED)
     val detectRejectFerrousLeading: State<YesNoState> = _detectRejectFerrousLeading
 
     fun setDetectRejectFerrousLeading(newValue: YesNoState) {
@@ -2386,7 +2386,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
     // Middle detection & signal
-    private val _detectRejectFerrousMiddle = mutableStateOf(YesNoState.NO)
+    private val _detectRejectFerrousMiddle = mutableStateOf(YesNoState.UNSPECIFIED)
     val detectRejectFerrousMiddle: State<YesNoState> = _detectRejectFerrousMiddle
 
     fun setDetectRejectFerrousMiddle(newValue: YesNoState) {
@@ -2404,7 +2404,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     // Trailing edge detection & signal
 
-    private val _detectRejectFerrousTrailing = mutableStateOf(YesNoState.NO)
+    private val _detectRejectFerrousTrailing = mutableStateOf(YesNoState.UNSPECIFIED)
     val detectRejectFerrousTrailing: State<YesNoState> = _detectRejectFerrousTrailing
 
     fun setDetectRejectFerrousTrailing(newValue: YesNoState) {
@@ -2450,7 +2450,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     //-----
 
-    private val _detectRejectNonFerrousLeading = mutableStateOf(YesNoState.NO)
+    private val _detectRejectNonFerrousLeading = mutableStateOf(YesNoState.UNSPECIFIED)
     val detectRejectNonFerrousLeading: State<YesNoState> = _detectRejectNonFerrousLeading
 
     fun setDetectRejectNonFerrousLeading(newValue: YesNoState) {
@@ -2460,7 +2460,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     //-----
 
-    private val _detectRejectNonFerrousMiddle = mutableStateOf(YesNoState.NO)
+    private val _detectRejectNonFerrousMiddle = mutableStateOf(YesNoState.UNSPECIFIED)
     val detectRejectNonFerrousMiddle: State<YesNoState> = _detectRejectNonFerrousMiddle
 
     fun setDetectRejectNonFerrousMiddle(newValue: YesNoState) {
@@ -2470,7 +2470,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     //-----
 
-    private val _detectRejectNonFerrousTrailing = mutableStateOf(YesNoState.NO)
+    private val _detectRejectNonFerrousTrailing = mutableStateOf(YesNoState.UNSPECIFIED)
     val detectRejectNonFerrousTrailing: State<YesNoState> = _detectRejectNonFerrousTrailing
 
     fun setDetectRejectNonFerrousTrailing(newValue: YesNoState) {
@@ -2591,7 +2591,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     //-----
 
-    private val _detectRejectStainlessLeading = mutableStateOf(YesNoState.NO)
+    private val _detectRejectStainlessLeading = mutableStateOf(YesNoState.UNSPECIFIED)
     val detectRejectStainlessLeading: State<YesNoState> = _detectRejectStainlessLeading
 
 
@@ -2602,7 +2602,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     //-----
 
-    private val _detectRejectStainlessMiddle = mutableStateOf(YesNoState.NO)
+    private val _detectRejectStainlessMiddle = mutableStateOf(YesNoState.UNSPECIFIED)
     val detectRejectStainlessMiddle: State<YesNoState> = _detectRejectStainlessMiddle
 
     fun setDetectRejectStainlessMiddle(newValue: YesNoState) {
@@ -2612,7 +2612,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     //-----
 
-    private val _detectRejectStainlessTrailing = mutableStateOf(YesNoState.NO)
+    private val _detectRejectStainlessTrailing = mutableStateOf(YesNoState.UNSPECIFIED)
     val detectRejectStainlessTrailing: State<YesNoState> = _detectRejectStainlessTrailing
 
     fun setDetectRejectStainlessTrailing(newValue: YesNoState) {
@@ -2641,7 +2641,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     //----------------------------------------------------------------Large Metal Sensitivity Result
 
-    private val _detectRejectLargeMetal = mutableStateOf(YesNoState.NO)
+    private val _detectRejectLargeMetal = mutableStateOf(YesNoState.UNSPECIFIED)
     val detectRejectLargeMetal: State<YesNoState> = _detectRejectLargeMetal
 
     fun setDetectRejectLargeMetal(newValue: YesNoState) {
@@ -2761,7 +2761,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     //---------------------------------------------------------------------------Rejection Settings
 
-    private val _rejectSynchronisationSetting = mutableStateOf(YesNoState.NO)
+    private val _rejectSynchronisationSetting = mutableStateOf(YesNoState.UNSPECIFIED)
     val rejectSynchronisationSetting: State<YesNoState> = _rejectSynchronisationSetting
 
 
@@ -3120,7 +3120,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
     //---------------------------------------------------------------------------In feed sensor Test
-    private val _infeedSensorFitted = mutableStateOf(YesNoState.NO)
+    private val _infeedSensorFitted = mutableStateOf(YesNoState.UNSPECIFIED)
     val infeedSensorFitted: State<YesNoState> = _infeedSensorFitted
 
     fun setInfeedSensorFitted(newValue: YesNoState) {
@@ -3170,7 +3170,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         _infeedSensorEngineerNotes.value = newValue
     }
 
-    private val _infeedSensorLatched = mutableStateOf(YesNoState.NO)
+    private val _infeedSensorLatched = mutableStateOf(YesNoState.UNSPECIFIED)
     val infeedSensorLatched: State<YesNoState> = _infeedSensorLatched
 
     fun setInfeedSensorLatched(newValue: YesNoState) {
@@ -3178,7 +3178,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         autoUpdateInfeedSensorPvResult()
     }
 
-    private val _infeedSensorCR = mutableStateOf(YesNoState.NO)
+    private val _infeedSensorCR = mutableStateOf(YesNoState.UNSPECIFIED)
     val infeedSensorCR: State<YesNoState> = _infeedSensorCR
 
     fun setInfeedSensorCR(newValue: YesNoState) {
@@ -3195,7 +3195,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
 
     //--------------------------------------------------------------------Reject Confirm sensor Test
-    private val _rejectConfirmSensorFitted = mutableStateOf(YesNoState.NO)
+    private val _rejectConfirmSensorFitted = mutableStateOf(YesNoState.UNSPECIFIED)
     val rejectConfirmSensorFitted: State<YesNoState> = _rejectConfirmSensorFitted
 
     fun setRejectConfirmSensorFitted(newValue: YesNoState) {
@@ -3244,7 +3244,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         _rejectConfirmSensorEngineerNotes.value = newValue
     }
 
-    private val _rejectConfirmSensorLatched = mutableStateOf(YesNoState.NO)
+    private val _rejectConfirmSensorLatched = mutableStateOf(YesNoState.UNSPECIFIED)
     val rejectConfirmSensorLatched: State<YesNoState> = _rejectConfirmSensorLatched
 
     fun setRejectConfirmSensorLatched(newValue: YesNoState) {
@@ -3252,7 +3252,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         autoUpdateRejectConfirmSensorPvResult()
     }
 
-    private val _rejectConfirmSensorCR = mutableStateOf(YesNoState.NO)
+    private val _rejectConfirmSensorCR = mutableStateOf(YesNoState.UNSPECIFIED)
     val rejectConfirmSensorCR: State<YesNoState> = _rejectConfirmSensorCR
 
     fun setRejectConfirmSensorCR(newValue: YesNoState) {
@@ -3276,7 +3276,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
     //-------------------------------------------------------------------------Bin Full sensor Test
-    private val _binFullSensorFitted = mutableStateOf(YesNoState.NO)
+    private val _binFullSensorFitted = mutableStateOf(YesNoState.UNSPECIFIED)
     val binFullSensorFitted: State<YesNoState> = _binFullSensorFitted
 
     fun setBinFullSensorFitted(newValue: YesNoState) {
@@ -3326,7 +3326,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         _binFullSensorEngineerNotes.value = newValue
     }
 
-    private val _binFullSensorLatched = mutableStateOf(YesNoState.NO)
+    private val _binFullSensorLatched = mutableStateOf(YesNoState.UNSPECIFIED)
     val binFullSensorLatched: State<YesNoState> = _binFullSensorLatched
 
     fun setBinFullSensorLatched(newValue: YesNoState) {
@@ -3334,7 +3334,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         autoUpdateBinFullSensorPvResult()
     }
 
-    private val _binFullSensorCR = mutableStateOf(YesNoState.NO)
+    private val _binFullSensorCR = mutableStateOf(YesNoState.UNSPECIFIED)
     val binFullSensorCR: State<YesNoState> = _binFullSensorCR
 
     fun setBinFullSensorCR(newValue: YesNoState) {
@@ -3350,7 +3350,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
     //----------------------------------------------------------------------------Backup sensor Test
-    private val _backupSensorFitted = mutableStateOf(YesNoState.NO)
+    private val _backupSensorFitted = mutableStateOf(YesNoState.UNSPECIFIED)
     val backupSensorFitted: State<YesNoState> = _backupSensorFitted
 
     fun setBackupSensorFitted(newValue: YesNoState) {
@@ -3400,7 +3400,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         _backupSensorEngineerNotes.value = newValue
     }
 
-    private val _backupSensorLatched = mutableStateOf(YesNoState.NO)
+    private val _backupSensorLatched = mutableStateOf(YesNoState.UNSPECIFIED)
     val backupSensorLatched: State<YesNoState> = _backupSensorLatched
 
     fun setBackupSensorLatched(newValue: YesNoState) {
@@ -3408,7 +3408,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         autoUpdateBackupSensorPvResult()
     }
 
-    private val _backupSensorCR = mutableStateOf(YesNoState.NO)
+    private val _backupSensorCR = mutableStateOf(YesNoState.UNSPECIFIED)
     val backupSensorCR: State<YesNoState> = _backupSensorCR
 
     fun setBackupSensorCR(newValue: YesNoState) {
@@ -3424,7 +3424,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
     //----------------------------------------------------------------------Air Pressure sensor Test
-    private val _airPressureSensorFitted = mutableStateOf(YesNoState.NO)
+    private val _airPressureSensorFitted = mutableStateOf(YesNoState.UNSPECIFIED)
     val airPressureSensorFitted: State<YesNoState> = _airPressureSensorFitted
 
     fun setAirPressureSensorFitted(newValue: YesNoState) {
@@ -3474,7 +3474,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         _airPressureSensorEngineerNotes.value = newValue
     }
 
-    private val _airPressureSensorLatched = mutableStateOf(YesNoState.NO)
+    private val _airPressureSensorLatched = mutableStateOf(YesNoState.UNSPECIFIED)
     val airPressureSensorLatched: State<YesNoState> = _airPressureSensorLatched
 
     fun setAirPressureSensorLatched(newValue: YesNoState) {
@@ -3482,7 +3482,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         autoUpdateAirPressureSensorPvResult()
     }
 
-    private val _airPressureSensorCR = mutableStateOf(YesNoState.NO)
+    private val _airPressureSensorCR = mutableStateOf(YesNoState.UNSPECIFIED)
     val airPressureSensorCR: State<YesNoState> = _airPressureSensorCR
 
     fun setAirPressureSensorCR(newValue: YesNoState) {
@@ -3498,7 +3498,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
     //------------------------------------------------------------------------Pack Check sensor Test
-    private val _packCheckSensorFitted = mutableStateOf(YesNoState.NO)
+    private val _packCheckSensorFitted = mutableStateOf(YesNoState.UNSPECIFIED)
     val packCheckSensorFitted: State<YesNoState> = _packCheckSensorFitted
 
     fun setPackCheckSensorFitted(newValue: YesNoState) {
@@ -3548,7 +3548,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         _packCheckSensorEngineerNotes.value = newValue
     }
 
-    private val _packCheckSensorLatched = mutableStateOf(YesNoState.NO)
+    private val _packCheckSensorLatched = mutableStateOf(YesNoState.UNSPECIFIED)
     val packCheckSensorLatched: State<YesNoState> = _packCheckSensorLatched
 
     fun setPackCheckSensorLatched(newValue: YesNoState) {
@@ -3556,7 +3556,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         autoUpdatePackCheckSensorPvResult()
     }
 
-    private val _packCheckSensorCR = mutableStateOf(YesNoState.NO)
+    private val _packCheckSensorCR = mutableStateOf(YesNoState.UNSPECIFIED)
     val packCheckSensorCR: State<YesNoState> = _packCheckSensorCR
 
     fun setPackCheckSensorCR(newValue: YesNoState) {
@@ -3573,7 +3573,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     //-----------------------------------------------------------------------------Speed sensor Test
 
-    private val _speedSensorFitted = mutableStateOf(YesNoState.NO)
+    private val _speedSensorFitted = mutableStateOf(YesNoState.UNSPECIFIED)
     val speedSensorFitted: State<YesNoState> = _speedSensorFitted
 
     fun setSpeedSensorFitted(newValue: YesNoState) {
@@ -3623,7 +3623,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         _speedSensorEngineerNotes.value = newValue
     }
 
-    private val _speedSensorLatched = mutableStateOf(YesNoState.NO)
+    private val _speedSensorLatched = mutableStateOf(YesNoState.UNSPECIFIED)
     val speedSensorLatched: State<YesNoState> = _speedSensorLatched
 
     fun setSpeedSensorLatched(newValue: YesNoState) {
@@ -3631,7 +3631,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         autoUpdateSpeedSensorPvResult()
     }
 
-    private val _speedSensorCR = mutableStateOf(YesNoState.NO)
+    private val _speedSensorCR = mutableStateOf(YesNoState.UNSPECIFIED)
     val speedSensorCR: State<YesNoState> = _speedSensorCR
 
     fun setSpeedSensorCR(newValue: YesNoState) {
@@ -3673,7 +3673,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     //---------------------------------------------------------------------------------Bin Door Test
 
-    private val _binDoorMonitorFitted = mutableStateOf(YesNoState.NO)
+    private val _binDoorMonitorFitted = mutableStateOf(YesNoState.UNSPECIFIED)
     val binDoorMonitorFitted: State<YesNoState> = _binDoorMonitorFitted
 
     fun setBinDoorMonitorFitted(newValue: YesNoState) {
@@ -3734,7 +3734,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         autoUpdateBinDoorMonitorPvResult()
     }
 
-    private val _binDoorLatched = mutableStateOf(YesNoState.NO)
+    private val _binDoorLatched = mutableStateOf(YesNoState.UNSPECIFIED)
     val binDoorLatched: State<(YesNoState)> = _binDoorLatched
 
 
@@ -3743,7 +3743,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         autoUpdateBinDoorMonitorPvResult()
     }
 
-    private val _binDoorCR = mutableStateOf(YesNoState.NO)
+    private val _binDoorCR = mutableStateOf(YesNoState.UNSPECIFIED)
     val binDoorCR: State<(YesNoState)> = _binDoorCR
 
 
@@ -3780,7 +3780,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     }
 
 
-    private val _operatorTestWitnessed = mutableStateOf(YesNoState.NO)
+    private val _operatorTestWitnessed = mutableStateOf(YesNoState.UNSPECIFIED)
     val operatorTestWitnessed: State<YesNoState> = _operatorTestWitnessed
 
     fun setOperatorTestWitnessed(newValue: YesNoState) {
@@ -3864,56 +3864,56 @@ class CalibrationMetalDetectorConveyorViewModel(
         autoUpdateSmePvResult()
     }
 
-    private val _operatorTestWitnessedInfeed = mutableStateOf(YesNoState.NO)
+    private val _operatorTestWitnessedInfeed = mutableStateOf(YesNoState.UNSPECIFIED)
     val operatorTestWitnessedInfeed: State<YesNoState> = _operatorTestWitnessedInfeed
 
     fun setOperatorTestWitnessedInfeed(newValue: YesNoState) {
         _operatorTestWitnessedInfeed.value = newValue
     }
 
-    private val _operatorTestWitnessedRejectConfirm = mutableStateOf(YesNoState.NO)
+    private val _operatorTestWitnessedRejectConfirm = mutableStateOf(YesNoState.UNSPECIFIED)
     val operatorTestWitnessedRejectConfirm: State<YesNoState> = _operatorTestWitnessedRejectConfirm
 
     fun setOperatorTestWitnessedRejectConfirm(newValue: YesNoState) {
         _operatorTestWitnessedRejectConfirm.value = newValue
     }
 
-    private val _operatorTestWitnessedBinFull = mutableStateOf(YesNoState.NO)
+    private val _operatorTestWitnessedBinFull = mutableStateOf(YesNoState.UNSPECIFIED)
     val operatorTestWitnessedBinFull: State<YesNoState> = _operatorTestWitnessedBinFull
 
     fun setOperatorTestWitnessedBinFull(newValue: YesNoState) {
         _operatorTestWitnessedBinFull.value = newValue
     }
 
-    private val _operatorTestWitnessedBinDoor = mutableStateOf(YesNoState.NO)
+    private val _operatorTestWitnessedBinDoor = mutableStateOf(YesNoState.UNSPECIFIED)
     val operatorTestWitnessedBinDoor: State<YesNoState> = _operatorTestWitnessedBinDoor
 
     fun setOperatorTestWitnessedBinDoor(newValue: YesNoState) {
         _operatorTestWitnessedBinDoor.value = newValue
     }
 
-    private val _operatorTestWitnessedAirFail = mutableStateOf(YesNoState.NO)
+    private val _operatorTestWitnessedAirFail = mutableStateOf(YesNoState.UNSPECIFIED)
     val operatorTestWitnessedAirFail: State<YesNoState> = _operatorTestWitnessedAirFail
 
     fun setOperatorTestWitnessedAirFail(newValue: YesNoState) {
         _operatorTestWitnessedAirFail.value = newValue
     }
 
-    private val _operatorTestWitnessedPackCheck = mutableStateOf(YesNoState.NO)
+    private val _operatorTestWitnessedPackCheck = mutableStateOf(YesNoState.UNSPECIFIED)
     val operatorTestWitnessedPackCheck: State<YesNoState> = _operatorTestWitnessedPackCheck
 
     fun setOperatorTestWitnessedPackCheck(newValue: YesNoState) {
         _operatorTestWitnessedPackCheck.value = newValue
     }
 
-    private val _operatorTestWitnessedSpeedSensor = mutableStateOf(YesNoState.NO)
+    private val _operatorTestWitnessedSpeedSensor = mutableStateOf(YesNoState.UNSPECIFIED)
     val operatorTestWitnessedSpeedSensor: State<YesNoState> = _operatorTestWitnessedSpeedSensor
 
     fun setOperatorTestWitnessedSpeedSensor(newValue: YesNoState) {
         _operatorTestWitnessedSpeedSensor.value = newValue
     }
 
-    private val _operatorTestWitnessedBackup = mutableStateOf(YesNoState.NO)
+    private val _operatorTestWitnessedBackup = mutableStateOf(YesNoState.UNSPECIFIED)
     val operatorTestWitnessedBackup: State<YesNoState> = _operatorTestWitnessedBackup
 
     fun setOperatorTestWitnessedBackup(newValue: YesNoState) {
@@ -3940,28 +3940,28 @@ class CalibrationMetalDetectorConveyorViewModel(
     //-----------------------------------------------------------------------Compliance Confirmation
 
 
-//    private val _sensitivityCompliance = mutableStateOf(YesNoState.NO)
+//    private val _sensitivityCompliance = mutableStateOf(YesNoState.UNSPECIFIED)
 //    val sensitivityCompliance: State<YesNoState> = _sensitivityCompliance
 //
 //    fun setSensitivityCompliance(newValue: YesNoState) {
 //        _sensitivityCompliance.value = newValue
 //    }
 //
-//    private val _essentialRequirementCompliance = mutableStateOf(YesNoState.NO)
+//    private val _essentialRequirementCompliance = mutableStateOf(YesNoState.UNSPECIFIED)
 //    val essentialRequirementCompliance: State<YesNoState> = _essentialRequirementCompliance
 //
 //    fun setEssentialRequirementCompliance(newValue: YesNoState) {
 //        _essentialRequirementCompliance.value = newValue
 //    }
 //
-//    private val _failsafeCompliance = mutableStateOf(YesNoState.NO)
+//    private val _failsafeCompliance = mutableStateOf(YesNoState.UNSPECIFIED)
 //    val failsafeCompliance: State<YesNoState> = _failsafeCompliance
 //
 //    fun setFailsafeCompliance(newValue: YesNoState) {
 //        _failsafeCompliance.value = newValue
 //    }
 //
-//    private val _bestSensitivityCompliance = mutableStateOf(YesNoState.NO)
+//    private val _bestSensitivityCompliance = mutableStateOf(YesNoState.UNSPECIFIED)
 //    val bestSensitivityCompliance: State<YesNoState> = _bestSensitivityCompliance
 //
 //    fun setBestSensitivityCompliance(newValue: YesNoState) {
@@ -3976,7 +3976,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 //        _sensitivityRecommendations.value = newValue
 //    }
 //
-//    private val _performanceValidationIssued = mutableStateOf(YesNoState.NO)
+//    private val _performanceValidationIssued = mutableStateOf(YesNoState.UNSPECIFIED)
 //    val performanceValidationIssued: State<YesNoState> = _performanceValidationIssued
 //
 //    fun setPerformanceValidationIssued(newValue: YesNoState) {

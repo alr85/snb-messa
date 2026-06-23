@@ -158,6 +158,7 @@ class SensitivityOptimisationValidationViewModel(
     var systemComments = mutableStateOf("")
     var productComments = mutableStateOf("")
     var optimisationNotes = mutableStateOf("")
+    var packValidationPassed = mutableStateOf(false)
     var customerName = mutableStateOf("")
     var lastLocation = mutableStateOf("")
     var newLocation = mutableStateOf("")
@@ -318,6 +319,7 @@ class SensitivityOptimisationValidationViewModel(
                 systemComments.value = existing.systemComments
                 productComments.value = existing.productComments
                 optimisationNotes.value = existing.optimisationNotes
+                packValidationPassed.value = existing.packValidationPassed
                 customerName.value = existing.customerName
                 lastLocation.value = existing.lastLocation
                 newLocation.value = existing.newLocation
@@ -500,6 +502,7 @@ class SensitivityOptimisationValidationViewModel(
                 systemComments = this@SensitivityOptimisationValidationViewModel.systemComments.value
                 productComments = this@SensitivityOptimisationValidationViewModel.productComments.value
                 optimisationNotes = this@SensitivityOptimisationValidationViewModel.optimisationNotes.value
+                packValidationPassed = this@SensitivityOptimisationValidationViewModel.packValidationPassed.value
                 customerName = this@SensitivityOptimisationValidationViewModel.customerName.value
                 lastLocation = this@SensitivityOptimisationValidationViewModel.lastLocation.value
                 newLocation = this@SensitivityOptimisationValidationViewModel.newLocation.value

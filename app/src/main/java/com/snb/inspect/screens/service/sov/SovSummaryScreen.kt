@@ -2,9 +2,37 @@ package com.snb.inspect.screens.service.sov
 
 import android.app.Activity
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -12,11 +40,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.snb.inspect.ApiService
 import com.snb.inspect.calibrationViewModels.SensitivityOptimisationValidationViewModel
-import com.snb.inspect.formModules.CalibrationHeader
-import com.snb.inspect.formModules.LabeledReadOnlyField
 import com.snb.inspect.formModules.LabeledTextFieldWithHelp
 import com.snb.inspect.ui.theme.FormSpacer
-import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 import kotlinx.coroutines.launch
 
 @Composable
@@ -30,115 +55,168 @@ fun SovSummaryScreen(viewModel: SensitivityOptimisationValidationViewModel, apiS
     var showResultDialog by remember { mutableStateOf(false) }
     var dialogMessage by remember { mutableStateOf("") }
 
-    ScrollableWithScrollbar(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 16.dp)
-    ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            Spacer(Modifier.height(16.dp))
-            CalibrationHeader("Validation Summary")
-            Spacer(Modifier.height(16.dp))
+    var engineerConfirmed by remember { mutableStateOf(false) }
 
-            LabeledReadOnlyField(label = "Product", value = viewModel.productDescription.value)
-            FormSpacer()
+    // Track confirmed sections
+    val confirmedSections = remember { mutableStateMapOf<String, Boolean>() }
 
-            LabeledReadOnlyField(label = "Current Location", value = viewModel.lastLocation.value)
-            FormSpacer()
+    // Define the list of required sections that must be checked
+    val requiredSections = remember(viewModel.sensitivityAsLeftFerrous.value, viewModel.sensitivityAsLeftNonFerrous.value, viewModel.sensitivityAsLeftStainless.value) {
+        val list = mutableListOf(
+            "Validation Details",
+            "Sensitivity (As Left)",
+            "Validation Results",
+            "Pack Validation"
+        )
+        if (viewModel.sensitivityAsLeftFerrous.value != "N/A" || 
+            viewModel.sensitivityAsLeftNonFerrous.value != "N/A" || 
+            viewModel.sensitivityAsLeftStainless.value != "N/A") {
+            list.add("Lowest Signals")
+        }
+        list
+    }
 
-            if (viewModel.newLocation.value != viewModel.lastLocation.value) {
-                LabeledReadOnlyField(label = "New Location", value = viewModel.newLocation.value)
-                FormSpacer()
-            }
-            
-            LabeledReadOnlyField(label = "As Found (Fe/NF/SS)", value = "${viewModel.sensitivityAsFoundFerrous.value} / ${viewModel.sensitivityAsFoundNonFerrous.value} / ${viewModel.sensitivityAsFoundStainless.value}")
-            FormSpacer()
+    val allSectionsVerified = requiredSections.all { confirmedSections[it] == true }
 
-            LabeledReadOnlyField(label = "As Left (Fe/NF/SS)", value = "${viewModel.sensitivityAsLeftFerrous.value} / ${viewModel.sensitivityAsLeftNonFerrous.value} / ${viewModel.sensitivityAsLeftStainless.value}")
-            FormSpacer()
+    // Auto-reset signature if verification is retracted
+    LaunchedEffect(allSectionsVerified) {
+        if (!allSectionsVerified) engineerConfirmed = false
+    }
 
-            CalibrationHeader("Validation Results")
-            FormSpacer()
-            
-            val val1TotalPasses = (viewModel.val1LeadingPasses.value.toIntOrNull() ?: 0) + (viewModel.val1MiddlePasses.value.toIntOrNull() ?: 0) + (viewModel.val1TrailingPasses.value.toIntOrNull() ?: 0)
-            val val1TotalSuccesses = (viewModel.val1LeadingSuccesses.value.toIntOrNull() ?: 0) + (viewModel.val1MiddleSuccesses.value.toIntOrNull() ?: 0) + (viewModel.val1TrailingSuccesses.value.toIntOrNull() ?: 0)
-            Text("${viewModel.validationTest1Description.value}: $val1TotalSuccesses / $val1TotalPasses")
-
-            val val2TotalPasses = (viewModel.val2LeadingPasses.value.toIntOrNull() ?: 0) + (viewModel.val2MiddlePasses.value.toIntOrNull() ?: 0) + (viewModel.val2TrailingPasses.value.toIntOrNull() ?: 0)
-            val val2TotalSuccesses = (viewModel.val2LeadingSuccesses.value.toIntOrNull() ?: 0) + (viewModel.val2MiddleSuccesses.value.toIntOrNull() ?: 0) + (viewModel.val2TrailingSuccesses.value.toIntOrNull() ?: 0)
-            Text("${viewModel.validationTest2Description.value}: $val2TotalSuccesses / $val2TotalPasses")
-
-            val val3TotalPasses = (viewModel.val3LeadingPasses.value.toIntOrNull() ?: 0) + (viewModel.val3MiddlePasses.value.toIntOrNull() ?: 0) + (viewModel.val3TrailingPasses.value.toIntOrNull() ?: 0)
-            val val3TotalSuccesses = (viewModel.val3LeadingSuccesses.value.toIntOrNull() ?: 0) + (viewModel.val3MiddleSuccesses.value.toIntOrNull() ?: 0) + (viewModel.val3TrailingSuccesses.value.toIntOrNull() ?: 0)
-            Text("${viewModel.validationTest3Description.value}: $val3TotalSuccesses / $val3TotalPasses")
-            FormSpacer()
-
-            if (viewModel.sensitivityAsLeftFerrous.value != "N/A" || viewModel.sensitivityAsLeftNonFerrous.value != "N/A" || viewModel.sensitivityAsLeftStainless.value != "N/A") {
-                CalibrationHeader("Lowest Signals")
-                FormSpacer()
-                
-                if (viewModel.sensitivityAsLeftFerrous.value != "N/A") {
-                    val ferrousSignal = if (viewModel.system.systemTypeId == 1) 
-                        "${viewModel.minSignalAsLeftFerrousLeading.value} / ${viewModel.minSignalAsLeftFerrousMiddle.value} / ${viewModel.minSignalAsLeftFerrousTrailing.value}"
-                        else viewModel.minSignalAsLeftFerrousLeading.value
-                    LabeledReadOnlyField(label = "Ferrous (L/M/T)", value = ferrousSignal)
-                    FormSpacer()
-                }
-
-                if (viewModel.sensitivityAsLeftNonFerrous.value != "N/A") {
-                    val nonFerrousSignal = if (viewModel.system.systemTypeId == 1) 
-                        "${viewModel.minSignalAsLeftNonFerrousLeading.value} / ${viewModel.minSignalAsLeftNonFerrousMiddle.value} / ${viewModel.minSignalAsLeftNonFerrousTrailing.value}"
-                        else viewModel.minSignalAsLeftNonFerrousLeading.value
-                    LabeledReadOnlyField(label = "Non-Ferrous (L/M/T)", value = nonFerrousSignal)
-                    FormSpacer()
-                }
-
-                if (viewModel.sensitivityAsLeftStainless.value != "N/A") {
-                    val stainlessSignal = if (viewModel.system.systemTypeId == 1) 
-                        "${viewModel.minSignalAsLeftStainlessLeading.value} / ${viewModel.minSignalAsLeftStainlessMiddle.value} / ${viewModel.minSignalAsLeftStainlessTrailing.value}"
-                        else viewModel.minSignalAsLeftStainlessLeading.value
-                    LabeledReadOnlyField(label = "Stainless (L/M/T)", value = stainlessSignal)
-                    FormSpacer()
-                }
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            contentPadding = PaddingValues(bottom = 80.dp)
+        ) {
+            item {
+                Spacer(Modifier.height(16.dp))
+                SovSummaryDetails(
+                    viewModel = viewModel,
+                    isConfirmationMode = true,
+                    confirmedSections = confirmedSections,
+                    onSectionConfirmChange = { section, confirmed ->
+                        confirmedSections[section] = confirmed
+                    }
+                )
             }
 
-            LabeledTextFieldWithHelp(
-                label = "Customer Name",
-                value = viewModel.customerName.value,
-                onValueChange = { viewModel.customerName.value = it },
-                helpText = "Name of the customer representative witnessing the test."
-            )
-            FormSpacer()
+            item {
+                LabeledTextFieldWithHelp(
+                    label = "Customer Name",
+                    value = viewModel.customerName.value,
+                    onValueChange = { viewModel.customerName.value = it },
+                    helpText = "Name of the customer representative witnessing the test."
+                )
+                FormSpacer()
+            }
 
-            Button(
-                onClick = {
-                    val oldLocation = viewModel.lastLocation.value.trim()
-                    val proposed = viewModel.newLocation.value.trim()
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            if (allSectionsVerified) MaterialTheme.colorScheme.surfaceVariant
+                            else MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
+                        )
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = "Engineer Declaration",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = if (allSectionsVerified) MaterialTheme.colorScheme.onSurface
+                        else MaterialTheme.colorScheme.error
+                    )
 
-                    val candidate: String? = when {
-                        proposed.isBlank() -> null
-                        proposed.equals(oldLocation, ignoreCase = true) -> null
-                        else -> proposed
+                    if (!allSectionsVerified) {
+                        Text(
+                            text = "Please verify all required sections above before signing.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
                     }
 
-                    if (candidate != null) {
-                        pendingLocationCandidate = candidate
-                        showLocationChangeDialog = true
-                    } else {
-                        coroutineScope.launch {
-                            viewModel.finaliseAndUpload(context, apiService) { message ->
-                                dialogMessage = message
-                                showResultDialog = true
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = engineerConfirmed,
+                            onCheckedChange = { engineerConfirmed = it },
+                            enabled = allSectionsVerified && !isUploading
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Text(
+                            text = "I confirm this validation has been completed in accordance with company procedures and that the recorded information is accurate to the best of my knowledge. This digital confirmation is equivalent to a handwritten signature.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (allSectionsVerified) MaterialTheme.colorScheme.onSurface
+                            else Color.Gray
+                        )
+                    }
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = {
+                        val oldLocation = viewModel.lastLocation.value.trim()
+                        val proposed = viewModel.newLocation.value.trim()
+
+                        val candidate: String? = when {
+                            proposed.isBlank() -> null
+                            proposed.equals(oldLocation, ignoreCase = true) -> null
+                            else -> proposed
+                        }
+
+                        if (candidate != null) {
+                            pendingLocationCandidate = candidate
+                            showLocationChangeDialog = true
+                        } else {
+                            coroutineScope.launch {
+                                viewModel.finaliseAndUpload(context, apiService) { message ->
+                                    dialogMessage = message
+                                    showResultDialog = true
+                                }
                             }
                         }
-                    }
-                },
-                enabled = !isUploading,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Finalise and Upload Validation")
+                    },
+                    enabled = engineerConfirmed && allSectionsVerified && !isUploading && viewModel.customerName.value.isNotBlank(),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = "Finalise"
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Finalise and Upload Validation")
+                }
             }
+        }
 
-            Spacer(Modifier.height(60.dp))
+        // Uploading overlay
+        if (isUploading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(64.dp)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        "Uploading validation to cloud...",
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
         }
     }
 
@@ -199,17 +277,5 @@ fun SovSummaryScreen(viewModel: SensitivityOptimisationValidationViewModel, apiS
                 }
             }
         )
-    }
-
-    // Uploading overlay
-    if (isUploading) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.5f)),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
-        }
     }
 }

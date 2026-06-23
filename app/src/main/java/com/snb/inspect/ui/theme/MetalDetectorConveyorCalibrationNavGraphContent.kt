@@ -133,7 +133,7 @@ fun MetalDetectorConveyorCalibrationNavGraphContent(
             }
         }
 
-        // -------------------- PEC SENSORS --------------------
+        // -------------------- SENSORS --------------------
         composable("CalMetalDetectorConveyorInfeedPEC") {
             onScreenChanged {
                 CalMetalDetectorConveyorInfeedPEC(viewModel)

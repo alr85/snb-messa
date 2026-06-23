@@ -25,12 +25,12 @@ fun LabeledYesNoNaSegmentedSwitchWithHelp(
     var showHelpDialog by remember { mutableStateOf(false) }
     var isDisabled by remember { mutableStateOf(currentState == YesNoState.NA) }
     var localCurrentState by remember {
-        mutableStateOf(if (currentState == YesNoState.UNSPECIFIED) YesNoState.NO else currentState)
+        mutableStateOf(currentState)
     }
 
     LaunchedEffect(currentState) {
         isDisabled = currentState == YesNoState.NA
-        localCurrentState = if (currentState == YesNoState.UNSPECIFIED) YesNoState.NO else currentState
+        localCurrentState = currentState
     }
 
     FormRowWrapper(

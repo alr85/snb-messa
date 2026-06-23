@@ -373,7 +373,7 @@ fun CalMetalDetectorConveyorSummaryDetails(
                 SummaryItem(label = "Engineer Notes", value = viewModel.largeMetalTestEngineerNotes.value)
             }
 
-            Section(title = "Infeed PEC") {
+            Section(title = "Infeed Sensor") {
                 SummaryItem(label = "Fitted", value = viewModel.infeedSensorFitted.value.toString())
                 SummaryItem(label = "Test Method", value = "${viewModel.infeedSensorTestMethod.value} ")
                 SummaryItem(label = "Test Method (Other)", value = "${viewModel.infeedSensorTestMethodOther.value} ")
@@ -386,7 +386,7 @@ fun CalMetalDetectorConveyorSummaryDetails(
 
 
 
-            Section(title = "Reject Confirm/Activation PEC") {
+            Section(title = "Reject Confirm/Activation Sensor") {
                 SummaryItem(label = "Fitted", value = viewModel.rejectConfirmSensorFitted.value.toString())
                 SummaryItem(label = "Test Method", value = viewModel.rejectConfirmSensorTestMethod.value)
                 SummaryItem(label = "Test Method (Other)", value = viewModel.rejectConfirmSensorTestMethodOther.value)
@@ -398,7 +398,7 @@ fun CalMetalDetectorConveyorSummaryDetails(
                 SummaryItem(label = "Engineer Notes", value = viewModel.rejectConfirmSensorEngineerNotes.value)
             }
 
-            Section(title = "Bin Full PEC") {
+            Section(title = "Bin Full Sensor") {
                 SummaryItem(label = "Fitted", value = viewModel.binFullSensorFitted.value.toString())
                 SummaryItem(label = "Test Method", value = viewModel.binFullSensorTestMethod.value)
                 SummaryItem(label = "Test Method (Other)", value = viewModel.binFullSensorTestMethodOther.value)
@@ -433,7 +433,7 @@ fun CalMetalDetectorConveyorSummaryDetails(
                 SummaryItem(label = "Engineer Notes", value = viewModel.binDoorEngineerNotes.value)
             }
 
-            Section(title = "Backup PEC") {
+            Section(title = "Backup Sensor") {
                 SummaryItem(label = "Fitted", value = viewModel.backupSensorFitted.value.toString())
                 SummaryItem(label = "Test Method", value = viewModel.backupSensorTestMethod.value)
                 SummaryItem(label = "Test Method (Other)", value = viewModel.backupSensorTestMethodOther.value)

@@ -140,8 +140,8 @@ fun CalMetalDetectorConveyorAirPressureSensor(
                             viewModel.setAirPressureSensorTestMethod("")
                             viewModel.setAirPressureSensorTestMethodOther("")
                             viewModel.setAirPressureSensorTestResult(emptyList())
-                            viewModel.setAirPressureSensorLatched(YesNoState.NO)
-                            viewModel.setAirPressureSensorCR(YesNoState.NO)
+                            viewModel.setAirPressureSensorLatched(YesNoState.UNSPECIFIED)
+                            viewModel.setAirPressureSensorCR(YesNoState.UNSPECIFIED)
                         }
                         viewModel.autoUpdateAirPressureSensorPvResult()
                     },

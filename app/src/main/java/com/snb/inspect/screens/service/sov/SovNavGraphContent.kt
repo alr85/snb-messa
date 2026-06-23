@@ -21,29 +21,8 @@ fun SovNavGraphContent(
         composable("ValidationStart") {
             onScreenChanged { SovStartScreen(viewModel) }
         }
-        composable("ValidationSystemComments") {
-            onScreenChanged { SovSystemCommentsScreen(viewModel) }
-        }
         composable("ValidationProductDetails") {
             onScreenChanged { SovProductDetailsScreen(viewModel) }
-        }
-        composable("ValidationProductComments") {
-            onScreenChanged { SovProductCommentsScreen(viewModel) }
-        }
-        composable("ValidationDetectionSettingsAsFound") {
-            onScreenChanged { SovDetectionSettingsAsFoundScreen(viewModel) }
-        }
-        composable("ValidationFerrousTestAsFound") {
-            onScreenChanged { SovFerrousTestAsFoundScreen(viewModel) }
-        }
-        composable("ValidationNonFerrousTestAsFound") {
-            onScreenChanged { SovNonFerrousTestAsFoundScreen(viewModel) }
-        }
-        composable("ValidationStainlessTestAsFound") {
-            onScreenChanged { SovStainlessTestAsFoundScreen(viewModel) }
-        }
-        composable("ValidationOptimisation") {
-            onScreenChanged { SovOptimisationScreen(viewModel) }
         }
         composable("ValidationDetectionSettingsAsLeft") {
             onScreenChanged { SovDetectionSettingsAsLeftScreen(viewModel) }
@@ -56,6 +35,9 @@ fun SovNavGraphContent(
         }
         composable("ValidationStainlessTestAsLeft") {
             onScreenChanged { SovStainlessTestAsLeftScreen(viewModel) }
+        }
+        composable("ValidationPackValidation") {
+            onScreenChanged { SovPackValidationScreen(viewModel) }
         }
         composable("ValidationSummary") {
             onScreenChanged { SovSummaryScreen(viewModel, apiService) }

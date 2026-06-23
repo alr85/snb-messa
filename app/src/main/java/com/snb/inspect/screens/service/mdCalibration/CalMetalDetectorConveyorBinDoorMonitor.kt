@@ -151,8 +151,8 @@ fun CalMetalDetectorConveyorBinDoorMonitor(
                             viewModel.setBinDoorUnlockedIndication(emptyList())
                             viewModel.setBinDoorTimeoutTimer("")
                             viewModel.setBinDoorTimeoutResult(emptyList())
-                            viewModel.setBinDoorLatched(YesNoState.NO)
-                            viewModel.setBinDoorCR(YesNoState.NO)
+                            viewModel.setBinDoorLatched(YesNoState.UNSPECIFIED)
+                            viewModel.setBinDoorCR(YesNoState.UNSPECIFIED)
                         }
                         viewModel.autoUpdateBinDoorMonitorPvResult()
                     },

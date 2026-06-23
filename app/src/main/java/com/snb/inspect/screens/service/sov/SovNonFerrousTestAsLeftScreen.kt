@@ -79,14 +79,14 @@ fun SovNonFerrousTestAsLeftScreen(viewModel: SensitivityOptimisationValidationVi
                     FormSpacer()
 
                     LabeledTwoTextInputsWithHelp(
-                        label = if (isConveyor) "Leading Edge Results" else "Validation Results",
+                        label = if (isConveyor) "Det. & Rej. (Leading Edge) Results" else "Validation Results",
                         firstInputLabel = "Successes",
                         firstInputValue = leadingSuccesses,
                         onFirstInputValueChange = { viewModel.val2LeadingSuccesses.value = it },
                         secondInputLabel = "Min Signal",
                         secondInputValue = minSignalLeading,
                         onSecondInputValueChange = { viewModel.minSignalAsLeftNonFerrousLeading.value = it },
-                        helpText = "Enter the number of successful detections (min ${if (isConveyor) 10 else 30}) and the lowest signal observed.",
+                        helpText = "Enter the number of successful detections and rejections (min ${if (isConveyor) 10 else 30}) and the lowest signal observed.",
                         firstInputKeyboardType = KeyboardType.Number,
                         secondInputKeyboardType = KeyboardType.Text,
                         isNAToggleEnabled = false,
@@ -97,14 +97,14 @@ fun SovNonFerrousTestAsLeftScreen(viewModel: SensitivityOptimisationValidationVi
                     if (isConveyor) {
                         FormSpacer()
                         LabeledTwoTextInputsWithHelp(
-                            label = "Middle Results",
+                            label = "Det. & Rej. (Middle) Results",
                             firstInputLabel = "Successes",
                             firstInputValue = middleSuccesses,
                             onFirstInputValueChange = { viewModel.val2MiddleSuccesses.value = it },
                             secondInputLabel = "Min Signal",
                             secondInputValue = minSignalMiddle,
                             onSecondInputValueChange = { viewModel.minSignalAsLeftNonFerrousMiddle.value = it },
-                            helpText = "Enter the number of successful detections (min 10) and the lowest signal observed.",
+                            helpText = "Enter the number of successful detections and rejections (min 10) and the lowest signal observed.",
                             firstInputKeyboardType = KeyboardType.Number,
                             secondInputKeyboardType = KeyboardType.Text,
                             isNAToggleEnabled = false,
@@ -114,14 +114,14 @@ fun SovNonFerrousTestAsLeftScreen(viewModel: SensitivityOptimisationValidationVi
 
                         FormSpacer()
                         LabeledTwoTextInputsWithHelp(
-                            label = "Trailing Edge Results",
+                            label = "Det. & Rej. (Trailing) Results",
                             firstInputLabel = "Successes",
                             firstInputValue = trailingSuccesses,
                             onFirstInputValueChange = { viewModel.val2TrailingSuccesses.value = it },
                             secondInputLabel = "Min Signal",
                             secondInputValue = minSignalTrailing,
                             onSecondInputValueChange = { viewModel.minSignalAsLeftNonFerrousTrailing.value = it },
-                            helpText = "Enter the number of successful detections (min 10) and the lowest signal observed.",
+                            helpText = "Enter the number of successful detections and rejections (min 10) and the lowest signal observed.",
                             firstInputKeyboardType = KeyboardType.Number,
                             secondInputKeyboardType = KeyboardType.Text,
                             isNAToggleEnabled = false,

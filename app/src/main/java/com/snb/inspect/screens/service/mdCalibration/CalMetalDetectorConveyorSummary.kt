@@ -284,7 +284,8 @@ fun CalMetalDetectorConveyorSummary(
                             showLocationChangeDialog = false
                             coroutineScope.launch {
                                 viewModel.setNewLocation(candidate!!)          // keep VM consistent
-                                viewModel.updateSystemLocationLocally()        // your existing impl
+                                viewModel.updateSystemLocationLocally()        // update system record
+                                viewModel.updateCalibrationStart()             // update current calibration record
                                 viewModel.finaliseCalibrationAndUpload(context, apiService) { message ->
                                     dialogMessage = message
                                     showResultDialog = true

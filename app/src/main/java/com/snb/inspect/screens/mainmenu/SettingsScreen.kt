@@ -86,7 +86,7 @@ fun SettingsScreen(
     val serviceItems = remember {
         listOf(
             SettingItem("My Calibrations", Icons.Filled.EditNote, "myCalibrations"),
-            SettingItem("My Validations", Icons.Filled.EditNote, "myValidations",isComingSoon = true),
+            SettingItem("My Validations", Icons.Filled.EditNote, "myValidations",isComingSoon = false),
             SettingItem("Service Calls", Icons.Default.Construction, "COMING_SOON", isComingSoon = true),
             SettingItem("Weekend Rota", Icons.Default.CalendarMonth, "weekendRota"),
         )

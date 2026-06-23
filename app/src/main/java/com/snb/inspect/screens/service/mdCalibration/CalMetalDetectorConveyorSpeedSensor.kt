@@ -131,8 +131,8 @@ fun CalMetalDetectorConveyorSpeedSensor(
                             viewModel.setSpeedSensorTestMethod("")
                             viewModel.setSpeedSensorTestMethodOther("")
                             viewModel.setSpeedSensorTestResult(emptyList())
-                            viewModel.setSpeedSensorLatched(YesNoState.NO)
-                            viewModel.setSpeedSensorCR(YesNoState.NO)
+                            viewModel.setSpeedSensorLatched(YesNoState.UNSPECIFIED)
+                            viewModel.setSpeedSensorCR(YesNoState.UNSPECIFIED)
                         }
                         viewModel.autoUpdateSpeedSensorPvResult()
                     },

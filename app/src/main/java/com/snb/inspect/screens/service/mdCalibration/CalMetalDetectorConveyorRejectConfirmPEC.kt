@@ -139,8 +139,8 @@ fun CalMetalDetectorConveyorRejectConfirmPEC(
                             viewModel.setRejectConfirmSensorTestMethodOther("")
                             viewModel.setRejectConfirmSensorTestResult(emptyList())
                             viewModel.setRejectConfirmSensorStopPosition("")
-                            viewModel.setRejectConfirmSensorLatched(YesNoState.NO)
-                            viewModel.setRejectConfirmSensorCR(YesNoState.NO)
+                            viewModel.setRejectConfirmSensorLatched(YesNoState.UNSPECIFIED)
+                            viewModel.setRejectConfirmSensorCR(YesNoState.UNSPECIFIED)
                         }
                         viewModel.autoUpdateRejectConfirmSensorPvResult()
                     },

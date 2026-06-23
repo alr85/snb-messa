@@ -300,7 +300,7 @@ fun ModernCalibrationItem(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.LocationOn, contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.Gray)
                 Spacer(Modifier.width(4.dp))
-                Text(text = calibration.lastLocation, style = MaterialTheme.typography.bodyMedium, color = Color.DarkGray)
+                Text(text = calibration.newLocation.ifBlank { calibration.lastLocation }, style = MaterialTheme.typography.bodyMedium, color = Color.DarkGray)
             }
 
             Spacer(Modifier.height(4.dp))

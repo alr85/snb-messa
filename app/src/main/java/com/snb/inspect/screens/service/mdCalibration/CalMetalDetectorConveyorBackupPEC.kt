@@ -142,8 +142,8 @@ fun CalMetalDetectorConveyorBackupPEC(
                             viewModel.setBackupSensorTestMethod("")
                             viewModel.setBackupSensorTestMethodOther("")
                             viewModel.setBackupSensorTestResult(emptyList())
-                            viewModel.setBackupSensorLatched(YesNoState.NO)
-                            viewModel.setBackupSensorCR(YesNoState.NO)
+                            viewModel.setBackupSensorLatched(YesNoState.UNSPECIFIED)
+                            viewModel.setBackupSensorCR(YesNoState.UNSPECIFIED)
                         }
                         viewModel.autoUpdateBackupSensorPvResult()
                     },

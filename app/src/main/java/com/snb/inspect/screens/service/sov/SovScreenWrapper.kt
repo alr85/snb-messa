@@ -35,18 +35,12 @@ fun SovScreenWrapper(
     val routeOrder = remember {
         listOf(
             "ValidationStart",
-            "ValidationSystemComments",
             "ValidationProductDetails",
-            "ValidationProductComments",
-            "ValidationDetectionSettingsAsFound",
-            "ValidationFerrousTestAsFound",
-            "ValidationNonFerrousTestAsFound",
-            "ValidationStainlessTestAsFound",
-            "ValidationOptimisation",
-            "ValidationDetectionSettingsAsLeft",
             "ValidationFerrousTestAsLeft",
             "ValidationNonFerrousTestAsLeft",
             "ValidationStainlessTestAsLeft",
+            "ValidationDetectionSettingsAsLeft",
+            "ValidationPackValidation",
             "ValidationSummary"
         )
     }
