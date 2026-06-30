@@ -39,8 +39,8 @@ fun SovScreenWrapper(
             "ValidationFerrousTestAsLeft",
             "ValidationNonFerrousTestAsLeft",
             "ValidationStainlessTestAsLeft",
-            "ValidationDetectionSettingsAsLeft",
             "ValidationPackValidation",
+            "ValidationDetectionSettingsAsLeft",
             "ValidationSummary"
         )
     }

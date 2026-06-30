@@ -35,8 +35,7 @@ fun SovDetectionSettingsAsLeftScreen(viewModel: SensitivityOptimisationValidatio
 
     // Validation
     val isNextStepEnabled = labels.all { it.value.isNotBlank() } &&
-            values.all { it.value.isNotBlank() } &&
-            viewModel.productPeakSignalAsLeft.value.isNotBlank()
+            values.all { it.value.isNotBlank() }
 
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
@@ -51,17 +50,6 @@ fun SovDetectionSettingsAsLeftScreen(viewModel: SensitivityOptimisationValidatio
         ) {
             Column {
                 Spacer(Modifier.height(6.dp))
-
-                LabeledTextFieldWithHelp(
-                    label = "Product Peak Signal (As Left)",
-                    value = viewModel.productPeakSignalAsLeft.value,
-                    onValueChange = { viewModel.productPeakSignalAsLeft.value = it },
-                    helpText = "Enter the product peak signal value at the 'As Left' settings",
-                    isNAToggleEnabled = true,
-                    maxLength = 25
-                )
-
-                FormSpacer()
 
                 labels.indices.forEach { index ->
                     LabeledTextFieldWithHelpEdit(

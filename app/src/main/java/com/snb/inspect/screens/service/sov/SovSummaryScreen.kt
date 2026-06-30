@@ -64,6 +64,7 @@ fun SovSummaryScreen(viewModel: SensitivityOptimisationValidationViewModel, apiS
     val requiredSections = remember(viewModel.sensitivityAsLeftFerrous.value, viewModel.sensitivityAsLeftNonFerrous.value, viewModel.sensitivityAsLeftStainless.value) {
         val list = mutableListOf(
             "Validation Details",
+            "Product Dimensions",
             "Sensitivity (As Left)",
             "Validation Results",
             "Pack Validation"

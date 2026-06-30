@@ -108,11 +108,19 @@ fun SovSummaryDetails(
 
         Section(title = "Validation Details") {
             SummaryItem(label = "Product", value = viewModel.productDescription.value)
+            SummaryItem(label = "Library Ref", value = viewModel.productLibraryReference.value)
             SummaryItem(label = "Belt Speed", value = viewModel.beltSpeed.value)
             SummaryItem(label = "Current Location", value = viewModel.lastLocation.value)
             if (viewModel.newLocation.value != viewModel.lastLocation.value) {
                 SummaryItem(label = "New Location", value = viewModel.newLocation.value)
             }
+        }
+
+        Section(title = "Product Dimensions") {
+            SummaryItem(label = "Length (mm)", value = viewModel.productLength.value)
+            SummaryItem(label = "Width (mm)", value = viewModel.productWidth.value)
+            SummaryItem(label = "Height (mm)", value = viewModel.productHeight.value)
+            SummaryItem(label = "Weight (g)", value = viewModel.productWeight.value)
         }
 
         Section(title = "Sensitivity (As Left)") {

@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 29/06/2026
+### Fixed
+- A bug that prevented a calibration from being finished/uploaded has been found and fixed
+
+## [1.1.0] - 26/06/2026
+### Fixed
+- Improved the portrait only mode lock to prevent user being logged out upon screen rotation
+- Operator failsafe tests are now persistent when returning to an incomplete calibration
+- Empty 'Detection Setting' slots are now default N/A
+- Sensor Fitted? inputs now default to a null value
+- Made the title of 'Calibration Start' screen sticky when scrolling
+- Error messages when trying to download user manuals are more descriptive
+
+### Changed
+- Made the 'Reason for not calibrating' drop down a multi select list
+- Moved the 'Detection Settings (As Found)' screen. This is now before the 'As Found' Sensitivities
+- Reversed the reject delay and duration order in the Reject Settings screen
+
+### Added
+- Added a new navigation menu in the calibration process to enable short-cuts to specific screens
+- Added 'Overhead Sweep Arm' to the list of reject devices in Metal Detector Calibrations
+- Added a 30-second bin door timeout PV rule in Metal Detector Calibrations
+- Added an 'OK' condition to the System Checklist in Metal Detector Calibrations
+- Added a 'Notes' function to the metal detector System Details screen. You can add anything that you or others will find useful.
+- Added a 'Report Data Issue' function to metal detector System Details screen. If you notice any discrepancies in the system details, or the notes someone has added, report it via this button.
+- Added a new 'Codes of Practice' area to the Settings menu. Currently, we have the M&S, UKWF COPs. More will follow.
+- Added an 'Export Database' button to the Settings menu. This will help with diagnostics/debugging
+- Added buttons for upcoming features including Metal Detector Validations, and Passwords
+
+### Removed
+- Removed 'Operator Test' screen for non-PV calibrations
+- Removed the 'Latched' and 'Controlled Restart' inputs for Speed Sensor failsafe test from Metal Detector Calibrations
+- Removed bin door open/unlocked notification PV rules from Metal Detector Calibrations
+- Removed the conveyor dimension inputs from Metal Detector Calibrations
+- Removed the redundant 'Details' data row from the Metal Detector Calibrations Summary screen
+
 ## [1.0.13] - 29/05/2026
 ### Fixed
 - Increased max length of machine location to 30 characters

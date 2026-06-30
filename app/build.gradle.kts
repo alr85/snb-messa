@@ -21,14 +21,13 @@ android {
         applicationId = "com.snb.inspect"
         minSdk = 31
         targetSdk = 36
-        versionCode = 15
+        versionCode = 16
         versionName = "1.1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
-        versionNameSuffix = "_TEST"
     }
 
     buildTypes {

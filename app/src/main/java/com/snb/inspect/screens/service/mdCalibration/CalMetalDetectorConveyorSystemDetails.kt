@@ -110,6 +110,7 @@ fun CalMetalDetectorConveyorSystemDetails(
                 "Lift or Drop Table",
                 "Alarm only",
                 "Double Bag",
+                "Overhead Sweep Arm",
                 "Other"
             ).sorted()
         }

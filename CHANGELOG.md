@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 29/06/2026
+### Fixed
+- A bug that prevented a calibration from being finished/uploaded has been found and fixed
 
-
-## [1.1.1] - 19/06/2026
+## [1.1.0] - 26/06/2026
 ### Fixed
 - Improved the portrait only mode lock to prevent user being logged out upon screen rotation
 - Operator failsafe tests are now persistent when returning to an incomplete calibration
@@ -23,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Added a new navigation menu in the calibration process to enable short-cuts to specific screens
+- Added 'Overhead Sweep Arm' to the list of reject devices in Metal Detector Calibrations
 - Added a 30-second bin door timeout PV rule in Metal Detector Calibrations
 - Added an 'OK' condition to the System Checklist in Metal Detector Calibrations
 - Added a 'Notes' function to the metal detector System Details screen.
@@ -36,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed the 'Latched' and 'Controlled Restart' inputs for Speed Sensor failsafe test
 - Removed bin door open/unlocked notification PV rules
 - Removed the conveyor dimension inputs
+- Removed the redundant 'Details' data row from the Calibration Summary screen
 
 
 

@@ -68,6 +68,15 @@ fun SovStartScreen(viewModel: SensitivityOptimisationValidationViewModel) {
             FormSpacer()
 
             LabeledTextFieldWithHelp(
+                label = "System Comments",
+                value = viewModel.systemComments.value,
+                onValueChange = { viewModel.systemComments.value = it },
+                helpText = "Comments on system details, application and condition with respect to any possible performance restrictions: Examples include, insufficient metal free area, excessive vibration, low level belt contamination, earth loops, evident RF or mains interference or other environmental influences.",
+                singleLine = false
+            )
+            FormSpacer()
+
+            LabeledTextFieldWithHelp(
                 label = "Belt Speed (m/m)",
                 value = viewModel.beltSpeed.value,
                 onValueChange = { input ->
@@ -79,15 +88,6 @@ fun SovStartScreen(viewModel: SensitivityOptimisationValidationViewModel) {
                 helpText = "Operating speed of the belt/system.",
                 keyboardType = KeyboardType.Number,
                 maxLength = 3
-            )
-            FormSpacer()
-
-            LabeledTextFieldWithHelp(
-                label = "System Comments",
-                value = viewModel.systemComments.value,
-                onValueChange = { viewModel.systemComments.value = it },
-                helpText = "Comments on system details, application and condition with respect to any possible performance restrictions: Examples include, insufficient metal free area, excessive vibration, low level belt contamination, earth loops, evident RF or mains interference or other environmental influences.",
-                singleLine = false
             )
             FormSpacer()
 

@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.snb.inspect.calibrationViewModels.SensitivityOptimisationValidationViewModel
 import com.snb.inspect.formModules.CalibrationHeader
@@ -36,6 +37,50 @@ fun SovProductDetailsScreen(viewModel: SensitivityOptimisationValidationViewMode
                 value = viewModel.productDescription.value,
                 onValueChange = { viewModel.productDescription.value = it },
                 helpText = "Description of the product being tested."
+            )
+            FormSpacer()
+
+            LabeledTextFieldWithHelp(
+                label = "Library Reference",
+                value = viewModel.productLibraryReference.value,
+                onValueChange = { viewModel.productLibraryReference.value = it },
+                helpText = "Product library name/number on the detector."
+            )
+            FormSpacer()
+
+            LabeledTextFieldWithHelp(
+                label = "Product Length (mm)",
+                value = viewModel.productLength.value,
+                onValueChange = { viewModel.productLength.value = it },
+                helpText = "Length of the product in mm.",
+                keyboardType = KeyboardType.Number
+            )
+            FormSpacer()
+
+            LabeledTextFieldWithHelp(
+                label = "Product Width (mm)",
+                value = viewModel.productWidth.value,
+                onValueChange = { viewModel.productWidth.value = it },
+                helpText = "Width of the product in mm.",
+                keyboardType = KeyboardType.Number
+            )
+            FormSpacer()
+
+            LabeledTextFieldWithHelp(
+                label = "Product Height (mm)",
+                value = viewModel.productHeight.value,
+                onValueChange = { viewModel.productHeight.value = it },
+                helpText = "Height of the product in mm.",
+                keyboardType = KeyboardType.Number
+            )
+            FormSpacer()
+
+            LabeledTextFieldWithHelp(
+                label = "Product Weight (g)",
+                value = viewModel.productWeight.value,
+                onValueChange = { viewModel.productWeight.value = it },
+                helpText = "Weight of the product in grams.",
+                keyboardType = KeyboardType.Number
             )
             FormSpacer()
 

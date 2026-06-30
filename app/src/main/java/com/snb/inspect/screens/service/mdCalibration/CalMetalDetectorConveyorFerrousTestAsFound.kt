@@ -68,10 +68,15 @@ fun CalMetalDetectorConveyorFerrousTestAsFound(
     val isNextStepEnabled =
         sensitivityAsFoundFerrous.isNotBlank() &&
                 sampleCert.isNotBlank() &&
-                (detectLeading != YesNoState.YES || peakLeading.isNotBlank()) &&
-                (!isConveyor || (
-                    (detectMiddle != YesNoState.YES || peakMiddle.isNotBlank()) &&
-                    (detectTrailing != YesNoState.YES || peakTrailing.isNotBlank())
+                (sensitivityAsFoundFerrous == "N/A" || (
+                    (detectLeading == YesNoState.YES || detectLeading == YesNoState.NO) &&
+                    (detectLeading != YesNoState.YES || peakLeading.isNotBlank()) &&
+                    (!isConveyor || (
+                        (detectMiddle == YesNoState.YES || detectMiddle == YesNoState.NO) &&
+                        (detectMiddle != YesNoState.YES || peakMiddle.isNotBlank()) &&
+                        (detectTrailing == YesNoState.YES || detectTrailing == YesNoState.NO) &&
+                        (detectTrailing != YesNoState.YES || peakTrailing.isNotBlank())
+                    ))
                 ))
 
     LaunchedEffect(isNextStepEnabled) {

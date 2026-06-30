@@ -8,7 +8,6 @@ import com.snb.inspect.repositories.SensitivityOptimisationValidationRepository
 import com.snb.inspect.repositories.MetalDetectorSystemsRepository
 import com.snb.inspect.dataClasses.MetalDetectorWithFullDetails
 import com.snb.inspect.formModules.YesNoState
-import com.snb.inspect.util.toYesNoState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -45,53 +44,11 @@ class SensitivityOptimisationValidationViewModel(
     // --- Product Details ---
     var productDescription = mutableStateOf("")
     var productLibraryReference = mutableStateOf("")
-    var productLibraryNumber = mutableStateOf("")
     var beltSpeed = mutableStateOf("")
-
-    // --- AS FOUND ---
-    var sensitivityAsFoundFerrous = mutableStateOf("")
-    var sampleCertAsFoundFerrous = mutableStateOf("")
-    var detectRejectAsFoundFerrousLeading = mutableStateOf(YesNoState.NO)
-    var peakSignalAsFoundFerrousLeading = mutableStateOf("")
-    var detectRejectAsFoundFerrousMiddle = mutableStateOf(YesNoState.NO)
-    var peakSignalAsFoundFerrousMiddle = mutableStateOf("")
-    var detectRejectAsFoundFerrousTrailing = mutableStateOf(YesNoState.NO)
-    var peakSignalAsFoundFerrousTrailing = mutableStateOf("")
-    var notesAsFoundFerrous = mutableStateOf("")
-
-    var sensitivityAsFoundNonFerrous = mutableStateOf("")
-    var sampleCertAsFoundNonFerrous = mutableStateOf("")
-    var detectRejectAsFoundNonFerrousLeading = mutableStateOf(YesNoState.NO)
-    var peakSignalAsFoundNonFerrousLeading = mutableStateOf("")
-    var detectRejectAsFoundNonFerrousMiddle = mutableStateOf(YesNoState.NO)
-    var peakSignalAsFoundNonFerrousMiddle = mutableStateOf("")
-    var detectRejectAsFoundNonFerrousTrailing = mutableStateOf(YesNoState.NO)
-    var peakSignalAsFoundNonFerrousTrailing = mutableStateOf("")
-    var notesAsFoundNonFerrous = mutableStateOf("")
-
-    var sensitivityAsFoundStainless = mutableStateOf("")
-    var sampleCertAsFoundStainless = mutableStateOf("")
-    var detectRejectAsFoundStainlessLeading = mutableStateOf(YesNoState.NO)
-    var peakSignalAsFoundStainlessLeading = mutableStateOf("")
-    var detectRejectAsFoundStainlessMiddle = mutableStateOf(YesNoState.NO)
-    var peakSignalAsFoundStainlessMiddle = mutableStateOf("")
-    var detectRejectAsFoundStainlessTrailing = mutableStateOf(YesNoState.NO)
-    var peakSignalAsFoundStainlessTrailing = mutableStateOf("")
-    var notesAsFoundStainless = mutableStateOf("")
-
-    var sensitivityAsFoundOther1 = mutableStateOf("")
-    var sensitivityAsFoundOther2 = mutableStateOf("")
-
-    var detectionSettingAsFound1 = mutableStateOf("")
-    var detectionSettingAsFound2 = mutableStateOf("")
-    var detectionSettingAsFound3 = mutableStateOf("")
-    var detectionSettingAsFound4 = mutableStateOf("")
-    var detectionSettingAsFound5 = mutableStateOf("")
-    var detectionSettingAsFound6 = mutableStateOf("")
-    var detectionSettingAsFound7 = mutableStateOf("")
-    var detectionSettingAsFound8 = mutableStateOf("")
-    var notesAsFoundDetectionSettings = mutableStateOf("")
-    var productPeakSignalAsFound = mutableStateOf("")
+    var productLength = mutableStateOf("")
+    var productWidth = mutableStateOf("")
+    var productHeight = mutableStateOf("")
+    var productWeight = mutableStateOf("")
 
     // --- VALIDATION RESULTS ---
     var validationTest1Description = mutableStateOf("")
@@ -140,9 +97,6 @@ class SensitivityOptimisationValidationViewModel(
     var minSignalAsLeftStainlessTrailing = mutableStateOf("")
     var notesAsLeftStainless = mutableStateOf("")
 
-    var sensitivityAsLeftOther1 = mutableStateOf("")
-    var sensitivityAsLeftOther2 = mutableStateOf("")
-
     var detectionSettingAsLeft1 = mutableStateOf("")
     var detectionSettingAsLeft2 = mutableStateOf("")
     var detectionSettingAsLeft3 = mutableStateOf("")
@@ -152,12 +106,10 @@ class SensitivityOptimisationValidationViewModel(
     var detectionSettingAsLeft7 = mutableStateOf("")
     var detectionSettingAsLeft8 = mutableStateOf("")
     var notesAsLeftDetectionSettings = mutableStateOf("")
-    var productPeakSignalAsLeft = mutableStateOf("")
 
     // --- Comments & Labels ---
     var systemComments = mutableStateOf("")
     var productComments = mutableStateOf("")
-    var optimisationNotes = mutableStateOf("")
     var packValidationPassed = mutableStateOf(false)
     var customerName = mutableStateOf("")
     var lastLocation = mutableStateOf("")
@@ -196,54 +148,12 @@ class SensitivityOptimisationValidationViewModel(
                 // Product
                 productDescription.value = existing.productDescription
                 productLibraryReference.value = existing.productLibraryReference
-                productLibraryNumber.value = existing.productLibraryNumber
                 beltSpeed.value = existing.beltSpeed
+                productLength.value = existing.productLength
+                productWidth.value = existing.productWidth
+                productHeight.value = existing.productHeight
+                productWeight.value = existing.productWeight
                 
-                // AS FOUND
-                sensitivityAsFoundFerrous.value = existing.sensitivityAsFoundFerrous
-                sampleCertAsFoundFerrous.value = existing.sampleCertAsFoundFerrous
-                detectRejectAsFoundFerrousLeading.value = existing.detectRejectAsFoundFerrousLeading.toYesNoState()
-                peakSignalAsFoundFerrousLeading.value = existing.peakSignalAsFoundFerrousLeading
-                detectRejectAsFoundFerrousMiddle.value = existing.detectRejectAsFoundFerrousMiddle.toYesNoState()
-                peakSignalAsFoundFerrousMiddle.value = existing.peakSignalAsFoundFerrousMiddle
-                detectRejectAsFoundFerrousTrailing.value = existing.detectRejectAsFoundFerrousTrailing.toYesNoState()
-                peakSignalAsFoundFerrousTrailing.value = existing.peakSignalAsFoundFerrousTrailing
-                notesAsFoundFerrous.value = existing.notesAsFoundFerrous
-
-                sensitivityAsFoundNonFerrous.value = existing.sensitivityAsFoundNonFerrous
-                sampleCertAsFoundNonFerrous.value = existing.sampleCertAsFoundNonFerrous
-                detectRejectAsFoundNonFerrousLeading.value = existing.detectRejectAsFoundNonFerrousLeading.toYesNoState()
-                peakSignalAsFoundNonFerrousLeading.value = existing.peakSignalAsFoundNonFerrousLeading
-                detectRejectAsFoundNonFerrousMiddle.value = existing.detectRejectAsFoundNonFerrousMiddle.toYesNoState()
-                peakSignalAsFoundNonFerrousMiddle.value = existing.peakSignalAsFoundNonFerrousMiddle
-                detectRejectAsFoundNonFerrousTrailing.value = existing.detectRejectAsFoundNonFerrousTrailing.toYesNoState()
-                peakSignalAsFoundNonFerrousTrailing.value = existing.peakSignalAsFoundNonFerrousTrailing
-                notesAsFoundNonFerrous.value = existing.notesAsFoundNonFerrous
-
-                sensitivityAsFoundStainless.value = existing.sensitivityAsFoundStainless
-                sampleCertAsFoundStainless.value = existing.sampleCertAsFoundStainless
-                detectRejectAsFoundStainlessLeading.value = existing.detectRejectAsFoundStainlessLeading.toYesNoState()
-                peakSignalAsFoundStainlessLeading.value = existing.peakSignalAsFoundStainlessLeading
-                detectRejectAsFoundStainlessMiddle.value = existing.detectRejectAsFoundStainlessMiddle.toYesNoState()
-                peakSignalAsFoundStainlessMiddle.value = existing.peakSignalAsFoundStainlessMiddle
-                detectRejectAsFoundStainlessTrailing.value = existing.detectRejectAsFoundStainlessTrailing.toYesNoState()
-                peakSignalAsFoundStainlessTrailing.value = existing.peakSignalAsFoundStainlessTrailing
-                notesAsFoundStainless.value = existing.notesAsFoundStainless
-
-                sensitivityAsFoundOther1.value = existing.sensitivityAsFoundOther1
-                sensitivityAsFoundOther2.value = existing.sensitivityAsFoundOther2
-
-                detectionSettingAsFound1.value = existing.detectionSettingAsFound1
-                detectionSettingAsFound2.value = existing.detectionSettingAsFound2
-                detectionSettingAsFound3.value = existing.detectionSettingAsFound3
-                detectionSettingAsFound4.value = existing.detectionSettingAsFound4
-                detectionSettingAsFound5.value = existing.detectionSettingAsFound5
-                detectionSettingAsFound6.value = existing.detectionSettingAsFound6
-                detectionSettingAsFound7.value = existing.detectionSettingAsFound7
-                detectionSettingAsFound8.value = existing.detectionSettingAsFound8
-                notesAsFoundDetectionSettings.value = existing.notesAsFoundDetectionSettings
-                productPeakSignalAsFound.value = existing.productPeakSignalAsFound
-
                 // Labels
                 detectionSetting1label.value = existing.detectionSetting1label
                 detectionSetting2label.value = existing.detectionSetting2label
@@ -301,9 +211,6 @@ class SensitivityOptimisationValidationViewModel(
                 minSignalAsLeftStainlessTrailing.value = existing.minSignalAsLeftStainlessTrailing
                 notesAsLeftStainless.value = existing.notesAsLeftStainless
 
-                sensitivityAsLeftOther1.value = existing.sensitivityAsLeftOther1
-                sensitivityAsLeftOther2.value = existing.sensitivityAsLeftOther2
-
                 detectionSettingAsLeft1.value = existing.detectionSettingAsLeft1
                 detectionSettingAsLeft2.value = existing.detectionSettingAsLeft2
                 detectionSettingAsLeft3.value = existing.detectionSettingAsLeft3
@@ -313,12 +220,10 @@ class SensitivityOptimisationValidationViewModel(
                 detectionSettingAsLeft7.value = existing.detectionSettingAsLeft7
                 detectionSettingAsLeft8.value = existing.detectionSettingAsLeft8
                 notesAsLeftDetectionSettings.value = existing.notesAsLeftDetectionSettings
-                productPeakSignalAsLeft.value = existing.productPeakSignalAsLeft
                 
                 // Final
                 systemComments.value = existing.systemComments
                 productComments.value = existing.productComments
-                optimisationNotes.value = existing.optimisationNotes
                 packValidationPassed.value = existing.packValidationPassed
                 customerName.value = existing.customerName
                 lastLocation.value = existing.lastLocation
@@ -372,61 +277,22 @@ class SensitivityOptimisationValidationViewModel(
                 mapVersion = this@SensitivityOptimisationValidationViewModel.mapVersion.value
 
                 systemId = system.id
+                tempSystemId = system.tempId
                 cloudSystemId = system.cloudId ?: 0
+                systemTypeId = system.systemTypeId
+                modelId = system.modelId ?: 0
                 serialNumber = system.serialNumber
                 engineerId = this@SensitivityOptimisationValidationViewModel.engineerId
                 customerId = system.customerId
                 
                 productDescription = this@SensitivityOptimisationValidationViewModel.productDescription.value
                 productLibraryReference = this@SensitivityOptimisationValidationViewModel.productLibraryReference.value
-                productLibraryNumber = this@SensitivityOptimisationValidationViewModel.productLibraryNumber.value
                 beltSpeed = this@SensitivityOptimisationValidationViewModel.beltSpeed.value
+                productLength = this@SensitivityOptimisationValidationViewModel.productLength.value
+                productWidth = this@SensitivityOptimisationValidationViewModel.productWidth.value
+                productHeight = this@SensitivityOptimisationValidationViewModel.productHeight.value
+                productWeight = this@SensitivityOptimisationValidationViewModel.productWeight.value
                 
-                // AS FOUND
-                sensitivityAsFoundFerrous = this@SensitivityOptimisationValidationViewModel.sensitivityAsFoundFerrous.value
-                sampleCertAsFoundFerrous = this@SensitivityOptimisationValidationViewModel.sampleCertAsFoundFerrous.value
-                detectRejectAsFoundFerrousLeading = this@SensitivityOptimisationValidationViewModel.detectRejectAsFoundFerrousLeading.value.name
-                peakSignalAsFoundFerrousLeading = this@SensitivityOptimisationValidationViewModel.peakSignalAsFoundFerrousLeading.value
-                detectRejectAsFoundFerrousMiddle = this@SensitivityOptimisationValidationViewModel.detectRejectAsFoundFerrousMiddle.value.name
-                peakSignalAsFoundFerrousMiddle = this@SensitivityOptimisationValidationViewModel.peakSignalAsFoundFerrousMiddle.value
-                detectRejectAsFoundFerrousTrailing = this@SensitivityOptimisationValidationViewModel.detectRejectAsFoundFerrousTrailing.value.name
-                peakSignalAsFoundFerrousTrailing = this@SensitivityOptimisationValidationViewModel.peakSignalAsFoundFerrousTrailing.value
-                notesAsFoundFerrous = this@SensitivityOptimisationValidationViewModel.notesAsFoundFerrous.value
-
-                sensitivityAsFoundNonFerrous = this@SensitivityOptimisationValidationViewModel.sensitivityAsFoundNonFerrous.value
-                sampleCertAsFoundNonFerrous = this@SensitivityOptimisationValidationViewModel.sampleCertAsFoundNonFerrous.value
-                detectRejectAsFoundNonFerrousLeading = this@SensitivityOptimisationValidationViewModel.detectRejectAsFoundNonFerrousLeading.value.name
-                peakSignalAsFoundNonFerrousLeading = this@SensitivityOptimisationValidationViewModel.peakSignalAsFoundNonFerrousLeading.value
-                detectRejectAsFoundNonFerrousMiddle = this@SensitivityOptimisationValidationViewModel.detectRejectAsFoundNonFerrousMiddle.value.name
-                peakSignalAsFoundNonFerrousMiddle = this@SensitivityOptimisationValidationViewModel.peakSignalAsFoundNonFerrousMiddle.value
-                detectRejectAsFoundNonFerrousTrailing = this@SensitivityOptimisationValidationViewModel.detectRejectAsFoundNonFerrousTrailing.value.name
-                peakSignalAsFoundNonFerrousTrailing = this@SensitivityOptimisationValidationViewModel.peakSignalAsFoundNonFerrousTrailing.value
-                notesAsFoundNonFerrous = this@SensitivityOptimisationValidationViewModel.notesAsFoundNonFerrous.value
-
-                sensitivityAsFoundStainless = this@SensitivityOptimisationValidationViewModel.sensitivityAsFoundStainless.value
-                sampleCertAsFoundStainless = this@SensitivityOptimisationValidationViewModel.sampleCertAsFoundStainless.value
-                detectRejectAsFoundStainlessLeading = this@SensitivityOptimisationValidationViewModel.detectRejectAsFoundStainlessLeading.value.name
-                peakSignalAsFoundStainlessLeading = this@SensitivityOptimisationValidationViewModel.peakSignalAsFoundStainlessLeading.value
-                detectRejectAsFoundStainlessMiddle = this@SensitivityOptimisationValidationViewModel.detectRejectAsFoundStainlessMiddle.value.name
-                peakSignalAsFoundStainlessMiddle = this@SensitivityOptimisationValidationViewModel.peakSignalAsFoundStainlessMiddle.value
-                detectRejectAsFoundStainlessTrailing = this@SensitivityOptimisationValidationViewModel.detectRejectAsFoundStainlessTrailing.value.name
-                peakSignalAsFoundStainlessTrailing = this@SensitivityOptimisationValidationViewModel.peakSignalAsFoundStainlessTrailing.value
-                notesAsFoundStainless = this@SensitivityOptimisationValidationViewModel.notesAsFoundStainless.value
-
-                sensitivityAsFoundOther1 = this@SensitivityOptimisationValidationViewModel.sensitivityAsFoundOther1.value
-                sensitivityAsFoundOther2 = this@SensitivityOptimisationValidationViewModel.sensitivityAsFoundOther2.value
-
-                detectionSettingAsFound1 = this@SensitivityOptimisationValidationViewModel.detectionSettingAsFound1.value
-                detectionSettingAsFound2 = this@SensitivityOptimisationValidationViewModel.detectionSettingAsFound2.value
-                detectionSettingAsFound3 = this@SensitivityOptimisationValidationViewModel.detectionSettingAsFound3.value
-                detectionSettingAsFound4 = this@SensitivityOptimisationValidationViewModel.detectionSettingAsFound4.value
-                detectionSettingAsFound5 = this@SensitivityOptimisationValidationViewModel.detectionSettingAsFound5.value
-                detectionSettingAsFound6 = this@SensitivityOptimisationValidationViewModel.detectionSettingAsFound6.value
-                detectionSettingAsFound7 = this@SensitivityOptimisationValidationViewModel.detectionSettingAsFound7.value
-                detectionSettingAsFound8 = this@SensitivityOptimisationValidationViewModel.detectionSettingAsFound8.value
-                notesAsFoundDetectionSettings = this@SensitivityOptimisationValidationViewModel.notesAsFoundDetectionSettings.value
-                productPeakSignalAsFound = this@SensitivityOptimisationValidationViewModel.productPeakSignalAsFound.value
-
                 // Labels
                 detectionSetting1label = this@SensitivityOptimisationValidationViewModel.detectionSetting1label.value
                 detectionSetting2label = this@SensitivityOptimisationValidationViewModel.detectionSetting2label.value
@@ -484,9 +350,6 @@ class SensitivityOptimisationValidationViewModel(
                 minSignalAsLeftStainlessTrailing = this@SensitivityOptimisationValidationViewModel.minSignalAsLeftStainlessTrailing.value
                 notesAsLeftStainless = this@SensitivityOptimisationValidationViewModel.notesAsLeftStainless.value
 
-                sensitivityAsLeftOther1 = this@SensitivityOptimisationValidationViewModel.sensitivityAsLeftOther1.value
-                sensitivityAsLeftOther2 = this@SensitivityOptimisationValidationViewModel.sensitivityAsLeftOther2.value
-
                 detectionSettingAsLeft1 = this@SensitivityOptimisationValidationViewModel.detectionSettingAsLeft1.value
                 detectionSettingAsLeft2 = this@SensitivityOptimisationValidationViewModel.detectionSettingAsLeft2.value
                 detectionSettingAsLeft3 = this@SensitivityOptimisationValidationViewModel.detectionSettingAsLeft3.value
@@ -496,12 +359,10 @@ class SensitivityOptimisationValidationViewModel(
                 detectionSettingAsLeft7 = this@SensitivityOptimisationValidationViewModel.detectionSettingAsLeft7.value
                 detectionSettingAsLeft8 = this@SensitivityOptimisationValidationViewModel.detectionSettingAsLeft8.value
                 notesAsLeftDetectionSettings = this@SensitivityOptimisationValidationViewModel.notesAsLeftDetectionSettings.value
-                productPeakSignalAsLeft = this@SensitivityOptimisationValidationViewModel.productPeakSignalAsLeft.value
                 
                 // Final
                 systemComments = this@SensitivityOptimisationValidationViewModel.systemComments.value
                 productComments = this@SensitivityOptimisationValidationViewModel.productComments.value
-                optimisationNotes = this@SensitivityOptimisationValidationViewModel.optimisationNotes.value
                 packValidationPassed = this@SensitivityOptimisationValidationViewModel.packValidationPassed.value
                 customerName = this@SensitivityOptimisationValidationViewModel.customerName.value
                 lastLocation = this@SensitivityOptimisationValidationViewModel.lastLocation.value
@@ -517,72 +378,6 @@ class SensitivityOptimisationValidationViewModel(
 
     suspend fun updateSystemLocationLocally() {
         repository.updateSystemLocation(system.id, newLocation.value)
-    }
-
-    // Ferrous As Found
-
-    fun enableFerrousAsFound() {
-        sampleCertAsFoundFerrous.value = ""
-        detectRejectAsFoundFerrousLeading.value = YesNoState.NO
-        detectRejectAsFoundFerrousMiddle.value = YesNoState.NO
-        detectRejectAsFoundFerrousTrailing.value = YesNoState.NO
-        peakSignalAsFoundFerrousLeading.value = ""
-        peakSignalAsFoundFerrousMiddle.value = ""
-        peakSignalAsFoundFerrousTrailing.value = ""
-    }
-
-    fun disableFerrousAsFound() {
-        sampleCertAsFoundFerrous.value = "N/A"
-        detectRejectAsFoundFerrousLeading.value = YesNoState.NA
-        detectRejectAsFoundFerrousMiddle.value = YesNoState.NA
-        detectRejectAsFoundFerrousTrailing.value = YesNoState.NA
-        peakSignalAsFoundFerrousLeading.value = "N/A"
-        peakSignalAsFoundFerrousMiddle.value = "N/A"
-        peakSignalAsFoundFerrousTrailing.value = "N/A"
-    }
-
-    // Non-Ferrous As Found
-
-    fun enableNonFerrousAsFound() {
-        sampleCertAsFoundNonFerrous.value = ""
-        detectRejectAsFoundNonFerrousLeading.value = YesNoState.NO
-        detectRejectAsFoundNonFerrousMiddle.value = YesNoState.NO
-        detectRejectAsFoundNonFerrousTrailing.value = YesNoState.NO
-        peakSignalAsFoundNonFerrousLeading.value = ""
-        peakSignalAsFoundNonFerrousMiddle.value = ""
-        peakSignalAsFoundNonFerrousTrailing.value = ""
-    }
-
-    fun disableNonFerrousAsFound() {
-        sampleCertAsFoundNonFerrous.value = "N/A"
-        detectRejectAsFoundNonFerrousLeading.value = YesNoState.NA
-        detectRejectAsFoundNonFerrousMiddle.value = YesNoState.NA
-        detectRejectAsFoundNonFerrousTrailing.value = YesNoState.NA
-        peakSignalAsFoundNonFerrousLeading.value = "N/A"
-        peakSignalAsFoundNonFerrousMiddle.value = "N/A"
-        peakSignalAsFoundNonFerrousTrailing.value = "N/A"
-    }
-
-    // Stainless As Found
-
-    fun enableStainlessAsFound() {
-        sampleCertAsFoundStainless.value = ""
-        detectRejectAsFoundStainlessLeading.value = YesNoState.NO
-        detectRejectAsFoundStainlessMiddle.value = YesNoState.NO
-        detectRejectAsFoundStainlessTrailing.value = YesNoState.NO
-        peakSignalAsFoundStainlessLeading.value = ""
-        peakSignalAsFoundStainlessMiddle.value = ""
-        peakSignalAsFoundStainlessTrailing.value = ""
-    }
-
-    fun disableStainlessAsFound() {
-        sampleCertAsFoundStainless.value = "N/A"
-        detectRejectAsFoundStainlessLeading.value = YesNoState.NA
-        detectRejectAsFoundStainlessMiddle.value = YesNoState.NA
-        detectRejectAsFoundStainlessTrailing.value = YesNoState.NA
-        peakSignalAsFoundStainlessLeading.value = "N/A"
-        peakSignalAsFoundStainlessMiddle.value = "N/A"
-        peakSignalAsFoundStainlessTrailing.value = "N/A"
     }
 
     // Ferrous As Left

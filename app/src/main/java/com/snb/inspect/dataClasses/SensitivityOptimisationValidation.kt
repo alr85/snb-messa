@@ -11,7 +11,10 @@ class SensitivityOptimisationValidationLocal(
     // SETUP
     var mapVersion : String = "SOV1.0"
     var systemId: Int = 0
+    var tempSystemId: Int = 0
     var cloudSystemId: Int = 0
+    var systemTypeId: Int = 0
+    var modelId: Int = 0
     var serialNumber: String = ""
     var lastLocation: String = ""
     var newLocation: String = ""
@@ -26,6 +29,10 @@ class SensitivityOptimisationValidationLocal(
     var productLibraryReference: String = ""
     var productLibraryNumber: String = ""
     var beltSpeed: String = ""
+    var productLength: String = ""
+    var productWidth: String = ""
+    var productHeight: String = ""
+    var productWeight: String = ""
 
     // AS FOUND
     var sensitivityAsFoundFerrous: String = ""
