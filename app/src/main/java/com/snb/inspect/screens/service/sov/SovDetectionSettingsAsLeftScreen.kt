@@ -34,15 +34,32 @@ fun SovDetectionSettingsAsLeftScreen(viewModel: SensitivityOptimisationValidatio
     )
 
     // Validation
-    val isNextStepEnabled = labels.all { it.value.isNotBlank() } &&
-            values.all { it.value.isNotBlank() }
+    val isNextStepEnabled = labels.indices.all { i ->
+        val l = labels[i].value
+        val v = values[i].value
+        v == "N/A" || (l.isNotBlank() && v.isNotBlank())
+    }
 
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
+    // Auto-set N/A if label or value indicates an unused or invalid setting
+    LaunchedEffect(Unit) {
+        labels.indices.forEach { index ->
+            val label = labels[index].value
+            val value = values[index].value
+
+            if (label.isBlank() || label == "-" || label.lowercase() == "null") {
+                values[index].value = "N/A"
+            } else if (value == "-" || value.lowercase() == "null") {
+                values[index].value = "N/A"
+            }
+        }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
-        CalibrationHeader("Detection Settings (As Left)")
+        CalibrationHeader(label = "Optimised Detection Settings", showStatusIcon = false)
 
         ScrollableWithScrollbar(
             modifier = Modifier.fillMaxSize(),
@@ -70,7 +87,8 @@ fun SovDetectionSettingsAsLeftScreen(viewModel: SensitivityOptimisationValidatio
                     helpText = "Enter any notes relevant to this section.",
                     isNAToggleEnabled = false,
                     maxLength = 50,
-                    showInputLabel = false
+                    showInputLabel = false,
+                    singleLine = false
                 )
 
                 Spacer(Modifier.height(60.dp))

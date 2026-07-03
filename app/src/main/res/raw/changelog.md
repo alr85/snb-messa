@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 03/07/2026
+### Fixed
+- A bug that prevented forward navigation on the 'Measuring Equipment' screen in a metal detector calibration
+
+### Changed
+- The colour of the forward navigation button in metal detector calibrations now reflects the current screens completion status. Green for complete, red for incomplete.
+
+### Added
+- Metal Detector Validations are now up and running.
+
 ## [1.1.1] - 29/06/2026
 ### Fixed
 - A bug that prevented a calibration from being finished/uploaded has been found and fixed
@@ -28,18 +38,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added 'Overhead Sweep Arm' to the list of reject devices in Metal Detector Calibrations
 - Added a 30-second bin door timeout PV rule in Metal Detector Calibrations
 - Added an 'OK' condition to the System Checklist in Metal Detector Calibrations
-- Added a 'Notes' function to the metal detector System Details screen. You can add anything that you or others will find useful.
+- Added a 'Notes' function to the metal detector System Details screen.
 - Added a 'Report Data Issue' function to metal detector System Details screen. If you notice any discrepancies in the system details, or the notes someone has added, report it via this button.
-- Added a new 'Codes of Practice' area to the Settings menu. Currently, we have the M&S, UKWF COPs. More will follow.
+- Added a new Codes of Practice area to the Settings menu
 - Added an 'Export Database' button to the Settings menu. This will help with diagnostics/debugging
 - Added buttons for upcoming features including Metal Detector Validations, and Passwords
 
 ### Removed
 - Removed 'Operator Test' screen for non-PV calibrations
-- Removed the 'Latched' and 'Controlled Restart' inputs for Speed Sensor failsafe test from Metal Detector Calibrations
-- Removed bin door open/unlocked notification PV rules from Metal Detector Calibrations
-- Removed the conveyor dimension inputs from Metal Detector Calibrations
-- Removed the redundant 'Details' data row from the Metal Detector Calibrations Summary screen
+- Removed the 'Latched' and 'Controlled Restart' inputs for Speed Sensor failsafe test
+- Removed bin door open/unlocked notification PV rules
+- Removed the conveyor dimension inputs
+- Removed the redundant 'Details' data row from the Calibration Summary screen
+
+
 
 ## [1.0.13] - 29/05/2026
 ### Fixed
@@ -53,7 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Implemented a dropdown menu for "Reason for not calibrating" with an optional "Other" text field.
 
-## [1.0.12] - 11/05/2026
+## [1.0.12] - 15/05/2026
 ### Fixed
 - Further improvements to the P.V. logic, specifically for non-conveyor systems and the Fe/NonFe/SS tests.
 - Add "Reject System (Other)" field to the calibration summary details screen.

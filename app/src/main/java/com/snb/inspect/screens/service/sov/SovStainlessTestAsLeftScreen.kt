@@ -44,7 +44,7 @@ fun SovStainlessTestAsLeftScreen(viewModel: SensitivityOptimisationValidationVie
     }
 
     Column(Modifier.fillMaxSize()) {
-        CalibrationHeader("Stainless Sensitivity (As Left)")
+        CalibrationHeader(label = "Optimised Stainless Sensitivity", showStatusIcon = false)
 
         ScrollableWithScrollbar(
             modifier = Modifier.fillMaxSize(),
@@ -75,7 +75,10 @@ fun SovStainlessTestAsLeftScreen(viewModel: SensitivityOptimisationValidationVie
                 FormSpacer()
 
                 if (sensitivity != "N/A") {
-                    CalibrationHeader(if (isConveyor) "30 Pass Validation (10x per edge)" else "30 Pass Validation")
+                    CalibrationHeader(
+                        label = if (isConveyor) "30 Pass Validation (10x per edge)" else "30 Pass Validation",
+                        showStatusIcon = false
+                    )
                     FormSpacer()
 
                     LabeledTwoTextInputsWithHelp(
@@ -138,6 +141,7 @@ fun SovStainlessTestAsLeftScreen(viewModel: SensitivityOptimisationValidationVie
                     onValueChange = { viewModel.notesAsLeftStainless.value = it },
                     helpText = "Relevant notes for this section.",
                     maxLength = 50,
+                    singleLine = false
                 )
 
                 Spacer(Modifier.height(60.dp))

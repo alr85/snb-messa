@@ -1,5 +1,6 @@
 package com.snb.inspect.screens.service.sov
 
+import android.R.attr.label
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
@@ -23,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.snb.inspect.calibrationViewModels.SensitivityOptimisationValidationViewModel
+import com.snb.inspect.screens.service.mdCalibration.SummaryItem
 
 @Composable
 fun SovSummaryDetails(
@@ -106,27 +109,74 @@ fun SovSummaryDetails(
             }
         }
 
-        Section(title = "Validation Details") {
-            SummaryItem(label = "Product", value = viewModel.productDescription.value)
-            SummaryItem(label = "Library Ref", value = viewModel.productLibraryReference.value)
-            SummaryItem(label = "Belt Speed", value = viewModel.beltSpeed.value)
+        Section(title = "System Details") {
+
+            SummaryItem(label = "Customer", value = viewModel.customerName.value)
+            SummaryItem(label = "Make/Model", value = viewModel.system.modelDescription)
+            SummaryItem(label = "System Type", value = viewModel.system.systemType)
+            SummaryItem(label = "Serial Number", value = viewModel.system.serialNumber)
             SummaryItem(label = "Current Location", value = viewModel.lastLocation.value)
             if (viewModel.newLocation.value != viewModel.lastLocation.value) {
                 SummaryItem(label = "New Location", value = viewModel.newLocation.value)
             }
+            SummaryItem(label = "Belt Speed", value = viewModel.beltSpeed.value)
+
+            if (viewModel.systemComments.value.isNotBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Notes: ${viewModel.systemComments.value}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+            }
         }
 
-        Section(title = "Product Dimensions") {
+        Section(title = "Product Details") {
+            SummaryItem(label = "Product", value = viewModel.productDescription.value)
             SummaryItem(label = "Length (mm)", value = viewModel.productLength.value)
             SummaryItem(label = "Width (mm)", value = viewModel.productWidth.value)
             SummaryItem(label = "Height (mm)", value = viewModel.productHeight.value)
             SummaryItem(label = "Weight (g)", value = viewModel.productWeight.value)
+            if (viewModel.productComments.value.isNotBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Notes: ${viewModel.productComments.value}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+            }
         }
 
-        Section(title = "Sensitivity (As Left)") {
-            SummaryItem(label = "Ferrous", value = viewModel.sensitivityAsLeftFerrous.value)
-            SummaryItem(label = "Non-Ferrous", value = viewModel.sensitivityAsLeftNonFerrous.value)
-            SummaryItem(label = "Stainless", value = viewModel.sensitivityAsLeftStainless.value)
+        Section(title = "Optimised Sensitivities") {
+            SummaryItem(label = "Ferrous", value = "${viewModel.sensitivityAsLeftFerrous.value} mm ( ${viewModel.sampleCertAsLeftFerrous.value} )")
+            if (viewModel.notesAsLeftFerrous.value.isNotBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Notes: ${viewModel.notesAsLeftFerrous.value}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+            }
+
+            SummaryItem(label = "Non-Ferrous", value = "${viewModel.sensitivityAsLeftNonFerrous.value} mm ( ${viewModel.sampleCertAsLeftNonFerrous.value} )")
+            if (viewModel.notesAsLeftNonFerrous.value.isNotBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Notes: ${viewModel.notesAsLeftNonFerrous.value}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+            }
+
+            SummaryItem(label = "Stainless", value = "${viewModel.sensitivityAsLeftStainless.value} mm ( ${viewModel.sampleCertAsLeftStainless.value} )")
+            if (viewModel.notesAsLeftStainless.value.isNotBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Notes: ${viewModel.notesAsLeftStainless.value}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+            }
         }
 
         Section(title = "Validation Results") {
@@ -143,9 +193,7 @@ fun SovSummaryDetails(
             SummaryItem(label = viewModel.validationTest3Description.value, value = "$val3TotalSuccesses / $val3TotalPasses")
         }
 
-        Section(title = "Pack Validation") {
-            SummaryItem(label = "30 Good Packs Stability Test", value = if (viewModel.packValidationPassed.value) "PASSED" else "NOT COMPLETED")
-        }
+
 
         if (viewModel.sensitivityAsLeftFerrous.value != "N/A" || viewModel.sensitivityAsLeftNonFerrous.value != "N/A" || viewModel.sensitivityAsLeftStainless.value != "N/A") {
             Section(title = "Lowest Signals") {
@@ -169,6 +217,38 @@ fun SovSummaryDetails(
                     else viewModel.minSignalAsLeftStainlessLeading.value
                     SummaryItem(label = "Stainless (L/M/T)", value = stainlessSignal)
                 }
+            }
+        }
+
+        Section(title = "Pack Validation") {
+            SummaryItem(label = "Stability Test", value = if (viewModel.packValidationPassed.value) "PASSED" else "NOT COMPLETED")
+        }
+
+        Section(title = "Optimised Detection Settings") {
+            val settings = listOf(
+                viewModel.detectionSetting1label to viewModel.detectionSettingAsLeft1,
+                viewModel.detectionSetting2label to viewModel.detectionSettingAsLeft2,
+                viewModel.detectionSetting3label to viewModel.detectionSettingAsLeft3,
+                viewModel.detectionSetting4label to viewModel.detectionSettingAsLeft4,
+                viewModel.detectionSetting5label to viewModel.detectionSettingAsLeft5,
+                viewModel.detectionSetting6label to viewModel.detectionSettingAsLeft6,
+                viewModel.detectionSetting7label to viewModel.detectionSettingAsLeft7,
+                viewModel.detectionSetting8label to viewModel.detectionSettingAsLeft8
+            )
+            settings.forEach { (labelState, valueState) ->
+                val label = labelState.value
+                val value = valueState.value
+                if (value != "N/A" && value.isNotBlank()) {
+                    SummaryItem(label = label.ifBlank { "Setting" }, value = value)
+                }
+            }
+            if (viewModel.notesAsLeftDetectionSettings.value.isNotBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Notes: ${viewModel.notesAsLeftDetectionSettings.value}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
             }
         }
     }

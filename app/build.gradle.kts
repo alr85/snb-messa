@@ -21,8 +21,8 @@ android {
         applicationId = "com.snb.inspect"
         minSdk = 31
         targetSdk = 36
-        versionCode = 16
-        versionName = "1.1.1"
+        versionCode = 17
+        versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -132,6 +132,16 @@ dependencies {
         exclude(group = "com.google.auto.value", module = "auto-value")
     }
 
+}
 
+// Automatically sync the root CHANGELOG.md to the app resources on every build
+tasks.register<Copy>("syncChangelog") {
+    from("${rootProject.projectDir}/CHANGELOG.md")
+    into("${projectDir}/src/main/res/raw")
+    rename { "changelog.md" }
+}
 
+// Ensure the sync happens before the resources are processed
+tasks.named("preBuild") {
+    dependsOn("syncChangelog")
 }

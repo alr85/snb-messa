@@ -37,7 +37,7 @@ fun SovPackValidationScreen(viewModel: SensitivityOptimisationValidationViewMode
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Spacer(Modifier.height(16.dp))
-            CalibrationHeader("Pack Validation")
+            CalibrationHeader(label = "Pack Validation", showStatusIcon = false)
             Spacer(Modifier.height(16.dp))
 
             Text(

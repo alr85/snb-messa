@@ -8,6 +8,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.input.KeyboardType
 import com.snb.inspect.formModules.inputs.SimpleTextInput
 
@@ -28,6 +30,7 @@ fun LabeledTextFieldWithHelp(
     transformInput: ((String) -> String)? = null,
     showCounter: Boolean = true,
     showInputLabel: Boolean = false,
+    showHelpOnFocusIfEmpty: Boolean = false,
 ) {
     var showHelpDialog by remember { mutableStateOf(false) }
 
@@ -56,7 +59,12 @@ fun LabeledTextFieldWithHelp(
             maxLength = maxLength,
             singleLine = singleLine,
             transformInput = transformInput,
-            showCounter = showCounter
+            showCounter = showCounter,
+            modifier = Modifier.onFocusChanged { focusState ->
+                if (showHelpOnFocusIfEmpty && focusState.isFocused && value.isBlank()) {
+                    showHelpDialog = true
+                }
+            }
         )
     }
 

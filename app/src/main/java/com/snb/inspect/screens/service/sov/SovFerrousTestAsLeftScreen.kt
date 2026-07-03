@@ -44,7 +44,7 @@ fun SovFerrousTestAsLeftScreen(viewModel: SensitivityOptimisationValidationViewM
     }
 
     Column(Modifier.fillMaxSize()) {
-        CalibrationHeader("Ferrous Sensitivity (As Left)")
+        CalibrationHeader(label = "Optimised Ferrous Sensitivity", showStatusIcon = false)
 
         ScrollableWithScrollbar(
             modifier = Modifier.fillMaxSize(),
@@ -75,7 +75,10 @@ fun SovFerrousTestAsLeftScreen(viewModel: SensitivityOptimisationValidationViewM
                 FormSpacer()
 
                 if (sensitivity != "N/A") {
-                    CalibrationHeader(if (isConveyor) "30 Pass Validation (10x per edge)" else "30 Pass Validation")
+                    CalibrationHeader(
+                        label = if (isConveyor) "30 Pass Validation (10x per edge)" else "30 Pass Validation",
+                        showStatusIcon = false
+                    )
                     FormSpacer()
 
                     LabeledTwoTextInputsWithHelp(
@@ -138,6 +141,7 @@ fun SovFerrousTestAsLeftScreen(viewModel: SensitivityOptimisationValidationViewM
                     onValueChange = { viewModel.notesAsLeftFerrous.value = it },
                     helpText = "Relevant notes for this section.",
                     maxLength = 50,
+                    singleLine = false
                 )
 
                 Spacer(Modifier.height(60.dp))

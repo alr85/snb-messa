@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 03/07/2026
+### Fixed
+- A bug that prevented forward navigation on the 'Measuring Equipment' screen in a metal detector calibration
+
+### Changed
+- The colour of the forward navigation button in metal detector calibrations now reflects the current screens completion status. Green for complete, red for incomplete.
+- The 'About App' screen now shows the full change log rather than the latest update
+
+### Added
+- Metal Detector Validations are now up and running.
+
 ## [1.1.1] - 29/06/2026
 ### Fixed
 - A bug that prevented a calibration from being finished/uploaded has been found and fixed

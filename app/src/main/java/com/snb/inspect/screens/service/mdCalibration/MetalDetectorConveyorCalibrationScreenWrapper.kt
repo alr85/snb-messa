@@ -112,11 +112,12 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
     val isFirstStep = currentRoute?.startsWith("MetalDetectorConveyorCalibrationStart") == true
 
     val isCurrentScreenValid by viewModel.currentScreenNextEnabled.collectAsState()
+    val screenValidities by viewModel.screenValidities.collectAsState()
 
     // NEW NAVIGATION LOGIC: 
     // - Forward navigation is allowed everywhere EXCEPT when moving to the Summary screen.
     // - Moving to Summary requires ALL screens to be valid.
-    val isNextEnabled = remember(currentRoute, isCurrentScreenValid, routeOrder) {
+    val isNextEnabled = remember(currentRoute, isCurrentScreenValid, routeOrder, screenValidities) {
         val nextIndex = currentIndex + 1
         if (nextIndex < routeOrder.size) {
             val nextRoute = routeOrder[nextIndex]

@@ -43,7 +43,8 @@ val LocalCalibrationCurrentRoute = staticCompositionLocalOf<String?> { null }
 @Composable
 fun CalibrationHeader(
     label: String,
-    isValid: Boolean = true
+    isValid: Boolean = true,
+    showStatusIcon: Boolean = true
 ) {
     val viewModel = LocalCalibrationViewModel.current
     val navController = LocalCalibrationNavController.current
@@ -94,15 +95,17 @@ fun CalibrationHeader(
                 )
             }
 
-            // Far-Right Status Indicator
-            Icon(
-                imageVector = if (isValid) Icons.Default.CheckCircle else Icons.Default.Error,
-                contentDescription = if (isValid) "Valid" else "Incomplete",
-                tint = if (isValid) Color(0xFF4CAF50) else Color(0xFFF44336),
-                modifier = Modifier
-                    .size(22.dp)
-                    .align(Alignment.CenterEnd)
-            )
+            if (showStatusIcon) {
+                // Far-Right Status Indicator
+                Icon(
+                    imageVector = if (isValid) Icons.Default.CheckCircle else Icons.Default.Error,
+                    contentDescription = if (isValid) "Valid" else "Incomplete",
+                    tint = if (isValid) Color(0xFF4CAF50) else Color(0xFFF44336),
+                    modifier = Modifier
+                        .size(22.dp)
+                        .align(Alignment.CenterEnd)
+                )
+            }
 
             DropdownMenu(
                 expanded = expanded,
@@ -149,14 +152,16 @@ fun CalibrationHeader(
                 modifier = Modifier.align(Alignment.Center)
             )
             
-            Icon(
-                imageVector = if (isValid) Icons.Default.CheckCircle else Icons.Default.Error,
-                contentDescription = if (isValid) "Valid" else "Incomplete",
-                tint = if (isValid) Color(0xFF4CAF50) else Color(0xFFF44336),
-                modifier = Modifier
-                    .size(22.dp)
-                    .align(Alignment.CenterEnd)
-            )
+            if (showStatusIcon) {
+                Icon(
+                    imageVector = if (isValid) Icons.Default.CheckCircle else Icons.Default.Error,
+                    contentDescription = if (isValid) "Valid" else "Incomplete",
+                    tint = if (isValid) Color(0xFF4CAF50) else Color(0xFFF44336),
+                    modifier = Modifier
+                        .size(22.dp)
+                        .align(Alignment.CenterEnd)
+                )
+            }
         }
     }
 }

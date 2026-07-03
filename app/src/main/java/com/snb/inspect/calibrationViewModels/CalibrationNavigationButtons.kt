@@ -12,6 +12,7 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.snb.inspect.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.snb.inspect.ui.theme.FormBackground
@@ -31,6 +32,7 @@ fun CalibrationNavigationButtons(
 
     val activity = LocalActivity.current
     val showText = windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact
+    val isCurrentScreenValid by viewModel.currentScreenNextEnabled.collectAsState()
 
     Row(
         modifier = Modifier
@@ -81,6 +83,12 @@ fun CalibrationNavigationButtons(
         Button(
             onClick = onNextClick,
             enabled = isNextEnabled,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (isCurrentScreenValid) Color(0xFF4CAF50) else Color(0xFFF44336),
+                contentColor = Color.White,
+                disabledContainerColor = Color.LightGray,
+                disabledContentColor = Color.DarkGray
+            ),
             modifier = Modifier.weight(1f)
         ) {
             if (showText) {

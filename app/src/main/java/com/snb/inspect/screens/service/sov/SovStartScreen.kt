@@ -1,9 +1,12 @@
 package com.snb.inspect.screens.service.sov
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.input.KeyboardType
 import com.snb.inspect.calibrationViewModels.SensitivityOptimisationValidationViewModel
@@ -28,8 +31,17 @@ fun SovStartScreen(viewModel: SensitivityOptimisationValidationViewModel) {
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Spacer(Modifier.height(16.dp))
-            CalibrationHeader("System Details")
+            CalibrationHeader(label = "System Details", showStatusIcon = false)
             Spacer(Modifier.height(16.dp))
+
+            Text(
+                text = "Please create and use a new product library page titled 'SNB Test'",
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
 
             LabeledReadOnlyField(
                 label = "Serial Number",
@@ -68,15 +80,6 @@ fun SovStartScreen(viewModel: SensitivityOptimisationValidationViewModel) {
             FormSpacer()
 
             LabeledTextFieldWithHelp(
-                label = "System Comments",
-                value = viewModel.systemComments.value,
-                onValueChange = { viewModel.systemComments.value = it },
-                helpText = "Comments on system details, application and condition with respect to any possible performance restrictions: Examples include, insufficient metal free area, excessive vibration, low level belt contamination, earth loops, evident RF or mains interference or other environmental influences.",
-                singleLine = false
-            )
-            FormSpacer()
-
-            LabeledTextFieldWithHelp(
                 label = "Belt Speed (m/m)",
                 value = viewModel.beltSpeed.value,
                 onValueChange = { input ->
@@ -90,6 +93,18 @@ fun SovStartScreen(viewModel: SensitivityOptimisationValidationViewModel) {
                 maxLength = 3
             )
             FormSpacer()
+
+            LabeledTextFieldWithHelp(
+                label = "System Comments",
+                value = viewModel.systemComments.value,
+                onValueChange = { viewModel.systemComments.value = it },
+                helpText = "Comments on system details, application and condition with respect to any possible performance restrictions: Examples include, insufficient metal free area, excessive vibration, low level belt contamination, earth loops, evident RF or mains interference or other environmental influences. Be as descriptive as you can.",
+                singleLine = false,
+                showHelpOnFocusIfEmpty = true
+            )
+            FormSpacer()
+
+
 
             Spacer(Modifier.height(60.dp))
         }

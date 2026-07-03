@@ -63,9 +63,10 @@ fun SovSummaryScreen(viewModel: SensitivityOptimisationValidationViewModel, apiS
     // Define the list of required sections that must be checked
     val requiredSections = remember(viewModel.sensitivityAsLeftFerrous.value, viewModel.sensitivityAsLeftNonFerrous.value, viewModel.sensitivityAsLeftStainless.value) {
         val list = mutableListOf(
-            "Validation Details",
-            "Product Dimensions",
-            "Sensitivity (As Left)",
+            "System Details",
+            "Product Details",
+            "Optimised Detection Settings",
+            "Optimised Sensitivities",
             "Validation Results",
             "Pack Validation"
         )
@@ -103,15 +104,6 @@ fun SovSummaryScreen(viewModel: SensitivityOptimisationValidationViewModel, apiS
                 )
             }
 
-            item {
-                LabeledTextFieldWithHelp(
-                    label = "Customer Name",
-                    value = viewModel.customerName.value,
-                    onValueChange = { viewModel.customerName.value = it },
-                    helpText = "Name of the customer representative witnessing the test."
-                )
-                FormSpacer()
-            }
 
             item {
                 Column(

@@ -29,8 +29,15 @@ fun SovProductDetailsScreen(viewModel: SensitivityOptimisationValidationViewMode
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Spacer(Modifier.height(16.dp))
-            CalibrationHeader("Product Details")
+            CalibrationHeader(label = "Product Details", showStatusIcon = false)
             Spacer(Modifier.height(16.dp))
+
+            Text(
+                text = "Please create a new product library page titled 'SNB Test'",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
 
             LabeledTextFieldWithHelp(
                 label = "Product Description",
@@ -40,13 +47,6 @@ fun SovProductDetailsScreen(viewModel: SensitivityOptimisationValidationViewMode
             )
             FormSpacer()
 
-            LabeledTextFieldWithHelp(
-                label = "Library Reference",
-                value = viewModel.productLibraryReference.value,
-                onValueChange = { viewModel.productLibraryReference.value = it },
-                helpText = "Product library name/number on the detector."
-            )
-            FormSpacer()
 
             LabeledTextFieldWithHelp(
                 label = "Product Length (mm)",
@@ -84,26 +84,14 @@ fun SovProductDetailsScreen(viewModel: SensitivityOptimisationValidationViewMode
             )
             FormSpacer()
 
-            if (viewModel.productDescription.value.isNotBlank()) {
-                Text(
-                    text = "Please ensure a new product library page has been created on the detector titled:",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = "VAL - ${viewModel.productDescription.value}",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                FormSpacer()
-            }
 
             LabeledTextFieldWithHelp(
                 label = "Product Comments",
                 value = viewModel.productComments.value,
                 onValueChange = { viewModel.productComments.value = it },
-                helpText = "Comments on product details, presentation and fluctuations with respect to any possible performance restrictions, examples include large differences in conductivity, changes in size, random presentation, double stacking, packaging inconsistencies",
-                singleLine = false
+                helpText = "Comments on product details, presentation and fluctuations with respect to any possible performance restrictions, examples include large differences in conductivity, changes in size, random presentation, double stacking, packaging inconsistencies. Be as descriptive as possible.",
+                singleLine = false,
+                showHelpOnFocusIfEmpty = true
             )
             FormSpacer()
 

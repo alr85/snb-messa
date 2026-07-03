@@ -692,9 +692,6 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _equipmentMultimeterId.value = existingCalibration.equipmentMultimeterId
                 _equipmentTachometerId.value = existingCalibration.equipmentTachometerId
 
-                // Force initial validity check based on loaded data
-                revalidateAllScreens()
-
                 //endregion
 
             } else {
@@ -702,6 +699,8 @@ class CalibrationMetalDetectorConveyorViewModel(
                 InAppLogger.d("No existing calibration found. Starting a new one.")
                 saveNewCalibration()
             }
+            // Force initial validity check based on loaded data or new defaults
+            revalidateAllScreens()
             _isLoading.value = false
         }
     }
