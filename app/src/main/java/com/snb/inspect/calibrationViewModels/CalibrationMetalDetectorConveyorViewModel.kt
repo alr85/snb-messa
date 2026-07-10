@@ -11,11 +11,10 @@ import com.snb.inspect.ApiService
 import com.snb.inspect.FetchResult
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateAirPressureSensorPvResult
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateAllPvResults
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateBackupSensorPvResult
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateBinDoorMonitorPvResult
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateBinFullSensorPvResult
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateDetectNotificationPvResult
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateDetectionSettingPvResult
+
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateFerrousPvResult
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateInfeedSensorPvResult
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateLargeMetalPvResult
@@ -23,7 +22,7 @@ import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateNonFerro
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdatePackCheckSensorPvResult
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateRejectConfirmSensorPvResult
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateSmePvResult
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateSpeedSensorPvResult
+
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateStainlessPvResult
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.setAllPvResultsNa
 import com.snb.inspect.calibrationLogic.metalDetectorConveyor.toAirPressureSensorUpdate
@@ -105,7 +104,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     private val retailerSensitivitiesRepo: RetailerSensitivitiesRepository,
     private val system: MetalDetectorWithFullDetails,
 
-    ) : ViewModel() {
+    ) : ViewModel(), ICalibrationViewModel {
 
 
     private val _isLoading = MutableStateFlow(true)
@@ -144,9 +143,22 @@ class CalibrationMetalDetectorConveyorViewModel(
                 _modelId.intValue = existingCalibration.modelId
                 _customerId.intValue = existingCalibration.customerId
                 _systemId.intValue = existingCalibration.systemId
-                _cloudSystemId.intValue = existingCalibration.cloudSystemId
+
+                // FIX: Ensure cloudSystemId is pulled from the fresh system object if the 
+                // calibration record is still 0 (e.g. machine synced while this was incomplete)
+                val effectiveCloudId = if (existingCalibration.cloudSystemId == 0 && system.cloudId != null) {
+                    system.cloudId
+                } else {
+                    existingCalibration.cloudSystemId
+                }
+                _cloudSystemId.intValue = effectiveCloudId
+                
                 _tempSystemId.intValue = existingCalibration.tempSystemId
                 _systemTypeId.intValue = existingCalibration.systemTypeId
+
+                // Set removed PV fields to N/A
+                _backupSensorTestPvResult.value = "N/A"
+                _speedSensorTestPvResult.value = "N/A"
 
                 _calibrationStartTime.value = existingCalibration.startDate
                 //_calibrationEndTime.value = existingCalibration.endDate
@@ -711,16 +723,16 @@ class CalibrationMetalDetectorConveyorViewModel(
 
 
     private val _currentScreenNextEnabled = MutableStateFlow(true)
-    val currentScreenNextEnabled = _currentScreenNextEnabled
+    override val currentScreenNextEnabled = _currentScreenNextEnabled
 
     private val _screenValidities = MutableStateFlow<Map<String, Boolean>>(emptyMap())
-    val screenValidities: StateFlow<Map<String, Boolean>> = _screenValidities
+    override val screenValidities: StateFlow<Map<String, Boolean>> = _screenValidities
 
-    fun setCurrentScreenNextEnabled(enabled: Boolean) {
+    override fun setCurrentScreenNextEnabled(enabled: Boolean) {
         _currentScreenNextEnabled.value = enabled
     }
 
-    fun setScreenValidity(route: String, isValid: Boolean) {
+    override fun setScreenValidity(route: String, isValid: Boolean) {
         val baseRoute = route.split("/").first()
         if (_screenValidities.value[baseRoute] != isValid) {
             val updatedMap = _screenValidities.value.toMutableMap()
@@ -729,7 +741,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         }
     }
 
-    fun isCalibrationValid(routeOrder: List<String>): Boolean {
+    override fun isCalibrationValid(routeOrder: List<String>): Boolean {
         // We check all screens except the summary itself
         return routeOrder.filter { !it.contains("Summary") }.all { route ->
             isScreenValid(route)
@@ -747,7 +759,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         return false
     }
 
-    fun getDisplayNameForRoute(route: String): String {
+    override fun getDisplayNameForRoute(route: String): String {
         return when (route.split("/").first()) {
             "MetalDetectorConveyorCalibrationStart" -> "Calibration Start"
             "CalMetalDetectorConveyorConveyorDetails" -> "Conveyor Details"
@@ -1230,16 +1242,22 @@ class CalibrationMetalDetectorConveyorViewModel(
 
         viewModelScope.launch {
             calibrationRepository.insertNewCalibration(insert)
+            
+            // Set removed PV fields to N/A immediately
+            _backupSensorTestPvResult.value = "N/A"
+            _speedSensorTestPvResult.value = "N/A"
+            updateBackupSensor()
+            updateSpeedSensor()
         }
     }
 
-    fun shouldSkipToSummary(): Boolean {
+    override fun shouldSkipToSummary(): Boolean {
         return !canPerformCalibration.value &&
                 reasonForNotCalibrating.value.isNotEmpty()
     }
 
 
-    fun persistCurrentScreen(route: String) {
+    override fun persistCurrentScreen(route: String) {
         when (route.removeSuffix("/{calibrationId}")) {
 
             "MetalDetectorConveyorCalibrationStart" ->
@@ -1583,16 +1601,16 @@ class CalibrationMetalDetectorConveyorViewModel(
 //    }
 
     private val _calibrationId = mutableStateOf(calibrationId)
-    val calibrationId: State<String> = _calibrationId
+    override val calibrationId: State<String> = _calibrationId
 
     private val _serialNumber = mutableStateOf(system.serialNumber)
-    val serialNumber: State<String> = _serialNumber
+    override val serialNumber: State<String> = _serialNumber
 
     private val _customerName = mutableStateOf(system.customerName)
     val customerName: State<String> = _customerName
 
     private val _modelDescription = mutableStateOf(system.modelDescription)
-    val modelDescription: State<String> = _modelDescription
+    override val modelDescription: State<String> = _modelDescription
 
     private val _systemTypeDescription = mutableStateOf(system.systemType)
     val systemTypeDescription: State<String> = _systemTypeDescription
@@ -3354,7 +3372,6 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBackupSensorFitted(newValue: YesNoState) {
         _backupSensorFitted.value = newValue
-        autoUpdateBackupSensorPvResult()
     }
 
     private val _backupSensorDetail = mutableStateOf("")
@@ -3371,7 +3388,6 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBackupSensorTestMethod(newValue: String) {
         _backupSensorTestMethod.value = newValue
-        autoUpdateBackupSensorPvResult()
     }
 
     private val _backupSensorTestMethodOther = mutableStateOf("")
@@ -3388,7 +3404,6 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBackupSensorTestResult(newValue: List<String>) {
         _backupSensorTestResult.value = newValue
-        autoUpdateBackupSensorPvResult()
     }
 
     private val _backupSensorEngineerNotes = mutableStateOf("")
@@ -3404,7 +3419,6 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBackupSensorLatched(newValue: YesNoState) {
         _backupSensorLatched.value = newValue
-        autoUpdateBackupSensorPvResult()
     }
 
     private val _backupSensorCR = mutableStateOf(YesNoState.UNSPECIFIED)
@@ -3412,7 +3426,6 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setBackupSensorCR(newValue: YesNoState) {
         _backupSensorCR.value = newValue
-        autoUpdateBackupSensorPvResult()
     }
 
     private val _backupSensorTestPvResult = mutableStateOf("")
@@ -3577,7 +3590,6 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setSpeedSensorFitted(newValue: YesNoState) {
         _speedSensorFitted.value = newValue
-        autoUpdateSpeedSensorPvResult()
     }
 
     private val _speedSensorDetail = mutableStateOf("")
@@ -3594,7 +3606,6 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setSpeedSensorTestMethod(newValue: String) {
         _speedSensorTestMethod.value = newValue
-        autoUpdateSpeedSensorPvResult()
     }
 
     private val _speedSensorTestMethodOther = mutableStateOf("")
@@ -3611,7 +3622,6 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setSpeedSensorTestResult(newValue: List<String>) {
         _speedSensorTestResult.value = newValue
-        autoUpdateSpeedSensorPvResult()
     }
 
     private val _speedSensorEngineerNotes = mutableStateOf("")
@@ -3627,7 +3637,6 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setSpeedSensorLatched(newValue: YesNoState) {
         _speedSensorLatched.value = newValue
-        autoUpdateSpeedSensorPvResult()
     }
 
     private val _speedSensorCR = mutableStateOf(YesNoState.UNSPECIFIED)
@@ -3635,7 +3644,6 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun setSpeedSensorCR(newValue: YesNoState) {
         _speedSensorCR.value = newValue
-        autoUpdateSpeedSensorPvResult()
     }
 
     private val _speedSensorTestPvResult = mutableStateOf("")
@@ -4050,7 +4058,7 @@ class CalibrationMetalDetectorConveyorViewModel(
             val newCloudId = updatedSystem?.cloudId ?: 0
             if (newCloudId != 0) {
                 InAppLogger.d("Updating calibration with new cloudSystemId: $newCloudId")
-                calibrationDao.updateCalibrationWithCloudId(tempSystemId.value, newCloudId)
+                calibrationDao.updateCloudIdByCalibrationId(calibrationId.value, newCloudId)
                 _cloudSystemId.intValue = newCloudId
             }
 
@@ -4085,7 +4093,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
 
     // Add a method to clear all relevant data
-    fun clearCalibrationData() {}
+    override fun clearCalibrationData() {}
 
     fun setAllResultsUtc() {
         utcResetActions.forEach { it() }
@@ -4331,7 +4339,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
 
 
-    fun deleteCalibration(calibrationId: String) {
+    override fun deleteCalibration(calibrationId: String) {
         InAppLogger.d("Deleting MD calibration with ID: $calibrationId")
         viewModelScope.launch {
             calibrationDao.deleteCalibration(calibrationId)

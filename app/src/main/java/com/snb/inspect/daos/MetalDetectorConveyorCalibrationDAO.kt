@@ -14,6 +14,12 @@ interface MetalDetectorConveyorCalibrationDAO {
     @Query("UPDATE MetalDetectorConveyorCalibrations SET cloudSystemId = :cloudId WHERE tempSystemId = :tempId")
     suspend fun updateCalibrationWithCloudId(tempId: Int?, cloudId: Int)
 
+    @Query("UPDATE MetalDetectorConveyorCalibrations SET cloudSystemId = :cloudId WHERE systemId = :systemId")
+    suspend fun updateCalibrationWithCloudIdBySystemId(systemId: Int, cloudId: Int)
+
+    @Query("UPDATE MetalDetectorConveyorCalibrations SET cloudSystemId = :cloudId WHERE calibrationId = :calibrationId")
+    suspend fun updateCloudIdByCalibrationId(calibrationId: String, cloudId: Int)
+
     @Query("UPDATE MetalDetectorConveyorCalibrations SET isSynced = :isSynced WHERE calibrationId = :calibrationId")
     suspend fun updateIsSynced(calibrationId: String, isSynced: Boolean)
 

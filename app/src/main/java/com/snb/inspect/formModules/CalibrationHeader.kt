@@ -33,9 +33,9 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.snb.inspect.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
+import com.snb.inspect.calibrationViewModels.ICalibrationViewModel
 
-val LocalCalibrationViewModel = staticCompositionLocalOf<CalibrationMetalDetectorConveyorViewModel?> { null }
+val LocalCalibrationViewModel = staticCompositionLocalOf<ICalibrationViewModel?> { null }
 val LocalCalibrationNavController = staticCompositionLocalOf<NavController?> { null }
 val LocalCalibrationRouteOrder = staticCompositionLocalOf<List<String>> { emptyList() }
 val LocalCalibrationCurrentRoute = staticCompositionLocalOf<String?> { null }

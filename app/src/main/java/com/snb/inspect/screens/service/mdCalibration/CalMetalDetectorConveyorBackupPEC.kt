@@ -12,8 +12,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateBackupSensorPvResult
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.getBackupSensorPvRules
 import com.snb.inspect.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.snb.inspect.formModules.CalibrationHeader
 import com.snb.inspect.formModules.LabeledDropdownWithHelp
@@ -100,16 +98,16 @@ fun CalMetalDetectorConveyorBackupPEC(
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
-    val rules = remember(
-        fitted,
-        testMethod,
-        testMethodOther,
-        testResult,
-        latched,
-        controlledRestart
-    ) {
-        viewModel.getBackupSensorPvRules()
-    }
+//    val rules = remember(
+//        fitted,
+//        testMethod,
+//        testMethodOther,
+//        testResult,
+//        latched,
+//        controlledRestart
+//    ) {
+//        ///viewModel.getBackupSensorPvRules()
+//    }
 
     Column(modifier = Modifier.fillMaxSize()) {
 
@@ -145,13 +143,12 @@ fun CalMetalDetectorConveyorBackupPEC(
                             viewModel.setBackupSensorLatched(YesNoState.UNSPECIFIED)
                             viewModel.setBackupSensorCR(YesNoState.UNSPECIFIED)
                         }
-                        viewModel.autoUpdateBackupSensorPvResult()
                     },
                     helpText = "Select if there is a back-up sensor fitted.",
                     onInputValueChange = {
                     },
-                    pvStatus = if (pvRequired) rules.find { it.ruleId == "BACKUP_FITTED" }?.status?.name else null,
-                    pvRules = if (pvRequired) rules.filter { it.ruleId == "BACKUP_FITTED" } else emptyList()
+                    //pvStatus = if (pvRequired) rules.find { it.ruleId == "BACKUP_FITTED" }?.status?.name else null,
+                    //pvRules = if (pvRequired) rules.filter { it.ruleId == "BACKUP_FITTED" } else emptyList()
                 )
 
                 FormSpacer()
@@ -165,12 +162,11 @@ fun CalMetalDetectorConveyorBackupPEC(
                         onSelectionChange = {
                             if (it != "Other") viewModel.setBackupSensorTestMethodOther("")
                             viewModel.setBackupSensorTestMethod(it)
-                            viewModel.autoUpdateBackupSensorPvResult()
                         },
                         helpText = "Select the method used to test the back-up failsafe.",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.find { it.ruleId == "BACKUP_METHOD" }?.status?.name else null,
-                        pvRules = if (pvRequired) rules.filter { it.ruleId == "BACKUP_METHOD" } else emptyList()
+                        //pvStatus = if (pvRequired) rules.find { it.ruleId == "BACKUP_METHOD" }?.status?.name else null,
+                        //pvRules = if (pvRequired) rules.filter { it.ruleId == "BACKUP_METHOD" } else emptyList()
                     )
 
                     FormSpacer()
@@ -181,7 +177,6 @@ fun CalMetalDetectorConveyorBackupPEC(
                             value = testMethodOther,
                             onValueChange = {
                                 viewModel.setBackupSensorTestMethodOther(it)
-                                viewModel.autoUpdateBackupSensorPvResult()
                             },
                             helpText = "Enter the custom test method.",
                             isNAToggleEnabled = false,
@@ -203,12 +198,11 @@ fun CalMetalDetectorConveyorBackupPEC(
                             }
 
                             viewModel.setBackupSensorTestResult(cleaned)
-                            viewModel.autoUpdateBackupSensorPvResult()
                         },
                         helpText = "Select the observed failsafe action.",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.find { it.ruleId == "BACKUP_RESULT" }?.status?.name else null,
-                        pvRules = if (pvRequired) rules.filter { it.ruleId == "BACKUP_RESULT" } else emptyList()
+                        //pvStatus = if (pvRequired) rules.find { it.ruleId == "BACKUP_RESULT" }?.status?.name else null,
+                        //pvRules = if (pvRequired) rules.filter { it.ruleId == "BACKUP_RESULT" } else emptyList()
                     )
 
                     FormSpacer()
@@ -218,12 +212,11 @@ fun CalMetalDetectorConveyorBackupPEC(
                         currentState = latched,
                         onStateChange = {
                             viewModel.setBackupSensorLatched(it)
-                            viewModel.autoUpdateBackupSensorPvResult()
                         },
                         helpText = "Does the fault remain active until manually cleared?",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.find { it.ruleId == "BACKUP_LATCHED" }?.status?.name else null,
-                        pvRules = if (pvRequired) rules.filter { it.ruleId == "BACKUP_LATCHED" } else emptyList()
+                        //pvStatus = if (pvRequired) rules.find { it.ruleId == "BACKUP_LATCHED" }?.status?.name else null,
+                        //pvRules = if (pvRequired) rules.filter { it.ruleId == "BACKUP_LATCHED" } else emptyList()
                     )
 
                     FormSpacer()
@@ -233,23 +226,22 @@ fun CalMetalDetectorConveyorBackupPEC(
                         currentState = controlledRestart,
                         onStateChange = {
                             viewModel.setBackupSensorCR(it)
-                            viewModel.autoUpdateBackupSensorPvResult()
                         },
                         helpText = "Is a manual reset required to restart the system?",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.find { it.ruleId == "BACKUP_CR" }?.status?.name else null,
-                        pvRules = if (pvRequired) rules.filter { it.ruleId == "BACKUP_CR" } else emptyList()
+                        //pvStatus = if (pvRequired) rules.find { it.ruleId == "BACKUP_CR" }?.status?.name else null,
+                        //pvRules = if (pvRequired) rules.filter { it.ruleId == "BACKUP_CR" } else emptyList()
                     )
 
                     if (!pvRequired) FormSpacer()
                 }
 
-                if (pvRequired) {
-                    PvSectionSummaryCard(
-                        title = "Backup sensor test P.V. Summary",
-                        rules = rules
-                    )
-                }
+//                if (pvRequired) {
+//                    PvSectionSummaryCard(
+//                        title = "Backup sensor test P.V. Summary",
+//                        rules = rules
+//                    )
+//                }
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Comments",

@@ -39,6 +39,7 @@ fun DatabaseSyncScreen(
     repositoryCustomer: CustomerRepository,
     repositoryMdModels: MetalDetectorModelsRepository,
     repositoryMdSystems: MetalDetectorSystemsRepository,
+    repositoryCwSystems: CheckweigherSystemsRepository,
     repositorySystemTypes: SystemTypeRepository,
     repositoryMdSystemNotes: MdSystemNotesRepository,
     detectionRepo: RetailerSensitivitiesRepository,
@@ -83,6 +84,18 @@ fun DatabaseSyncScreen(
             },
             SyncTask("Metal Detector Systems") {
                 when (val r = repositoryMdSystems.fetchAndStoreMdSystems()) {
+                    is FetchResult.Success -> r.message
+                    is FetchResult.Failure -> "Failed: ${r.errorMessage}"
+                }
+            },
+            SyncTask("Checkweigher Models") {
+                when (val r = repositoryCwSystems.fetchAndStoreCwModels()) {
+                    is FetchResult.Success -> r.message
+                    is FetchResult.Failure -> "Failed: ${r.errorMessage}"
+                }
+            },
+            SyncTask("Checkweigher Systems") {
+                when (val r = repositoryCwSystems.fetchAndStoreCwSystems()) {
                     is FetchResult.Success -> r.message
                     is FetchResult.Failure -> "Failed: ${r.errorMessage}"
                 }

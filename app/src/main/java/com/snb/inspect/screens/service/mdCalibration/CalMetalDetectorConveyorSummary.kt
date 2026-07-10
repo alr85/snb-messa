@@ -89,7 +89,6 @@ fun CalMetalDetectorConveyorSummary(
                 "System Checklist",
                 "Indicators",
                 "Product Details",
-                "Customer Sensitivity Requirements",
                 "Ferrous Sensitivity (As Found)",
                 "Non-Ferrous Sensitivity (As Found)",
                 "Stainless Sensitivity (As Found)",

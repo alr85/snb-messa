@@ -14,12 +14,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.snb.inspect.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
+import com.snb.inspect.calibrationViewModels.ICalibrationViewModel
 import com.snb.inspect.ui.theme.FormBackground
 
 @Composable
 fun CalibrationNavigationButtons(
-    viewModel: CalibrationMetalDetectorConveyorViewModel,
+    viewModel: ICalibrationViewModel,
     onPreviousClick: () -> Unit,
     onCancelClick: () -> Unit,
     onNextClick: () -> Unit,

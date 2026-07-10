@@ -65,7 +65,8 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
                         // Link calibrations if we're discovering a Cloud ID for a local system
                         if (localMatch != null && localMatch.cloudId != cloudSys.id) {
                             InAppLogger.d("Linking calibrations for machine ${cloudSys.serialNumber} to new Cloud ID: ${cloudSys.id}")
-                            calibrationDao.updateCalibrationWithCloudId(localMatch.tempId, cloudSys.id)
+                            calibrationDao.updateCalibrationWithCloudIdBySystemId(localMatch.id!!, cloudSys.id)
+                            db.sensitivityOptimisationValidationDAO().updateCloudIdBySystemId(localMatch.id!!, cloudSys.id)
                         }
 
                         // DATE PROTECTION: 
@@ -278,6 +279,13 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
         return null
     }
 
+    suspend fun linkCalibrationsAndValidations(systemId: Int, cloudId: Int) {
+        db.withTransaction {
+            db.metalDetectorConveyorCalibrationDAO().updateCalibrationWithCloudIdBySystemId(systemId, cloudId)
+            db.sensitivityOptimisationValidationDAO().updateCloudIdBySystemId(systemId, cloudId)
+        }
+    }
+
     suspend fun updateSystem(context: Context, cloudId: Int?, tempId: Int?, localId: Int?) {
         InAppLogger.d("updateSystem() called with cloudId=$cloudId, localId=$localId, tempId=$tempId")
 
@@ -400,7 +408,8 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
                             db.withTransaction {
                                 dao.updateSyncStatus(isSynced = true, tempId = sys.tempId, newCloudId = newCloudId)
                                 // Link any local calibrations to this new Cloud ID
-                                db.metalDetectorConveyorCalibrationDAO().updateCalibrationWithCloudId(sys.tempId, newCloudId)
+                                db.metalDetectorConveyorCalibrationDAO().updateCalibrationWithCloudIdBySystemId(sys.id!!, newCloudId)
+                                db.sensitivityOptimisationValidationDAO().updateCloudIdBySystemId(sys.id!!, newCloudId)
                             }
                             uploaded++
                         } else {

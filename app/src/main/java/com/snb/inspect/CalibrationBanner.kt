@@ -43,9 +43,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.snb.inspect.calibrationViewModels.CalibrationCheckweigherViewModel
 import com.snb.inspect.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.snb.inspect.screens.service.mdCalibration.CalMetalDetectorConveyorSummaryDetails
 import com.snb.inspect.ui.theme.FormBackground
+import com.snb.inspect.calibrationViewModels.ICalibrationViewModel
 import com.snb.inspect.ui.theme.SnbRed
 
 
@@ -55,14 +57,14 @@ import com.snb.inspect.ui.theme.SnbRed
 @Composable
 fun CalibrationBanner(
     progress: Float,                     // now comes from NavController state
-    viewModel: CalibrationMetalDetectorConveyorViewModel,
+    viewModel: ICalibrationViewModel,
     windowSizeClass: WindowSizeClass
 ) {
     var showDetailsDialog by remember { mutableStateOf(value = false) }
     var showBackDisabledDialog by remember { mutableStateOf(value = false) }
 
     val isCompact = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
-    val pvRequired = viewModel.pvRequired.value
+    val pvRequired = if (viewModel is CalibrationMetalDetectorConveyorViewModel) viewModel.pvRequired.value else false
 
 
     // Disable system back
@@ -164,7 +166,7 @@ fun CalibrationBanner(
         CalibrationSummaryDialog(
             onClose = {showDetailsDialog = false },
             viewModel = viewModel,
-            windowSizeClass = windowSizeClass,
+            windowSizeClass = windowSizeClass
         )
     }
 
@@ -204,7 +206,7 @@ fun BackDisabledDialog(
 @Composable
 fun CalibrationSummaryDialog(
     onClose: () -> Unit,
-    viewModel: CalibrationMetalDetectorConveyorViewModel,
+    viewModel: ICalibrationViewModel,
     windowSizeClass: WindowSizeClass
 ) {
 
@@ -247,7 +249,12 @@ fun CalibrationSummaryDialog(
                             .fillMaxSize()
                             .verticalScroll(scrollState)
                     ) {
-                        CalMetalDetectorConveyorSummaryDetails(viewModel = viewModel)
+                        if (viewModel is CalibrationMetalDetectorConveyorViewModel) {
+                            CalMetalDetectorConveyorSummaryDetails(viewModel = viewModel)
+                        } else if (viewModel is CalibrationCheckweigherViewModel) {
+                            // TODO: Add Checkweigher Summary Details
+                            Text("Checkweigher Summary details coming soon")
+                        }
                     }
 
                     // Bottom fade hint (only show if not fully scrolled)

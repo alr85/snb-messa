@@ -30,6 +30,10 @@ class SensitivityOptimisationValidationRepository(
 
     suspend fun getById(id: String) = sovDao.getById(id)
 
+    suspend fun updateCloudIdBySovId(sovId: String, cloudId: Int) {
+        sovDao.updateCloudIdBySovId(sovId, cloudId)
+    }
+
     suspend fun updateSystemLocation(systemId: Int, lastLocation: String) {
         mdSystemsDAO.updateLastLocation(systemId, lastLocation)
     }

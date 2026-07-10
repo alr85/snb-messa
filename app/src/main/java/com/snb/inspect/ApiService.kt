@@ -5,6 +5,10 @@ import com.snb.inspect.dataClasses.CloudUser
 import com.snb.inspect.dataClasses.CodeOfPractice
 import com.snb.inspect.dataClasses.ConveyorRetailerSensitivitiesEntity
 import com.snb.inspect.dataClasses.Customer
+import com.snb.inspect.dataClasses.CwModel
+import com.snb.inspect.dataClasses.CwSystem
+import com.snb.inspect.dataClasses.CwSystemCloud
+import com.snb.inspect.dataClasses.CwSystemNoteCloud
 import com.snb.inspect.dataClasses.FreefallThroatRetailerSensitivitiesEntity
 import com.snb.inspect.dataClasses.MdModel
 import com.snb.inspect.dataClasses.MdSystem
@@ -40,6 +44,33 @@ interface ApiService {
 
     @GET("MdSystems")
     suspend fun getMdSystems(): Response<List<MdSystem>>
+
+    @GET("CwModels")
+    suspend fun getCwModels(): Response<List<CwModel>>
+
+    @GET("CwSystems")
+    suspend fun getCwSystems(): Response<List<CwSystem>>
+
+    @POST("CwSystems")
+    suspend fun postCwSystem(@Body newCwSystem: CwSystemCloud): Response<CwSystem>
+
+    @PUT("CwSystems/{id}")
+    suspend fun updateCwSystem(
+        @Path("id") id: Int,
+        @Body systemData: CwSystemCloud
+    ): Response<Unit>
+
+    @GET("CwSystemNotes")
+    suspend fun getAllCwSystemNotes(): Response<List<CwSystemNoteCloud>>
+
+    @GET("CwSystemNotes/{systemId}")
+    suspend fun getCwSystemNotes(@Path("systemId") systemId: Int): Response<List<CwSystemNoteCloud>>
+
+    @POST("CwSystemNotes")
+    suspend fun postCwSystemNote(@Body note: CwSystemNoteCloud): Response<CwSystemNoteCloud>
+
+    @PUT("CwSystemNotes/{id}")
+    suspend fun updateCwSystemNote(@Path("id") id: Int, @Body note: CwSystemNoteCloud): Response<Unit>
 
     @GET("SystemTypes")
     suspend fun getSystemTypes(): Response<List<SystemType>>

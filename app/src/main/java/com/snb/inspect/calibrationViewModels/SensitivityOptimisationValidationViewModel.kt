@@ -8,6 +8,7 @@ import com.snb.inspect.repositories.SensitivityOptimisationValidationRepository
 import com.snb.inspect.repositories.MetalDetectorSystemsRepository
 import com.snb.inspect.dataClasses.MetalDetectorWithFullDetails
 import com.snb.inspect.formModules.YesNoState
+import com.snb.inspect.util.InAppLogger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -34,6 +35,10 @@ class SensitivityOptimisationValidationViewModel(
 
     private val _isUploading = MutableStateFlow(false)
     val isUploading: StateFlow<Boolean> = _isUploading
+
+    private val _systemId = mutableStateOf(system.id)
+    private val _cloudSystemId = mutableStateOf(system.cloudId ?: 0)
+    private val _tempSystemId = mutableStateOf(system.tempId)
 
     // --- Metadata & State ---
     var startDate = mutableStateOf(LocalDateTime.now().toString())
@@ -144,6 +149,18 @@ class SensitivityOptimisationValidationViewModel(
                 endDate.value = existing.endDate
                 isSynced.value = existing.isSynced
                 mapVersion.value = existing.mapVersion
+
+                _systemId.value = existing.systemId
+                _tempSystemId.value = existing.tempSystemId
+
+                // FIX: Ensure cloudSystemId is pulled from the fresh system object if the 
+                // SOV record is still 0 (e.g. machine synced while this was incomplete)
+                val effectiveCloudId = if (existing.cloudSystemId == 0 && system.cloudId != null) {
+                    system.cloudId
+                } else {
+                    existing.cloudSystemId
+                }
+                _cloudSystemId.value = effectiveCloudId
 
                 // Product
                 productDescription.value = existing.productDescription
@@ -276,9 +293,9 @@ class SensitivityOptimisationValidationViewModel(
                 isSynced = this@SensitivityOptimisationValidationViewModel.isSynced.value
                 mapVersion = this@SensitivityOptimisationValidationViewModel.mapVersion.value
 
-                systemId = system.id
-                tempSystemId = system.tempId
-                cloudSystemId = system.cloudId ?: 0
+                systemId = _systemId.value
+                tempSystemId = _tempSystemId.value
+                cloudSystemId = _cloudSystemId.value
                 systemTypeId = system.systemTypeId
                 modelId = system.modelId ?: 0
                 serialNumber = system.serialNumber
@@ -451,10 +468,19 @@ class SensitivityOptimisationValidationViewModel(
             // 2. Sync system with cloud to push the new location
             mdSystemsRepository.updateSystem(
                 context = context,
-                cloudId = system.cloudId,
-                localId = system.id,
-                tempId = system.tempId
+                cloudId = _cloudSystemId.value,
+                localId = _systemId.value,
+                tempId = _tempSystemId.value
             )
+
+            // 2.5 Refresh the cloudSystemId in the SOV record to ensure sync
+            val updatedSystem = mdSystemsRepository.getMetalDetectorsWithFullDetailsUsingLocalId(_systemId.value).firstOrNull()
+            val newCloudId = updatedSystem?.cloudId ?: 0
+            if (newCloudId != 0) {
+                InAppLogger.d("Updating SOV with new cloudSystemId: $newCloudId")
+                repository.updateCloudIdBySovId(sovId, newCloudId)
+                _cloudSystemId.value = newCloudId
+            }
 
             // 3. Save SOV and set end date
             saveSov() // Ensure all current state is saved

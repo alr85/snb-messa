@@ -52,7 +52,9 @@ import androidx.navigation.NavHostController
 import com.snb.inspect.AppChromeViewModel
 import com.snb.inspect.FetchResult
 import com.snb.inspect.R
+import com.snb.inspect.dataClasses.CheckweigherWithFullDetails
 import com.snb.inspect.dataClasses.MetalDetectorWithFullDetails
+import com.snb.inspect.repositories.CheckweigherSystemsRepository
 import com.snb.inspect.repositories.MetalDetectorSystemsRepository
 import com.snb.inspect.ui.theme.SnbDarkGrey
 import com.snb.inspect.ui.theme.SnbRed
@@ -62,6 +64,7 @@ import kotlinx.coroutines.launch
 fun ServiceSelectSystemScreen(
     navController: NavHostController,
     repository: MetalDetectorSystemsRepository,
+    cwRepository: CheckweigherSystemsRepository,
     customerID: Int,
     customerName: String,
     customerPostcode: String,
@@ -74,6 +77,7 @@ fun ServiceSelectSystemScreen(
 
     // Screen state - REACTIVE OBSERVATION
     val systems by repository.observeMetalDetectorsByCustomerId(customerID).collectAsState(initial = emptyList())
+    val cwSystems by cwRepository.observeCheckweighersByCustomerId(customerID).collectAsState(initial = emptyList())
     var searchQuery by rememberSaveable { mutableStateOf("") }
     var isRefreshing by remember { mutableStateOf(false) }
 
@@ -99,6 +103,12 @@ fun ServiceSelectSystemScreen(
             // ---- Main content ----
             val filteredSystems = remember(systems, searchQuery) {
                 systems
+                    .filter { it.serialNumber.contains(searchQuery, ignoreCase = true) }
+                    .sortedBy { it.serialNumber }
+            }
+
+            val filteredCwSystems = remember(cwSystems, searchQuery) {
+                cwSystems
                     .filter { it.serialNumber.contains(searchQuery, ignoreCase = true) }
                     .sortedBy { it.serialNumber }
             }
@@ -194,6 +204,7 @@ fun ServiceSelectSystemScreen(
 
             ComingSoonRow("Checkweighers")
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+
             ComingSoonRow("X-Ray Systems")
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
             ComingSoonRow("Static Scales")
@@ -298,8 +309,9 @@ fun ServiceSelectSystemScreen(
                                 scope.launch {
                                     isRefreshing = true
                                     try {
-                                        val success = syncMetalDetectors(context, repository)
-                                        if (success) {
+                                        val successMd = syncMetalDetectors(context, repository)
+                                        val successCw = syncCheckweighers(context, cwRepository)
+                                        if (successMd && successCw) {
                                             Toast.makeText(context, "Database refreshed successfully.", Toast.LENGTH_SHORT).show()
                                         } else {
                                             Toast.makeText(context, "Refresh failed. Using local data.", Toast.LENGTH_SHORT).show()
@@ -359,6 +371,103 @@ fun ServiceSelectSystemScreen(
             }
         }
     }
+}
+
+@Composable
+private fun CheckweigherCard(
+    cwSystem: CheckweigherWithFullDetails,
+    onClick: () -> Unit
+) {
+    val syncColor by animateColorAsState(
+        targetValue = if (cwSystem.isSynced) Color.Green else Color.Red,
+        label = "syncStatusColor"
+    )
+
+    Column(
+        modifier = Modifier
+            .padding(8.dp)
+            .clickable { onClick() }
+            .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(8.dp))
+            .width(180.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = cwSystem.serialNumber,
+                modifier = Modifier.weight(1f),
+                fontSize = 16.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Icon(
+                imageVector = if (cwSystem.isSynced) Icons.Default.CloudDone else Icons.Default.CloudOff,
+                contentDescription = if (cwSystem.isSynced) "Synced to cloud" else "Not synced to cloud",
+                tint = syncColor,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp)
+                .padding(8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            // Placeholder image for checkweighers
+            Image(
+                painter = painterResource(id = R.drawable.checkweigher_icon),
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Fit
+            )
+        }
+
+        Text(
+            text = cwSystem.modelDescription,
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            fontSize = 14.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Text(
+            text = cwSystem.lastLocation,
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            fontSize = 14.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+/**
+ * Sync unsynced systems up to the cloud, then pull down the latest systems.
+ */
+private suspend fun syncCheckweighers(
+    context: Context,
+    repository: CheckweigherSystemsRepository
+): Boolean {
+    Log.d("SyncCheckweighers", "Starting sync of checkweighers")
+    // repository.uploadUnsyncedSystems(context) // TODO: implement if needed
+    val fetchResult = repository.fetchAndStoreCwSystems()
+    repository.fetchAndStoreCwModels()
+    return fetchResult is FetchResult.Success
 }
 
 @Composable

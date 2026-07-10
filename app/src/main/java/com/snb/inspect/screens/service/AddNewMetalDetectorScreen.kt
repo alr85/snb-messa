@@ -393,8 +393,9 @@ suspend fun proceedWithCreation(
     snackbar: SnackbarHostState,
     navController: NavHostController
 ) {
+    // We try cloud first if network is up, but fallback to local if it fails
     if (com.snb.inspect.network.isNetworkAvailable(context)) {
-        createInCloud(
+        val success = createInCloud(
             repo = repo,
             customerID = customerID,
             serialNumber = serialNumber,
@@ -406,20 +407,26 @@ suspend fun proceedWithCreation(
             snackbar = snackbar,
             navController = navController
         )
-    } else {
-        createInLocal(
-            repo = repo,
-            customerID = customerID,
-            serialNumber = serialNumber,
-            apertureWidth = apertureWidth,
-            apertureHeight = apertureHeight,
-            systemTypeId = systemTypeId,
-            modelId = modelId,
-            lastLocation = lastLocation,
-            snackbar = snackbar,
-            navController = navController
-        )
+        
+        if (success) return // Done!
+        
+        // If we reach here, cloud failed (e.g. 404, 500, etc.)
+        InAppLogger.d("Cloud creation failed, falling back to local...")
     }
+
+    // Either network is offline, or Cloud API call failed
+    createInLocal(
+        repo = repo,
+        customerID = customerID,
+        serialNumber = serialNumber,
+        apertureWidth = apertureWidth,
+        apertureHeight = apertureHeight,
+        systemTypeId = systemTypeId,
+        modelId = modelId,
+        lastLocation = lastLocation,
+        snackbar = snackbar,
+        navController = navController
+    )
 }
 
 suspend fun createInCloud(
@@ -433,7 +440,7 @@ suspend fun createInCloud(
     lastLocation: String,
     snackbar: SnackbarHostState,
     navController: NavHostController
-) = withContext(Dispatchers.IO) {
+): Boolean = withContext(Dispatchers.IO) {
     try {
         val newCloudId = repo.addMetalDetectorToCloud(
             customerID = customerID,
@@ -455,14 +462,14 @@ suspend fun createInCloud(
                 snackbar.showSnackbar("✅ System added to cloud")
                 navController.popBackStack()
             }
+            return@withContext true
         } else {
-            withContext(Dispatchers.Main) { snackbar.showSnackbar("❌ Failed to add system to cloud.") }
+            InAppLogger.e("Cloud creation returned null/0 ID")
+            return@withContext false
         }
     } catch (e: Exception) {
-        Log.e("NewMD", "Cloud create failed", e)
-        withContext(Dispatchers.Main) {
-            snackbar.showSnackbar("❌ Failed to add system to cloud. Try again later.")
-        }
+        InAppLogger.e("Cloud create failed: ${e.message}")
+        return@withContext false
     }
 }
 

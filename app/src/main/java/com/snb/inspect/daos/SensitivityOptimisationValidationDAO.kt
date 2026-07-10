@@ -28,6 +28,12 @@ interface SensitivityOptimisationValidationDAO {
     @Query("UPDATE SensitivityOptimisationValidations SET isSynced = :isSynced WHERE sovId = :id")
     suspend fun updateIsSynced(id: String, isSynced: Boolean)
 
+    @Query("UPDATE SensitivityOptimisationValidations SET cloudSystemId = :cloudId WHERE systemId = :systemId")
+    suspend fun updateCloudIdBySystemId(systemId: Int, cloudId: Int)
+
+    @Query("UPDATE SensitivityOptimisationValidations SET cloudSystemId = :cloudId WHERE sovId = :sovId")
+    suspend fun updateCloudIdBySovId(sovId: String, cloudId: Int)
+
     @Delete
     suspend fun delete(sov: SensitivityOptimisationValidationLocal)
 }

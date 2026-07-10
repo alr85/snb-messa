@@ -23,8 +23,11 @@ import com.snb.inspect.calibrationViewModels.CustomerViewModel
 import com.snb.inspect.calibrationViewModels.NoticeViewModel
 import com.snb.inspect.calibrationViewModels.UserManualsViewModel
 import com.snb.inspect.calibrationViewModels.WeekendRotaViewModel
+import com.snb.inspect.repositories.CheckweigherCalibrationRepository
+import com.snb.inspect.repositories.CheckweigherSystemsRepository
 import com.snb.inspect.repositories.CodesOfPracticeRepository
 import com.snb.inspect.repositories.CustomerRepository
+import com.snb.inspect.repositories.CwSystemNotesRepository
 import com.snb.inspect.repositories.MdSystemNotesRepository
 import com.snb.inspect.repositories.MeasuringEquipmentRepository
 import com.snb.inspect.repositories.MetalDetectorModelsRepository
@@ -49,7 +52,9 @@ import com.snb.inspect.screens.menu.MyCalibrationsScreen
 import com.snb.inspect.screens.menu.MyValidationsScreen
 import com.snb.inspect.screens.menu.UserManualsListScreen
 import com.snb.inspect.screens.menu.WeekendRotaScreen
+import com.snb.inspect.screens.service.AddNewCheckweigherScreen
 import com.snb.inspect.screens.service.AddNewMetalDetectorScreen
+import com.snb.inspect.screens.service.CheckweigherSystemScreen
 import com.snb.inspect.screens.service.ManualViewerScreen
 import com.snb.inspect.screens.service.MetalDetectorConveyorSystemScreen
 import com.snb.inspect.screens.service.ServiceSelectSystemScreen
@@ -71,8 +76,11 @@ fun AppNavGraph(
     chromeVm: AppChromeViewModel,
     snackbarHostState: SnackbarHostState,
     repositoryMdSystems: MetalDetectorSystemsRepository,
+    repositoryCwSystems: CheckweigherSystemsRepository,
     calibrationRepository: MetalDetectorConveyorCalibrationRepository,
-    notesRepository: MdSystemNotesRepository
+    cwCalibrationRepository: CheckweigherCalibrationRepository,
+    notesRepository: MdSystemNotesRepository,
+    cwNotesRepository: CwSystemNotesRepository
 ) {
     val apiService = RetrofitClient.instance
 
@@ -198,6 +206,7 @@ fun AppNavGraph(
                 repositoryCustomer = repositoryCustomer,
                 repositoryMdModels = repositoryMdModels,
                 repositoryMdSystems = repositoryMdSystems,
+                repositoryCwSystems = repositoryCwSystems,
                 repositorySystemTypes = repositorySystemTypes,
                 repositoryMdSystemNotes = notesRepository,
                 detectionRepo = detectionRepo,
@@ -238,8 +247,21 @@ fun AppNavGraph(
                 customerPostcode = customerPostcode,
                 customerAddress = customerAddress,
                 repository = repositoryMdSystems,
+                cwRepository = repositoryCwSystems,
                 snackbarHostState = snackbarHostState,
                 chromeVm = chromeVm
+            )
+        }
+
+        composable("CheckweigherSystemScreen/{systemId}") { backStackEntry ->
+            val systemId = backStackEntry.arguments?.getString("systemId")?.toIntOrNull() ?: 0
+            CheckweigherSystemScreen(
+                navController = navController,
+                repositoryCW = repositoryCwSystems,
+                notesRepository = cwNotesRepository,
+                systemId = systemId,
+                chromeVm = chromeVm,
+                snackbarHostState = snackbarHostState
             )
         }
 
@@ -264,13 +286,19 @@ fun AppNavGraph(
 
         composable("myCalibrations") {
 
-            val dao = db.metalDetectorConveyorCalibrationDAO()
+            val mdDao = db.metalDetectorConveyorCalibrationDAO()
+            val cwDao = db.checkweigherCalibrationDAO()
+
+            val cwCalibrationRepository = CheckweigherCalibrationRepository(cwDao)
 
             MyCalibrationsScreen(
-                dao = dao,
+                mdDao = mdDao,
+                cwDao = cwDao,
                 customerRepository = repositoryCustomer,
-                systemsRepository = repositoryMdSystems,
-                calibrationRepository = calibrationRepository,
+                mdSystemsRepository = repositoryMdSystems,
+                cwSystemsRepository = repositoryCwSystems,
+                mdCalibrationRepository = calibrationRepository,
+                cwCalibrationRepository = cwCalibrationRepository,
                 apiService = apiService,
                 snackbarHostState = snackbarHostState
             )
@@ -308,6 +336,22 @@ fun AppNavGraph(
                 snackbarHostState = snackbarHostState
             )
 
+        }
+
+        composable("addNewCheckweigherScreen/{customerID}/{customerName}"){ backStackEntry ->
+            val customerID =
+                backStackEntry.arguments?.getString("customerID")?.toIntOrNull() ?: 0
+            val customerName =
+                backStackEntry.arguments?.getString("customerName") ?: ""
+
+            AddNewCheckweigherScreen(
+                navController = navController,
+                systemTypeRepository = repositorySystemTypes,
+                cwSystemsRepository = repositoryCwSystems,
+                customerID = customerID,
+                customerName = customerName,
+                snackbarHostState = snackbarHostState
+            )
         }
 
         composable(

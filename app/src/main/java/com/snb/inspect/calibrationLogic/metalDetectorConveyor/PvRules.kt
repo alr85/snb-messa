@@ -368,20 +368,6 @@ fun CalibrationMetalDetectorConveyorViewModel.autoUpdateBinFullSensorPvResult() 
 }
 
 // ---------------------------------------------------------
-// Backup Sensor PV Logic
-// ---------------------------------------------------------
-fun CalibrationMetalDetectorConveyorViewModel.getBackupSensorPvRules(): List<PvRule> =
-    getFailsafeRules("BACKUP", backupSensorFitted.value, backupSensorTestMethod.value,
-        backupSensorTestMethodOther.value, backupSensorTestResult.value,
-        backupSensorLatched.value, backupSensorCR.value,
-        requireBeltStop = isConveyor.value)
-
-fun CalibrationMetalDetectorConveyorViewModel.autoUpdateBackupSensorPvResult() {
-    val result = if (!pvRequired.value) "N/A" else getBackupSensorPvRules().calculateOverallStatus()
-    setBackupSensorTestPvResult(result)
-}
-
-// ---------------------------------------------------------
 // Air Pressure Sensor PV Logic
 // ---------------------------------------------------------
 fun CalibrationMetalDetectorConveyorViewModel.getAirPressureSensorPvRules(): List<PvRule> =
@@ -407,21 +393,6 @@ fun CalibrationMetalDetectorConveyorViewModel.getPackCheckSensorPvRules(): List<
 fun CalibrationMetalDetectorConveyorViewModel.autoUpdatePackCheckSensorPvResult() {
     val result = if (!pvRequired.value) "N/A" else getPackCheckSensorPvRules().calculateOverallStatus()
     setPackCheckSensorTestPvResult(result)
-}
-
-// ---------------------------------------------------------
-// Speed Sensor PV Logic (Note: requireBeltStop = false)
-// ---------------------------------------------------------
-fun CalibrationMetalDetectorConveyorViewModel.getSpeedSensorPvRules(): List<PvRule> =
-    getFailsafeRules("SPEED", speedSensorFitted.value, speedSensorTestMethod.value,
-        speedSensorTestMethodOther.value, speedSensorTestResult.value,
-        speedSensorLatched.value, speedSensorCR.value,
-        requireBeltStop = false,
-        includeLatchedCr = false)
-
-fun CalibrationMetalDetectorConveyorViewModel.autoUpdateSpeedSensorPvResult() {
-    val result = if (!pvRequired.value) "N/A" else getSpeedSensorPvRules().calculateOverallStatus()
-    setSpeedSensorTestPvResult(result)
 }
 
 // ---------------------------------------------------------
@@ -564,8 +535,6 @@ fun CalibrationMetalDetectorConveyorViewModel.getSmePvRules(): List<PvRule> {
         rules.add(PvRule("Bin door monitor test witnessed.", st, "OPERATOR_TEST_BIN_DOOR"))
         rules.add(PvRule("Air pressure sensor test witnessed.", st, "OPERATOR_TEST_AIR_FAIL"))
         rules.add(PvRule("Pack check sensor test witnessed.", st, "OPERATOR_TEST_PACK_CHECK"))
-        rules.add(PvRule("Speed sensor test witnessed.", st, "OPERATOR_TEST_SPEED_SENSOR"))
-        rules.add(PvRule("Backup sensor test witnessed.", st, "OPERATOR_TEST_BACKUP"))
         rules.add(PvRule("SME name recorded.", st, "SME_NAME"))
         return rules
     }
@@ -610,8 +579,6 @@ fun CalibrationMetalDetectorConveyorViewModel.getSmePvRules(): List<PvRule> {
     rules.add(PvRule("Bin door monitor test witnessed.", getWitnessStatus(operatorTestWitnessedBinDoor.value), "OPERATOR_TEST_BIN_DOOR"))
     rules.add(PvRule("Air pressure sensor test witnessed.", getWitnessStatus(operatorTestWitnessedAirFail.value), "OPERATOR_TEST_AIR_FAIL"))
     rules.add(PvRule("Pack check sensor test witnessed.", getWitnessStatus(operatorTestWitnessedPackCheck.value), "OPERATOR_TEST_PACK_CHECK"))
-    rules.add(PvRule("Speed sensor test witnessed.", getWitnessStatus(operatorTestWitnessedSpeedSensor.value), "OPERATOR_TEST_SPEED_SENSOR"))
-    rules.add(PvRule("Backup sensor test witnessed.", getWitnessStatus(operatorTestWitnessedBackup.value), "OPERATOR_TEST_BACKUP"))
 
     return rules
 }
@@ -633,10 +600,8 @@ fun CalibrationMetalDetectorConveyorViewModel.autoUpdateAllPvResults() {
     autoUpdateInfeedSensorPvResult()
     autoUpdateRejectConfirmSensorPvResult()
     autoUpdateBinFullSensorPvResult()
-    autoUpdateBackupSensorPvResult()
     autoUpdateAirPressureSensorPvResult()
     autoUpdatePackCheckSensorPvResult()
-    autoUpdateSpeedSensorPvResult()
     autoUpdateDetectNotificationPvResult()
     autoUpdateBinDoorMonitorPvResult()
     autoUpdateSmePvResult()
@@ -657,10 +622,8 @@ fun CalibrationMetalDetectorConveyorViewModel.setAllPvResultsNa() {
     setRejectConfirmSensorTestPvResult("N/A")
     setBinFullSensorTestPvResult("N/A")
     setLargeMetalTestPvResult("N/A")
-    setBackupSensorTestPvResult("N/A")
     setAirPressureSensorTestPvResult("N/A")
     setPackCheckSensorTestPvResult("N/A")
-    setSpeedSensorTestPvResult("N/A")
     setBinDoorMonitorTestPvResult("N/A")
     setDetectNotificationTestPvResult("N/A")
 }

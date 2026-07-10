@@ -34,24 +34,30 @@ fun LabeledTextFieldWithHelp(
 ) {
     var showHelpDialog by remember { mutableStateOf(false) }
 
-    val isNa = value == "N/A"
-    val inputDisabled = rowDisabled || isNa
+    // Single source of truth for UI state, helps prevent race conditions during N/A toggle
+    var isNaInternal by remember(value) { mutableStateOf(value == "N/A") }
+    val inputDisabled = rowDisabled || isNaInternal
 
     FormRowWrapper(
         label = label,
-        naButtonText = if (isNa) "Edit" else "N/A",
+        naButtonText = if (isNaInternal) "Edit" else "N/A",
         isDisabled = false, // keep wrapper consistent with your existing behavior
         pvStatus = pvStatus,
         pvRules = pvRules,
         onNaClick = if (isNAToggleEnabled) {
-            { onValueChange(if (isNa) "" else "N/A") }
+            {
+                val next = !isNaInternal
+                isNaInternal = next
+                onValueChange(if (next) "N/A" else "")
+            }
         } else null,
         onHelpClick = { showHelpDialog = true },
     ) { _ ->
         SimpleTextInput(
             value = value,
             onValueChange = { raw ->
-                if (!inputDisabled) onValueChange(raw)
+                // Guard against processing input if disabled or if it's the "N/A" sentinel
+                if (!inputDisabled && raw != "N/A") onValueChange(raw)
             },
             label = if (showInputLabel) label else "",
             keyboardType = keyboardType,

@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 07/07/2026
+### Fixed
+- An MD System cloud syncing issue has been identified and fixed
+
+### Changed
+- General tidy up of the metal detector calibration summary screen
+
+### Removed
+- Removed the PV rules for speed and backup sensors in the metal detector calibrations
+
 ## [1.2.0] - 03/07/2026
 ### Fixed
 - A bug that prevented forward navigation on the 'Measuring Equipment' screen in a metal detector calibration

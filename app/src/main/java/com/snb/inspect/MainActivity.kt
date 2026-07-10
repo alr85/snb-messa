@@ -80,7 +80,10 @@ import com.snb.inspect.calibrationViewModels.NoticeViewModel
 import com.snb.inspect.calibrationViewModels.NoticeViewModelFactory
 import com.snb.inspect.network.NetworkMonitor
 import com.snb.inspect.network.rememberIsOffline
+import com.snb.inspect.repositories.CheckweigherCalibrationRepository
+import com.snb.inspect.repositories.CheckweigherSystemsRepository
 import com.snb.inspect.repositories.CustomerRepository
+import com.snb.inspect.repositories.CwSystemNotesRepository
 import com.snb.inspect.repositories.MdSystemNotesRepository
 import com.snb.inspect.repositories.MeasuringEquipmentRepository
 import com.snb.inspect.repositories.MetalDetectorSystemsRepository
@@ -109,8 +112,11 @@ class MainActivity : ComponentActivity() {
     private lateinit var customerViewModel: CustomerViewModel
     private lateinit var noticeViewModel: NoticeViewModel
     private lateinit var mdSystemsRepository: MetalDetectorSystemsRepository
+    private lateinit var cwSystemsRepository: CheckweigherSystemsRepository
     private lateinit var calibrationRepository: MetalDetectorConveyorCalibrationRepository
+    private lateinit var cwCalibrationRepository: CheckweigherCalibrationRepository
     private lateinit var mdSystemNotesRepository: MdSystemNotesRepository
+    private lateinit var cwSystemNotesRepository: CwSystemNotesRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -137,8 +143,11 @@ class MainActivity : ComponentActivity() {
         val customerRepository = CustomerRepository(apiService, db, syncPrefs)
         val noticeRepository = NoticeRepository(apiService, db)
         mdSystemsRepository = MetalDetectorSystemsRepository(apiService, db)
+        cwSystemsRepository = CheckweigherSystemsRepository(apiService, db)
         calibrationRepository = MetalDetectorConveyorCalibrationRepository(db.metalDetectorConveyorCalibrationDAO())
+        cwCalibrationRepository = CheckweigherCalibrationRepository(db.checkweigherCalibrationDAO())
         mdSystemNotesRepository = MdSystemNotesRepository(apiService, db)
+        cwSystemNotesRepository = CwSystemNotesRepository(apiService, db)
 
         // Additional repositories for background sync
         val systemTypeRepository = SystemTypeRepository(apiService, db)
@@ -196,12 +205,15 @@ class MainActivity : ComponentActivity() {
                         customerViewModel = customerViewModel,
                         noticeViewModel = noticeViewModel,
                         mdSystemsRepository = mdSystemsRepository,
+                        cwSystemsRepository = cwSystemsRepository,
                         calibrationRepository = calibrationRepository,
+                        cwCalibrationRepository = cwCalibrationRepository,
                         systemTypeRepository = systemTypeRepository,
                         mdModelsRepository = mdModelsRepository,
                         retailerSensitivitiesRepository = retailerSensitivitiesRepository,
                         measuringEquipmentRepository = measuringEquipmentRepository,
                         mdSystemNotesRepository = mdSystemNotesRepository,
+                        cwSystemNotesRepository = cwSystemNotesRepository,
                         syncPrefs = syncPrefs
                     )
                 }
@@ -390,12 +402,15 @@ fun MyApp(
     customerViewModel: CustomerViewModel,
     noticeViewModel: NoticeViewModel,
     mdSystemsRepository: MetalDetectorSystemsRepository,
+    cwSystemsRepository: CheckweigherSystemsRepository,
     calibrationRepository: MetalDetectorConveyorCalibrationRepository,
+    cwCalibrationRepository: CheckweigherCalibrationRepository,
     systemTypeRepository: SystemTypeRepository,
     mdModelsRepository: MetalDetectorModelsRepository,
     retailerSensitivitiesRepository: RetailerSensitivitiesRepository,
     measuringEquipmentRepository: MeasuringEquipmentRepository,
     mdSystemNotesRepository: MdSystemNotesRepository,
+    cwSystemNotesRepository: CwSystemNotesRepository,
     syncPrefs: SyncPreferences
 ) {
 
@@ -473,6 +488,7 @@ fun MyApp(
                     // This now also resolving ID linking for pending calibrations.
                     InAppLogger.d("BACKGROUND SYNC: Step 2 - Pulling latest machine data...")
                     mdSystemsRepository.fetchAndStoreMdSystems()
+                    cwSystemsRepository.fetchAndStoreCwSystems()
                     
                     // 3. UPLOAD CALIBRATIONS (Now they definitely have cloudSystemIds and fresh CSVs)
                     InAppLogger.d("BACKGROUND SYNC: Step 3 - Uploading Calibrations...")
@@ -487,6 +503,7 @@ fun MyApp(
                     InAppLogger.d("BACKGROUND SYNC: Step 5 - Refreshing System Types, Models & Sensitivities...")
                     systemTypeRepository.fetchAndStoreSystemTypes()
                     mdModelsRepository.fetchAndStoreMdModels()
+                    cwSystemsRepository.fetchAndStoreCwModels()
                     retailerSensitivitiesRepository.fetchAndStoreConveyor()
                     retailerSensitivitiesRepository.fetchAndStoreFreefall()
                     retailerSensitivitiesRepository.fetchAndStorePipeline()
@@ -660,8 +677,11 @@ fun MyApp(
                     chromeVm = chromeVm,
                     snackbarHostState = snackbarHostState, // optional but recommended
                     repositoryMdSystems = mdSystemsRepository,
+                    repositoryCwSystems = cwSystemsRepository,
                     calibrationRepository = calibrationRepository,
-                    notesRepository = mdSystemNotesRepository
+                    cwCalibrationRepository = cwCalibrationRepository,
+                    notesRepository = mdSystemNotesRepository,
+                    cwNotesRepository = cwSystemNotesRepository
                 )
             }
 

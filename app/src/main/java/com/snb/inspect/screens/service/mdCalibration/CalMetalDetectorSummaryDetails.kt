@@ -129,6 +129,10 @@ fun CalMetalDetectorConveyorSummaryDetails(
         val detectNotificationResult by viewModel.detectNotificationResult.collectAsState()
         val sensitivityData by viewModel.sensitivityData
 
+        fun formatMm(value: String): String {
+            return if (value.isNotBlank() && value != "N/A") "${value}mm" else value
+        }
+
 
         Section(title = "Calibration Details", forceShowCheckbox = false) {
             SummaryItem(label = "Calibration ID", value = viewModel.calibrationId.value)
@@ -162,13 +166,17 @@ fun CalMetalDetectorConveyorSummaryDetails(
         if (viewModel.canPerformCalibration.value) {
 
             Section(title = "Conveyor Details") {
-                SummaryItem(label = "In-feed Belt Height", value = viewModel.infeedBeltHeight.value)
-                SummaryItem(label = "Out-feed Belt Height", value = viewModel.outfeedBeltHeight.value)
-                SummaryItem(label = "Conveyor Length", value = viewModel.conveyorLength.value)
-                SummaryItem(label = "Conveyor Handing", value = viewModel.conveyorHanding.value)
+//                SummaryItem(label = "In-feed Belt Height", value = viewModel.infeedBeltHeight.value)
+//                SummaryItem(label = "Out-feed Belt Height", value = viewModel.outfeedBeltHeight.value)
+//                SummaryItem(label = "Conveyor Length", value = viewModel.conveyorLength.value)
+//                SummaryItem(label = "Conveyor Handing", value = viewModel.conveyorHanding.value)
                 SummaryItem(label = "Belt Speed", value = viewModel.beltSpeed.value)
-                SummaryItem(label = "Reject System", value = viewModel.rejectDevice.value)
-                SummaryItem(label = "Reject System (Other)", value = viewModel.rejectDeviceOther.value)
+                val rejectDeviceDisplay = if (viewModel.rejectDevice.value == "Other" && viewModel.rejectDeviceOther.value.isNotBlank()) {
+                    viewModel.rejectDeviceOther.value
+                } else {
+                    viewModel.rejectDevice.value
+                }
+                SummaryItem(label = "Reject System", value = rejectDeviceDisplay)
                 SummaryItem(label = "Engineer Notes", value = viewModel.conveyorDetailsEngineerNotes.value)
             }
 
@@ -191,6 +199,11 @@ fun CalMetalDetectorConveyorSummaryDetails(
                 SummaryItem(
                     label = "Detector Lining, gaskets and seals",
                     value = "${viewModel.linerCondition.value} - ${viewModel.linerConditionComments.value}"
+                )
+
+                SummaryItem(
+                    label = "Cables Fittings",
+                    value = "${viewModel.cablesCondition.value} - ${viewModel.cablesConditionComments.value}"
                 )
 
                 SummaryItem(
@@ -261,15 +274,8 @@ fun CalMetalDetectorConveyorSummaryDetails(
 //                )
 //            }
 
-            Section(title = "Customer Sensitivity Requirements") {
-                SummaryItem(label = "Ferrous Requirement", value = viewModel.sensitivityRequirementFerrous.value)
-                SummaryItem(label = "Non-Ferrous Requirement", value = viewModel.sensitivityRequirementNonFerrous.value)
-                SummaryItem(label = "Stainless Requirement", value = viewModel.sensitivityRequirementStainless.value)
-                SummaryItem(label = "Engineer Notes", value = viewModel.sensitivityRequirementEngineerNotes.value)
-            }
-
             Section(title = "Ferrous Sensitivity (As Found)") {
-                SummaryItem(label = "Ferrous Sensitivity", value = viewModel.sensitivityAsFoundFerrous.value)
+                SummaryItem(label = "Ferrous Sensitivity", value = formatMm(viewModel.sensitivityAsFoundFerrous.value))
                 SummaryItem(label = "Sample Certificate Number", value = viewModel.sampleCertificateNumberAsFoundFerrous.value)
                 SummaryItem(label = "Detect/Reject Leading", value = "${viewModel.detectRejectAsFoundFerrousLeading.value} (${viewModel.peakSignalAsFoundFerrousLeading.value})")
                 SummaryItem(label = "Detect/Reject Middle", value = "${viewModel.detectRejectAsFoundFerrousMiddle.value} (${viewModel.peakSignalAsFoundFerrousMiddle.value})")
@@ -278,7 +284,7 @@ fun CalMetalDetectorConveyorSummaryDetails(
             }
 
             Section(title = "Non-Ferrous Sensitivity (As Found)") {
-                SummaryItem(label = "Non-Ferrous Sensitivity", value = viewModel.sensitivityAsFoundNonFerrous.value)
+                SummaryItem(label = "Non-Ferrous Sensitivity", value = formatMm(viewModel.sensitivityAsFoundNonFerrous.value))
                 SummaryItem(label = "Sample Certificate Number", value = viewModel.sampleCertificateNumberAsFoundNonFerrous.value)
                 SummaryItem(label = "Detect/Reject Leading", value = "${viewModel.detectRejectAsFoundNonFerrousLeading.value} (${viewModel.peakSignalAsFoundNonFerrousLeading.value})")
                 SummaryItem(label = "Detect/Reject Middle", value = "${viewModel.detectRejectAsFoundNonFerrousMiddle.value} (${viewModel.peakSignalAsFoundNonFerrousMiddle.value})")
@@ -287,7 +293,7 @@ fun CalMetalDetectorConveyorSummaryDetails(
             }
 
             Section(title = "Stainless Sensitivity (As Found)") {
-                SummaryItem(label = "Stainless Sensitivity", value = viewModel.sensitivityAsFoundStainless.value)
+                SummaryItem(label = "Stainless Sensitivity", value = formatMm(viewModel.sensitivityAsFoundStainless.value))
                 SummaryItem(label = "Sample Certificate Number", value = viewModel.sampleCertificateNumberAsFoundStainless.value)
                 SummaryItem(label = "Detect/Reject Leading", value = "${viewModel.detectRejectAsFoundStainlessLeading.value} (${viewModel.peakSignalAsFoundStainlessLeading.value})")
                 SummaryItem(label = "Detect/Reject Middle", value = "${viewModel.detectRejectAsFoundStainlessMiddle.value} (${viewModel.peakSignalAsFoundStainlessMiddle.value})")
@@ -313,7 +319,7 @@ fun CalMetalDetectorConveyorSummaryDetails(
 
 
             Section(title = "Ferrous Sensitivity (As Left)") {
-                SummaryItem(label = "Ferrous Sensitivity", value = viewModel.sensitivityAsLeftFerrous.value)
+                SummaryItem(label = "Ferrous Sensitivity", value = formatMm(viewModel.sensitivityAsLeftFerrous.value))
                 SummaryItem(label = "Sample Certificate Number", value = viewModel.sampleCertificateNumberFerrous.value)
                 SummaryItem(label = "Detect/Reject Leading", value = "${viewModel.detectRejectFerrousLeading.value} (${viewModel.peakSignalFerrousLeading.value})")
                 SummaryItem(label = "Detect/Reject Middle", value = "${viewModel.detectRejectFerrousMiddle.value} (${viewModel.peakSignalFerrousMiddle.value})")
@@ -323,7 +329,7 @@ fun CalMetalDetectorConveyorSummaryDetails(
             }
 
             Section(title = "Non-Ferrous Sensitivity (As Left)") {
-                SummaryItem(label = "Non-Ferrous Sensitivity", value = viewModel.sensitivityAsLeftNonFerrous.value)
+                SummaryItem(label = "Non-Ferrous Sensitivity", value = formatMm(viewModel.sensitivityAsLeftNonFerrous.value))
                 SummaryItem(label = "Sample Certificate Number", value = viewModel.sampleCertificateNumberNonFerrous.value)
                 SummaryItem(label = "Detect/Reject Leading", value = "${viewModel.detectRejectNonFerrousLeading.value} (${viewModel.peakSignalNonFerrousLeading.value})")
                 SummaryItem(label = "Detect/Reject Middle", value = "${viewModel.detectRejectNonFerrousMiddle.value} (${viewModel.peakSignalNonFerrousMiddle.value})")
@@ -333,7 +339,7 @@ fun CalMetalDetectorConveyorSummaryDetails(
             }
 
             Section(title = "Stainless Sensitivity (As Left)") {
-                SummaryItem(label = "Stainless Sensitivity", value = viewModel.sensitivityAsLeftStainless.value)
+                SummaryItem(label = "Stainless Sensitivity", value = formatMm(viewModel.sensitivityAsLeftStainless.value))
                 SummaryItem(label = "Sample Certificate Number", value = viewModel.sampleCertificateNumberStainless.value)
                 SummaryItem(label = "Detect/Reject Leading", value = "${viewModel.detectRejectStainlessLeading.value} (${viewModel.peakSignalStainlessLeading.value})")
                 SummaryItem(label = "Detect/Reject Middle", value = "${viewModel.detectRejectStainlessMiddle.value} (${viewModel.peakSignalStainlessMiddle.value})")
@@ -375,8 +381,12 @@ fun CalMetalDetectorConveyorSummaryDetails(
 
             Section(title = "Infeed Sensor") {
                 SummaryItem(label = "Fitted", value = viewModel.infeedSensorFitted.value.toString())
-                SummaryItem(label = "Test Method", value = "${viewModel.infeedSensorTestMethod.value} ")
-                SummaryItem(label = "Test Method (Other)", value = "${viewModel.infeedSensorTestMethodOther.value} ")
+                val infeedTestMethodDisplay = if (viewModel.infeedSensorTestMethod.value == "Other" && viewModel.infeedSensorTestMethodOther.value.isNotBlank()) {
+                    viewModel.infeedSensorTestMethodOther.value
+                } else {
+                    viewModel.infeedSensorTestMethod.value
+                }
+                SummaryItem(label = "Test Method", value = infeedTestMethodDisplay)
                 SummaryItem(label = "Test Result", value = infeedSensorTestResult.joinToString(", "))
                 SummaryItem(label = "Latched", value = viewModel.infeedSensorLatched.value.toString())
                 SummaryItem(label = "Controlled Restart", value = viewModel.infeedSensorCR.value.toString())
@@ -388,8 +398,12 @@ fun CalMetalDetectorConveyorSummaryDetails(
 
             Section(title = "Reject Confirm/Activation Sensor") {
                 SummaryItem(label = "Fitted", value = viewModel.rejectConfirmSensorFitted.value.toString())
-                SummaryItem(label = "Test Method", value = viewModel.rejectConfirmSensorTestMethod.value)
-                SummaryItem(label = "Test Method (Other)", value = viewModel.rejectConfirmSensorTestMethodOther.value)
+                val rejectConfirmTestMethodDisplay = if (viewModel.rejectConfirmSensorTestMethod.value == "Other" && viewModel.rejectConfirmSensorTestMethodOther.value.isNotBlank()) {
+                    viewModel.rejectConfirmSensorTestMethodOther.value
+                } else {
+                    viewModel.rejectConfirmSensorTestMethod.value
+                }
+                SummaryItem(label = "Test Method", value = rejectConfirmTestMethodDisplay)
                 SummaryItem(label = "Test Result", value = rejectConfirmSensorTestResult.joinToString(", "))
                 SummaryItem(label = "Stop Position", value = viewModel.rejectConfirmSensorStopPosition.value)
                 SummaryItem(label = "Latched", value = viewModel.rejectConfirmSensorLatched.value.toString())
@@ -400,8 +414,12 @@ fun CalMetalDetectorConveyorSummaryDetails(
 
             Section(title = "Bin Full Sensor") {
                 SummaryItem(label = "Fitted", value = viewModel.binFullSensorFitted.value.toString())
-                SummaryItem(label = "Test Method", value = viewModel.binFullSensorTestMethod.value)
-                SummaryItem(label = "Test Method (Other)", value = viewModel.binFullSensorTestMethodOther.value)
+                val binFullTestMethodDisplay = if (viewModel.binFullSensorTestMethod.value == "Other" && viewModel.binFullSensorTestMethodOther.value.isNotBlank()) {
+                    viewModel.binFullSensorTestMethodOther.value
+                } else {
+                    viewModel.binFullSensorTestMethod.value
+                }
+                SummaryItem(label = "Test Method", value = binFullTestMethodDisplay)
                 SummaryItem(label = "Test Result", value = binFullSensorTestResult.joinToString(", "))
                 SummaryItem(label = "Latched", value = viewModel.binFullSensorLatched.value.toString())
                 SummaryItem(label = "Controlled Restart", value = viewModel.binFullSensorCR.value.toString())
@@ -411,8 +429,12 @@ fun CalMetalDetectorConveyorSummaryDetails(
 
             Section(title = "Air Pressure Sensor") {
                 SummaryItem(label = "Fitted", value = viewModel.airPressureSensorFitted.value.toString())
-                SummaryItem(label = "Test Method", value = viewModel.airPressureSensorTestMethod.value)
-                SummaryItem(label = "Test Method (Other)", value = viewModel.airPressureSensorTestMethodOther.value)
+                val airPressureTestMethodDisplay = if (viewModel.airPressureSensorTestMethod.value == "Other" && viewModel.airPressureSensorTestMethodOther.value.isNotBlank()) {
+                    viewModel.airPressureSensorTestMethodOther.value
+                } else {
+                    viewModel.airPressureSensorTestMethod.value
+                }
+                SummaryItem(label = "Test Method", value = airPressureTestMethodDisplay)
                 SummaryItem(label = "Test Result", value = airPressureSensorTestResult.joinToString(", "))
                 SummaryItem(label = "Latched", value = viewModel.airPressureSensorLatched.value.toString())
                 SummaryItem(label = "Controlled Restart", value = viewModel.airPressureSensorCR.value.toString())
@@ -435,8 +457,12 @@ fun CalMetalDetectorConveyorSummaryDetails(
 
             Section(title = "Backup Sensor") {
                 SummaryItem(label = "Fitted", value = viewModel.backupSensorFitted.value.toString())
-                SummaryItem(label = "Test Method", value = viewModel.backupSensorTestMethod.value)
-                SummaryItem(label = "Test Method (Other)", value = viewModel.backupSensorTestMethodOther.value)
+                val backupTestMethodDisplay = if (viewModel.backupSensorTestMethod.value == "Other" && viewModel.backupSensorTestMethodOther.value.isNotBlank()) {
+                    viewModel.backupSensorTestMethodOther.value
+                } else {
+                    viewModel.backupSensorTestMethod.value
+                }
+                SummaryItem(label = "Test Method", value = backupTestMethodDisplay)
                 SummaryItem(label = "Test Result", value = backupSensorTestResult.joinToString(", "))
                 SummaryItem(label = "Latched", value = viewModel.backupSensorLatched.value.toString())
                 SummaryItem(label = "Controlled Restart", value = viewModel.backupSensorCR.value.toString())
@@ -448,8 +474,12 @@ fun CalMetalDetectorConveyorSummaryDetails(
 
             Section(title = "Pack Check Sensor") {
                 SummaryItem(label = "Fitted", value = viewModel.packCheckSensorFitted.value.toString())
-                SummaryItem(label = "Test Method", value = viewModel.packCheckSensorTestMethod.value)
-                SummaryItem(label = "Test Method (Other)", value = viewModel.packCheckSensorTestMethodOther.value)
+                val packCheckTestMethodDisplay = if (viewModel.packCheckSensorTestMethod.value == "Other" && viewModel.packCheckSensorTestMethodOther.value.isNotBlank()) {
+                    viewModel.packCheckSensorTestMethodOther.value
+                } else {
+                    viewModel.packCheckSensorTestMethod.value
+                }
+                SummaryItem(label = "Test Method", value = packCheckTestMethodDisplay)
                 SummaryItem(label = "Test Result", value = packCheckSensorTestResult.joinToString(", "))
                 SummaryItem(label = "Latched", value = viewModel.packCheckSensorLatched.value.toString())
                 SummaryItem(label = "Controlled Restart", value = viewModel.packCheckSensorCR.value.toString())
@@ -459,8 +489,12 @@ fun CalMetalDetectorConveyorSummaryDetails(
 
             Section(title = "Speed Sensor") {
                 SummaryItem(label = "Fitted", value = viewModel.speedSensorFitted.value.toString())
-                SummaryItem(label = "Test Method", value = viewModel.speedSensorTestMethod.value)
-                SummaryItem(label = "Test Method (Other)", value = viewModel.speedSensorTestMethodOther.value)
+                val speedTestMethodDisplay = if (viewModel.speedSensorTestMethod.value == "Other" && viewModel.speedSensorTestMethodOther.value.isNotBlank()) {
+                    viewModel.speedSensorTestMethodOther.value
+                } else {
+                    viewModel.speedSensorTestMethod.value
+                }
+                SummaryItem(label = "Test Method", value = speedTestMethodDisplay)
                 SummaryItem(label = "Test Result", value = speedSensorTestResult.joinToString(", "))
                 SummaryItem(label = "P.V. Result", value = viewModel.speedSensorTestPvResult.value)
                 SummaryItem(label = "Engineer Notes", value = viewModel.speedSensorEngineerNotes.value)
@@ -478,13 +512,13 @@ fun CalMetalDetectorConveyorSummaryDetails(
                 SummaryItem(label = "Operator Test Witnessed", value = viewModel.operatorTestWitnessed.value.toString())
                 SummaryItem(label = "Operator Name", value = viewModel.operatorName.value)
                 SummaryItem(label = "Ferrous Cert", value = viewModel.operatorTestResultCertNumberFerrous.value)
-                SummaryItem(label = "Ferrous Result", value = viewModel.operatorTestResultFerrous.value)
+                SummaryItem(label = "Ferrous Result", value = formatMm(viewModel.operatorTestResultFerrous.value))
                 SummaryItem(label = "Non-Ferrous Cert", value = viewModel.operatorTestResultCertNumberNonFerrous.value)
-                SummaryItem(label = "Non-Ferrous Result", value = viewModel.operatorTestResultNonFerrous.value)
+                SummaryItem(label = "Non-Ferrous Result", value = formatMm(viewModel.operatorTestResultNonFerrous.value))
                 SummaryItem(label = "Stainless Cert", value = viewModel.operatorTestResultCertNumberStainless.value)
-                SummaryItem(label = "Stainless Result", value = viewModel.operatorTestResultStainless.value)
+                SummaryItem(label = "Stainless Result", value = formatMm(viewModel.operatorTestResultStainless.value))
                 SummaryItem(label = "Large Metal Cert", value = viewModel.operatorTestResultCertNumberLargeMetal.value)
-                SummaryItem(label = "Large Metal Result", value = viewModel.operatorTestResultLargeMetal.value)
+                SummaryItem(label = "Large Metal Result", value = formatMm(viewModel.operatorTestResultLargeMetal.value))
                 SummaryItem(label = "SME Name", value = viewModel.smeName.value)
                 SummaryItem(label = "Engineer Notes", value = viewModel.smeEngineerNotes.value)
                 SummaryItem(label = "P.V. Result", value = viewModel.smeTestPvResult.value)

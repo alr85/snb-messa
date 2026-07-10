@@ -6,6 +6,10 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.snb.inspect.daos.CheckweigherCalibrationDAO
+import com.snb.inspect.daos.CwModelsDAO
+import com.snb.inspect.daos.CwSystemNotesDAO
+import com.snb.inspect.daos.CwSystemsDAO
 import com.snb.inspect.daos.CodesOfPracticeDAO
 import com.snb.inspect.daos.ConveyorDao
 import com.snb.inspect.daos.CustomerDAO
@@ -20,6 +24,10 @@ import com.snb.inspect.daos.PipelineDao
 import com.snb.inspect.daos.SystemTypeDAO
 import com.snb.inspect.daos.UserDao
 import com.snb.inspect.daos.UserManualsDAO
+import com.snb.inspect.dataClasses.CheckweigherCalibrationLocal
+import com.snb.inspect.dataClasses.CwModelsLocal
+import com.snb.inspect.dataClasses.CwSystemNoteLocal
+import com.snb.inspect.dataClasses.CwSystemLocal
 import com.snb.inspect.dataClasses.CodeOfPracticeLocal
 import com.snb.inspect.dataClasses.ConveyorRetailerSensitivitiesEntity
 import com.snb.inspect.dataClasses.CustomerLocal
@@ -53,10 +61,14 @@ import com.snb.inspect.dataClasses.UserManualLocal
         MeasuringEquipmentLocal::class,
         SensitivityOptimisationValidationLocal::class,
         CodeOfPracticeLocal::class,
-        MdSystemNoteLocal::class
+        MdSystemNoteLocal::class,
+        CheckweigherCalibrationLocal::class,
+        CwModelsLocal::class,
+        CwSystemLocal::class,
+        CwSystemNoteLocal::class
 
     ],
-    version = 74,
+    version = 75,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -68,6 +80,10 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun mdSystemDAO(): MetalDetectorSystemsDAO
     abstract fun systemTypeDAO(): SystemTypeDAO
     abstract fun metalDetectorConveyorCalibrationDAO(): MetalDetectorConveyorCalibrationDAO
+    abstract fun checkweigherCalibrationDAO(): CheckweigherCalibrationDAO
+    abstract fun cwModelsDAO(): CwModelsDAO
+    abstract fun cwSystemsDAO(): CwSystemsDAO
+    abstract fun cwSystemNotesDAO(): CwSystemNotesDAO
     abstract fun sensitivityOptimisationValidationDAO(): SensitivityOptimisationValidationDAO
 
     abstract fun conveyorDao(): ConveyorDao

@@ -5,12 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 07/07/2026
+### Fixed
+- Improved the fall-back strategy for adding new systems without network connection
+- A cloud syncing issue has been identified and fixed
+- 'Cable Fittings' is no longer missing from the summary page
+
+### Changed
+- Combined the Reject System and Reject System (Other) in the metal detector calibration 
+### Removed
+- Removed the conveyor dimensions from the metal detector calibration summary page
+- Removed the PV rules for speed and backup sensors in the metal detector calibrations
+
 ## [1.2.0] - 03/07/2026
 ### Fixed
 - A bug that prevented forward navigation on the 'Measuring Equipment' screen in a metal detector calibration
 
 ### Changed
 - The colour of the forward navigation button in metal detector calibrations now reflects the current screens completion status. Green for complete, red for incomplete.
+- The 'About App' screen now shows the full change log rather than the latest update
 
 ### Added
 - Metal Detector Validations are now up and running.

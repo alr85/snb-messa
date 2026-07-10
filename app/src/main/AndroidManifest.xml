@@ -33,6 +33,10 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.MECCA"/>
 
+        <activity android:name="com.snb.inspect.activities.CheckweigherCalibrationActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.MECCA"/>
+
         <activity android:name="com.snb.inspect.activities.SensitivityOptimisationValidationActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.MECCA"/>

@@ -9,6 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import com.snb.inspect.core.InputTransforms
 import com.snb.inspect.calibrationViewModels.SensitivityOptimisationValidationViewModel
 import com.snb.inspect.formModules.CalibrationHeader
 import com.snb.inspect.formModules.LabeledReadOnlyField
@@ -75,22 +77,19 @@ fun SovStartScreen(viewModel: SensitivityOptimisationValidationViewModel) {
                 label = "Location",
                 value = viewModel.newLocation.value,
                 onValueChange = viewModel::setNewLocation,
-                helpText = "Verify or update the system location reference."
+                helpText = "Verify or update the system location reference.",
+                isNAToggleEnabled = false
             )
             FormSpacer()
 
             LabeledTextFieldWithHelp(
                 label = "Belt Speed (m/m)",
                 value = viewModel.beltSpeed.value,
-                onValueChange = { input ->
-                    val filtered = input.filter { it.isDigit() }
-                    if (filtered.length <= 3) {
-                        viewModel.beltSpeed.value = filtered
-                    }
-                },
+                onValueChange = { viewModel.beltSpeed.value = it },
                 helpText = "Operating speed of the belt/system.",
                 keyboardType = KeyboardType.Number,
-                maxLength = 3
+                maxLength = 3,
+                transformInput = InputTransforms.digitsOnly
             )
             FormSpacer()
 

@@ -12,15 +12,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.autoUpdateSpeedSensorPvResult
-import com.snb.inspect.calibrationLogic.metalDetectorConveyor.getSpeedSensorPvRules
+
 import com.snb.inspect.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
 import com.snb.inspect.formModules.CalibrationHeader
 import com.snb.inspect.formModules.LabeledDropdownWithHelp
 import com.snb.inspect.formModules.LabeledMultiSelectDropdownWithHelp
 import com.snb.inspect.formModules.LabeledTextFieldWithHelp
 import com.snb.inspect.formModules.LabeledYesNoNaSegmentedSwitchWithHelp
-import com.snb.inspect.formModules.PvSectionSummaryCard
+//import com.snb.inspect.formModules.PvSectionSummaryCard
 import com.snb.inspect.formModules.YesNoState
 import com.snb.inspect.ui.theme.FormSpacer
 import com.snb.inspect.ui.theme.ScrollableWithScrollbar
@@ -93,14 +92,14 @@ fun CalMetalDetectorConveyorSpeedSensor(
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
-    val rules = remember(
-        fitted,
-        testMethod,
-        testMethodOther,
-        testResult
-    ) {
-        viewModel.getSpeedSensorPvRules()
-    }
+//    val rules = remember(
+//        fitted,
+//        testMethod,
+//        testMethodOther,
+//        testResult
+//    ) {
+//        //viewModel.getSpeedSensorPvRules()
+//    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         CalibrationHeader(
@@ -134,13 +133,12 @@ fun CalMetalDetectorConveyorSpeedSensor(
                             viewModel.setSpeedSensorLatched(YesNoState.UNSPECIFIED)
                             viewModel.setSpeedSensorCR(YesNoState.UNSPECIFIED)
                         }
-                        viewModel.autoUpdateSpeedSensorPvResult()
                     },
                     helpText = "Select if a speed sensor is fitted and used for belt speed monitoring / failsafe operation.",
                     onInputValueChange = {
                     },
-                    pvStatus = if (pvRequired) rules.find { it.ruleId == "SPEED_FITTED" }?.status?.name else null,
-                    pvRules = if (pvRequired) rules.filter { it.ruleId == "SPEED_FITTED" } else emptyList()
+//                    pvStatus = if (pvRequired) rules.find { it.ruleId == "SPEED_FITTED" }?.status?.name else null,
+//                    pvRules = if (pvRequired) rules.filter { it.ruleId == "SPEED_FITTED" } else emptyList()
                 )
 
                 FormSpacer()
@@ -153,12 +151,11 @@ fun CalMetalDetectorConveyorSpeedSensor(
                         onSelectionChange = {
                             if (it != "Other") viewModel.setSpeedSensorTestMethodOther("")
                             viewModel.setSpeedSensorTestMethod(it)
-                            viewModel.autoUpdateSpeedSensorPvResult()
                         },
                         helpText = "Method used to trigger the speed sensor fault.",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.find { it.ruleId == "SPEED_METHOD" }?.status?.name else null,
-                        pvRules = if (pvRequired) rules.filter { it.ruleId == "SPEED_METHOD" } else emptyList()
+//                        pvStatus = if (pvRequired) rules.find { it.ruleId == "SPEED_METHOD" }?.status?.name else null,
+//                        pvRules = if (pvRequired) rules.filter { it.ruleId == "SPEED_METHOD" } else emptyList()
                     )
 
                     FormSpacer()
@@ -169,7 +166,6 @@ fun CalMetalDetectorConveyorSpeedSensor(
                             value = testMethodOther,
                             onValueChange = {
                                 viewModel.setSpeedSensorTestMethodOther(it)
-                                viewModel.autoUpdateSpeedSensorPvResult()
                             },
                             helpText = "Enter the custom test method.",
                             isNAToggleEnabled = false,
@@ -191,23 +187,22 @@ fun CalMetalDetectorConveyorSpeedSensor(
                             }
 
                             viewModel.setSpeedSensorTestResult(cleaned)
-                            viewModel.autoUpdateSpeedSensorPvResult()
                         },
                         helpText = "Select the observed failsafe action.",
                         isNAToggleEnabled = false,
-                        pvStatus = if (pvRequired) rules.find { it.ruleId == "SPEED_RESULT" }?.status?.name else null,
-                        pvRules = if (pvRequired) rules.filter { it.ruleId == "SPEED_RESULT" } else emptyList()
+//                        pvStatus = if (pvRequired) rules.find { it.ruleId == "SPEED_RESULT" }?.status?.name else null,
+//                        pvRules = if (pvRequired) rules.filter { it.ruleId == "SPEED_RESULT" } else emptyList()
                     )
 
                     if (!pvRequired) FormSpacer()
                 }
 
-                if (pvRequired) {
-                    PvSectionSummaryCard(
-                        title = "Speed sensor test P.V. Summary",
-                        rules = rules
-                    )
-                }
+//                if (pvRequired) {
+//                    PvSectionSummaryCard(
+//                        title = "Speed sensor test P.V. Summary",
+//                        rules = rules
+//                    )
+//                }
 
                 LabeledTextFieldWithHelp(
                     label = "Engineer Comments",

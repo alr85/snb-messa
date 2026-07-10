@@ -261,7 +261,7 @@ fun MetalDetectorConveyorSystemScreen(
 
                     if (newCloudId != null && newCloudId != 0) {
 
-                        dao.updateCalibrationWithCloudId(system.tempId, newCloudId)
+                        repositoryMD.linkCalibrationsAndValidations(system.id, newCloudId)
 
                         // SYNC NOTES: Ensure notes written while machine was local-only are uploaded
                         notesRepository.syncNotes(context, system.id, newCloudId)
