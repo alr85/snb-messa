@@ -1,0 +1,59 @@
+Checkweigher Calibrations
+*PV Tests are not required for checkweighers
+Calibration Start
+•	Serial Number (Not editable. Retrieved from database at the start of activity)
+•	Make/Model (Not editable. Retrieved from database at the start of activity)
+•	Location (Retrieved from database at the start of activity. Editable. Will update the database at the end of activity like the metal detector calibrations and validations.)
+•	Able to Calibrate? (Yes/No. If No, Reason for not calibrating should become available)
+•	Reason for not calibrating (Only available if above answer is No)
+Scale Details
+•	Loadcell type
+•	Scale Interval
+•	Max capacity
+System Details
+•	Belt width
+•	Weigh conveyor length 
+•	Reject type (drop down list, same as metal detectors)
+•	Printer/data capture available (drop down: Printer/USB/Network)
+•	Reject mode (Drop down: E mark / Minimum weight)
+System Checklist. (Same as metal detectors:  Good/OK/Poor/NA. Comments must be provided if Poor selected)
+•	Conveyor belts 
+•	Safety Circuit
+•	Guarding
+•	Vibration
+•	Weigh table free from obstruction
+•	Product transfer
+•	Machine stable
+Failsafe’s (Same as metal detectors, each failsafe needs fitted? Test method, result etc. PV rules are not required)
+•	Infeed sensor
+•	Reject confirm sensor
+•	Bin full sensor
+•	Air sensor
+•	Reject bin door monitor
+Test Product Details
+•	Description
+•	Length
+•	Width
+•	Height
+•	Gross weight
+•	Tare weight
+•	Product library reference
+Static Scale Reference (This is details of a static scale that belongs to the customer that the engineer uses to weigh his test pack)
+•	Make/Model
+•	Certificate/Calibration Reference
+•	Expiry Date
+Engineer Test Weight (This will be a drop down menu that is populated from our Measuring Equipment table already in the database)
+•	ID
+Dynamic Test As Found
+This should basically be the same as the Dynamic accuracy test, we already have in the settings menu
+Static Test As Found
+•	Off centre loading test
+•	Repeatability Test
+Adjustments Made
+•	Notes for any adjustments that were made(if applicable)
+Dynamic Test As Left
+If applicable
+Static Test As Left
+If applicable
+
+“The checkweigher was tested and calibrated in accordance with SNB Electronic Services Ltd procedure for automatic checkweighing equipment, using traceable test equipment. The procedure is based on applicable customer requirements, manufacturer guidance, UK packaged goods quantity control requirements where relevant, and the principles of OIML R 51 for automatic catchweighing instruments.”

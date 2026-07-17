@@ -202,33 +202,33 @@ fun ServiceSelectSystemScreen(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
-            ComingSoonRow("Checkweighers")
-
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-
-//            Text(
-//                text = "Checkweighers",
-//                style = MaterialTheme.typography.titleMedium,
-//                modifier = Modifier.padding(bottom = 8.dp)
-//            )
+//            ComingSoonRow("Checkweighers")
 //
-//            LazyRow(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(bottom = 16.dp)
-//            ) {
-//                items(
-//                    items = filteredCwSystems,
-//                    key = { it.id }
-//                ) { cwSystem ->
-//                    CheckweigherCard(
-//                        cwSystem = cwSystem,
-//                        onClick = {
-//                            navController.navigate("CheckweigherSystemScreen/${cwSystem.id}")
-//                        }
-//                    )
-//                }
-//            }
+//            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+
+            Text(
+                text = "Checkweighers",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            ) {
+                items(
+                    items = filteredCwSystems,
+                    key = { it.id }
+                ) { cwSystem ->
+                    CheckweigherCard(
+                        cwSystem = cwSystem,
+                        onClick = {
+                            navController.navigate("CheckweigherSystemScreen/${cwSystem.id}")
+                        }
+                    )
+                }
+            }
 
             ComingSoonRow("X-Ray Systems")
 
@@ -296,31 +296,31 @@ fun ServiceSelectSystemScreen(
                             }
                         }
 
-//                        FloatingActionButton(
-//                            modifier = Modifier.fillMaxWidth(),
-//                            onClick = {
-//                                showMenu = false
-//                                val encodedName = Uri.encode(customerName)
-//                                navController.navigate("addNewCheckweigherScreen/$customerID/$encodedName")
-//                            },
-//                            containerColor = Color.White,
-//                            contentColor = SnbRed,
-//                        ) {
-//                            Row(
-//                                modifier = Modifier.padding(horizontal = 16.dp),
-//                                verticalAlignment = Alignment.CenterVertically,
-//                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-//                            ) {
-//                                Icon(Icons.Default.Add, null, modifier = Modifier.size(24.dp))
-//                                Text(
-//                                    text = "New Checkweigher",
-//                                    style = MaterialTheme.typography.titleMedium,
-//                                    fontWeight = FontWeight.Bold,
-//                                    modifier = Modifier.weight(1f),
-//                                    color = SnbDarkGrey
-//                                )
-//                            }
-//                        }
+                        FloatingActionButton(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                showMenu = false
+                                val encodedName = Uri.encode(customerName)
+                                navController.navigate("addNewCheckweigherScreen/$customerID/$encodedName")
+                            },
+                            containerColor = Color.White,
+                            contentColor = SnbRed,
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(Icons.Default.Add, null, modifier = Modifier.size(24.dp))
+                                Text(
+                                    text = "New Checkweigher",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.weight(1f),
+                                    color = SnbDarkGrey
+                                )
+                            }
+                        }
 
                         // Navigate to Site
                         FloatingActionButton(
