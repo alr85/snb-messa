@@ -1,19 +1,17 @@
 package com.snb.inspect.util
 
-import com.snb.inspect.dataClasses.MetalDetectorWithFullDetails
-
-sealed class SerialCheckResult {
+sealed class SerialCheckResult<out T> {
     // Cloud answers
-    data class Exists(val system: MetalDetectorWithFullDetails?) : SerialCheckResult()
-    object NotFound : SerialCheckResult()
+    data class Exists<T>(val system: T?) : SerialCheckResult<T>()
+    object NotFound : SerialCheckResult<Nothing>()
 
     // Fuzzy match (looks like an existing one but isn't exact)
-    data class FuzzyMatch(val system: MetalDetectorWithFullDetails) : SerialCheckResult()
+    data class FuzzyMatch<T>(val system: T) : SerialCheckResult<T>()
 
     // Offline answers from local cache/DB
-    data class ExistsLocalOffline(val system: MetalDetectorWithFullDetails?) : SerialCheckResult()
-    object NotFoundLocalOffline : SerialCheckResult()
+    data class ExistsLocalOffline<T>(val system: T?) : SerialCheckResult<T>()
+    object NotFoundLocalOffline : SerialCheckResult<Nothing>()
 
     // We tried and failed (timeout, 500s, DNS tantrums)
-    data class Error(val message: String?) : SerialCheckResult()
+    data class Error(val message: String?) : SerialCheckResult<Nothing>()
 }

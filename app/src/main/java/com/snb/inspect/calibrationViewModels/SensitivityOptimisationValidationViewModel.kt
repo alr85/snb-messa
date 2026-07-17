@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
 class SensitivityOptimisationValidationViewModel(
+    private val context: android.content.Context,
     private val repository: SensitivityOptimisationValidationRepository,
     private val mdSystemsRepository: MetalDetectorSystemsRepository,
     val sovId: String,
@@ -385,7 +386,7 @@ class SensitivityOptimisationValidationViewModel(
                 lastLocation = this@SensitivityOptimisationValidationViewModel.lastLocation.value
                 newLocation = this@SensitivityOptimisationValidationViewModel.newLocation.value
             }
-            repository.insertOrUpdate(sov)
+            repository.insertOrUpdate(context, sov)
         }
     }
 
@@ -488,7 +489,7 @@ class SensitivityOptimisationValidationViewModel(
             val existing = repository.getById(sovId)
             if (existing != null) {
                 existing.endDate = LocalDateTime.now().toString()
-                repository.insertOrUpdate(existing)
+                repository.insertOrUpdate(context, existing)
             }
 
             // 4. Upload the SOV CSV

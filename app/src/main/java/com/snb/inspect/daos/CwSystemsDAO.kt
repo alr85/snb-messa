@@ -72,4 +72,30 @@ interface CwSystemsDAO {
         WHERE s.id = :id
     """)
     suspend fun getCheckweigherWithFullDetailsUsingLocalId(id: Int): CheckweigherWithFullDetails?
+
+    @Query("""
+        SELECT s.*, 
+               COALESCE(m.modelDescription, 'Unknown Model') as modelDescription, 
+               COALESCE(st.systemType, 'Checkweigher') as systemType, 
+               COALESCE(c.name, 'Unknown Customer') as customerName 
+        FROM CwSystems s
+        LEFT JOIN CwModels m ON s.modelId = m.meaId
+        LEFT JOIN systemTypes st ON s.systemTypeId = st.id
+        LEFT JOIN customer c ON s.customerId = c.fusionID
+        WHERE s.serialNumber = :serialNumber
+        LIMIT 1
+    """)
+    suspend fun getCheckweigherWithFullDetailsBySerialNumber(serialNumber: String): CheckweigherWithFullDetails?
+
+    @Query("""
+        SELECT s.*, 
+               COALESCE(m.modelDescription, 'Unknown Model') as modelDescription, 
+               COALESCE(st.systemType, 'Checkweigher') as systemType, 
+               COALESCE(c.name, 'Unknown Customer') as customerName 
+        FROM CwSystems s
+        LEFT JOIN CwModels m ON s.modelId = m.meaId
+        LEFT JOIN systemTypes st ON s.systemTypeId = st.id
+        LEFT JOIN customer c ON s.customerId = c.fusionID
+    """)
+    suspend fun getAllCheckweighersWithFullDetails(): List<CheckweigherWithFullDetails>
 }

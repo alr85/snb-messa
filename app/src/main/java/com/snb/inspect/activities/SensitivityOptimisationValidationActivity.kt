@@ -52,6 +52,7 @@ class SensitivityOptimisationValidationActivity : ComponentActivity() {
         val detectionSetting8label = intent.getStringExtra("DETECTION_SETTING_8_LABEL") ?: ""
 
         val factory = SensitivityOptimisationValidationViewModelFactory(
+            context = applicationContext,
             repository = repository,
             mdSystemsRepository = mdSystemsRepository,
             sovId = sovId,

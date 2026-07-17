@@ -52,43 +52,67 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
     var currentScreen by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }
 
     val pvRequired by viewModel.pvRequired
+    val canPerformCalibration by viewModel.canPerformCalibration
+    val shouldSkip = !canPerformCalibration
 
     // Route order for progress & forward/back detection
-    val routeOrder = remember(pvRequired) {
-        listOfNotNull(
-            "MetalDetectorConveyorCalibrationStart/{calibrationId}",
-            "CalMetalDetectorConveyorConveyorDetails",
-            "CalMetalDetectorConveyorSystemChecklist",
-            "CalMetalDetectorConveyorIndicators",
-            "CalMetalDetectorConveyorProductDetails",
-            "CalMetalDetectorConveyorSensitivityRequirements",
-            "CalMetalDetectorConveyorDetectionSettingsAsFound",
-            "CalMetalDetectorConveyorFerrousTestAsFound",
-            "CalMetalDetectorConveyorNonFerrousTestAsFound",
-            "CalMetalDetectorConveyorStainlessTestAsFound",
-            "CalMetalDetectorConveyorFerrousTest",
-            "CalMetalDetectorConveyorNonFerrousTest",
-            "CalMetalDetectorConveyorStainlessTest",
-            "CalMetalDetectorConveyorDetectionSettingsAsLeft",
-            "CalMetalDetectorConveyorRejectSettings",
-            "CalMetalDetectorConveyorLargeMetalTest",
-            "CalMetalDetectorConveyorInfeedPEC",
-            "CalMetalDetectorConveyorRejectConfirmPEC",
-            "CalMetalDetectorConveyorBinFullPEC",
-            "CalMetalDetectorConveyorAirPressureSensor",
-            "CalMetalDetectorConveyorBinDoorMonitor",
-            "CalMetalDetectorConveyorBackupPEC",
-            "CalMetalDetectorConveyorPackCheckSensor",
-            "CalMetalDetectorConveyorSpeedSensor",
-            "CalMetalDetectorConveyorDetectNotification",
-            if (pvRequired) "CalMetalDetectorConveyorSmeDetails" else null,
-            "CalMetalDetectorConveyorEquipmentUsed",
-            "CalMetalDetectorConveyorSummary"
-        )
+    val routeOrder = remember(pvRequired, shouldSkip) {
+        if (shouldSkip) {
+            listOf(
+                "MetalDetectorConveyorCalibrationStart/{calibrationId}",
+                "CalMetalDetectorConveyorSummary"
+            )
+        } else {
+            listOfNotNull(
+                "MetalDetectorConveyorCalibrationStart/{calibrationId}",
+                "CalMetalDetectorConveyorConveyorDetails",
+                "CalMetalDetectorConveyorSystemChecklist",
+                "CalMetalDetectorConveyorIndicators",
+                "CalMetalDetectorConveyorProductDetails",
+                "CalMetalDetectorConveyorSensitivityRequirements",
+                "CalMetalDetectorConveyorDetectionSettingsAsFound",
+                "CalMetalDetectorConveyorFerrousTestAsFound",
+                "CalMetalDetectorConveyorNonFerrousTestAsFound",
+                "CalMetalDetectorConveyorStainlessTestAsFound",
+                "CalMetalDetectorConveyorFerrousTest",
+                "CalMetalDetectorConveyorNonFerrousTest",
+                "CalMetalDetectorConveyorStainlessTest",
+                "CalMetalDetectorConveyorDetectionSettingsAsLeft",
+                "CalMetalDetectorConveyorRejectSettings",
+                "CalMetalDetectorConveyorLargeMetalTest",
+                "CalMetalDetectorConveyorInfeedPEC",
+                "CalMetalDetectorConveyorRejectConfirmPEC",
+                "CalMetalDetectorConveyorBinFullPEC",
+                "CalMetalDetectorConveyorAirPressureSensor",
+                "CalMetalDetectorConveyorBinDoorMonitor",
+                "CalMetalDetectorConveyorBackupPEC",
+                "CalMetalDetectorConveyorPackCheckSensor",
+                "CalMetalDetectorConveyorSpeedSensor",
+                "CalMetalDetectorConveyorDetectNotification",
+                if (pvRequired) "CalMetalDetectorConveyorSmeDetails" else null,
+                "CalMetalDetectorConveyorEquipmentUsed",
+                "CalMetalDetectorConveyorSummary"
+            )
+        }
     }
 
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
+
+    // Safeguard: If the current screen is removed from routeOrder (e.g. Able to calibrate changed), 
+    // redirect to Start to prevent getting "stuck" on a now-hidden screen.
+    LaunchedEffect(currentRoute, routeOrder) {
+        if (currentRoute != null) {
+            val isInOrder = routeOrder.any { 
+                it == currentRoute || (it.contains("{") && currentRoute.startsWith(it.substringBefore("{")))
+            }
+            if (!isInOrder && !currentRoute.contains("Summary")) {
+                navController.navigate("MetalDetectorConveyorCalibrationStart/$calibrationId") {
+                    popUpTo(0)
+                }
+            }
+        }
+    }
 
     CompositionLocalProvider(
         LocalCalibrationViewModel provides viewModel,
@@ -96,17 +120,25 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
         LocalCalibrationRouteOrder provides routeOrder,
         LocalCalibrationCurrentRoute provides currentRoute
     ) {
-        // Determine direction
-        val previousRoute = remember { mutableStateOf<String?>(null) }
+    // Determine direction
+    val previousRoute = remember { mutableStateOf<String?>(null) }
     val goingForward = remember(currentRoute) {
-        val old = routeOrder.indexOf(previousRoute.value)
-        val new = routeOrder.indexOf(currentRoute)
+        val old = routeOrder.indexOfFirst { 
+            it == previousRoute.value || (it.contains("{") && previousRoute.value?.startsWith(it.substringBefore("{")) == true)
+        }
+        val new = routeOrder.indexOfFirst { 
+            it == currentRoute || (it.contains("{") && currentRoute?.startsWith(it.substringBefore("{")) == true)
+        }
         previousRoute.value = currentRoute
         new > old
     }
 
     // Progress bar calculation
-    val currentIndex = routeOrder.indexOf(currentRoute).coerceAtLeast(0)
+    val currentIndex = remember(currentRoute, routeOrder) {
+        routeOrder.indexOfFirst { 
+            it == currentRoute || (it.contains("{") && currentRoute?.startsWith(it.substringBefore("{")) == true)
+        }.coerceAtLeast(0)
+    }
     val progress = (currentIndex + 1).toFloat() / routeOrder.size.toFloat()
 
     val isFirstStep = currentRoute?.startsWith("MetalDetectorConveyorCalibrationStart") == true
@@ -185,11 +217,7 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
                             ) {
                                 swipeHandled = true
                                 viewModel.persistCurrentScreen(currentRoute ?: "")
-                                if (viewModel.shouldSkipToSummary()) {
-                                    navController.navigate("MetalDetectorConveyorCalibrationStart/${calibrationId}")
-                                } else if (currentIndex > 0) {
-                                    navController.navigate(routeOrder[currentIndex - 1])
-                                }
+                                navController.navigate(routeOrder[currentIndex - 1])
                             }
 
                             // Swipe LEFT → next
@@ -200,12 +228,7 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
                             ) {
                                 swipeHandled = true
                                 viewModel.persistCurrentScreen(currentRoute ?: "")
-
-                                if (viewModel.shouldSkipToSummary()) {
-                                    navController.navigate("CalMetalDetectorConveyorSummary")
-                                } else if (currentIndex < routeOrder.lastIndex) {
-                                    navController.navigate(routeOrder[currentIndex + 1])
-                                }
+                                navController.navigate(routeOrder[currentIndex + 1])
                             }
                         },
                         onDragEnd = {
@@ -255,12 +278,6 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
             onPreviousClick = {
                 viewModel.persistCurrentScreen(currentRoute ?: "")
 
-                // If user skipped the entire flow (Able = No), always go back to Start
-                if (viewModel.shouldSkipToSummary()) {
-                    navController.navigate("MetalDetectorConveyorCalibrationStart/${calibrationId}")
-                    return@CalibrationNavigationButtons
-                }
-
                 // Normal back navigation
                 if (!isFirstStep && currentIndex > 0) {
                     navController.navigate(routeOrder[currentIndex - 1])
@@ -269,10 +286,7 @@ fun MetalDetectorConveyorCalibrationScreenWrapper(
             },
             onNextClick = {
                 viewModel.persistCurrentScreen(currentRoute ?: "")
-                if (viewModel.shouldSkipToSummary()) {
-                    navController.navigate("CalMetalDetectorConveyorSummary")
-                    InAppLogger.d("MD Calibration, Navigation from $currentRoute to Summary")
-                } else if (currentIndex < routeOrder.lastIndex) {
+                if (currentIndex < routeOrder.lastIndex) {
                     navController.navigate(routeOrder[currentIndex + 1])
                     InAppLogger.d("MD Calibration, Navigation from $currentRoute to ${routeOrder[currentIndex + 1]}")
                 }

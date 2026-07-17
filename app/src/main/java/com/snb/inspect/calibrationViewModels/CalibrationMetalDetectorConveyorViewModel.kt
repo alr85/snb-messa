@@ -82,6 +82,7 @@ import java.time.format.DateTimeFormatter
 
 
 class CalibrationMetalDetectorConveyorViewModel(
+    private val context: android.content.Context,
     val engineerId: Int,
     private val calibrationDao: MetalDetectorConveyorCalibrationDAO,
     private val calibrationRepository: MetalDetectorConveyorCalibrationRepository,
@@ -831,10 +832,40 @@ class CalibrationMetalDetectorConveyorViewModel(
                     _productPeakSignalAsLeft.value.isNotBlank()
 
         // Default others to true or check their specific simple criteria
-        validMap["CalMetalDetectorConveyorConveyorDetails"] = true
-        validMap["CalMetalDetectorConveyorSystemChecklist"] = true
-        validMap["CalMetalDetectorConveyorIndicators"] = true
-        validMap["CalMetalDetectorConveyorSensitivityRequirements"] = true
+        validMap["CalMetalDetectorConveyorConveyorDetails"] = if (_isConveyor.value) {
+            _beltSpeed.value.isNotBlank() &&
+                    _rejectDevice.value.isNotBlank() &&
+                    (_rejectDevice.value != "Other" || _rejectDeviceOther.value.isNotBlank())
+        } else {
+            val forbiddenItems = listOf("Alarm Belt Stop", "Alarm Only")
+            _rejectDevice.value.isNotBlank() &&
+                    (!_pvRequired.value || _rejectDevice.value !in forbiddenItems) &&
+                    (_rejectDevice.value != "Other" || _rejectDeviceOther.value.isNotBlank())
+        }
+
+        validMap["CalMetalDetectorConveyorSystemChecklist"] = listOf(
+            _beltCondition.value to _beltConditionComments.value,
+            _guardCondition.value to _guardConditionComments.value,
+            _safetyCircuitCondition.value to _safetyCircuitConditionComments.value,
+            _linerCondition.value to _linerConditionComments.value,
+            _cablesCondition.value to _cablesConditionComments.value,
+            _screwsCondition.value to _screwsConditionComments.value
+        ).all { (condition, comments) ->
+            condition != ConditionState.UNSPECIFIED &&
+                    !(condition == ConditionState.POOR && comments.isBlank())
+        }
+
+        validMap["CalMetalDetectorConveyorIndicators"] = listOf(
+            _indicator1colour, _indicator2colour, _indicator3colour,
+            _indicator4colour, _indicator5colour, _indicator6colour,
+            _indicator1label, _indicator2label, _indicator3label,
+            _indicator4label, _indicator5label, _indicator6label
+        ).all { it.value.isNotBlank() }
+
+        validMap["CalMetalDetectorConveyorSensitivityRequirements"] =
+            _sensitivityRequirementFerrous.value.isNotBlank() &&
+                    _sensitivityRequirementNonFerrous.value.isNotBlank() &&
+                    _sensitivityRequirementStainless.value.isNotBlank()
 
         // Tests usually require a certificate number if not N/A
         validMap["CalMetalDetectorConveyorFerrousTestAsFound"] =
@@ -1241,7 +1272,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         val insert = toNewCalibrationInsert()
 
         viewModelScope.launch {
-            calibrationRepository.insertNewCalibration(insert)
+            calibrationRepository.insertNewCalibration(context, insert)
             
             // Set removed PV fields to N/A immediately
             _backupSensorTestPvResult.value = "N/A"
@@ -1352,6 +1383,9 @@ class CalibrationMetalDetectorConveyorViewModel(
                 // Do nothing for routes we don’t recognise
             }
         }
+        viewModelScope.launch {
+            calibrationRepository.saveBackup(context, calibrationId.value)
+        }
     }
 
 
@@ -1365,7 +1399,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         val update = toCalibrationStartUpdate()
 
         viewModelScope.launch {
-            calibrationRepository.updateCalibrationStart(update)
+            calibrationRepository.updateCalibrationStart(context, update)
         }
 
         refreshSensitivities()
@@ -1568,7 +1602,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
     fun updateCalibrationEnd() {
         val update = toCalibrationEndUpdate()
-        viewModelScope.launch { calibrationRepository.updateCalibrationEnd(update) }
+        viewModelScope.launch { calibrationRepository.updateCalibrationEnd(update = update, context = context) }
     }
 
 
@@ -4032,7 +4066,7 @@ class CalibrationMetalDetectorConveyorViewModel(
             // 1. End calibration locally (Ensures CSV has the end date)
             InAppLogger.d("Updating the calibration end time...")
             val endUpdate = toCalibrationEndUpdate()
-            calibrationRepository.updateCalibrationEnd(endUpdate)
+            calibrationRepository.updateCalibrationEnd(update = endUpdate, context = context)
 
             // 2. Update local machine record with last calibration date
             InAppLogger.d("Updating the last calibration in the local database...")

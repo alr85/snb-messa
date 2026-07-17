@@ -94,6 +94,12 @@ fun DatabaseSyncScreen(
                     is FetchResult.Failure -> "Failed: ${r.errorMessage}"
                 }
             },
+            SyncTask("Upload offline CW Systems") {
+                when (val r = repositoryCwSystems.uploadUnsyncedSystems(context)) {
+                    is FetchResult.Success -> r.message
+                    is FetchResult.Failure -> "Failed: ${r.errorMessage}"
+                }
+            },
             SyncTask("Checkweigher Systems") {
                 when (val r = repositoryCwSystems.fetchAndStoreCwSystems()) {
                     is FetchResult.Success -> r.message

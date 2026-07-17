@@ -1,0 +1,12 @@
+- [x] Implement actual validation for "Conveyor Details" in `revalidateAllScreens`
+- [x] Implement actual validation for "System Checklist" in `revalidateAllScreens`
+- [x] Implement actual validation for "Indicators" in `revalidateAllScreens`
+- [x] Implement actual validation for "Sensitivity Requirements" in `revalidateAllScreens`
+- [x] Verify `revalidateAllScreens` logic matches UI screen logic
+- [x] Make `routeOrder` dynamic in `MetalDetectorConveyorCalibrationScreenWrapper.kt` based on `shouldSkipToSummary()`
+- [x] Make `routeOrder` dynamic in `CheckweigherCalibrationScreenWrapper.kt` based on `shouldSkipToSummary()`
+- [x] Clean up redundant navigation logic in wrappers
+- [x] Fix "stuck" navigation by making `shouldSkip` more immediate in `MetalDetectorConveyorCalibrationScreenWrapper.kt`
+- [x] Fix robust `currentIndex` detection in `MetalDetectorConveyorCalibrationScreenWrapper.kt`
+- [x] Add safeguard redirect in `MetalDetectorConveyorCalibrationScreenWrapper.kt`
+- [x] Apply same navigation fixes to `CheckweigherCalibrationScreenWrapper.kt`

@@ -51,6 +51,7 @@ class CheckweigherCalibrationActivity : ComponentActivity() {
             ?: error("Missing SYSTEM_FULL_DETAILS")
 
         val factory = CalibrationCheckweigherViewModelFactory(
+            context = applicationContext,
             engineerId = engineerId,
             calibrationDao = calibrationDao,
             calibrationRepository = calibrationRepository,

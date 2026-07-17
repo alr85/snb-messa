@@ -41,27 +41,51 @@ fun CheckweigherCalibrationScreenWrapper(
 ) {
     var currentScreen by remember { mutableStateOf<(@Composable () -> Unit)?>(null) }
 
-    val routeOrder = remember {
-        listOf(
-            "CheckweigherCalibrationStart/{calibrationId}",
-            "CwScaleDetails",
-            "CwSystemDetails",
-            "CwSystemChecklist",
-            "CwFailsafes",
-            "CwTestProductDetails",
-            "CwStaticScaleReference",
-            "CwEngineerTestWeight",
-            "CwDynamicTestAsFound",
-            "CwStaticTestAsFound",
-            "CwAdjustmentsMade",
-            "CwDynamicTestAsLeft",
-            "CwStaticTestAsLeft",
-            "CwSummary"
-        )
+    val canPerformCalibration by viewModel.canPerformCalibration
+    val shouldSkip = !canPerformCalibration
+
+    val routeOrder = remember(shouldSkip) {
+        if (shouldSkip) {
+            listOf(
+                "CheckweigherCalibrationStart/{calibrationId}",
+                "CwSummary"
+            )
+        } else {
+            listOf(
+                "CheckweigherCalibrationStart/{calibrationId}",
+                "CwScaleDetails",
+                "CwSystemDetails",
+                "CwSystemChecklist",
+                "CwFailsafes",
+                "CwTestProductDetails",
+                "CwStaticScaleReference",
+                "CwEngineerTestWeight",
+                "CwDynamicTestAsFound",
+                "CwStaticTestAsFound",
+                "CwAdjustmentsMade",
+                "CwDynamicTestAsLeft",
+                "CwStaticTestAsLeft",
+                "CwSummary"
+            )
+        }
     }
 
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
+
+    // Safeguard redirect
+    LaunchedEffect(currentRoute, routeOrder) {
+        if (currentRoute != null) {
+            val isInOrder = routeOrder.any { 
+                it == currentRoute || (it.contains("{") && currentRoute.startsWith(it.substringBefore("{")))
+            }
+            if (!isInOrder && !currentRoute.contains("Summary")) {
+                navController.navigate("CheckweigherCalibrationStart/$calibrationId") {
+                    popUpTo(0)
+                }
+            }
+        }
+    }
 
     CompositionLocalProvider(
         LocalCalibrationViewModel provides viewModel,
@@ -71,13 +95,21 @@ fun CheckweigherCalibrationScreenWrapper(
     ) {
         val previousRoute = remember { mutableStateOf<String?>(null) }
         val goingForward = remember(currentRoute) {
-            val old = routeOrder.indexOf(previousRoute.value)
-            val new = routeOrder.indexOf(currentRoute)
+            val old = routeOrder.indexOfFirst { 
+                it == previousRoute.value || (it.contains("{") && previousRoute.value?.startsWith(it.substringBefore("{")) == true)
+            }
+            val new = routeOrder.indexOfFirst { 
+                it == currentRoute || (it.contains("{") && currentRoute?.startsWith(it.substringBefore("{")) == true)
+            }
             previousRoute.value = currentRoute
             new > old
         }
 
-        val currentIndex = routeOrder.indexOf(currentRoute).coerceAtLeast(0)
+        val currentIndex = remember(currentRoute, routeOrder) {
+            routeOrder.indexOfFirst { 
+                it == currentRoute || (it.contains("{") && currentRoute?.startsWith(it.substringBefore("{")) == true)
+            }.coerceAtLeast(0)
+        }
         val progress = (currentIndex + 1).toFloat() / routeOrder.size.toFloat()
         val isFirstStep = currentRoute?.startsWith("CheckweigherCalibrationStart") == true
         val isCurrentScreenValid by viewModel.currentScreenNextEnabled.collectAsState()

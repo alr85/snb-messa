@@ -18,6 +18,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.snb.inspect.FetchResult
+import com.snb.inspect.dataClasses.CheckweigherWithFullDetails
 import com.snb.inspect.dataClasses.CwModelsLocal
 import com.snb.inspect.dataClasses.SystemTypeLocal
 import com.snb.inspect.formModules.LabeledObjectDropdownWithHelp
@@ -26,6 +27,7 @@ import com.snb.inspect.formModules.LabeledTextFieldWithHelp
 import com.snb.inspect.repositories.CheckweigherSystemsRepository
 import com.snb.inspect.repositories.SystemTypeRepository
 import com.snb.inspect.util.InAppLogger
+import com.snb.inspect.util.SerialCheckResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -51,6 +53,8 @@ fun AddNewCheckweigherScreen(
     var selectedCwModel by remember { mutableStateOf<CwModelsLocal?>(null) }
 
     var isProcessing by remember { mutableStateOf(false) }
+    var duplicateSystem by remember { mutableStateOf<CheckweigherWithFullDetails?>(null) }
+    var fuzzyMatchSystem by remember { mutableStateOf<CheckweigherWithFullDetails?>(null) }
 
     val scrollState = rememberScrollState()
 
@@ -141,7 +145,9 @@ fun AddNewCheckweigherScreen(
                             lastLocation = lastLocation,
                             cwSystemsRepository = cwSystemsRepository,
                             snackbarHostState = snackbarHostState,
-                            navController = navController
+                            navController = navController,
+                            onDuplicateFound = { duplicateSystem = it },
+                            onFuzzyMatchFound = { fuzzyMatchSystem = it }
                         )
                     } finally {
                         isProcessing = false
@@ -162,9 +168,153 @@ fun AddNewCheckweigherScreen(
             }
         }
     }
+
+    // Exact Duplicate Serial Dialog
+    duplicateSystem?.let { system ->
+        AlertDialog(
+            onDismissRequest = { duplicateSystem = null },
+            title = { Text("Serial Number Already Exists") },
+            text = {
+                Column {
+                    Text("The serial number ")
+                    Text(text = system.serialNumber, fontWeight = FontWeight.Bold)
+                    Text(" is already assigned to:")
+                    Spacer(Modifier.height(8.dp))
+                    Text("Customer: ", fontWeight = FontWeight.Bold)
+                    Text(system.customerName)
+                    Spacer(Modifier.height(4.dp))
+                    Text("Location: ", fontWeight = FontWeight.Bold)
+                    Text(system.lastLocation)
+                    Spacer(Modifier.height(12.dp))
+                    Text("Please contact the office if this machine needs to be moved to a different customer.")
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { duplicateSystem = null }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+    // Fuzzy Match Dialog
+    fuzzyMatchSystem?.let { system ->
+        AlertDialog(
+            onDismissRequest = { fuzzyMatchSystem = null },
+            title = { Text("Similar Serial Found") },
+            text = {
+                Column {
+                    Text("The serial you entered is very similar to an existing one:")
+                    Spacer(Modifier.height(8.dp))
+                    Text("Existing Serial: ", fontWeight = FontWeight.Bold)
+                    Text(system.serialNumber)
+                    Text("Customer: ", fontWeight = FontWeight.Bold)
+                    Text(system.customerName)
+                    Text("Location: ", fontWeight = FontWeight.Bold)
+                    Text(system.lastLocation)
+                    Spacer(Modifier.height(12.dp))
+                    Text("Is this the same machine? (e.g. a typo in the serial number)")
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    fuzzyMatchSystem = null
+                    // User says no, it's a new machine - continue submission bypassing check
+                    coroutineScope.launch(Dispatchers.IO) {
+                        try {
+                            isProcessing = true
+                            forceSubmitNewCwSystem(
+                                context = context,
+                                customerID = customerID,
+                                serialNumber = serialNumber,
+                                systemTypeId = selectedCwModel?.let {
+                                    systemTypeRepository.getSystemTypesFromDb()
+                                        .firstOrNull { it.systemType.contains("CW", ignoreCase = true) }?.id
+                                } ?: 0,
+                                modelId = selectedCwModel!!.meaId,
+                                lastLocation = lastLocation,
+                                cwSystemsRepository = cwSystemsRepository,
+                                snackbarHostState = snackbarHostState,
+                                navController = navController
+                            )
+                        } finally {
+                            isProcessing = false
+                        }
+                    }
+                }) {
+                    Text("No, Add as New")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { fuzzyMatchSystem = null }) {
+                    Text("Yes, Cancel")
+                }
+            }
+        )
+    }
 }
 
 suspend fun submitNewCwSystem(
+    context: Context,
+    customerID: Int,
+    serialNumber: String,
+    systemTypeId: Int,
+    modelId: Int,
+    lastLocation: String,
+    cwSystemsRepository: CheckweigherSystemsRepository,
+    snackbarHostState: SnackbarHostState,
+    navController: NavHostController,
+    onDuplicateFound: (CheckweigherWithFullDetails?) -> Unit,
+    onFuzzyMatchFound: (CheckweigherWithFullDetails?) -> Unit
+) {
+    InAppLogger.d("Adding new CW system...")
+    when (val status = cwSystemsRepository.checkSerialNumberStatus(context, serialNumber)) {
+        is SerialCheckResult.Exists -> {
+            withContext(Dispatchers.Main) {
+                onDuplicateFound(status.system)
+                snackbarHostState.showSnackbar("⚠️ This serial number already exists.")
+            }
+            return
+        }
+        is SerialCheckResult.FuzzyMatch -> {
+            withContext(Dispatchers.Main) {
+                onFuzzyMatchFound(status.system)
+            }
+            return
+        }
+        is SerialCheckResult.ExistsLocalOffline -> {
+            withContext(Dispatchers.Main) {
+                onDuplicateFound(status.system)
+                snackbarHostState.showSnackbar("⚠️ Offline: Serial exists locally.")
+            }
+            return
+        }
+        is SerialCheckResult.Error -> {
+            withContext(Dispatchers.Main) {
+                snackbarHostState.showSnackbar("⚠️ Serial check error: ${status.message}")
+            }
+            // Proceed anyway if check fails? MD screen usually lets them proceed or shows error.
+            // For now, let's proceed to allow adding if API is just down but system is unique.
+        }
+        SerialCheckResult.NotFound, SerialCheckResult.NotFoundLocalOffline -> {
+            // OK to proceed
+        }
+    }
+
+    forceSubmitNewCwSystem(
+        context,
+        customerID,
+        serialNumber,
+        systemTypeId,
+        modelId,
+        lastLocation,
+        cwSystemsRepository,
+        snackbarHostState,
+        navController
+    )
+}
+
+suspend fun forceSubmitNewCwSystem(
     context: Context,
     customerID: Int,
     serialNumber: String,

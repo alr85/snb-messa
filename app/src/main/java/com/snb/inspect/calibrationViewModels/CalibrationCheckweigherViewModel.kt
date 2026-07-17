@@ -36,6 +36,7 @@ import com.snb.inspect.util.CheckweigherAccuracyResult
 import com.snb.inspect.repositories.CheckweigherSystemsRepository
 
 class CalibrationCheckweigherViewModel(
+    private val context: android.content.Context,
     val engineerId: Int,
     private val calibrationDao: CheckweigherCalibrationDAO,
     private val calibrationRepository: CheckweigherCalibrationRepository,
@@ -215,7 +216,7 @@ class CalibrationCheckweigherViewModel(
             lastLocation = system.lastLocation
         }
         viewModelScope.launch {
-            calibrationRepository.insertNewCalibration(newCal)
+            calibrationRepository.insertNewCalibration(context, newCal)
         }
     }
 
@@ -223,7 +224,7 @@ class CalibrationCheckweigherViewModel(
         viewModelScope.launch {
             val current = calibrationDao.getCalibrationById(calibrationId.value) ?: return@launch
             updateCalibrationFromState(current)
-            calibrationRepository.updateCalibration(current)
+            calibrationRepository.updateCalibration(context, current)
         }
     }
 

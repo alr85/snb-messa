@@ -1,0 +1,7 @@
+- [x] Create `CalibrationDetailViewer.kt` with basic UI components
+- [x] Implement `MetalDetectorCalibrationDetails` to show full MD data
+- [x] Implement `CheckweigherCalibrationDetails` placeholder
+- [x] Update `MyCalibrations.kt` to handle clicks on completed calibrations and show the dialog
+- [x] Verify the UI by rendering the detail view
+- [x] Refactor `CalibrationDetailViewer.kt` to match the style of the MD summary screen
+- [x] Revert `CalibrationDetailViewer.kt` styling to SNB Red and fix visibility logic

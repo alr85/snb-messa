@@ -16,6 +16,7 @@ import com.snb.inspect.repositories.MetalDetectorSystemsRepository
 import com.snb.inspect.repositories.RetailerSensitivitiesRepository
 
 class CalibrationMetalDetectorConveyorViewModelFactory(
+    private val context: android.content.Context,
     private val calibrationDao: MetalDetectorConveyorCalibrationDAO,
     private val repository: MetalDetectorSystemsRepository,
     private val mdModelsDAO: MdModelsDAO,
@@ -45,6 +46,7 @@ class CalibrationMetalDetectorConveyorViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(CalibrationMetalDetectorConveyorViewModel::class.java)) {
             return CalibrationMetalDetectorConveyorViewModel(
+                context = context,
                 engineerId = engineerId,
                 calibrationDao = calibrationDao,
                 calibrationRepository = calibrationRepository,

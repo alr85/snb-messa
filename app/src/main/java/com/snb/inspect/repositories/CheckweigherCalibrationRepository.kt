@@ -7,6 +7,7 @@ import com.snb.inspect.daos.CheckweigherCalibrationDAO
 import com.snb.inspect.dataClasses.CheckweigherCalibrationLocal
 import com.snb.inspect.network.isNetworkAvailable
 import com.snb.inspect.util.CsvUploader
+import com.snb.inspect.util.DataBackupManager
 import com.snb.inspect.util.InAppLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
@@ -19,12 +20,14 @@ class CheckweigherCalibrationRepository(private val calibrationDao: Checkweigher
 
     private val uploadMutex = Mutex()
 
-    suspend fun insertNewCalibration(calibration: CheckweigherCalibrationLocal) {
+    suspend fun insertNewCalibration(context: Context, calibration: CheckweigherCalibrationLocal) {
         calibrationDao.insertCalibration(calibration)
+        DataBackupManager.backupCalibration(context, calibration, calibration.calibrationId, "CW")
     }
 
-    suspend fun updateCalibration(calibration: CheckweigherCalibrationLocal) {
+    suspend fun updateCalibration(context: Context, calibration: CheckweigherCalibrationLocal) {
         calibrationDao.updateCalibration(calibration)
+        DataBackupManager.backupCalibration(context, calibration, calibration.calibrationId, "CW")
     }
 
     suspend fun getCalibrationById(id: String): CheckweigherCalibrationLocal? {
@@ -82,6 +85,7 @@ class CheckweigherCalibrationRepository(private val calibrationDao: Checkweigher
                 if (success) {
                     calibrationDao.markAsSynced(cal.calibrationId)
                     uploaded++
+                    DataBackupManager.removeBackup(context, cal.calibrationId, "CW")
                 } else {
                     failed += cal.calibrationId
                 }

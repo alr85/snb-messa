@@ -82,6 +82,7 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
 
         // --- Build VM factory AFTER reading extras ---
         val factory = CalibrationMetalDetectorConveyorViewModelFactory(
+            context = applicationContext,
             calibrationDao = calibrationDao,
             repository = systemsRepository,
             mdModelsDAO = mdModelsDAO,

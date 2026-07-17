@@ -5,16 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.1] - 07/07/2026
+## [1.2.2] - 17/07/2026
 ### Fixed
-- Improved the fall-back strategy for adding new systems without network connection
-- A cloud syncing issue has been identified and fixed
-- 'Cable Fittings' is no longer missing from the summary page
+- Unsynced metal detector calibration data is now heavily protected against loss.
+- The 'screen complete' indicators within the metal detector calibration procedure have been improved 
+
+### Added
+- It is now possible to view your completed calibration data. Go to My Calibrations / Completed Calibrations
+
+
+## [1.2.1] - 10/07/2026
+### Fixed
+- An MD System cloud syncing issue has been identified and fixed
 
 ### Changed
-- Combined the Reject System and Reject System (Other) in the metal detector calibration 
+- General tidy up of the metal detector calibration summary screen
+
 ### Removed
-- Removed the conveyor dimensions from the metal detector calibration summary page
 - Removed the PV rules for speed and backup sensors in the metal detector calibrations
 
 ## [1.2.0] - 03/07/2026

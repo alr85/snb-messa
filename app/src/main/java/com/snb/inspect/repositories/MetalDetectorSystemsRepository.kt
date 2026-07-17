@@ -154,7 +154,7 @@ class MetalDetectorSystemsRepository(private val apiService: ApiService, private
     suspend fun checkSerialNumberStatus(
         context: Context,
         serialNumber: String
-    ): SerialCheckResult {
+    ): SerialCheckResult<MetalDetectorWithFullDetails> {
         val normalizedInput = normalizeSerial(serialNumber)
 
         // 1) Online check

@@ -11,6 +11,7 @@ import com.snb.inspect.dataClasses.CwSystemCloud
 import com.snb.inspect.dataClasses.CwSystemLocal
 import com.snb.inspect.network.isNetworkAvailable
 import com.snb.inspect.util.InAppLogger
+import com.snb.inspect.util.SerialCheckResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import java.time.LocalDateTime
@@ -289,6 +290,55 @@ class CheckweigherSystemsRepository(private val apiService: ApiService, private 
 
     suspend fun getCwModelDetails(modelId: Int): CwModelsLocal? {
         return db.cwModelsDAO().getAllModels().find { it.meaId == modelId }
+    }
+
+    suspend fun checkSerialNumberStatus(
+        context: Context,
+        serialNumber: String
+    ): SerialCheckResult<CheckweigherWithFullDetails> {
+        val normalizedInput = normalizeSerial(serialNumber)
+
+        // 1) Online check
+        if (isNetworkAvailable(context)) {
+            try {
+                // For CW, we don't have a specific checkSerialNumberExists API yet, 
+                // but we can check the local DB which is synced from the cloud.
+                // Or we can fetch all from API and check. 
+                // For now, let's stick to local DB which should have all cloud data after sync.
+                val systemDetails = db.cwSystemsDAO().getCheckweigherWithFullDetailsBySerialNumber(serialNumber)
+                if (systemDetails != null) {
+                    return SerialCheckResult.Exists(systemDetails)
+                }
+
+                // Fuzzy check
+                val allSystems = db.cwSystemsDAO().getAllCheckweighersWithFullDetails()
+                val fuzzyMatch = allSystems.find { normalizeSerial(it.serialNumber) == normalizedInput }
+                if (fuzzyMatch != null) {
+                    return SerialCheckResult.FuzzyMatch(fuzzyMatch)
+                }
+
+                return SerialCheckResult.NotFound
+            } catch (e: Exception) {
+                return SerialCheckResult.Error(e.message)
+            }
+        }
+
+        // 2) Offline check
+        val allLocalSystems = db.cwSystemsDAO().getAllCheckweighersWithFullDetails()
+
+        // Exact local match
+        val exactLocal = allLocalSystems.find { it.serialNumber == serialNumber }
+        if (exactLocal != null) {
+            return SerialCheckResult.ExistsLocalOffline(exactLocal)
+        }
+
+        // Fuzzy local match
+        val fuzzyLocal = allLocalSystems.find { normalizeSerial(it.serialNumber) == normalizedInput }
+        if (fuzzyLocal != null) {
+            return SerialCheckResult.FuzzyMatch(fuzzyLocal)
+        }
+
+        return SerialCheckResult.NotFoundLocalOffline
     }
 
     suspend fun checkSerialNumberExists(serialNumber: String): Boolean {

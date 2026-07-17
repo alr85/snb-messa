@@ -10,6 +10,7 @@ import com.snb.inspect.repositories.CheckweigherCalibrationRepository
 import com.snb.inspect.repositories.CheckweigherSystemsRepository
 
 class CalibrationCheckweigherViewModelFactory(
+    private val context: android.content.Context,
     private val engineerId: Int,
     private val calibrationDao: CheckweigherCalibrationDAO,
     private val calibrationRepository: CheckweigherCalibrationRepository,
@@ -24,6 +25,7 @@ class CalibrationCheckweigherViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(CalibrationCheckweigherViewModel::class.java)) {
             return CalibrationCheckweigherViewModel(
+                context = context,
                 engineerId = engineerId,
                 calibrationDao = calibrationDao,
                 calibrationRepository = calibrationRepository,

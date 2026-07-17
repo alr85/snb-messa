@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.PendingActions
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -142,6 +143,7 @@ fun MyCalibrationsScreen(
 
     var uploadingCalibrationIds by remember { mutableStateOf(setOf<String>()) }
     var customerNameCache by remember { mutableStateOf<Map<Int, String>>(emptyMap()) }
+    var selectedCalibration by remember { mutableStateOf<GenericCalibration?>(null) }
 
     LaunchedEffect(unfinishedCalibrations, pendingCalibrations, completedCalibrations) {
         val allCustomerIds = (unfinishedCalibrations + pendingCalibrations + completedCalibrations)
@@ -216,7 +218,7 @@ fun MyCalibrationsScreen(
                     calibration = cal,
                     status = "Completed",
                     customerName = customerNameCache[cal.customerId] ?: "Loading…",
-                    onClick = {}
+                    onClick = { selectedCalibration = cal }
                 )
             }
         }
@@ -228,6 +230,14 @@ fun MyCalibrationsScreen(
                 }
             }
         }
+    }
+
+    selectedCalibration?.let { cal ->
+        CalibrationDetailDialog(
+            calibration = cal,
+            customerName = customerNameCache[cal.customerId] ?: "Unknown",
+            onDismiss = { selectedCalibration = null }
+        )
     }
 }
 
@@ -357,9 +367,12 @@ fun ModernCalibrationItem(
             Spacer(Modifier.height(12.dp))
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(text = "ID: ${calibration.calibrationId}", style = MaterialTheme.typography.labelSmall, color = Color.LightGray)
-                if (status != "Completed") {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = SnbRed, modifier = Modifier.size(20.dp))
-                }
+                Icon(
+                    imageVector = if (status == "Completed") Icons.Default.Visibility else Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = SnbRed,
+                    modifier = Modifier.size(20.dp)
+                )
             }
         }
     }

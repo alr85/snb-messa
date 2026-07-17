@@ -72,6 +72,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.snb.inspect.calibrationViewModels.CustomerViewModel
@@ -97,6 +98,7 @@ import com.snb.inspect.screens.LoginScreen
 import com.snb.inspect.ui.theme.AppNavGraph
 import com.snb.inspect.ui.theme.SnbDarkGrey
 import com.snb.inspect.ui.theme.SnbRed
+import com.snb.inspect.util.DataBackupManager
 import com.snb.inspect.util.InAppLogger
 import com.snb.inspect.util.SyncPreferences
 import kotlinx.coroutines.Dispatchers
@@ -137,6 +139,10 @@ class MainActivity : ComponentActivity() {
         val db = app.database
         val apiService = app.apiService
         val syncPrefs = SyncPreferences(this)
+
+        lifecycleScope.launch {
+            DataBackupManager.checkAndRestore(applicationContext, db)
+        }
 
         // Repositories
         val userRepository = UserRepository(db.userDao(), apiService)

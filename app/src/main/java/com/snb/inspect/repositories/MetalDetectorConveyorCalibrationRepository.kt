@@ -15,6 +15,7 @@ import com.snb.inspect.daos.MetalDetectorConveyorCalibrationDAO
 import com.snb.inspect.dataClasses.MetalDetectorConveyorCalibrationLocal
 import com.snb.inspect.network.isNetworkAvailable
 import com.snb.inspect.util.CsvUploader
+import com.snb.inspect.util.DataBackupManager
 import com.snb.inspect.util.InAppLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -28,7 +29,7 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
 
     private val uploadMutex = Mutex()
 
-    suspend fun insertNewCalibration(insert: NewCalibrationInsert) {
+    suspend fun insertNewCalibration(context: Context, insert: NewCalibrationInsert) {
         val entity = MetalDetectorConveyorCalibrationLocal(
             calibrationId = insert.calibrationId
         ).apply {
@@ -54,6 +55,7 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
         }
 
         calibrationDao.insertOrUpdateCalibration(entity)
+        DataBackupManager.backupCalibration(context, entity, insert.calibrationId, "MD")
     }
 
     suspend fun uploadUnsyncedCalibrations(
@@ -109,6 +111,7 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 if (success) {
                     calibrationDao.updateIsSynced(cal.calibrationId, true)
                     uploaded++
+                    DataBackupManager.removeBackup(context, cal.calibrationId, "MD")
                 } else {
                     failed += cal.calibrationId
                 }
@@ -391,7 +394,14 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
         }
     }
 
-    suspend fun updateCalibrationStart(update: CalibrationStartUpdate) {
+    suspend fun saveBackup(context: Context, calibrationId: String) {
+        val entity = calibrationDao.getCalibrationById(calibrationId)
+        if (entity != null) {
+            DataBackupManager.backupCalibration(context, entity, calibrationId, "MD")
+        }
+    }
+
+    suspend fun updateCalibrationStart(context: Context, update: CalibrationStartUpdate) {
         calibrationDao.updateCalibrationStart(
             newLocation = update.newLocation,
             lastLocation = update.lastLocation,
@@ -825,10 +835,14 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
         )
     }
 
-    suspend fun updateCalibrationEnd(update: CalibrationEndUpdate) {
+    suspend fun updateCalibrationEnd(update: CalibrationEndUpdate, context: Context) {
         calibrationDao.updateCalibrationEnd(
             endDate = update.endDate,
             calibrationId = update.calibrationId
         )
+        val fullEntity = calibrationDao.getCalibrationById(update.calibrationId)
+        if (fullEntity != null) {
+            DataBackupManager.backupCalibration(context, fullEntity, update.calibrationId, "MD")
+        }
     }
 }

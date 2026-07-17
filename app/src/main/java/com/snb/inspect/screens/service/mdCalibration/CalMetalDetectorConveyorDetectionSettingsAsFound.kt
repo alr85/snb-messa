@@ -86,7 +86,8 @@ fun CalMetalDetectorConveyorDetectionSettingsAsFound(
             val v = values[i].value
             val l = labels[i].value
             v == "N/A" || (l.isNotBlank() && v.isNotBlank())
-        } && sensitivityAccessRestriction.isNotBlank()
+        } && sensitivityAccessRestriction.isNotBlank() &&
+                viewModel.productPeakSignalAsFound.value.isNotBlank()
 
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)

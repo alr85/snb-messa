@@ -8,6 +8,7 @@ import com.snb.inspect.daos.MetalDetectorSystemsDAO
 import com.snb.inspect.dataClasses.SensitivityOptimisationValidationLocal
 import com.snb.inspect.network.isNetworkAvailable
 import com.snb.inspect.util.CsvUploader
+import com.snb.inspect.util.DataBackupManager
 import com.snb.inspect.util.InAppLogger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -24,8 +25,9 @@ class SensitivityOptimisationValidationRepository(
 
     private val uploadMutex = Mutex()
 
-    suspend fun insertOrUpdate(sov: SensitivityOptimisationValidationLocal) {
+    suspend fun insertOrUpdate(context: Context, sov: SensitivityOptimisationValidationLocal) {
         sovDao.insertOrUpdate(sov)
+        DataBackupManager.backupCalibration(context, sov, sov.sovId, "SOV")
     }
 
     suspend fun getById(id: String) = sovDao.getById(id)
@@ -83,6 +85,7 @@ class SensitivityOptimisationValidationRepository(
                 if (success) {
                     sovDao.updateIsSynced(sov.sovId, true)
                     uploaded++
+                    DataBackupManager.removeBackup(context, sov.sovId, "SOV")
                 } else {
                     failed += sov.sovId
                 }

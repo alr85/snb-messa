@@ -7,6 +7,7 @@ import com.snb.inspect.repositories.MetalDetectorSystemsRepository
 import com.snb.inspect.dataClasses.MetalDetectorWithFullDetails
 
 class SensitivityOptimisationValidationViewModelFactory(
+    private val context: android.content.Context,
     private val repository: SensitivityOptimisationValidationRepository,
     private val mdSystemsRepository: MetalDetectorSystemsRepository,
     private val sovId: String,
@@ -25,7 +26,7 @@ class SensitivityOptimisationValidationViewModelFactory(
         if (modelClass.isAssignableFrom(SensitivityOptimisationValidationViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return SensitivityOptimisationValidationViewModel(
-                repository, mdSystemsRepository, sovId, system, engineerId,
+                context, repository, mdSystemsRepository, sovId, system, engineerId,
                 detectionSetting1label, detectionSetting2label, detectionSetting3label, detectionSetting4label,
                 detectionSetting5label, detectionSetting6label, detectionSetting7label, detectionSetting8label
             ) as T
