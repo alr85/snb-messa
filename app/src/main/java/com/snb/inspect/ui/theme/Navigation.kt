@@ -300,7 +300,8 @@ fun AppNavGraph(
                 mdCalibrationRepository = calibrationRepository,
                 cwCalibrationRepository = cwCalibrationRepository,
                 apiService = apiService,
-                snackbarHostState = snackbarHostState
+                snackbarHostState = snackbarHostState,
+                db = db
             )
 
         }

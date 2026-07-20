@@ -11,6 +11,14 @@ class SyncPreferences(context: Context) {
         private const val KEY_CUSTOMER_SYNC = "customer_last_sync"
         private const val KEY_NOTICE_SYNC = "notice_last_sync"
         private const val KEY_AUTO_SYNC_ENABLED = "auto_sync_enabled"
+        private const val KEY_RECOVERY_FOLDER_URI = "recovery_folder_uri"
+    }
+
+    fun getRecoveryFolderUri(): String? =
+        prefs.getString(KEY_RECOVERY_FOLDER_URI, null)
+
+    fun setRecoveryFolderUri(uri: String?) {
+        prefs.edit().putString(KEY_RECOVERY_FOLDER_URI, uri).apply()
     }
 
     fun getCustomerLastSync(): Long =

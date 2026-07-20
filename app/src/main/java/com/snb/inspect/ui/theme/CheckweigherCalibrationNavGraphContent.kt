@@ -50,9 +50,33 @@ fun CheckweigherCalibrationNavGraphContent(
             }
         }
 
-        composable("CwFailsafes") {
+        composable("CwInfeedSensor") {
             onScreenChanged {
-                CalCwFailsafes(viewModel)
+                CalCwInfeedSensor(viewModel)
+            }
+        }
+
+        composable("CwRejectConfirmSensor") {
+            onScreenChanged {
+                CalCwRejectConfirmSensor(viewModel)
+            }
+        }
+
+        composable("CwBinFullSensor") {
+            onScreenChanged {
+                CalCwBinFullSensor(viewModel)
+            }
+        }
+
+        composable("CwAirPressureSensor") {
+            onScreenChanged {
+                CalCwAirPressureSensor(viewModel)
+            }
+        }
+
+        composable("CwBinDoorMonitor") {
+            onScreenChanged {
+                CalCwBinDoorMonitor(viewModel)
             }
         }
 

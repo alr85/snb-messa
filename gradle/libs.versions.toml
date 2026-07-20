@@ -29,10 +29,12 @@ foundation = "1.10.5"
 material3WindowSizeClass = "1.4.0"
 room = "2.8.4"
 bcrypt = "0.10.2"
+documentfile = "1.0.1"
 
 
 
 [libraries]
+androidx-documentfile = { group = "androidx.documentfile", name = "documentfile", version.ref = "documentfile" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 icons-lucide = { module = "com.composables:icons-lucide", version.ref = "iconsLucide" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }

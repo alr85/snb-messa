@@ -133,6 +133,7 @@ class CalibrationCheckweigherViewModel(
         _infeedSensorTestResult.value = cal.infeedSensorTestResult.split(",").filter { it.isNotBlank() }
         _infeedSensorLatched.value = cal.infeedSensorLatched.toYesNoState()
         _infeedSensorCR.value = cal.infeedSensorCR.toYesNoState()
+        _infeedSensorEngineerNotes.value = cal.infeedSensorEngineerNotes
 
         _rejectConfirmSensorFitted.value = cal.rejectConfirmSensorFitted.toYesNoState()
         _rejectConfirmSensorDetail.value = cal.rejectConfirmSensorDetail
@@ -140,6 +141,7 @@ class CalibrationCheckweigherViewModel(
         _rejectConfirmSensorTestResult.value = cal.rejectConfirmSensorTestResult.split(",").filter { it.isNotBlank() }
         _rejectConfirmSensorLatched.value = cal.rejectConfirmSensorLatched.toYesNoState()
         _rejectConfirmSensorCR.value = cal.rejectConfirmSensorCR.toYesNoState()
+        _rejectConfirmSensorEngineerNotes.value = cal.rejectConfirmSensorEngineerNotes
 
         _binFullSensorFitted.value = cal.binFullSensorFitted.toYesNoState()
         _binFullSensorDetail.value = cal.binFullSensorDetail
@@ -147,6 +149,7 @@ class CalibrationCheckweigherViewModel(
         _binFullSensorTestResult.value = cal.binFullSensorTestResult.split(",").filter { it.isNotBlank() }
         _binFullSensorLatched.value = cal.binFullSensorLatched.toYesNoState()
         _binFullSensorCR.value = cal.binFullSensorCR.toYesNoState()
+        _binFullSensorEngineerNotes.value = cal.binFullSensorEngineerNotes
 
         _airPressureSensorFitted.value = cal.airPressureSensorFitted.toYesNoState()
         _airPressureSensorDetail.value = cal.airPressureSensorDetail
@@ -154,6 +157,7 @@ class CalibrationCheckweigherViewModel(
         _airPressureSensorTestResult.value = cal.airPressureSensorTestResult.split(",").filter { it.isNotBlank() }
         _airPressureSensorLatched.value = cal.airPressureSensorLatched.toYesNoState()
         _airPressureSensorCR.value = cal.airPressureSensorCR.toYesNoState()
+        _airPressureSensorEngineerNotes.value = cal.airPressureSensorEngineerNotes
 
         _binDoorMonitorFitted.value = cal.binDoorMonitorFitted.toYesNoState()
         _binDoorMonitorDetail.value = cal.binDoorMonitorDetail
@@ -185,7 +189,7 @@ class CalibrationCheckweigherViewModel(
         
         // Results As Found
         _nominalQuantityAsFound.value = cal.nominalQuantityAsFound
-        _dynamicPassesAsFound.value = cal.dynamicPassesAsFound.split(",").filter { it.isNotBlank() }
+        _dynamicPassesAsFound.value = parsePasses(cal.dynamicPassesAsFound)
         _staticScaleWeightAsFound.value = cal.staticScaleWeightAsFound
         _checkweigherWeightAsFound.value = cal.checkweigherWeightAsFound
         _offCentreLoadingTestResultAsFound.value = cal.offCentreLoadingTestResultAsFound
@@ -195,7 +199,7 @@ class CalibrationCheckweigherViewModel(
         
         // Results As Left
         _nominalQuantityAsLeft.value = cal.nominalQuantityAsLeft
-        _dynamicPassesAsLeft.value = cal.dynamicPassesAsLeft.split(",").filter { it.isNotBlank() }
+        _dynamicPassesAsLeft.value = parsePasses(cal.dynamicPassesAsLeft)
         _staticScaleWeightAsLeft.value = cal.staticScaleWeightAsLeft
         _checkweigherWeightAsLeft.value = cal.checkweigherWeightAsLeft
         _offCentreLoadingTestResultAsLeft.value = cal.offCentreLoadingTestResultAsLeft
@@ -265,6 +269,7 @@ class CalibrationCheckweigherViewModel(
         cal.infeedSensorTestResult = _infeedSensorTestResult.value.joinToString(",")
         cal.infeedSensorLatched = _infeedSensorLatched.value.toString()
         cal.infeedSensorCR = _infeedSensorCR.value.toString()
+        cal.infeedSensorEngineerNotes = _infeedSensorEngineerNotes.value
 
         cal.rejectConfirmSensorFitted = _rejectConfirmSensorFitted.value.toString()
         cal.rejectConfirmSensorDetail = _rejectConfirmSensorDetail.value
@@ -272,6 +277,7 @@ class CalibrationCheckweigherViewModel(
         cal.rejectConfirmSensorTestResult = _rejectConfirmSensorTestResult.value.joinToString(",")
         cal.rejectConfirmSensorLatched = _rejectConfirmSensorLatched.value.toString()
         cal.rejectConfirmSensorCR = _rejectConfirmSensorCR.value.toString()
+        cal.rejectConfirmSensorEngineerNotes = _rejectConfirmSensorEngineerNotes.value
 
         cal.binFullSensorFitted = _binFullSensorFitted.value.toString()
         cal.binFullSensorDetail = _binFullSensorDetail.value
@@ -279,6 +285,7 @@ class CalibrationCheckweigherViewModel(
         cal.binFullSensorTestResult = _binFullSensorTestResult.value.joinToString(",")
         cal.binFullSensorLatched = _binFullSensorLatched.value.toString()
         cal.binFullSensorCR = _binFullSensorCR.value.toString()
+        cal.binFullSensorEngineerNotes = _binFullSensorEngineerNotes.value
 
         cal.airPressureSensorFitted = _airPressureSensorFitted.value.toString()
         cal.airPressureSensorDetail = _airPressureSensorDetail.value
@@ -286,6 +293,7 @@ class CalibrationCheckweigherViewModel(
         cal.airPressureSensorTestResult = _airPressureSensorTestResult.value.joinToString(",")
         cal.airPressureSensorLatched = _airPressureSensorLatched.value.toString()
         cal.airPressureSensorCR = _airPressureSensorCR.value.toString()
+        cal.airPressureSensorEngineerNotes = _airPressureSensorEngineerNotes.value
 
         cal.binDoorMonitorFitted = _binDoorMonitorFitted.value.toString()
         cal.binDoorMonitorDetail = _binDoorMonitorDetail.value
@@ -456,6 +464,10 @@ class CalibrationCheckweigherViewModel(
     val infeedSensorCR: State<YesNoState> = _infeedSensorCR
     fun setInfeedSensorCR(v: YesNoState) { _infeedSensorCR.value = v }
 
+    private val _infeedSensorEngineerNotes = mutableStateOf("")
+    val infeedSensorEngineerNotes: State<String> = _infeedSensorEngineerNotes
+    fun setInfeedSensorEngineerNotes(v: String) { _infeedSensorEngineerNotes.value = v }
+
     // Reject Confirm
     private val _rejectConfirmSensorFitted = mutableStateOf(YesNoState.UNSPECIFIED)
     val rejectConfirmSensorFitted: State<YesNoState> = _rejectConfirmSensorFitted
@@ -480,6 +492,10 @@ class CalibrationCheckweigherViewModel(
     private val _rejectConfirmSensorCR = mutableStateOf(YesNoState.UNSPECIFIED)
     val rejectConfirmSensorCR: State<YesNoState> = _rejectConfirmSensorCR
     fun setRejectConfirmSensorCR(v: YesNoState) { _rejectConfirmSensorCR.value = v }
+
+    private val _rejectConfirmSensorEngineerNotes = mutableStateOf("")
+    val rejectConfirmSensorEngineerNotes: State<String> = _rejectConfirmSensorEngineerNotes
+    fun setRejectConfirmSensorEngineerNotes(v: String) { _rejectConfirmSensorEngineerNotes.value = v }
 
     // Bin Full
     private val _binFullSensorFitted = mutableStateOf(YesNoState.UNSPECIFIED)
@@ -506,6 +522,10 @@ class CalibrationCheckweigherViewModel(
     val binFullSensorCR: State<YesNoState> = _binFullSensorCR
     fun setBinFullSensorCR(v: YesNoState) { _binFullSensorCR.value = v }
 
+    private val _binFullSensorEngineerNotes = mutableStateOf("")
+    val binFullSensorEngineerNotes: State<String> = _binFullSensorEngineerNotes
+    fun setBinFullSensorEngineerNotes(v: String) { _binFullSensorEngineerNotes.value = v }
+
     // Air Pressure
     private val _airPressureSensorFitted = mutableStateOf(YesNoState.UNSPECIFIED)
     val airPressureSensorFitted: State<YesNoState> = _airPressureSensorFitted
@@ -530,6 +550,10 @@ class CalibrationCheckweigherViewModel(
     private val _airPressureSensorCR = mutableStateOf(YesNoState.UNSPECIFIED)
     val airPressureSensorCR: State<YesNoState> = _airPressureSensorCR
     fun setAirPressureSensorCR(v: YesNoState) { _airPressureSensorCR.value = v }
+
+    private val _airPressureSensorEngineerNotes = mutableStateOf("")
+    val airPressureSensorEngineerNotes: State<String> = _airPressureSensorEngineerNotes
+    fun setAirPressureSensorEngineerNotes(v: String) { _airPressureSensorEngineerNotes.value = v }
 
     // Bin Door
     private val _binDoorMonitorFitted = mutableStateOf(YesNoState.UNSPECIFIED)
@@ -732,8 +756,37 @@ class CalibrationCheckweigherViewModel(
     private fun revalidateAllScreens() {
         val validMap = mutableMapOf<String, Boolean>()
         validMap["CheckweigherCalibrationStart"] = _canPerformCalibration.value || _reasonForNotCalibrating.value.isNotEmpty()
-        // ... add more validation as screens are implemented
+        validMap["CwScaleDetails"] = _loadcellType.value.isNotBlank() && _scaleInterval.value.isNotBlank() && _maxCapacity.value.isNotBlank()
+        validMap["CwSystemDetails"] = _beltWidth.value.isNotBlank() && _weighConveyorLength.value.isNotBlank()
+        validMap["CwSystemChecklist"] = _beltCondition.value != ConditionState.UNSPECIFIED && _safetyCircuitCondition.value != ConditionState.UNSPECIFIED
+        
+        validMap["CwInfeedSensor"] = validateFailsafe(_infeedSensorFitted.value, _infeedSensorTestMethod.value, _infeedSensorTestResult.value, _infeedSensorLatched.value, _infeedSensorCR.value)
+        validMap["CwRejectConfirmSensor"] = validateFailsafe(_rejectConfirmSensorFitted.value, _rejectConfirmSensorTestMethod.value, _rejectConfirmSensorTestResult.value, _rejectConfirmSensorLatched.value, _rejectConfirmSensorCR.value)
+        validMap["CwBinFullSensor"] = validateFailsafe(_binFullSensorFitted.value, _binFullSensorTestMethod.value, _binFullSensorTestResult.value, _binFullSensorLatched.value, _binFullSensorCR.value)
+        validMap["CwAirPressureSensor"] = validateFailsafe(_airPressureSensorFitted.value, _airPressureSensorTestMethod.value, _airPressureSensorTestResult.value, _airPressureSensorLatched.value, _airPressureSensorCR.value)
+        validMap["CwBinDoorMonitor"] = validateBinDoor()
+        
+        validMap["CwTestProductDetails"] = _productDescription.value.isNotBlank() && _productLength.value.isNotBlank()
+        validMap["CwStaticScaleReference"] = _staticScaleMakeModel.value.isNotBlank()
+        validMap["CwEngineerTestWeight"] = _engineerTestWeightId.value != null
+        
         _screenValidities.value = validMap
+    }
+
+    private fun validateFailsafe(fitted: YesNoState, method: String, result: List<String>, latched: YesNoState, cr: YesNoState): Boolean {
+        return when (fitted) {
+            YesNoState.NO, YesNoState.NA -> true
+            YesNoState.YES -> method.isNotBlank() && result.isNotEmpty() && latched != YesNoState.UNSPECIFIED && cr != YesNoState.UNSPECIFIED
+            else -> false
+        }
+    }
+
+    private fun validateBinDoor(): Boolean {
+        return when (_binDoorMonitorFitted.value) {
+            YesNoState.NO, YesNoState.NA -> true
+            YesNoState.YES -> _binDoorStatusAsFound.value.isNotBlank() && _binDoorLatched.value != YesNoState.UNSPECIFIED && _binDoorCR.value != YesNoState.UNSPECIFIED
+            else -> false
+        }
     }
 
     override fun shouldSkipToSummary(): Boolean {
@@ -756,7 +809,11 @@ class CalibrationCheckweigherViewModel(
             "CwScaleDetails" -> "Scale Details"
             "CwSystemDetails" -> "System Details"
             "CwSystemChecklist" -> "System Checklist"
-            "CwFailsafes" -> "Failsafes"
+            "CwInfeedSensor" -> "Infeed Sensor"
+            "CwRejectConfirmSensor" -> "Reject Confirm Sensor"
+            "CwBinFullSensor" -> "Bin Full Sensor"
+            "CwAirPressureSensor" -> "Air Pressure Sensor"
+            "CwBinDoorMonitor" -> "Bin Door Monitor"
             "CwTestProductDetails" -> "Product Details"
             "CwStaticScaleReference" -> "Static Scale Ref"
             "CwEngineerTestWeight" -> "Test Weight"
@@ -807,5 +864,11 @@ class CalibrationCheckweigherViewModel(
         } catch (e: Exception) {
             onResult("❌ Error finishing calibration.")
         }
+    }
+
+    private fun parsePasses(passesString: String): List<String> {
+        if (passesString.isBlank()) return List(10) { "" }
+        val list = passesString.split(",").map { it.trim() }
+        return List(10) { i -> list.getOrNull(i) ?: "" }
     }
 }
