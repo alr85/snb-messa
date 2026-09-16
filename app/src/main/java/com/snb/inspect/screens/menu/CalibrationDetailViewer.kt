@@ -122,6 +122,20 @@ fun MetalDetectorCalibrationDetailsView(
         DetailRow(label = "Calibration ID", value = cal.calibrationId)
         DetailRow(label = "Engineer ID", value = cal.engineerId.toString())
         DetailRow(label = "Start Time", value = try { formatDate(cal.startDate) } catch (_: Exception) { cal.startDate })
+        if (cal.endDate.isNotBlank()) {
+            DetailRow(label = "End Time", value = try { formatDate(cal.endDate) } catch (_: Exception) { cal.endDate })
+        }
+        val hours = cal.activeDurationSeconds / 3600
+        val minutes = (cal.activeDurationSeconds % 3600) / 60
+        val seconds = cal.activeDurationSeconds % 60
+        val activeTimeFormatted = if (hours > 0) {
+            String.format(java.util.Locale.getDefault(), "%d h %d m %d s", hours, minutes, seconds)
+        } else if (minutes > 0) {
+            String.format(java.util.Locale.getDefault(), "%d m %d s", minutes, seconds)
+        } else {
+            String.format(java.util.Locale.getDefault(), "%d s", seconds)
+        }
+        DetailRow(label = "Active Working Time", value = activeTimeFormatted)
     }
 
     DetailSection(title = "System Details") {

@@ -834,11 +834,28 @@ interface MetalDetectorConveyorCalibrationDAO {
     // Save End to database
     @Query(
         "UPDATE MetalDetectorConveyorCalibrations " +
-                "SET endDate = :endDate " +
+                "SET activeDurationSeconds = :activeDurationSeconds, " +
+                "lastResumedAt = :lastResumedAt " +
+                "WHERE calibrationId = :calibrationId"
+    )
+    suspend fun updateActiveTimer(
+        activeDurationSeconds: Long,
+        lastResumedAt: String,
+        calibrationId: String
+    )
+
+    // Save End to database
+    @Query(
+        "UPDATE MetalDetectorConveyorCalibrations " +
+                "SET endDate = :endDate, " +
+                "activeDurationSeconds = :activeDurationSeconds, " +
+                "lastResumedAt = :lastResumedAt " +
                 "WHERE calibrationId = :calibrationId"
     )
     suspend fun updateCalibrationEnd(
         endDate: String,
+        activeDurationSeconds: Long,
+        lastResumedAt: String,
         calibrationId: String
     )
     

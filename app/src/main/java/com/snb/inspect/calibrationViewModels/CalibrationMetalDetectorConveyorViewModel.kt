@@ -124,6 +124,7 @@ class CalibrationMetalDetectorConveyorViewModel(
                 //region LoadExistingCalibration
 
                 InAppLogger.d("Found existing calibration. Updating UI...")
+                _activeDurationSeconds.longValue = existingCalibration.activeDurationSeconds
                 InAppLogger.d("PV Required state = ${existingCalibration.pvRequired}")
                 // Populate individual state variables from the loaded calibration
                 val model =
@@ -715,6 +716,7 @@ class CalibrationMetalDetectorConveyorViewModel(
             // Force initial validity check based on loaded data or new defaults
             revalidateAllScreens()
             _isLoading.value = false
+            startActiveSession()
         }
     }
 
@@ -1680,6 +1682,59 @@ class CalibrationMetalDetectorConveyorViewModel(
         LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
     )
     val calibrationStartTime: State<String> = _calibrationStartTime
+
+    private val _activeDurationSeconds = androidx.compose.runtime.mutableLongStateOf(0L)
+    val activeDurationSeconds: State<Long> = _activeDurationSeconds
+
+    private val _lastResumedAt = mutableStateOf("")
+
+    fun startActiveSession() {
+        val nowStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+        _lastResumedAt.value = nowStr
+        viewModelScope.launch {
+            try {
+                calibrationDao.updateActiveTimer(
+                    activeDurationSeconds = _activeDurationSeconds.longValue,
+                    lastResumedAt = nowStr,
+                    calibrationId = calibrationId.value
+                )
+            } catch (_: Exception) {}
+        }
+    }
+
+    fun pauseActiveSession() {
+        val resumedAt = _lastResumedAt.value
+        if (resumedAt.isNotBlank()) {
+            try {
+                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                val start = LocalDateTime.parse(resumedAt, formatter)
+                val now = LocalDateTime.now()
+                val elapsed = java.time.Duration.between(start, now).seconds
+                if (elapsed > 0) {
+                    _activeDurationSeconds.longValue += elapsed
+                }
+            } catch (e: Exception) {
+                try {
+                    val start = LocalDateTime.parse(resumedAt)
+                    val now = LocalDateTime.now()
+                    val elapsed = java.time.Duration.between(start, now).seconds
+                    if (elapsed > 0) {
+                        _activeDurationSeconds.longValue += elapsed
+                    }
+                } catch (_: Exception) {}
+            }
+            _lastResumedAt.value = ""
+            viewModelScope.launch {
+                try {
+                    calibrationDao.updateActiveTimer(
+                        activeDurationSeconds = _activeDurationSeconds.longValue,
+                        lastResumedAt = "",
+                        calibrationId = calibrationId.value
+                    )
+                } catch (_: Exception) {}
+            }
+        }
+    }
 
 
     private val _isSynced = mutableStateOf<Boolean?>(false)

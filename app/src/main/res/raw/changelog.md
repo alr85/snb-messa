@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.4] - 17/07/2026
+### Added
+- A cloud status page has been added to the menu. This is intended to give some diagnostics if there is a problem with the cloud server
+
+## [1.2.3] - 17/07/2026
+### Added
+- There is a timer that clocks how long a calibration activity runs for. This will enable to us to gather information on how long it takes to complete a calibration - for the purpose of providing more accurate quotations and better diary management.
+- A system count has been added to the 'Select a System' screen
+
 ## [1.2.2] - 17/07/2026
 ### Fixed
 - Unsynced metal detector calibration data is now heavily protected against loss.

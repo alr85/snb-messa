@@ -20,6 +20,8 @@ class MetalDetectorConveyorCalibrationLocal(
     var customerId: Int = 0
     var startDate: String = LocalDateTime.now().toString()
     var endDate: String = ""
+    var activeDurationSeconds: Long = 0L
+    var lastResumedAt: String = ""
     var isSynced: Boolean = false
 
     //-----------------------------------------------------------------------------Calibration Start

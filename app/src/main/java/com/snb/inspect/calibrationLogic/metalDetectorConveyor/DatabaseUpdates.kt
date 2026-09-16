@@ -987,15 +987,20 @@ fun CalibrationMetalDetectorConveyorViewModel.toDetectionSettingLabelsUpdate()
 
 data class CalibrationEndUpdate(
     val endDate: String,
+    val activeDurationSeconds: Long,
+    val lastResumedAt: String,
     val calibrationId: String
 )
 
 fun CalibrationMetalDetectorConveyorViewModel.toCalibrationEndUpdate(): CalibrationEndUpdate {
+    pauseActiveSession()
     val now = LocalDateTime.now()
         .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
 
     return CalibrationEndUpdate(
         endDate = now,
+        activeDurationSeconds = activeDurationSeconds.value,
+        lastResumedAt = "",
         calibrationId = calibrationId.value
     )
 }

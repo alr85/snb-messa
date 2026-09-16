@@ -126,4 +126,18 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        if (::calibrationViewModel.isInitialized) {
+            calibrationViewModel.startActiveSession()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (::calibrationViewModel.isInitialized) {
+            calibrationViewModel.pauseActiveSession()
+        }
+    }
 }

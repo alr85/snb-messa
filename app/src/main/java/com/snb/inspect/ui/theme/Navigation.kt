@@ -42,6 +42,9 @@ import com.snb.inspect.screens.mainmenu.NoticesScreen
 import com.snb.inspect.screens.mainmenu.ServiceSelectCustomerScreen
 import com.snb.inspect.screens.mainmenu.SettingsScreen
 import com.snb.inspect.screens.menu.AboutAppScreen
+import com.snb.inspect.screens.menu.AzureCloudStatusScreen
+import com.snb.inspect.screens.menu.AzureCloudStatusViewModel
+import com.snb.inspect.network.AzureStatusManager
 import com.snb.inspect.screens.menu.CheckweigherAccuracyScreen
 import com.snb.inspect.screens.menu.CheckweigherSpeedCalculatorScreen
 import com.snb.inspect.screens.menu.CodesOfPracticeListScreen
@@ -212,6 +215,16 @@ fun AppNavGraph(
                 detectionRepo = detectionRepo,
                 measuringEquipmentRepo = measuringEquipmentRepo,
                 snackbarHostState = snackbarHostState
+            )
+        }
+
+        composable("azureCloudStatus") {
+            val azureStatusManager = remember { AzureStatusManager(apiService) }
+            val viewModel = remember { AzureCloudStatusViewModel(azureStatusManager) }
+
+            AzureCloudStatusScreen(
+                viewModel = viewModel,
+                chromeVm = chromeVm
             )
         }
 

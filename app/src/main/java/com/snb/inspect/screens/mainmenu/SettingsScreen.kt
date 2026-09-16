@@ -25,6 +25,7 @@ import androidx.compose.material.icons.automirrored.filled.ListAlt
 import androidx.compose.material.icons.automirrored.filled.Rule
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.Construction
 import androidx.compose.material.icons.filled.Description
@@ -112,6 +113,7 @@ fun SettingsScreen(
     val appManagementItems = remember {
         listOf(
             SettingItem("Database Sync", Icons.Default.CloudSync, "databaseSync"),
+            SettingItem("Azure Cloud Status", Icons.Default.Cloud, "azureCloudStatus"),
             SettingItem("Export Database", Icons.Default.Share, "EXPORT_DB_TRIGGER"),
             SettingItem("Debug Logs", Icons.AutoMirrored.Filled.ListAlt, "logsScreen"),
             SettingItem("About App", Icons.Default.Info, "aboutApp"),

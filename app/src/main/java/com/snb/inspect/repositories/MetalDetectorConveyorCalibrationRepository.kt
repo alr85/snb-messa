@@ -377,7 +377,8 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.operatorTestWitnessedBackup,
                 row.equipmentOscilloscopeId,
                 row.equipmentMultimeterId,
-                row.equipmentTachometerId
+                row.equipmentTachometerId,
+                row.activeDurationSeconds,
             )
 
             val sanitizedData = rawData.map { normalizeForCsv(it) }
@@ -838,6 +839,8 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
     suspend fun updateCalibrationEnd(update: CalibrationEndUpdate, context: Context) {
         calibrationDao.updateCalibrationEnd(
             endDate = update.endDate,
+            activeDurationSeconds = update.activeDurationSeconds,
+            lastResumedAt = update.lastResumedAt,
             calibrationId = update.calibrationId
         )
         val fullEntity = calibrationDao.getCalibrationById(update.calibrationId)

@@ -86,6 +86,13 @@ class AppChromeViewModel : ViewModel() {
                 showMenu = false
             )
 
+            route == "azureCloudStatus" -> TopBarState(
+                title = "Azure Cloud Status",
+                showBack = true,
+                showCall = false,
+                showMenu = false
+            )
+
             route == "logsScreen" -> TopBarState(
                 title = "Logs",
                 showBack = true,
