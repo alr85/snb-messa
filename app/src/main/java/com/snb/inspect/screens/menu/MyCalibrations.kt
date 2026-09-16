@@ -1,6 +1,8 @@
 package com.snb.inspect.screens.menu
 
 import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,7 +28,10 @@ import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.PendingActions
+import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -51,9 +56,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.snb.inspect.ApiService
+import com.snb.inspect.AppDatabase
 import com.snb.inspect.PreferencesHelper
 import com.snb.inspect.activities.CheckweigherCalibrationActivity
 import com.snb.inspect.activities.MetalDetectorConveyorCalibrationActivity
@@ -68,6 +75,7 @@ import com.snb.inspect.repositories.CustomerRepository
 import com.snb.inspect.repositories.MetalDetectorConveyorCalibrationRepository
 import com.snb.inspect.repositories.MetalDetectorSystemsRepository
 import com.snb.inspect.ui.theme.SnbRed
+import com.snb.inspect.util.DataBackupManager
 import com.snb.inspect.util.InAppLogger
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -104,10 +112,23 @@ fun MyCalibrationsScreen(
     mdCalibrationRepository: MetalDetectorConveyorCalibrationRepository,
     cwCalibrationRepository: CheckweigherCalibrationRepository,
     apiService: ApiService,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    db: AppDatabase
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    val syncPrefs = remember { com.snb.inspect.util.SyncPreferences(context) }
+    val isFolderLinked = syncPrefs.getRecoveryFolderUri() != null
+
+    val folderPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        uri?.let {
+            coroutineScope.launch {
+                DataBackupManager.importFromTreeUri(context, it, db)
+            }
+        }
+    }
 
     // 1. Reactive streams for MD
     val mdUnfinished = mdDao.getAllUnfinishedCalibrations()
@@ -225,8 +246,35 @@ fun MyCalibrationsScreen(
 
         if (unfinishedCalibrations.isEmpty() && pendingCalibrations.isEmpty() && completedCalibrations.isEmpty()) {
             item {
-                Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No calibrations found", style = MaterialTheme.typography.bodyLarge, color = Color.Gray)
+                Box(modifier = Modifier.fillParentMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "No calibrations found",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color.Gray,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Button(
+                            onClick = { folderPickerLauncher.launch(null) },
+                            colors = ButtonDefaults.buttonColors(containerColor = SnbRed),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Icon(Icons.Default.Restore, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(if (isFolderLinked) "Rescan Recovery Folder" else "Recover Data from Folder")
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = if (isFolderLinked) 
+                                "The app is currently linked to a recovery folder and scans it automatically on launch." 
+                            else 
+                                "If you recently reinstalled the app, select the 'SNB_Inspect_Recovery' folder in your Documents to restore your data.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
         }

@@ -1,0 +1,7 @@
+- [x] Update `SyncPreferences.kt` to store recovery URI
+- [x] Update `DataBackupManager.kt`
+    - [x] Add `takePersistableUriPermission` logic
+    - [x] Save URI to preferences on manual import
+    - [x] Update `checkAndRestore` to auto-scan persisted URI
+- [x] Update `MyCalibrations.kt` for the new workflow
+- [x] Verify build

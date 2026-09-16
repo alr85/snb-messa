@@ -1,0 +1,7 @@
+- [x] Update `CalibrationBanner.kt` to show correct title for Checkweigher calibrations
+- [x] Verify changes
+- [x] Create walkthrough
+- [x] Fix crash in `CalCwDynamicTestAsFound` by ensuring 10 elements in passes list
+    - [x] Add `parsePasses` helper to `CalibrationCheckweigherViewModel`
+    - [x] Update `loadCalibration` to use `parsePasses`
+- [x] Verify build

@@ -112,7 +112,14 @@ fun CalibrationBanner(
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    val type = if (!pvRequired) "Metal Detector Calibration" else "Metal Detector Performance Verification"
+                    val type = when (viewModel) {
+                        is CalibrationMetalDetectorConveyorViewModel -> {
+                            if (pvRequired) "Metal Detector Performance Verification"
+                            else "Metal Detector Calibration"
+                        }
+                        is CalibrationCheckweigherViewModel -> "Checkweigher Calibration"
+                        else -> "Calibration"
+                    }
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
