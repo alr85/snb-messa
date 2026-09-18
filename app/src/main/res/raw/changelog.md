@@ -7,9 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.2.4] - 17/07/2026
 ### Added
-- A cloud status page has been added to the menu. This is intended to give some diagnostics if there is a problem with the cloud server
+- A block has been put in to prevent 2 calibrations for the same machine being run at the same time.
+- The calibration summary screen has had multiple timers added to prevent the engineer verification being skipped
 
-## [1.2.3] - 17/07/2026
+## [1.2.3] - 15/07/2026
 ### Added
 - There is a timer that clocks how long a calibration activity runs for. This will enable to us to gather information on how long it takes to complete a calibration - for the purpose of providing more accurate quotations and better diary management.
 - A system count has been added to the 'Select a System' screen

@@ -27,7 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -72,6 +72,11 @@ fun CalMetalDetectorConveyorSummary(
 
     // Track confirmed sections
     val confirmedSections = remember { mutableStateMapOf<String, Boolean>() }
+    DisposableEffect(Unit) {
+        onDispose {
+            confirmedSections.clear()
+        }
+    }
 
     // Define the list of required sections that must be checked
     // Note: These must match the titles used in CalMetalDetectorConveyorSummaryDetails
@@ -147,7 +152,8 @@ fun CalMetalDetectorConveyorSummary(
                     confirmedSections = confirmedSections,
                     onSectionConfirmChange = { section, confirmed ->
                         confirmedSections[section] = confirmed
-                    }
+                    },
+                    requiredSections = requiredSections
                 )
             }
 

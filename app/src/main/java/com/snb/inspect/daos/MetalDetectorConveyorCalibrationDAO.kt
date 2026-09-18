@@ -36,6 +36,9 @@ interface MetalDetectorConveyorCalibrationDAO {
     @Query("SELECT * FROM MetalDetectorConveyorCalibrations WHERE calibrationId = :calibrationId")
     suspend fun getCalibrationById(calibrationId: String): MetalDetectorConveyorCalibrationLocal?
 
+    @Query("SELECT * FROM MetalDetectorConveyorCalibrations WHERE systemId = :systemId AND (endDate IS NULL OR endDate = '')")
+    suspend fun getUnfinishedCalibrationForSystem(systemId: Int): MetalDetectorConveyorCalibrationLocal?
+
     @Query("DELETE FROM MetalDetectorConveyorCalibrations WHERE calibrationId = :calibrationId")
     suspend fun deleteCalibration(calibrationId: String)
 

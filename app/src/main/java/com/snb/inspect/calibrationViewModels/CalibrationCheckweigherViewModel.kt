@@ -70,7 +70,7 @@ class CalibrationCheckweigherViewModel(
         viewModelScope.launch {
             _isLoading.value = true
             val existing = calibrationDao.getCalibrationById(calibrationId.value)
-            if (existing != null) {
+            if (existing != null && existing.systemId == system.id) {
                 loadCalibration(existing)
             } else {
                 saveNewCalibration()

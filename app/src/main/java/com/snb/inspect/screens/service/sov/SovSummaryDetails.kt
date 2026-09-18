@@ -1,5 +1,7 @@
 package com.snb.inspect.screens.service.sov
 
+import androidx.compose.runtime.*
+
 import android.R.attr.label
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,7 +34,8 @@ fun SovSummaryDetails(
     viewModel: SensitivityOptimisationValidationViewModel,
     isConfirmationMode: Boolean = false,
     confirmedSections: Map<String, Boolean> = emptyMap(),
-    onSectionConfirmChange: (String, Boolean) -> Unit = { _, _ -> }
+    onSectionConfirmChange: (String, Boolean) -> Unit = { _, _ -> },
+    requiredSections: List<String> = emptyList()
 ) {
     Column(
         modifier = Modifier
@@ -56,6 +59,37 @@ fun SovSummaryDetails(
             content: @Composable ColumnScope.() -> Unit
         ) {
             val isConfirmed = confirmedSections[title] ?: false
+            val sectionIndex = requiredSections.indexOf(title)
+            val hasCheckbox = forceShowCheckbox && sectionIndex != -1
+
+            val isFirstSection = sectionIndex <= 0
+            val prevSectionTitle = if (!isFirstSection && sectionIndex < requiredSections.size) requiredSections[sectionIndex - 1] else null
+            val isPrevConfirmed = if (isFirstSection) true else prevSectionTitle?.let { confirmedSections[it] } ?: false
+
+            var secondsLeft by remember(title, isPrevConfirmed) { mutableStateOf(4) }
+            LaunchedEffect(title, isPrevConfirmed) {
+                if (isPrevConfirmed) {
+                    while (secondsLeft > 0) {
+                        kotlinx.coroutines.delay(1000L)
+                        secondsLeft--
+                    }
+                } else {
+                    secondsLeft = 4
+                }
+            }
+            val isTimerFinished = secondsLeft == 0
+
+            val isUnlocked = if (!forceShowCheckbox || sectionIndex == -1) {
+                true
+            } else {
+                isFirstSection || (isPrevConfirmed && isTimerFinished)
+            }
+
+            LaunchedEffect(isPrevConfirmed) {
+                if (!isFirstSection && !isPrevConfirmed && isConfirmed) {
+                    onSectionConfirmChange(title, false)
+                }
+            }
 
             Column(
                 modifier = Modifier
@@ -85,23 +119,43 @@ fun SovSummaryDetails(
                     )
 
                     if (isConfirmationMode && forceShowCheckbox) {
-                        Row(
-                            modifier = Modifier
+                        val rowModifier = if (isUnlocked) {
+                            Modifier
                                 .fillMaxWidth()
                                 .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
-                                .clickable { onSectionConfirmChange(title, !isConfirmed) }
-                                .padding(8.dp),
+                                .clickable { if (isUnlocked) onSectionConfirmChange(title, !isConfirmed) }
+                                .padding(8.dp)
+                        } else {
+                            Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.3f))
+                                .padding(8.dp)
+                        }
+
+                        Row(
+                            modifier = rowModifier,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Checkbox(
                                 checked = isConfirmed,
-                                onCheckedChange = null
+                                onCheckedChange = null,
+                                enabled = isUnlocked
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "I have verified the $title values",
+                                text = when {
+                                    !hasCheckbox -> ""
+                                    !isFirstSection && !isPrevConfirmed -> "🔒 Verify previous section first"
+                                    !isTimerFinished -> "Please review $title values (${secondsLeft}s)..."
+                                    else -> "I have verified the $title values"
+                                },
                                 style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
+                                color = when {
+                                    !isFirstSection && !isPrevConfirmed -> Color.Gray
+                                    !isTimerFinished -> Color.Gray
+                                    else -> MaterialTheme.colorScheme.onSurface
+                                }
                             )
                         }
                     }

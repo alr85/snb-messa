@@ -109,6 +109,7 @@ fun MetalDetectorConveyorSystemScreen(
     var mdSystem by remember { mutableStateOf<MetalDetectorWithFullDetails?>(null) }
     var modelDetails by remember { mutableStateOf<MdModelsLocal?>(null) }
     var isUploading by remember { mutableStateOf(false) }
+    var isStartingCalibration by remember { mutableStateOf(false) }
 
     var showActions by rememberSaveable { mutableStateOf(false) }
 
@@ -169,29 +170,44 @@ fun MetalDetectorConveyorSystemScreen(
         runCatching { formatDate(mdSystem?.addedDate) }.getOrElse { "Invalid date" }
 
     fun startCalibration() {
+        if (isStartingCalibration) return
         val system = mdSystem ?: return
 
-        val newCalibrationId =
-            System.currentTimeMillis().toString(36) + "-" + (100..999).random()
+        scope.launch {
+            isStartingCalibration = true
+            try {
+                val existingUnfinished = dao.getUnfinishedCalibrationForSystem(system.id)
+                if (existingUnfinished != null) {
+                    snackbarHostState.showSnackbar("⚠️ An incomplete calibration already exists for this system. Please complete or delete it first.")
+                    return@launch
+                }
 
-        val (_, _, engineerId) = PreferencesHelper.getCredentials(context)
+                val newCalibrationId =
+                    System.currentTimeMillis().toString(36) + "-" + (100..999).random()
 
-        val intent = Intent(context, MetalDetectorConveyorCalibrationActivity::class.java).apply {
-            putExtra("CALIBRATION_ID", newCalibrationId)
-            putExtra("SYSTEM_FULL_DETAILS", system)
-            putExtra("ENGINEER_ID", engineerId ?: 0)
-            // detection labels
-            putExtra("DETECTION_SETTING_1_LABEL", modelDetails?.detectionSetting1)
-            putExtra("DETECTION_SETTING_2_LABEL", modelDetails?.detectionSetting2)
-            putExtra("DETECTION_SETTING_3_LABEL", modelDetails?.detectionSetting3)
-            putExtra("DETECTION_SETTING_4_LABEL", modelDetails?.detectionSetting4)
-            putExtra("DETECTION_SETTING_5_LABEL", modelDetails?.detectionSetting5)
-            putExtra("DETECTION_SETTING_6_LABEL", modelDetails?.detectionSetting6)
-            putExtra("DETECTION_SETTING_7_LABEL", modelDetails?.detectionSetting7)
-            putExtra("DETECTION_SETTING_8_LABEL", modelDetails?.detectionSetting8)
+                val (_, _, engineerId) = PreferencesHelper.getCredentials(context)
+
+                val intent = Intent(context, MetalDetectorConveyorCalibrationActivity::class.java).apply {
+                    putExtra("CALIBRATION_ID", newCalibrationId)
+                    putExtra("SYSTEM_FULL_DETAILS", system)
+                    putExtra("ENGINEER_ID", engineerId ?: 0)
+                    // detection labels
+                    putExtra("DETECTION_SETTING_1_LABEL", modelDetails?.detectionSetting1)
+                    putExtra("DETECTION_SETTING_2_LABEL", modelDetails?.detectionSetting2)
+                    putExtra("DETECTION_SETTING_3_LABEL", modelDetails?.detectionSetting3)
+                    putExtra("DETECTION_SETTING_4_LABEL", modelDetails?.detectionSetting4)
+                    putExtra("DETECTION_SETTING_5_LABEL", modelDetails?.detectionSetting5)
+                    putExtra("DETECTION_SETTING_6_LABEL", modelDetails?.detectionSetting6)
+                    putExtra("DETECTION_SETTING_7_LABEL", modelDetails?.detectionSetting7)
+                    putExtra("DETECTION_SETTING_8_LABEL", modelDetails?.detectionSetting8)
+                }
+
+                context.startActivity(intent)
+            } finally {
+                kotlinx.coroutines.delay(1500L)
+                isStartingCalibration = false
+            }
         }
-
-        context.startActivity(intent)
     }
 
     fun startSov() {
@@ -392,8 +408,10 @@ fun MetalDetectorConveyorSystemScreen(
                         FloatingActionButton(
                             modifier = Modifier.fillMaxWidth(),
                             onClick = {
-                                showActions = false
-                                startCalibration()
+                                if (!isStartingCalibration) {
+                                    showActions = false
+                                    startCalibration()
+                                }
                             },
                             containerColor = Color.White,
                             contentColor = SnbRed,

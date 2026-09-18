@@ -119,7 +119,7 @@ class CalibrationMetalDetectorConveyorViewModel(
             InAppLogger.d("MD Calibration started. Checking for existing calibration...")
             val existingCalibration = calibrationDao.getCalibrationById(calibrationId)
 
-            if (existingCalibration != null) {
+            if (existingCalibration != null && existingCalibration.systemId == system.id) {
 
                 //region LoadExistingCalibration
 
@@ -4165,7 +4165,7 @@ class CalibrationMetalDetectorConveyorViewModel(
                 InAppLogger.d("Manual upload successful: ${result.message}")
             } else {
                 // If it fails here, it's saved locally and background sync will pick it up later
-                onResult("⚠️ Calibration completed locally, but cloud upload failed. It will retry automatically when you have a better connection.")
+                onResult("✅ Calibration saved securely in local storage (Offline). It will automatically sync to the cloud once network connection is restored. You do not need to repeat this calibration.")
                 InAppLogger.d("Manual upload failed or skipped: ${(result as FetchResult.Failure).errorMessage}")
             }
         } catch (e: Exception) {

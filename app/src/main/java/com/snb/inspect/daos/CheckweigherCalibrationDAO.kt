@@ -52,4 +52,7 @@ interface CheckweigherCalibrationDAO {
 
     @Query("UPDATE CheckweigherCalibrations SET cloudSystemId = :cloudId WHERE calibrationId = :calibrationId")
     suspend fun updateCloudIdByCalibrationId(calibrationId: String, cloudId: Int)
+
+    @Query("SELECT * FROM CheckweigherCalibrations WHERE systemId = :systemId AND (endDate IS NULL OR endDate = '')")
+    suspend fun getUnfinishedCalibrationForSystem(systemId: Int): CheckweigherCalibrationLocal?
 }

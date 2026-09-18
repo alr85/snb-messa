@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.navigation.NavHostController
+import com.snb.inspect.AppDatabase
 import com.snb.inspect.AppChromeViewModel
 import com.snb.inspect.FetchResult
 import com.snb.inspect.PreferencesHelper
@@ -80,6 +81,7 @@ fun CheckweigherSystemScreen(
     var cwSystem by remember { mutableStateOf<CheckweigherWithFullDetails?>(null) }
     var modelDetails by remember { mutableStateOf<CwModelsLocal?>(null) }
     var isUploading by remember { mutableStateOf(false) }
+    var isStartingCalibration by remember { mutableStateOf(false) }
 
     var showActions by rememberSaveable { mutableStateOf(false) }
 
@@ -162,16 +164,33 @@ fun CheckweigherSystemScreen(
         runCatching { formatDate(cwSystem?.addedDate) }.getOrElse { "Invalid date" }
 
     fun startCalibration() {
+        if (isStartingCalibration) return
         val system = cwSystem ?: return
-        val newCalibrationId = System.currentTimeMillis().toString(36) + "-" + (100..999).random()
-        val (_, _, engineerId) = PreferencesHelper.getCredentials(context)
 
-        val intent = Intent(context, CheckweigherCalibrationActivity::class.java).apply {
-            putExtra("CALIBRATION_ID", newCalibrationId)
-            putExtra("SYSTEM_FULL_DETAILS", system)
-            putExtra("ENGINEER_ID", engineerId ?: 0)
+        scope.launch {
+            isStartingCalibration = true
+            try {
+                val cwCalibrationDAO = AppDatabase.getDatabase(context).checkweigherCalibrationDAO()
+                val existingUnfinished = cwCalibrationDAO.getUnfinishedCalibrationForSystem(system.id)
+                if (existingUnfinished != null) {
+                    snackbarHostState.showSnackbar("⚠️ An incomplete calibration already exists for this system. Please complete or delete it first.")
+                    return@launch
+                }
+
+                val newCalibrationId = System.currentTimeMillis().toString(36) + "-" + (100..999).random()
+                val (_, _, engineerId) = PreferencesHelper.getCredentials(context)
+
+                val intent = Intent(context, CheckweigherCalibrationActivity::class.java).apply {
+                    putExtra("CALIBRATION_ID", newCalibrationId)
+                    putExtra("SYSTEM_FULL_DETAILS", system)
+                    putExtra("ENGINEER_ID", engineerId ?: 0)
+                }
+                context.startActivity(intent)
+            } finally {
+                kotlinx.coroutines.delay(1500L)
+                isStartingCalibration = false
+            }
         }
-        context.startActivity(intent)
     }
 
     Box(Modifier.fillMaxSize()) {
@@ -260,8 +279,10 @@ fun CheckweigherSystemScreen(
                         FloatingActionButton(
                             modifier = Modifier.fillMaxWidth(),
                             onClick = {
-                                showActions = false
-                                startCalibration()
+                                if (!isStartingCalibration) {
+                                    showActions = false
+                                    startCalibration()
+                                }
                             },
                             containerColor = Color.White,
                             contentColor = SnbRed,
