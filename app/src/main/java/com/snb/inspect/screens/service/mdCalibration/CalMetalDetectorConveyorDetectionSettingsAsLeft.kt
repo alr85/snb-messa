@@ -168,7 +168,8 @@ fun CalMetalDetectorConveyorDetectionSettingsAsLeft(
                     onValueChange = viewModel::setDetectionSettingAsLeftEngineerNotes,
                     helpText = "Enter any notes relevant to this section",
                     isNAToggleEnabled = false,
-                    maxLength = 50
+                    maxLength = 50,
+                    singleLine = false,
                 )
 
                 Spacer(Modifier.height(60.dp))

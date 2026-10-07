@@ -173,7 +173,8 @@ fun CalMetalDetectorConveyorProductDetails(
                     onValueChange = viewModel::setProductDetailsEngineerNotes,
                     helpText = "Enter any notes relevant to this section.",
                     isNAToggleEnabled = false,
-                    maxLength = 25,
+                    maxLength = 50,
+                    singleLine = false,
                     showInputLabel = false
                 )
 

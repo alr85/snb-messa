@@ -1,0 +1,7 @@
+- `[x]` Add Google Play Core dependencies to `libs.versions.toml` and `app/build.gradle.kts`
+- `[x]` Implement `AppInitState` enum in `MainActivity.kt`
+- `[x]` Add App Update check logic using `AppUpdateManager` in `MainActivity.kt`
+- `[x]` Implement the pre-sync logic (uploading all offline data) in `MainActivity.kt`
+- `[x]` Implement Option B: If pre-sync fails, bypass the update and proceed to `READY_TO_LAUNCH`
+- `[x]` Add `UpdateSyncScreen` Composable for UI feedback during the pre-sync phase
+- `[x]` Wire the `AppInitState` into the main Compose `setContent` block

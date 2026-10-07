@@ -55,4 +55,7 @@ interface CheckweigherCalibrationDAO {
 
     @Query("SELECT * FROM CheckweigherCalibrations WHERE systemId = :systemId AND (endDate IS NULL OR endDate = '')")
     suspend fun getUnfinishedCalibrationForSystem(systemId: Int): CheckweigherCalibrationLocal?
+
+    @Query("SELECT * FROM CheckweigherCalibrations WHERE systemId = :systemId AND (endDate IS NOT NULL AND endDate != '') ORDER BY endDate DESC LIMIT 1")
+    suspend fun getLastCompletedCalibrationForSystem(systemId: Int): CheckweigherCalibrationLocal?
 }

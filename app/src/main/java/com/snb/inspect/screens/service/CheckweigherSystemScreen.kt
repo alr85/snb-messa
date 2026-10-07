@@ -82,6 +82,8 @@ fun CheckweigherSystemScreen(
     var modelDetails by remember { mutableStateOf<CwModelsLocal?>(null) }
     var isUploading by remember { mutableStateOf(false) }
     var isStartingCalibration by remember { mutableStateOf(false) }
+    var showRecentCalibrationWarning by remember { mutableStateOf(false) }
+    var recentCalibrationDate by remember { mutableStateOf("") }
 
     var showActions by rememberSaveable { mutableStateOf(false) }
 
@@ -163,6 +165,19 @@ fun CheckweigherSystemScreen(
     val formattedAddedDate =
         runCatching { formatDate(cwSystem?.addedDate) }.getOrElse { "Invalid date" }
 
+    fun launchActualCalibration() {
+        val system = cwSystem ?: return
+        val newCalibrationId = System.currentTimeMillis().toString(36) + "-" + (100..999).random()
+        val (_, _, engineerId) = PreferencesHelper.getCredentials(context)
+
+        val intent = Intent(context, CheckweigherCalibrationActivity::class.java).apply {
+            putExtra("CALIBRATION_ID", newCalibrationId)
+            putExtra("SYSTEM_FULL_DETAILS", system)
+            putExtra("ENGINEER_ID", engineerId ?: 0)
+        }
+        context.startActivity(intent)
+    }
+
     fun startCalibration() {
         if (isStartingCalibration) return
         val system = cwSystem ?: return
@@ -177,20 +192,65 @@ fun CheckweigherSystemScreen(
                     return@launch
                 }
 
-                val newCalibrationId = System.currentTimeMillis().toString(36) + "-" + (100..999).random()
-                val (_, _, engineerId) = PreferencesHelper.getCredentials(context)
+                val lastCompleted = cwCalibrationDAO.getLastCompletedCalibrationForSystem(system.id)
+                if (lastCompleted != null) {
+                    val endDate = try {
+                        val parser = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                        java.time.LocalDateTime.parse(lastCompleted.endDate, parser)
+                    } catch (e: Exception) {
+                        try {
+                            java.time.LocalDateTime.parse(lastCompleted.endDate)
+                        } catch (ex: Exception) {
+                            null
+                        }
+                    }
 
-                val intent = Intent(context, CheckweigherCalibrationActivity::class.java).apply {
-                    putExtra("CALIBRATION_ID", newCalibrationId)
-                    putExtra("SYSTEM_FULL_DETAILS", system)
-                    putExtra("ENGINEER_ID", engineerId ?: 0)
+                    if (endDate != null) {
+                        val now = java.time.LocalDateTime.now()
+                        val diffHours = java.time.Duration.between(endDate, now).toHours()
+                        if (diffHours < 24) {
+                            recentCalibrationDate = lastCompleted.endDate
+                            showRecentCalibrationWarning = true
+                            return@launch
+                        }
+                    }
                 }
-                context.startActivity(intent)
+
+                launchActualCalibration()
             } finally {
-                kotlinx.coroutines.delay(1500L)
                 isStartingCalibration = false
             }
         }
+    }
+
+    // Recent calibration warning dialog
+    if (showRecentCalibrationWarning) {
+        AlertDialog(
+            onDismissRequest = { showRecentCalibrationWarning = false },
+            icon = { Icon(Icons.Default.PriorityHigh, null, tint = SnbRed) },
+            title = { Text("Recent Calibration Found") },
+            text = {
+                Text(
+                    "This system was already calibrated in the last 24 hours (Completed: $recentCalibrationDate).\n\n" +
+                            "Are you sure you want to perform another calibration?"
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showRecentCalibrationWarning = false
+                        launchActualCalibration()
+                    }
+                ) {
+                    Text("Yes, Start New", color = SnbRed)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRecentCalibrationWarning = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 
     Box(Modifier.fillMaxSize()) {

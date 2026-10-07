@@ -564,6 +564,15 @@ fun CalMetalDetectorConveyorSummaryDetails(
 
             Section(title = "Operator Test") {
                 SummaryItem(label = "Operator Test Witnessed", value = viewModel.operatorTestWitnessed.value.toString())
+                SummaryItem(label = "Infeed PEC", value = viewModel.operatorTestWitnessedInfeed.value.toString())
+                SummaryItem(label = "Reject Confirm", value = viewModel.operatorTestWitnessedRejectConfirm.value.toString())
+                SummaryItem(label = "Bin Full", value = viewModel.operatorTestWitnessedBinFull.value.toString())
+                SummaryItem(label = "Bin Door", value = viewModel.operatorTestWitnessedBinDoor.value.toString())
+                SummaryItem(label = "Air Pressure", value = viewModel.operatorTestWitnessedAirFail.value.toString())
+                SummaryItem(label = "Pack Check", value = viewModel.operatorTestWitnessedPackCheck.value.toString())
+                SummaryItem(label = "Speed Sensor", value = viewModel.operatorTestWitnessedSpeedSensor.value.toString())
+                SummaryItem(label = "Backup Sensor", value = viewModel.operatorTestWitnessedBackup.value.toString())
+
                 SummaryItem(label = "Operator Name", value = viewModel.operatorName.value)
                 SummaryItem(label = "Ferrous Cert", value = viewModel.operatorTestResultCertNumberFerrous.value)
                 SummaryItem(label = "Ferrous Result", value = formatMm(viewModel.operatorTestResultFerrous.value))

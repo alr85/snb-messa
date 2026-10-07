@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 
 @Entity(tableName = "MetalDetectorConveyorCalibrations")
 class MetalDetectorConveyorCalibrationLocal(
-    @PrimaryKey val calibrationId: String
+    @PrimaryKey var calibrationId: String = ""
 ) {
     // CALIBRATION SETUP
     var mapVersion : String = "MDC1.0"

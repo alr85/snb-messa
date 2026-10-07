@@ -1,0 +1,10 @@
+- [x] Implement `persistAllSections()` in `CalibrationMetalDetectorConveyorViewModel`
+- [x] Implement `persistAllSections()` in `CalibrationCheckweigherViewModel`
+- [x] Update `CalMetalDetectorConveyorCalibrationStart.kt` to call `persistAllSections()`
+- [x] Update `CalCheckweigherCalibrationStart.kt` to call `persistAllSections()`
+- [x] Implement Triple-Layer Defense against "UNSPECIFIED" values:
+    - [x] **Layer 1 (State)**: Added missing Operator Witnessed fields to `setAllResultsUtc` / `wipeAllData`.
+    - [x] **Layer 2 (Mapping)**: Created `toSafeString()` to convert `UNSPECIFIED` to `NA` when saving to database.
+    - [x] **Layer 3 (Loading)**: Updated string-to-enum fallback to default to `NA` for empty strings.
+- [x] Update MD Summary screen to show individual Witnessed fields.
+- [x] Verify changes

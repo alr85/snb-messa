@@ -474,7 +474,8 @@ fun CalMetalDetectorConveyorSmeDetails(
                     onValueChange = viewModel::setSmeEngineerNotes,
                     helpText = "Relevant notes for this section.",
                     isNAToggleEnabled = false,
-                    maxLength = 50
+                    maxLength = 50,
+                    singleLine = false,
                 )
 
                 Spacer(modifier = Modifier.height(60.dp))

@@ -31,7 +31,7 @@ fun HomeScreen(navController: NavHostController, scrollBehavior: TopAppBarScroll
 
 
         Text(
-            text = "Service calls will be here",
+            text = "Service calls will be here, one day... soon!",
             color = Color.Black,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis

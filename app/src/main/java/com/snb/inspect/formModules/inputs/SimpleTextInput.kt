@@ -41,7 +41,7 @@ fun SimpleTextInput(
     transformInput: ((String) -> String)? = null,
     showCounter: Boolean = true, // allow turning off counter if you ever want
     minLines: Int = 1,
-
+    autoCorrect: Boolean = true,
     ) {
     val fieldShape = RoundedCornerShape(14.dp)
 
@@ -75,7 +75,8 @@ fun SimpleTextInput(
         modifier = modifier.fillMaxWidth(),
         keyboardOptions = KeyboardOptions.Default.copy(
             keyboardType = keyboardType,
-            capitalization = capitalization
+            capitalization = capitalization,
+            autoCorrectEnabled = autoCorrect
         ),
         supportingText = {
             if (showCounter && maxLength != null) {

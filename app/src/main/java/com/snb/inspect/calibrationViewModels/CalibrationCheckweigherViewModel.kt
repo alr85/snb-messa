@@ -18,6 +18,7 @@ import com.snb.inspect.dataClasses.CheckweigherCalibrationLocal
 import com.snb.inspect.dataClasses.MetalDetectorWithFullDetails
 import com.snb.inspect.formModules.ConditionState
 import com.snb.inspect.formModules.YesNoState
+import com.snb.inspect.util.toSafeString
 import com.snb.inspect.repositories.CheckweigherCalibrationRepository
 import com.snb.inspect.repositories.MetalDetectorSystemsRepository
 import com.snb.inspect.util.InAppLogger
@@ -232,6 +233,14 @@ class CalibrationCheckweigherViewModel(
         }
     }
 
+    fun persistAllSections() {
+        viewModelScope.launch {
+            val current = calibrationDao.getCalibrationById(calibrationId.value) ?: return@launch
+            updateCalibrationFromState(current)
+            calibrationRepository.updateCalibration(context, current)
+        }
+    }
+
     private fun updateCalibrationFromState(cal: CheckweigherCalibrationLocal) {
         cal.newLocation = _newLocation.value
         cal.canPerformCalibration = _canPerformCalibration.value.toString()
@@ -247,63 +256,63 @@ class CalibrationCheckweigherViewModel(
         cal.printerDataCapture = _printerDataCapture.value
         cal.rejectMode = _rejectMode.value
         
-        cal.beltCondition = _beltCondition.value.toString()
+        cal.beltCondition = _beltCondition.value.toSafeString()
         cal.beltConditionComments = _beltConditionComments.value
-        cal.safetyCircuitCondition = _safetyCircuitCondition.value.toString()
+        cal.safetyCircuitCondition = _safetyCircuitCondition.value.toSafeString()
         cal.safetyCircuitConditionComments = _safetyCircuitConditionComments.value
-        cal.guardCondition = _guardCondition.value.toString()
+        cal.guardCondition = _guardCondition.value.toSafeString()
         cal.guardConditionComments = _guardConditionComments.value
-        cal.vibrationCondition = _vibrationCondition.value.toString()
+        cal.vibrationCondition = _vibrationCondition.value.toSafeString()
         cal.vibrationConditionComments = _vibrationConditionComments.value
-        cal.weighTableObstruction = _weighTableObstruction.value.toString()
+        cal.weighTableObstruction = _weighTableObstruction.value.toSafeString()
         cal.weighTableObstructionComments = _weighTableObstructionComments.value
-        cal.productTransferCondition = _productTransferCondition.value.toString()
+        cal.productTransferCondition = _productTransferCondition.value.toSafeString()
         cal.productTransferConditionComments = _productTransferConditionComments.value
-        cal.machineStabilityCondition = _machineStabilityCondition.value.toString()
+        cal.machineStabilityCondition = _machineStabilityCondition.value.toSafeString()
         cal.machineStabilityConditionComments = _machineStabilityConditionComments.value
         cal.systemChecklistEngineerNotes = _systemChecklistEngineerNotes.value
         
-        cal.infeedSensorFitted = _infeedSensorFitted.value.toString()
+        cal.infeedSensorFitted = _infeedSensorFitted.value.toSafeString()
         cal.infeedSensorDetail = _infeedSensorDetail.value
         cal.infeedSensorTestMethod = _infeedSensorTestMethod.value
         cal.infeedSensorTestResult = _infeedSensorTestResult.value.joinToString(",")
-        cal.infeedSensorLatched = _infeedSensorLatched.value.toString()
-        cal.infeedSensorCR = _infeedSensorCR.value.toString()
+        cal.infeedSensorLatched = _infeedSensorLatched.value.toSafeString()
+        cal.infeedSensorCR = _infeedSensorCR.value.toSafeString()
         cal.infeedSensorEngineerNotes = _infeedSensorEngineerNotes.value
 
-        cal.rejectConfirmSensorFitted = _rejectConfirmSensorFitted.value.toString()
+        cal.rejectConfirmSensorFitted = _rejectConfirmSensorFitted.value.toSafeString()
         cal.rejectConfirmSensorDetail = _rejectConfirmSensorDetail.value
         cal.rejectConfirmSensorTestMethod = _rejectConfirmSensorTestMethod.value
         cal.rejectConfirmSensorTestResult = _rejectConfirmSensorTestResult.value.joinToString(",")
-        cal.rejectConfirmSensorLatched = _rejectConfirmSensorLatched.value.toString()
-        cal.rejectConfirmSensorCR = _rejectConfirmSensorCR.value.toString()
+        cal.rejectConfirmSensorLatched = _rejectConfirmSensorLatched.value.toSafeString()
+        cal.rejectConfirmSensorCR = _rejectConfirmSensorCR.value.toSafeString()
         cal.rejectConfirmSensorEngineerNotes = _rejectConfirmSensorEngineerNotes.value
 
-        cal.binFullSensorFitted = _binFullSensorFitted.value.toString()
+        cal.binFullSensorFitted = _binFullSensorFitted.value.toSafeString()
         cal.binFullSensorDetail = _binFullSensorDetail.value
         cal.binFullSensorTestMethod = _binFullSensorTestMethod.value
         cal.binFullSensorTestResult = _binFullSensorTestResult.value.joinToString(",")
-        cal.binFullSensorLatched = _binFullSensorLatched.value.toString()
-        cal.binFullSensorCR = _binFullSensorCR.value.toString()
+        cal.binFullSensorLatched = _binFullSensorLatched.value.toSafeString()
+        cal.binFullSensorCR = _binFullSensorCR.value.toSafeString()
         cal.binFullSensorEngineerNotes = _binFullSensorEngineerNotes.value
 
-        cal.airPressureSensorFitted = _airPressureSensorFitted.value.toString()
+        cal.airPressureSensorFitted = _airPressureSensorFitted.value.toSafeString()
         cal.airPressureSensorDetail = _airPressureSensorDetail.value
         cal.airPressureSensorTestMethod = _airPressureSensorTestMethod.value
         cal.airPressureSensorTestResult = _airPressureSensorTestResult.value.joinToString(",")
-        cal.airPressureSensorLatched = _airPressureSensorLatched.value.toString()
-        cal.airPressureSensorCR = _airPressureSensorCR.value.toString()
+        cal.airPressureSensorLatched = _airPressureSensorLatched.value.toSafeString()
+        cal.airPressureSensorCR = _airPressureSensorCR.value.toSafeString()
         cal.airPressureSensorEngineerNotes = _airPressureSensorEngineerNotes.value
 
-        cal.binDoorMonitorFitted = _binDoorMonitorFitted.value.toString()
+        cal.binDoorMonitorFitted = _binDoorMonitorFitted.value.toSafeString()
         cal.binDoorMonitorDetail = _binDoorMonitorDetail.value
         cal.binDoorStatusAsFound = _binDoorStatusAsFound.value
         cal.binDoorUnlockedIndication = _binDoorUnlockedIndication.value.joinToString(",")
         cal.binDoorOpenIndication = _binDoorOpenIndication.value.joinToString(",")
         cal.binDoorTimeoutTimer = _binDoorTimeoutTimer.value
         cal.binDoorTimeoutResult = _binDoorTimeoutResult.value.joinToString(",")
-        cal.binDoorLatched = _binDoorLatched.value.toString()
-        cal.binDoorCR = _binDoorCR.value.toString()
+        cal.binDoorLatched = _binDoorLatched.value.toSafeString()
+        cal.binDoorCR = _binDoorCR.value.toSafeString()
         cal.binDoorEngineerNotes = _binDoorEngineerNotes.value
         
         cal.productDescription = _productDescription.value
@@ -870,5 +879,94 @@ class CalibrationCheckweigherViewModel(
         if (passesString.isBlank()) return List(10) { "" }
         val list = passesString.split(",").map { it.trim() }
         return List(10) { i -> list.getOrNull(i) ?: "" }
+    }
+
+    fun wipeAllData() {
+        setBeltCondition(ConditionState.NA)
+        setBeltConditionComments("")
+        setSafetyCircuitCondition(ConditionState.NA)
+        setSafetyCircuitConditionComments("")
+        setGuardCondition(ConditionState.NA)
+        setGuardConditionComments("")
+        setVibrationCondition(ConditionState.NA)
+        setVibrationConditionComments("")
+        setWeighTableObstruction(ConditionState.NA)
+        setWeighTableObstructionComments("")
+        setProductTransferCondition(ConditionState.NA)
+        setProductTransferConditionComments("")
+        setMachineStabilityCondition(ConditionState.NA)
+        setMachineStabilityConditionComments("")
+        setSystemChecklistEngineerNotes("")
+
+        setInfeedSensorFitted(YesNoState.NA)
+        setInfeedSensorDetail("")
+        setInfeedSensorTestMethod("")
+        setInfeedSensorTestResult(emptyList())
+        setInfeedSensorLatched(YesNoState.NA)
+        setInfeedSensorCR(YesNoState.NA)
+        setInfeedSensorEngineerNotes("")
+
+        setRejectConfirmSensorFitted(YesNoState.NA)
+        setRejectConfirmSensorDetail("")
+        setRejectConfirmSensorTestMethod("")
+        setRejectConfirmSensorTestResult(emptyList())
+        setRejectConfirmSensorLatched(YesNoState.NA)
+        setRejectConfirmSensorCR(YesNoState.NA)
+        setRejectConfirmSensorEngineerNotes("")
+
+        setBinFullSensorFitted(YesNoState.NA)
+        setBinFullSensorDetail("")
+        setBinFullSensorTestMethod("")
+        setBinFullSensorTestResult(emptyList())
+        setBinFullSensorLatched(YesNoState.NA)
+        setBinFullSensorCR(YesNoState.NA)
+        setBinFullSensorEngineerNotes("")
+
+        setAirPressureSensorFitted(YesNoState.NA)
+        setAirPressureSensorDetail("")
+        setAirPressureSensorTestMethod("")
+        setAirPressureSensorTestResult(emptyList())
+        setAirPressureSensorLatched(YesNoState.NA)
+        setAirPressureSensorCR(YesNoState.NA)
+        setAirPressureSensorEngineerNotes("")
+
+        setBinDoorMonitorFitted(YesNoState.NA)
+        setBinDoorMonitorDetail("")
+        setBinDoorStatusAsFound("")
+        setBinDoorUnlockedIndication(emptyList())
+        setBinDoorOpenIndication(emptyList())
+        setBinDoorTimeoutTimer("")
+        setBinDoorTimeoutResult(emptyList())
+        setBinDoorLatched(YesNoState.NA)
+        setBinDoorCR(YesNoState.NA)
+        setBinDoorEngineerNotes("")
+
+        setProductDescription("")
+        setProductLength("")
+        setProductWidth("")
+        setProductHeight("")
+        setGrossWeight("")
+        setTareWeight("")
+        setProductLibraryReference("")
+
+        setStaticScaleMakeModel("")
+        setStaticScaleCertRef("")
+        setStaticScaleExpiryDate("")
+        setEngineerTestWeightId(null)
+
+        setNominalQuantityAsFound("")
+        for (i in 0 until 10) setDynamicPassAsFound(i, "")
+        setStaticScaleWeightAsFound("")
+        setCheckweigherWeightAsFound("")
+        setOffCentreLoadingTestResultAsFound("")
+        setRepeatabilityTestResultAsFound("")
+        setAdjustmentsNotes("")
+
+        setNominalQuantityAsLeft("")
+        for (i in 0 until 10) setDynamicPassAsLeft(i, "")
+        setStaticScaleWeightAsLeft("")
+        setCheckweigherWeightAsLeft("")
+        setOffCentreLoadingTestResultAsLeft("")
+        setRepeatabilityTestResultAsLeft("")
     }
 }

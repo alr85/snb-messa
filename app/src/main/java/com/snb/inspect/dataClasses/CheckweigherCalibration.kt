@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 
 @Entity(tableName = "CheckweigherCalibrations")
 class CheckweigherCalibrationLocal(
-    @PrimaryKey val calibrationId: String
+    @PrimaryKey var calibrationId: String = ""
 ) {
     // CALIBRATION SETUP
     var mapVersion: String = "CWC1.0"

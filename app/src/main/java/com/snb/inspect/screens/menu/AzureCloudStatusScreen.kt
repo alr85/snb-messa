@@ -99,8 +99,6 @@ fun AzureCloudStatusScreen(
                         contentDescription = "Refresh",
                         modifier = Modifier.size(18.dp)
                     )
-                    Spacer(Modifier.width(6.dp))
-                    Text("Refresh")
                 }
             }
         }
@@ -260,13 +258,13 @@ fun EndpointCard(endpoint: EndpointStatus) {
 
             Spacer(Modifier.height(6.dp))
 
-            Text(
-                text = endpoint.url,
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray
-            )
-
-            Spacer(Modifier.height(8.dp))
+//            Text(
+//                text = endpoint.url,
+//                style = MaterialTheme.typography.bodySmall,
+//                color = Color.Gray
+//            )
+//
+//            Spacer(Modifier.height(8.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),

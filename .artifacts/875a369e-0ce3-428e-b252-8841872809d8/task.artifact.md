@@ -1,0 +1,5 @@
+- [x] Update data models in `Customer.kt`
+- [x] Update mapping logic in `CustomerRepository.kt`
+- [x] Increment database version in `AppDatabase.kt`
+- [x] Update `ServiceSelectCustomerScreen.kt` UI
+- [x] Verify changes (Logic check)

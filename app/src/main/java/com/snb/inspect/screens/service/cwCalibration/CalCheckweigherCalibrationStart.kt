@@ -134,8 +134,13 @@ fun CalCheckweigherCalibrationStart(
             text = { Text("All calibration data will be wiped. Continue?") },
             confirmButton = {
                 TextButton(onClick = {
-                    pendingValue?.let { viewModel.setCanPerformCalibration(it) }
+                    pendingValue?.let {
+                        viewModel.setCanPerformCalibration(it)
+                        viewModel.wipeAllData()
+                        viewModel.persistAllSections()
+                    }
                     showConfirmDialog = false
+                    pendingValue = null
                 }) { Text("Yes, wipe data") }
             },
             dismissButton = {

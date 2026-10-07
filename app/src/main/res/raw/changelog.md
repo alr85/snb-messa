@@ -2,12 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
 ## [1.2.4] - 17/07/2026
 ### Added
-- A block has been put in to prevent 2 calibrations for the same machine being run at the same time.
+- An "A.K.A." (also known as) field has been added to the customer list that will help when there is multiple known names for a particular site e.g. 'Princes' and 'Symingtons'
+- A block has been put in to prevent 2 calibrations for the same machine being run concurrently.
+- A warning will appear if a second calibration is attempted within 24 hours of a completed calibration.
 - The calibration summary screen has had multiple timers added to prevent the engineer verification being skipped
 
 ## [1.2.3] - 15/07/2026

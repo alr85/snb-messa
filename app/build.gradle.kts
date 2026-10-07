@@ -8,7 +8,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose") version "2.3.20"
 
     // ✅ KSP plugin — must match your Kotlin version!
-    id("com.google.devtools.ksp") version "2.3.2"
+    id("com.google.devtools.ksp") version "2.3.6"
 }
 
 
@@ -21,8 +21,8 @@ android {
         applicationId = "com.snb.inspect"
         minSdk = 31
         targetSdk = 36
-        versionCode = 21
-        versionName = "1.2.3"
+        versionCode = 24
+        versionName = "1.2.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -85,6 +85,7 @@ android {
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.documentfile)
+    implementation(libs.google.play.app.update)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))

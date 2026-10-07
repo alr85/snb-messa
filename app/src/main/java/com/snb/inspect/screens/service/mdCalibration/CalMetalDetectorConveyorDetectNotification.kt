@@ -144,7 +144,8 @@ fun CalMetalDetectorConveyorDetectNotification(
                     onValueChange = viewModel::setDetectNotificationEngineerNotes,
                     helpText = "Enter any notes relevant to this section.",
                     isNAToggleEnabled = false,
-                    maxLength = 50
+                    maxLength = 200,
+                    singleLine = false,
                 )
 
                 Spacer(modifier = Modifier.height(60.dp))

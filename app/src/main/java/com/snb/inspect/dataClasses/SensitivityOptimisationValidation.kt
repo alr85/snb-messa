@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 
 @Entity(tableName = "SensitivityOptimisationValidations")
 class SensitivityOptimisationValidationLocal(
-    @PrimaryKey val sovId: String
+    @PrimaryKey var sovId: String = ""
 ) {
     // SETUP
     var mapVersion : String = "SOV1.0"

@@ -130,8 +130,8 @@ fun CalMetalDetectorConveyorSpeedSensor(
                             viewModel.setSpeedSensorTestMethod("")
                             viewModel.setSpeedSensorTestMethodOther("")
                             viewModel.setSpeedSensorTestResult(emptyList())
-                            viewModel.setSpeedSensorLatched(YesNoState.UNSPECIFIED)
-                            viewModel.setSpeedSensorCR(YesNoState.UNSPECIFIED)
+                            viewModel.setSpeedSensorLatched(YesNoState.NA)
+                            viewModel.setSpeedSensorCR(YesNoState.NA)
                         }
                     },
                     helpText = "Select if a speed sensor is fitted and used for belt speed monitoring / failsafe operation.",
@@ -210,7 +210,8 @@ fun CalMetalDetectorConveyorSpeedSensor(
                     onValueChange = viewModel::setSpeedSensorEngineerNotes,
                     helpText = "Enter any notes relevant to this section.",
                     isNAToggleEnabled = false,
-                    maxLength = 50
+                    maxLength = 200,
+                    singleLine = false,
                 )
 
                 Spacer(modifier = Modifier.height(60.dp))

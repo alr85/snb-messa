@@ -73,6 +73,7 @@ import com.snb.inspect.repositories.RetailerSensitivitiesRepository
 import com.snb.inspect.util.InAppLogger
 import com.snb.inspect.util.toConditionState
 import com.snb.inspect.util.toYesNoState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -1390,6 +1391,42 @@ class CalibrationMetalDetectorConveyorViewModel(
         }
     }
 
+    fun persistAllSections() {
+        viewModelScope.launch(Dispatchers.IO) {
+            updateCalibrationStart()
+            updateSensitivityRequirements()
+            updateProductDetails()
+            updateDetectionSettingsAsFound()
+            updateSensitivitiesAsFound()
+            updateFerrousSensitivitiesAsFound()
+            updateNonFerrousSensitivitiesAsFound()
+            updateStainlessSensitivitiesAsFound()
+            updateFerrousResult()
+            updateNonFerrousResult()
+            updateStainlessResult()
+            updateLargeMetalResult()
+            updateDetectionSettingAsLeft()
+            updateRejectSettings()
+            updateSystemChecklist()
+            updateConveyorDetails()
+            updateIndicators()
+            updateInfeedSensor()
+            updateRejectConfirmSensor()
+            updateBinFullSensor()
+            updateBackupSensor()
+            updateAirPressureSensor()
+            updatePackCheckSensor()
+            updateSpeedSensor()
+            updateDetectNotification()
+            updateBinDoorMonitor()
+            updateOperatorTest()
+            updateEquipmentUsed()
+            updateDetectionSettingLabels()
+            
+            calibrationRepository.saveBackup(context, calibrationId.value)
+        }
+    }
+
 
 
 
@@ -1827,7 +1864,7 @@ class CalibrationMetalDetectorConveyorViewModel(
         _newLocation.value = location
     }
 
-    private var _canPerformCalibration = mutableStateOf(false)
+    private var _canPerformCalibration = mutableStateOf(true)
     val canPerformCalibration: State<Boolean> = _canPerformCalibration
 
     fun setCanPerformCalibration(canPerform: Boolean) {
@@ -1910,9 +1947,9 @@ class CalibrationMetalDetectorConveyorViewModel(
     private val _startCalibrationNotes = mutableStateOf("")
     val startCalibrationNotes: State<String> = _startCalibrationNotes
 
-//    fun setStartCalibrationNotes(newValue: String) {
-//        _startCalibrationNotes.value = newValue
-//    }
+    fun setStartCalibrationNotes(newValue: String) {
+        _startCalibrationNotes.value = newValue
+    }
 
 
     //-----------------------------------------------------------------------------Product Settings
@@ -4212,6 +4249,11 @@ class CalibrationMetalDetectorConveyorViewModel(
         { setSensitivityRequirementStainless("") },
         { setSensitivityRequirementEngineerNotes("") },
         { setSensitivityAccessRestriction("") },
+        { setStartCalibrationNotes("") },
+        { setSensitivityAsFoundFerrousPeakSignal("") },
+        { setSensitivityAsFoundNonFerrousPeakSignal("") },
+        { setSensitivityAsFoundStainlessPeakSignal("") },
+        { setSensitivityAsFoundEngineerNotes("") },
 
         { setProductPeakSignalAsFound("") },
         { setSensitivityAsLeftFerrous("") },
@@ -4368,6 +4410,14 @@ class CalibrationMetalDetectorConveyorViewModel(
         { setBinDoorEngineerNotes("") },
         { setOperatorName("") },
         { setOperatorTestWitnessed(YesNoState.NA) },
+        { setOperatorTestWitnessedInfeed(YesNoState.NA) },
+        { setOperatorTestWitnessedRejectConfirm(YesNoState.NA) },
+        { setOperatorTestWitnessedBinFull(YesNoState.NA) },
+        { setOperatorTestWitnessedBinDoor(YesNoState.NA) },
+        { setOperatorTestWitnessedAirFail(YesNoState.NA) },
+        { setOperatorTestWitnessedPackCheck(YesNoState.NA) },
+        { setOperatorTestWitnessedSpeedSensor(YesNoState.NA) },
+        { setOperatorTestWitnessedBackup(YesNoState.NA) },
         { setOperatorTestResultFerrous("") },
         { setOperatorTestResultNonFerrous("") },
         { setOperatorTestResultStainless("") },

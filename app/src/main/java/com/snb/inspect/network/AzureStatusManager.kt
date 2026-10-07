@@ -31,7 +31,7 @@ class AzureStatusManager(private val apiService: ApiService) {
         val endpoints = mutableListOf<EndpointStatus>()
 
         // 1. Check Base API Gateway (Users endpoint)
-        endpoints.add(checkEndpoint("Base API (Users)", "https://snb-mea-web-apiapi.azure-api.net/api/Users") {
+        endpoints.add(checkEndpoint("Users API", "https://snb-mea-web-apiapi.azure-api.net/api/Users") {
             apiService.getUsers()
         })
 

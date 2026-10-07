@@ -1,17 +1,24 @@
-# Walkthrough - Start Calibration Double-Tap Protection ("Double Bounce")
+# Walkthrough - Recent Calibration Warning Dialog
 
 ## Overview
-Added click debouncing ("double bounce" / double-tap protection) to the "New Calibration" start buttons on both Metal Detector and Checkweigher system screens. This prevents engineers from double-tapping or multi-tapping the start button to accidentally trigger multiple concurrent calibration sessions.
+Implemented a new safety check when starting a calibration. If a system has already been successfully calibrated within the last 24 hours, a warning dialog is presented to the user to confirm if they really want to proceed with another calibration.
 
 ---
 
 ## Changes Made
 
-### 1. Button Click Debouncing ("Double Bounce" Protection)
+### 1. Database & DAO Layer
+#### [MetalDetectorConveyorCalibrationDAO.kt](file:///C:/Users/Adam Robson/StudioProjects/snb-messa/app/src/main/java/com/snb/inspect/daos/MetalDetectorConveyorCalibrationDAO.kt) & [CheckweigherCalibrationDAO.kt](file:///C:/Users/Adam Robson/StudioProjects/snb-messa/app/src/main/java/com/snb/inspect/daos/CheckweigherCalibrationDAO.kt)
+- Added `getLastCompletedCalibrationForSystem(systemId)` query to retrieve the most recent calibration with a valid `endDate`.
+
+### 2. UI & Screen Layer
 #### [MetalDetectorConveyorSystemScreen.kt](file:///C:/Users/Adam Robson/StudioProjects/snb-messa/app/src/main/java/com/snb/inspect/screens/service/MetalDetectorConveyorSystemScreen.kt) & [CheckweigherSystemScreen.kt](file:///C:/Users/Adam Robson/StudioProjects/snb-messa/app/src/main/java/com/snb/inspect/screens/service/CheckweigherSystemScreen.kt)
-- Introduced `isStartingCalibration` state variable.
-- Wrapped `startCalibration()` with a guard clause checking `isStartingCalibration` and resetting it after a 1.5-second debounce window (`finally { delay(1500L); isStartingCalibration = false }`).
-- Guarded the FloatingActionButton `onClick` lambda with `if (!isStartingCalibration)` to completely prevent double-bouncing/double-tapping.
+- **Calibration Check**: Before starting a new session, the app now fetches the last completed calibration for the system.
+- **24-Hour Logic**: If the difference between the last calibration's `endDate` and the current time is less than 24 hours, a warning dialog is triggered.
+- **Warning Dialog**: Displays an `AlertDialog` stating:
+  > *"This system was already calibrated in the last 24 hours (Completed: [Date]). Are you sure you want to perform another calibration?"*
+  - **Yes, Start New**: Proceed with the new calibration.
+  - **Cancel**: Close the dialog and abort the request.
 
 ---
 

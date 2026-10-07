@@ -109,7 +109,8 @@ fun AddNewCheckweigherScreen(
             },
             helpText = "Enter the serial number.",
             keyboardType = KeyboardType.Text,
-            isNAToggleEnabled = false
+            isNAToggleEnabled = false,
+            autoCorrect = false
         )
 
         LabeledTextFieldWithHelp(
@@ -121,7 +122,8 @@ fun AddNewCheckweigherScreen(
             helpText = "Enter the site location reference.",
             keyboardType = KeyboardType.Text,
             isNAToggleEnabled = false,
-            maxLength = 30
+            maxLength = 30,
+            autoCorrect = false
         )
 
         Spacer(modifier = Modifier.height(8.dp))

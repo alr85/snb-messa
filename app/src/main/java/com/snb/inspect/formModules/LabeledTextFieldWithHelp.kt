@@ -31,6 +31,7 @@ fun LabeledTextFieldWithHelp(
     showCounter: Boolean = true,
     showInputLabel: Boolean = false,
     showHelpOnFocusIfEmpty: Boolean = false,
+    autoCorrect: Boolean = true,
 ) {
     var showHelpDialog by remember { mutableStateOf(false) }
 
@@ -66,6 +67,7 @@ fun LabeledTextFieldWithHelp(
             singleLine = singleLine,
             transformInput = transformInput,
             showCounter = showCounter,
+            autoCorrect = autoCorrect,
             modifier = Modifier.onFocusChanged { focusState ->
                 if (showHelpOnFocusIfEmpty && focusState.isFocused && value.isBlank()) {
                     showHelpDialog = true

@@ -82,7 +82,10 @@ fun ServiceSelectCustomerScreen(
     val filteredCustomers = remember(searchQuery, customers) {
         customers
             .asSequence()
-            .filter { it.name?.contains(searchQuery, ignoreCase = true) == true }
+            .filter { 
+                it.name?.contains(searchQuery, ignoreCase = true) == true ||
+                it.alsoKnownAs?.contains(searchQuery, ignoreCase = true) == true
+            }
             .sortedBy { it.name }
             .toList()
     }
@@ -172,7 +175,12 @@ fun ServiceSelectCustomerScreen(
                         customer = customer,
                         onClick = {
                             keyboardController?.hide()
-                            val encodedName = Uri.encode(customer.name ?: "")
+                            val displayName = if (!customer.alsoKnownAs.isNullOrBlank()) {
+                                "${customer.name} (${customer.alsoKnownAs})"
+                            } else {
+                                customer.name ?: ""
+                            }
+                            val encodedName = Uri.encode(displayName)
                             val encodedPostcode = Uri.encode(customer.postcode ?: "")
                             val encodedAddress = Uri.encode(customer.customerCityTown ?: "")
 
@@ -220,6 +228,13 @@ private fun CustomerRow(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
+                if (!customer.alsoKnownAs.isNullOrBlank()) {
+                    Text(
+                        text = "(AKA: ${customer.alsoKnownAs})",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 Text(
                     text = "${customer.customerCityTown}, ${customer.postcode}",
                     style = MaterialTheme.typography.bodyMedium,

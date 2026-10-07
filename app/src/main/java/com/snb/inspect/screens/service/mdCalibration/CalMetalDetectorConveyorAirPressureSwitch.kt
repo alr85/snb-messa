@@ -254,7 +254,8 @@ fun CalMetalDetectorConveyorAirPressureSensor(
                     onValueChange = viewModel::setAirPressureSensorEngineerNotes,
                     helpText = "Optional notes for this section.",
                     isNAToggleEnabled = false,
-                    maxLength = 50
+                    maxLength = 200,
+                    singleLine = false,
                 )
 
                 Spacer(modifier = Modifier.height(60.dp))

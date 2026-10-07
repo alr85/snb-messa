@@ -161,6 +161,7 @@ fun CalMetalDetectorConveyorCalibrationStart(
                             helpText = "Explain why calibration cannot be performed.",
                             isNAToggleEnabled = false,
                             maxLength = 50,
+                            singleLine = false,
                             showInputLabel = false
                         )
 
@@ -199,6 +200,7 @@ fun CalMetalDetectorConveyorCalibrationStart(
                         pendingValue?.let {
                             viewModel.setCanPerformCalibration(it)
                             viewModel.setAllResultsUtc()
+                            viewModel.persistAllSections()
                         }
                         showConfirmDialog = false
                         pendingValue = null

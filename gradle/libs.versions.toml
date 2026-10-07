@@ -1,5 +1,5 @@
 [versions]
-agp = "9.3.2"
+agp = "9.4.1"
 iconsLucide = "1.1.0"
 kotlin = "2.3.10"
 coreKtx = "1.18.0"
@@ -14,6 +14,7 @@ squareupRetrofit = "3.0.0"
 converterGson = "3.0.0"
 squareupLoggingInterceptor = "5.3.2"
 runtimeLivedata = "1.10.5"
+playAppUpdate = "2.1.0"
 
 iconsExtended = "1.7.8"
 composeMaterial3 = "1.4.0"
@@ -34,6 +35,7 @@ documentfile = "1.0.1"
 
 
 [libraries]
+google-play-app-update = { module = "com.google.android.play:app-update-ktx", version.ref = "playAppUpdate" }
 androidx-documentfile = { group = "androidx.documentfile", name = "documentfile", version.ref = "documentfile" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 icons-lucide = { module = "com.composables:icons-lucide", version.ref = "iconsLucide" }

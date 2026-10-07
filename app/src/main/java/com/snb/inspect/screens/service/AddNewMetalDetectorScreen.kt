@@ -168,7 +168,8 @@ fun AddNewMetalDetectorScreen(
                 },
                 helpText = "Enter the serial number (A-Z / 0-9 / space / _ . -).",
                 keyboardType = KeyboardType.Text,
-                isNAToggleEnabled = false
+                isNAToggleEnabled = false,
+                autoCorrect = false
             )
 
             LabeledDualNumberInputsWithHelp(
@@ -191,7 +192,8 @@ fun AddNewMetalDetectorScreen(
                 helpText = "Enter the site location reference.",
                 keyboardType = KeyboardType.Text,
                 isNAToggleEnabled = false,
-                maxLength = 30
+                maxLength = 30,
+                autoCorrect = false
             )
 
 

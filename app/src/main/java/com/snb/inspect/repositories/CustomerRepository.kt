@@ -72,6 +72,7 @@ class CustomerRepository(
                 CustomerLocal(
                     id = 0,
                     name = apiCustomer.customerName,
+                    alsoKnownAs = apiCustomer.alsoKnownAs,
                     fusionID = apiCustomer.fusionID,
                     postcode = apiCustomer.customerPostcode,
                     dateAdded = apiCustomer.dateAdded,

@@ -224,6 +224,7 @@ fun CalMetalDetectorConveyorFerrousTestAsFound(
                     helpText = "Relevant notes for this section.",
                     isNAToggleEnabled = false,
                     maxLength = 50,
+                    singleLine = false,
                 )
 
                 Spacer(Modifier.height(60.dp))

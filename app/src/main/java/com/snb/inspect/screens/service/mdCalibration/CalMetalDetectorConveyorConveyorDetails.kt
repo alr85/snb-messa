@@ -209,6 +209,7 @@ fun CalMetalDetectorConveyorConveyorDetails(
                     helpText = "Optional notes for this section.",
                     isNAToggleEnabled = false,
                     maxLength = 50,
+                    singleLine = false,
                     showInputLabel = false
                 )
 

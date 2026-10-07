@@ -212,6 +212,7 @@ fun CalMetalDetectorConveyorSensitivityRequirements(
                     helpText = "Enter any notes relevant to this section",
                     isNAToggleEnabled = false,
                     maxLength = 50,
+                    singleLine = false,
                     showInputLabel = false
                 )
 

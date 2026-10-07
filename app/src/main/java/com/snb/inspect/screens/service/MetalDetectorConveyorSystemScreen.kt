@@ -110,6 +110,8 @@ fun MetalDetectorConveyorSystemScreen(
     var modelDetails by remember { mutableStateOf<MdModelsLocal?>(null) }
     var isUploading by remember { mutableStateOf(false) }
     var isStartingCalibration by remember { mutableStateOf(false) }
+    var showRecentCalibrationWarning by remember { mutableStateOf(false) }
+    var recentCalibrationDate by remember { mutableStateOf("") }
 
     var showActions by rememberSaveable { mutableStateOf(false) }
 
@@ -169,6 +171,31 @@ fun MetalDetectorConveyorSystemScreen(
     val formattedAddedDate =
         runCatching { formatDate(mdSystem?.addedDate) }.getOrElse { "Invalid date" }
 
+    fun launchActualCalibration() {
+        val system = mdSystem ?: return
+        val newCalibrationId =
+            System.currentTimeMillis().toString(36) + "-" + (100..999).random()
+
+        val (_, _, engineerId) = PreferencesHelper.getCredentials(context)
+
+        val intent = Intent(context, MetalDetectorConveyorCalibrationActivity::class.java).apply {
+            putExtra("CALIBRATION_ID", newCalibrationId)
+            putExtra("SYSTEM_FULL_DETAILS", system)
+            putExtra("ENGINEER_ID", engineerId ?: 0)
+            // detection labels
+            putExtra("DETECTION_SETTING_1_LABEL", modelDetails?.detectionSetting1)
+            putExtra("DETECTION_SETTING_2_LABEL", modelDetails?.detectionSetting2)
+            putExtra("DETECTION_SETTING_3_LABEL", modelDetails?.detectionSetting3)
+            putExtra("DETECTION_SETTING_4_LABEL", modelDetails?.detectionSetting4)
+            putExtra("DETECTION_SETTING_5_LABEL", modelDetails?.detectionSetting5)
+            putExtra("DETECTION_SETTING_6_LABEL", modelDetails?.detectionSetting6)
+            putExtra("DETECTION_SETTING_7_LABEL", modelDetails?.detectionSetting7)
+            putExtra("DETECTION_SETTING_8_LABEL", modelDetails?.detectionSetting8)
+        }
+
+        context.startActivity(intent)
+    }
+
     fun startCalibration() {
         if (isStartingCalibration) return
         val system = mdSystem ?: return
@@ -182,29 +209,32 @@ fun MetalDetectorConveyorSystemScreen(
                     return@launch
                 }
 
-                val newCalibrationId =
-                    System.currentTimeMillis().toString(36) + "-" + (100..999).random()
+                val lastCompleted = dao.getLastCompletedCalibrationForSystem(system.id)
+                if (lastCompleted != null) {
+                    val endDate = try {
+                        val parser = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                        java.time.LocalDateTime.parse(lastCompleted.endDate, parser)
+                    } catch (e: Exception) {
+                        try {
+                            java.time.LocalDateTime.parse(lastCompleted.endDate)
+                        } catch (ex: Exception) {
+                            null
+                        }
+                    }
 
-                val (_, _, engineerId) = PreferencesHelper.getCredentials(context)
-
-                val intent = Intent(context, MetalDetectorConveyorCalibrationActivity::class.java).apply {
-                    putExtra("CALIBRATION_ID", newCalibrationId)
-                    putExtra("SYSTEM_FULL_DETAILS", system)
-                    putExtra("ENGINEER_ID", engineerId ?: 0)
-                    // detection labels
-                    putExtra("DETECTION_SETTING_1_LABEL", modelDetails?.detectionSetting1)
-                    putExtra("DETECTION_SETTING_2_LABEL", modelDetails?.detectionSetting2)
-                    putExtra("DETECTION_SETTING_3_LABEL", modelDetails?.detectionSetting3)
-                    putExtra("DETECTION_SETTING_4_LABEL", modelDetails?.detectionSetting4)
-                    putExtra("DETECTION_SETTING_5_LABEL", modelDetails?.detectionSetting5)
-                    putExtra("DETECTION_SETTING_6_LABEL", modelDetails?.detectionSetting6)
-                    putExtra("DETECTION_SETTING_7_LABEL", modelDetails?.detectionSetting7)
-                    putExtra("DETECTION_SETTING_8_LABEL", modelDetails?.detectionSetting8)
+                    if (endDate != null) {
+                        val now = java.time.LocalDateTime.now()
+                        val diffHours = java.time.Duration.between(endDate, now).toHours()
+                        if (diffHours < 24) {
+                            recentCalibrationDate = lastCompleted.endDate
+                            showRecentCalibrationWarning = true
+                            return@launch
+                        }
+                    }
                 }
 
-                context.startActivity(intent)
+                launchActualCalibration()
             } finally {
-                kotlinx.coroutines.delay(1500L)
                 isStartingCalibration = false
             }
         }
@@ -309,6 +339,36 @@ fun MetalDetectorConveyorSystemScreen(
         } finally {
             isUploading = false
         }
+    }
+
+    // Recent calibration warning dialog
+    if (showRecentCalibrationWarning) {
+        AlertDialog(
+            onDismissRequest = { showRecentCalibrationWarning = false },
+            icon = { Icon(Icons.Default.PriorityHigh, null, tint = SnbRed) },
+            title = { Text("Recent Calibration Found") },
+            text = {
+                Text(
+                    "This system was already calibrated in the last 24 hours (Completed: $recentCalibrationDate).\n\n" +
+                            "Are you sure you want to perform another calibration?"
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showRecentCalibrationWarning = false
+                        launchActualCalibration()
+                    }
+                ) {
+                    Text("Yes, Start New", color = SnbRed)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRecentCalibrationWarning = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 
     // ---------- CONTENT ----------

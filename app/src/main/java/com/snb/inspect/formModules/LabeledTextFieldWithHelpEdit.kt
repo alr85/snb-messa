@@ -32,7 +32,7 @@ fun LabeledTextFieldWithHelpEdit(
     singleLine: Boolean = true,
     transformInput: ((String) -> String)? = null,
     showCounter: Boolean = true,
-
+    autoCorrect: Boolean = true,
 ) {
     var showHelpDialog by remember { mutableStateOf(false) }
 
@@ -69,7 +69,7 @@ fun LabeledTextFieldWithHelpEdit(
             singleLine = singleLine,
             transformInput = transformInput,
             showCounter = showCounter,
-
+            autoCorrect = autoCorrect,
         )
 
     }

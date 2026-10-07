@@ -1,6 +1,7 @@
 package com.snb.inspect.calibrationLogic.metalDetectorConveyor
 
 import com.snb.inspect.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
+import com.snb.inspect.formModules.YesNoState
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 

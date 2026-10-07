@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresPermission
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -101,12 +102,24 @@ import com.snb.inspect.ui.theme.SnbRed
 import com.snb.inspect.util.DataBackupManager
 import com.snb.inspect.util.InAppLogger
 import com.snb.inspect.util.SyncPreferences
+import com.google.android.play.core.appupdate.AppUpdateManager
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.appupdate.AppUpdateOptions
+import com.google.android.play.core.appupdate.AppUpdateInfo
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.UpdateAvailability
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+
+enum class AppInitState {
+    CHECKING_UPDATES,
+    SYNCING_BEFORE_UPDATE,
+    READY_TO_LAUNCH
+}
 
 class MainActivity : ComponentActivity() {
 
@@ -119,6 +132,21 @@ class MainActivity : ComponentActivity() {
     private lateinit var cwCalibrationRepository: CheckweigherCalibrationRepository
     private lateinit var mdSystemNotesRepository: MdSystemNotesRepository
     private lateinit var cwSystemNotesRepository: CwSystemNotesRepository
+
+    private lateinit var appUpdateManager: AppUpdateManager
+
+    // ActivityResultLauncher for the in-app update flow
+    private val updateResultStarter = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+        if (result.resultCode != RESULT_OK) {
+            InAppLogger.e("Update flow failed! Result code: ${result.resultCode}")
+            // The user cancelled or the update failed. 
+            // In IMMEDIATE updates, we usually want to close the app or try again.
+            // For now, let's just let them continue so they aren't totally locked out if the Play Store glitches.
+            initState.value = AppInitState.READY_TO_LAUNCH
+        }
+    }
+
+    private val initState = mutableStateOf(AppInitState.CHECKING_UPDATES)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -171,7 +199,24 @@ class MainActivity : ComponentActivity() {
         // Always sync users on launch
         userViewModel.syncUsers(this)
 
+        appUpdateManager = AppUpdateManagerFactory.create(this)
+        checkForAppUpdates()
+
         setContent {
+
+            val currentInitState by initState
+            
+            if (currentInitState == AppInitState.CHECKING_UPDATES) {
+                // Just a blank screen or a splash screen while checking Play Store quickly
+                Box(modifier = Modifier.fillMaxSize().background(Color.White))
+                return@setContent
+            }
+
+            if (currentInitState == AppInitState.SYNCING_BEFORE_UPDATE) {
+                UpdateSyncScreen()
+                return@setContent
+            }
+
 
             val syncStatus by userViewModel.syncStatus.collectAsState()
             val loginStatus by userViewModel.loginStatus.collectAsState()
@@ -243,9 +288,104 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun checkForAppUpdates() {
+        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
+
+        appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+                && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
+            ) {
+                // An update is available! Intercept and sync first.
+                initState.value = AppInitState.SYNCING_BEFORE_UPDATE
+                syncDataBeforeUpdate(appUpdateInfo)
+            } else {
+                // No update available, or update type not allowed. Proceed.
+                initState.value = AppInitState.READY_TO_LAUNCH
+            }
+        }.addOnFailureListener { e ->
+            // Offline, or Play Store error. Just proceed to the app.
+            InAppLogger.e("App Update Check Failed: ${e.message}")
+            initState.value = AppInitState.READY_TO_LAUNCH
+        }
+    }
+
+    private fun syncDataBeforeUpdate(appUpdateInfo: AppUpdateInfo) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                InAppLogger.d("PRE-UPDATE SYNC: Starting...")
+                
+                val context = this@MainActivity
+
+                // 1. Upload new machines
+                mdSystemsRepository.uploadUnsyncedSystems(context)
+                cwSystemsRepository.uploadUnsyncedSystems(context)
+                
+                // 2. Upload calibrations
+                val apiService = (application as MyApplication).apiService
+                calibrationRepository.uploadUnsyncedCalibrations(context, apiService)
+                cwCalibrationRepository.uploadUnsyncedCalibrations(context, apiService)
+
+                // 3. Sync Notes
+                mdSystemNotesRepository.syncAllUnsyncedNotes(context)
+                cwSystemNotesRepository.syncAllUnsyncedNotes(context)
+
+                InAppLogger.d("PRE-UPDATE SYNC: Completed successfully.")
+                
+                withContext(Dispatchers.Main) {
+                    // Trigger the actual update UI
+                    appUpdateManager.startUpdateFlowForResult(
+                        appUpdateInfo,
+                        updateResultStarter,
+                        AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build()
+                    )
+                }
+
+            } catch (e: Exception) {
+                InAppLogger.e("PRE-UPDATE SYNC: Failed. ${e.message}")
+                // Option B: If the sync fails (e.g. poor signal dropping halfway through), 
+                // we bypass the update and let them into the app to continue working offline.
+                withContext(Dispatchers.Main) {
+                    initState.value = AppInitState.READY_TO_LAUNCH
+                }
+            }
+        }
+    }
+
     override fun onDestroy() {
         android.util.Log.d("MESSA DEBUG", "onDestroy called")
         super.onDestroy()
+    }
+}
+
+@Composable
+fun UpdateSyncScreen() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            CircularProgressIndicator(color = SnbRed)
+            Text(
+                text = "Important Update Required",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+            Text(
+                text = "Syncing your offline data safely to the server before installing the update...",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.DarkGray,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
