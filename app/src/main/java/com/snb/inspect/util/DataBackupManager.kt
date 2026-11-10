@@ -4,9 +4,11 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
+import androidx.annotation.RequiresApi
 import androidx.documentfile.provider.DocumentFile
 import com.google.gson.GsonBuilder
 import com.snb.inspect.AppDatabase
@@ -24,6 +26,7 @@ object DataBackupManager {
     // Directory in public Documents to survive uninstalls even if offline
     private const val RECOVERY_DIR_NAME = "SNB_Inspect_Recovery"
     private val RECOVERY_DIR = "${Environment.DIRECTORY_DOCUMENTS}/$RECOVERY_DIR_NAME"
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
     private val OLD_HIDDEN_DIR = "${Environment.DIRECTORY_DOCUMENTS}/.snb_internal_metadata"
     private const val INTERNAL_BACKUP_DIR = "internal_backups"
 

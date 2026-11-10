@@ -118,19 +118,42 @@ class CheckweigherCalibrationLocal(
     var tareWeight: String = ""
     var productLibraryReference: String = ""
 
+    // CALIBRATION TYPE & OIML METRIC SCOPE
+    var calibrationType: String = "ROUTINE" // ROUTINE or COMPREHENSIVE
+
     //-----------------------------------------------------------------------Static Scale Reference
     var staticScaleMakeModel: String = ""
     var staticScaleCertRef: String = ""
     var staticScaleExpiryDate: String = ""
+    var staticScaleManufacturer: String = ""
+    var staticScaleModel: String = ""
+    var staticScaleSerial: String = ""
+    var staticScaleResolution: String = ""
+    var staticScaleCalDate: String = ""
+    var staticScaleCalStatus: String = ""
+    var staticScaleSuitability: String = "SUITABLE" // SUITABLE, UNSUITABLE, LIMITATIONS
+    var staticScaleRefMassCheckResult: String = ""
+    var staticScaleLimitationFlags: String = ""
 
     //-------------------------------------------------------------------------Engineer Test Weight
     var engineerTestWeightId: Int? = null
 
+    //-------------------------------------------------------------------------Operating Conditions
+    var beltSpeed: String = ""
+    var tareConfiguration: String = ""
+    var operatingConditionsNotes: String = ""
+
     //-----------------------------------------------------------------------Dynamic Test 'As Found'
+    var requiredPassesCount: Int = 30
     var nominalQuantityAsFound: String = ""
-    var dynamicPassesAsFound: String = "" // Stored as comma separated values
+    var dynamicPassesAsFound: String = "" // Stored as comma separated values (up to 30)
     var staticScaleWeightAsFound: String = ""
     var checkweigherWeightAsFound: String = ""
+    var dynamicMeanAsFound: String = ""
+    var dynamicMeanErrorAsFound: String = ""
+    var dynamicSampleStdDevAsFound: String = ""
+    var dynamicSixSigmaAsFound: String = ""
+    var additionalProductionWeightsJson: String = ""
 
     //------------------------------------------------------------------------Static Test 'As Found'
     var offCentreLoadingTestResultAsFound: String = ""
@@ -141,11 +164,48 @@ class CheckweigherCalibrationLocal(
 
     //------------------------------------------------------------------------Dynamic Test 'As Left'
     var nominalQuantityAsLeft: String = ""
-    var dynamicPassesAsLeft: String = "" // Stored as comma separated values
+    var dynamicPassesAsLeft: String = "" // Stored as comma separated values (up to 30)
     var staticScaleWeightAsLeft: String = ""
     var checkweigherWeightAsLeft: String = ""
+    var dynamicMeanAsLeft: String = ""
+    var dynamicMeanErrorAsLeft: String = ""
+    var dynamicSampleStdDevAsLeft: String = ""
+    var dynamicSixSigmaAsLeft: String = ""
 
     //-------------------------------------------------------------------------Static Test 'As Left'
     var offCentreLoadingTestResultAsLeft: String = ""
     var repeatabilityTestResultAsLeft: String = ""
+
+    //--------------------------------------------------------------------Tolerances & Assessment
+    var toleranceSource: String = "SNB_GUIDANCE" // MANUFACTURER, CUSTOMER, SNB_GUIDANCE
+    var manufacturerTne: String = ""
+    var customerTne: String = ""
+    var calculatedTne: String = ""
+    var benchmark20PercentTne: String = ""
+    var benchmark25PercentTne: String = ""
+    var overallResultStatus: String = "PASS" // PASS, FAIL, FURTHER_ASSESSMENT_REQUIRED
+    var exceedsZoiThreshold: Boolean = false
+    var additionalSetPointAllowance: String = ""
+    var engineerSetPointAssessmentNotes: String = ""
+    var engineerSetPointAssessmentResolved: Boolean = false
+
+    //------------------------------------------------------------------------Reject Verification
+    var generalRejectTestResult: String = "PASS" // PASS, FAIL, NA
+    var generalRejectNotes: String = ""
+    var t0TestRefWeight: String = ""
+    var t0TestExpected: String = ""
+    var t0TestActual: String = ""
+    var t0TestResult: String = ""
+    var t1TestRefWeight: String = ""
+    var t1TestExpected: String = ""
+    var t1TestActual: String = ""
+    var t1TestResult: String = ""
+    var t2TestRefWeight: String = ""
+    var t2TestExpected: String = ""
+    var t2TestActual: String = ""
+    var t2TestResult: String = ""
+    var overweightTestRefWeight: String = ""
+    var overweightTestExpected: String = ""
+    var overweightTestActual: String = ""
+    var overweightTestResult: String = ""
 }

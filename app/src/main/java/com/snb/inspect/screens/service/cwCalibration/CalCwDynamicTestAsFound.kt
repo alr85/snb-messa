@@ -11,31 +11,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.snb.inspect.calibrationViewModels.CalibrationCheckweigherViewModel
 import com.snb.inspect.formModules.CalibrationHeader
-import com.snb.inspect.ui.theme.FormSpacer
-import com.snb.inspect.ui.theme.SnbDarkGrey
-import com.snb.inspect.ui.theme.SnbRed
 import com.snb.inspect.ui.theme.ScrollableWithScrollbar
-import com.snb.inspect.util.CheckweigherAccuracyCalculator
-import com.snb.inspect.util.CheckweigherAccuracyResult
-import com.snb.inspect.util.PassFail
+import com.snb.inspect.util.CheckweigherCalculationResult
 
 @Composable
 fun CalCwDynamicTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
-    val result by viewModel.dynamicAccuracyResultAsFound.collectAsState(initial = null)
     val passes = viewModel.dynamicPassesAsFound.value
+    val targetPasses = viewModel.requiredPassesCount.value
+    var inputPassesText by remember(targetPasses) { mutableStateOf(targetPasses.toString()) }
 
-    val isNextStepEnabled = result?.zoiPassFail == PassFail.Pass && result?.knownMassPassFail == PassFail.Pass
+    val calcResult by viewModel.evaluatedCalculationResultAsFound.collectAsState()
+
+    val validCount = passes.take(targetPasses).count { it.isNotBlank() }
+    val isNextStepEnabled = viewModel.nominalQuantityAsFound.value.isNotBlank() && validCount >= targetPasses
 
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        CalibrationHeader(label = "Dynamic Test (As Found)", isValid = isNextStepEnabled)
+        CalibrationHeader(label = "Dynamic Weighing Test ($targetPasses Passes)", isValid = isNextStepEnabled)
 
         ScrollableWithScrollbar(
             modifier = Modifier.fillMaxSize(),
@@ -44,25 +42,140 @@ fun CalCwDynamicTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
             Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Spacer(Modifier.height(4.dp))
 
-                NominalInputCard(
-                    tNomText = viewModel.nominalQuantityAsFound.value,
-                    onTNomChange = viewModel::setNominalQuantityAsFound,
-                    result = result
-                )
+                ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                "Dynamic Test Configuration",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Icon(Icons.Default.Calculate, contentDescription = null)
+                        }
 
-                ZoiSection(
-                    passTexts = passes,
-                    onPassChange = viewModel::setDynamicPassAsFound,
-                    result = result
-                )
+                        OutlinedTextField(
+                            value = inputPassesText,
+                            onValueChange = { raw ->
+                                inputPassesText = raw.filter { it.isDigit() }
+                                val parsed = inputPassesText.toIntOrNull()
+                                if (parsed != null && parsed >= 10) {
+                                    viewModel.setRequiredPassesCountInt(parsed.coerceAtMost(30))
+                                }
+                            },
+                            label = { Text("Required Test Passes (Min 10, Max 30)") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            singleLine = true,
+                            isError = (inputPassesText.toIntOrNull() ?: 0) < 10,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        if ((inputPassesText.toIntOrNull() ?: 0) < 10 && inputPassesText.isNotBlank()) {
+                            Text(
+                                "⚠️ Required test passes must be a minimum of 10.",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
+                }
 
-                KnownMassSection(
-                    staticScale = viewModel.staticScaleWeightAsFound.value,
-                    checkweigher = viewModel.checkweigherWeightAsFound.value,
-                    onStaticChange = viewModel::setStaticScaleWeightAsFound,
-                    onCheckweigherChange = viewModel::setCheckweigherWeightAsFound,
-                    result = result
-                )
+                ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(
+                            "Test Pack Parameters",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedTextField(
+                                value = viewModel.nominalQuantityAsFound.value,
+                                onValueChange = viewModel::setNominalQuantityAsFound,
+                                label = { Text("Nominal Qnom (g)") },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                singleLine = true,
+                                modifier = Modifier.weight(1f)
+                            )
+                            OutlinedTextField(
+                                value = viewModel.staticScaleWeightAsFound.value,
+                                onValueChange = viewModel::setStaticScaleWeightAsFound,
+                                label = { Text("Static Ref Pack (g)") },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                singleLine = true,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedTextField(
+                                value = viewModel.beltSpeed.value,
+                                onValueChange = viewModel::setBeltSpeed,
+                                label = { Text("Belt Speed (m/min)") },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                singleLine = true,
+                                modifier = Modifier.weight(1f)
+                            )
+                            OutlinedTextField(
+                                value = viewModel.tareConfiguration.value,
+                                onValueChange = viewModel::setTareConfiguration,
+                                label = { Text("Tare Config (g)") },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                singleLine = true,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+
+                ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                "Dynamic Passes (g)",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Surface(
+                                color = if (validCount >= targetPasses) Color(0xFFE8F5E9) else Color(0xFFFFF3E0),
+                                shape = MaterialTheme.shapes.small
+                            ) {
+                                Text(
+                                    text = "$validCount / $targetPasses",
+                                    color = if (validCount >= targetPasses) Color(0xFF2E7D32) else Color(0xFFE65100),
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                            }
+                        }
+
+                        val rowCount = (targetPasses + 2) / 3
+                        for (row in 0 until rowCount) {
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                for (col in 0 until 3) {
+                                    val index = row * 3 + col
+                                    if (index < targetPasses) {
+                                        OutlinedTextField(
+                                            value = passes.getOrElse(index) { "" },
+                                            onValueChange = { viewModel.setDynamicPassAsFound(index, it) },
+                                            label = { Text("P${index + 1}") },
+                                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                            singleLine = true,
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                    } else {
+                                        Spacer(modifier = Modifier.weight(1f))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (calcResult != null) {
+                    CalculatedStatisticsSummaryCard(calcResult!!)
+                }
 
                 Spacer(Modifier.height(60.dp))
             }
@@ -70,33 +183,51 @@ fun CalCwDynamicTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
     }
 }
 
-// Reused components from CheckweigherAccuracyScreen adapted for Calibration
-
 @Composable
-private fun NominalInputCard(tNomText: String, onTNomChange: (String) -> Unit, result: CheckweigherAccuracyResult?) {
-    val tNomVal = tNomText.toDoubleOrNull() ?: 0.0
-    val isTooLow = tNomText.isNotBlank() && tNomVal < 5.0
-    ElevatedCard {
+private fun CalculatedStatisticsSummaryCard(res: CheckweigherCalculationResult) {
+    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Nominal Quantity", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
-                Icon(Icons.Default.Calculate, contentDescription = null)
-            }
-            OutlinedTextField(
-                value = tNomText,
-                onValueChange = onTNomChange,
-                label = { Text("T-Nom (g / ml)") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                singleLine = true,
-                isError = isTooLow,
-                modifier = Modifier.fillMaxWidth()
+            Text(
+                "Dynamic Accuracy Statistics",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
             )
-            if (isTooLow) Text("⚠️ Nominal weight must be 5g or greater.", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
-            else if (result != null) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    ValuePill(title = "TNE", value = "${result.tne}g", modifier = Modifier.weight(1f))
-                    ValuePill(title = "T1", value = "${result.t1}g", modifier = Modifier.weight(1f))
-                    ValuePill(title = "T2", value = "${result.t2}g", modifier = Modifier.weight(1f))
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                ValueBox(title = "Mean (x̄)", value = res.mean?.let { "%.2fg".format(it) } ?: "—", modifier = Modifier.weight(1f))
+                ValueBox(title = "Mean Error", value = res.meanDynamicError?.let { "%.2fg".format(it) } ?: "—", modifier = Modifier.weight(1f))
+            }
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                ValueBox(title = "Sample SD (s)", value = res.sampleStdDev?.let { "%.3f".format(it) } ?: "—", modifier = Modifier.weight(1f))
+                ValueBox(title = "Six Sigma (6s)", value = res.sixSigmaZoi?.let { "%.2f".format(it) } ?: "—", modifier = Modifier.weight(1f))
+            }
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                ValueBox(title = "TNE", value = "%.2fg".format(res.tne), modifier = Modifier.weight(1f))
+                ValueBox(title = "20% TNE Limit", value = "%.2fg".format(res.benchmark20PercentTne), modifier = Modifier.weight(1f))
+                ValueBox(title = "25% TNE Threshold", value = "%.2fg".format(res.benchmark25PercentTne), modifier = Modifier.weight(1f))
+            }
+
+            if (res.exceeds25PercentTneLimit) {
+                Surface(
+                    color = Color(0xFFFFF3E0),
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            "⚠️ 6σ exceeds 25% of TNE (${"%.2f".format(res.sixSigmaZoi)} > ${"%.2f".format(res.benchmark25PercentTne)})",
+                            color = Color(0xFFE65100),
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            "Further assessment is required on the next step. Additional set-point allowance: ${res.additionalSetPointAllowance?.let { "%.2fg".format(it) } ?: "—"}",
+                            color = Color(0xFFE65100),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
                 }
             }
         }
@@ -104,102 +235,11 @@ private fun NominalInputCard(tNomText: String, onTNomChange: (String) -> Unit, r
 }
 
 @Composable
-private fun ZoiSection(passTexts: List<String>, onPassChange: (Int, String) -> Unit, result: CheckweigherAccuracyResult?) {
-    ElevatedCard {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Zone of Indecision (ZOI)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            Text("Enter 10 dynamic passes (g/ml)", style = MaterialTheme.typography.bodySmall)
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    for (i in 0 until 5) PassField(label = "Pass ${i + 1}", value = passTexts[i], onChange = { onPassChange(i, it) })
-                }
-                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    for (i in 5 until 10) PassField(label = "Pass ${i + 1}", value = passTexts[i], onChange = { onPassChange(i, it) })
-                }
-            }
-            if (result != null) ZoiSummary(result)
-        }
-    }
-}
-
-@Composable
-private fun KnownMassSection(staticScale: String, checkweigher: String, onStaticChange: (String) -> Unit, onCheckweigherChange: (String) -> Unit, result: CheckweigherAccuracyResult?) {
-    ElevatedCard {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Known Mass Check", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(value = staticScale, onValueChange = onStaticChange, label = { Text("Static (g)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.weight(1f))
-                OutlinedTextField(value = checkweigher, onValueChange = onCheckweigherChange, label = { Text("CW (g)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.weight(1f))
-            }
-            if (result != null) KnownMassSummary(result)
-        }
-    }
-}
-
-@Composable
-private fun PassField(label: String, value: String, onChange: (String) -> Unit) {
-    OutlinedTextField(value = value, onValueChange = onChange, label = { Text(label) }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.fillMaxWidth())
-}
-
-@Composable
-private fun ValuePill(title: String, value: String, modifier: Modifier = Modifier) {
-    Surface(tonalElevation = 2.dp, shape = MaterialTheme.shapes.large, modifier = modifier) {
-        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(title, style = MaterialTheme.typography.labelMedium)
-            Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-        }
-    }
-}
-
-@Composable
-private fun ZoiSummary(r: CheckweigherAccuracyResult) {
-    val threshold = r.tne * 0.25
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            ValueMini(title = "SD", value = r.sd?.toString() ?: "—", modifier = Modifier.weight(1f))
-            ValueMini(title = "ZOI", value = r.zoi?.let { "%.2f".format(it) } ?: "—", modifier = Modifier.weight(1f))
-            ValueMini(title = "Limit", value = "%.2f".format(threshold), modifier = Modifier.weight(1f))
-        }
-        BigResultBanner(r.zoiPassFail, "ZOI result")
-    }
-}
-
-@Composable
-private fun KnownMassSummary(r: CheckweigherAccuracyResult) {
-    val threshold = r.tne / 5.0
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        ValueMini(title = "Limit (±)", value = "%.2f".format(threshold), modifier = Modifier.fillMaxWidth())
-        BigResultBanner(r.knownMassPassFail, "Known Mass result")
-    }
-}
-
-@Composable
-private fun ValueMini(title: String, value: String, modifier: Modifier = Modifier) {
-    Surface(tonalElevation = 1.dp, shape = MaterialTheme.shapes.large, modifier = modifier) {
-        Column(Modifier.padding(8.dp)) {
+private fun ValueBox(title: String, value: String, modifier: Modifier = Modifier) {
+    Surface(tonalElevation = 2.dp, shape = MaterialTheme.shapes.medium, modifier = modifier) {
+        Column(modifier = Modifier.padding(8.dp)) {
             Text(title, style = MaterialTheme.typography.labelSmall)
-            Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+            Text(value, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
         }
-    }
-}
-
-@Composable
-private fun BigResultBanner(passFail: PassFail?, text: String) {
-    val bgColor = when (passFail) {
-        PassFail.Pass -> Color(0xFFE8F5E9)
-        PassFail.Fail -> Color(0xFFFFEBEE)
-        null -> Color(0xFFF5F5F5)
-    }
-    val contentColor = when (passFail) {
-        PassFail.Pass -> Color(0xFF2E7D32)
-        PassFail.Fail -> Color(0xFFC62828)
-        null -> Color.Gray
-    }
-    Surface(color = bgColor, shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth()) {
-        Text(text = when(passFail) {
-            PassFail.Pass -> "✅ $text Passed"
-            PassFail.Fail -> "❌ $text Failed"
-            null -> "Awaiting Data"
-        }, color = contentColor, modifier = Modifier.padding(12.dp), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
     }
 }

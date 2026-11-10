@@ -50,6 +50,36 @@ fun CheckweigherCalibrationNavGraphContent(
             }
         }
 
+        composable("CwTestProductDetails") {
+            onScreenChanged {
+                CalCwTestProductDetails(viewModel)
+            }
+        }
+
+        composable("CwStaticScaleReference") {
+            onScreenChanged {
+                CalCwStaticScaleReference(viewModel)
+            }
+        }
+
+        composable("CwTolerancesAndAssessment") {
+            onScreenChanged {
+                CalCwTolerancesAndAssessment(viewModel)
+            }
+        }
+
+        composable("CwEngineerTestWeight") {
+            onScreenChanged {
+                CalCwEngineerTestWeight(viewModel)
+            }
+        }
+
+        composable("CwDynamicTestAsFound") {
+            onScreenChanged {
+                CalCwDynamicTestAsFound(viewModel)
+            }
+        }
+
         composable("CwInfeedSensor") {
             onScreenChanged {
                 CalCwInfeedSensor(viewModel)
@@ -80,51 +110,9 @@ fun CheckweigherCalibrationNavGraphContent(
             }
         }
 
-        composable("CwTestProductDetails") {
+        composable("CwRejectVerification") {
             onScreenChanged {
-                CalCwTestProductDetails(viewModel)
-            }
-        }
-
-        composable("CwStaticScaleReference") {
-            onScreenChanged {
-                CalCwStaticScaleReference(viewModel)
-            }
-        }
-
-        composable("CwEngineerTestWeight") {
-            onScreenChanged {
-                CalCwEngineerTestWeight(viewModel)
-            }
-        }
-
-        composable("CwDynamicTestAsFound") {
-            onScreenChanged {
-                CalCwDynamicTestAsFound(viewModel)
-            }
-        }
-
-        composable("CwStaticTestAsFound") {
-            onScreenChanged {
-                CalCwStaticTestAsFound(viewModel)
-            }
-        }
-
-        composable("CwAdjustmentsMade") {
-            onScreenChanged {
-                CalCwAdjustmentsMade(viewModel)
-            }
-        }
-
-        composable("CwDynamicTestAsLeft") {
-            onScreenChanged {
-                CalCwDynamicTestAsLeft(viewModel)
-            }
-        }
-
-        composable("CwStaticTestAsLeft") {
-            onScreenChanged {
-                CalCwStaticTestAsLeft(viewModel)
+                CalCwRejectVerification(viewModel)
             }
         }
 

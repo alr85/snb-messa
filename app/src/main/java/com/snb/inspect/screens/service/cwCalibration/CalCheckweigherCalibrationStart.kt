@@ -86,6 +86,18 @@ fun CalCheckweigherCalibrationStart(
                 )
                 FormSpacer()
 
+                com.snb.inspect.formModules.LabeledDropdownWithHelp(
+                    label = "Calibration Type",
+                    options = listOf("Routine Calibration", "Comprehensive Performance Verification"),
+                    selectedOption = if (viewModel.calibrationType.value == "COMPREHENSIVE") "Comprehensive Performance Verification" else "Routine Calibration",
+                    onSelectionChange = { selected ->
+                        val type = if (selected == "Comprehensive Performance Verification") "COMPREHENSIVE" else "ROUTINE"
+                        viewModel.setCalibrationType(type)
+                    },
+                    helpText = "Select Routine (normal annual service, 30 dynamic passes) or Comprehensive (OIML R 51-1:2006 methodology with multiple test weights)."
+                )
+                FormSpacer()
+
                 LabeledRadioButtonWithHelp(
                     label = "Able to calibrate?",
                     value = canPerformCalibration,

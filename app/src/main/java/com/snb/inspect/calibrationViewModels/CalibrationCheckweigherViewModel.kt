@@ -25,7 +25,10 @@ import com.snb.inspect.util.InAppLogger
 import com.snb.inspect.util.toConditionState
 import com.snb.inspect.util.toYesNoState
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -98,18 +101,23 @@ class CalibrationCheckweigherViewModel(
         }
         _cloudSystemId.intValue = effectiveCloudId
         
+        _calibrationType.value = cal.calibrationType.ifBlank { "ROUTINE" }
+
         // Scale Details
         _loadcellType.value = cal.loadcellType
         _scaleInterval.value = cal.scaleInterval
         _maxCapacity.value = cal.maxCapacity
-        
+
         // System Details
         _beltWidth.value = cal.beltWidth
         _weighConveyorLength.value = cal.weighConveyorLength
         _rejectType.value = cal.rejectType
         _printerDataCapture.value = cal.printerDataCapture
         _rejectMode.value = cal.rejectMode
-        
+        _beltSpeed.value = cal.beltSpeed
+        _tareConfiguration.value = cal.tareConfiguration
+        _operatingConditionsNotes.value = cal.operatingConditionsNotes
+
         // Checklist
         _beltCondition.value = cal.beltCondition.toConditionState()
         _beltConditionComments.value = cal.beltConditionComments
@@ -126,7 +134,7 @@ class CalibrationCheckweigherViewModel(
         _machineStabilityCondition.value = cal.machineStabilityCondition.toConditionState()
         _machineStabilityConditionComments.value = cal.machineStabilityConditionComments
         _systemChecklistEngineerNotes.value = cal.systemChecklistEngineerNotes
-        
+
         // Failsafes
         _infeedSensorFitted.value = cal.infeedSensorFitted.toYesNoState()
         _infeedSensorDetail.value = cal.infeedSensorDetail
@@ -170,7 +178,7 @@ class CalibrationCheckweigherViewModel(
         _binDoorLatched.value = cal.binDoorLatched.toYesNoState()
         _binDoorCR.value = cal.binDoorCR.toYesNoState()
         _binDoorEngineerNotes.value = cal.binDoorEngineerNotes
-        
+
         // Product Details
         _productDescription.value = cal.productDescription
         _productLength.value = cal.productLength
@@ -179,25 +187,35 @@ class CalibrationCheckweigherViewModel(
         _grossWeight.value = cal.grossWeight
         _tareWeight.value = cal.tareWeight
         _productLibraryReference.value = cal.productLibraryReference
-        
+
         // Static Scale Ref
         _staticScaleMakeModel.value = cal.staticScaleMakeModel
         _staticScaleCertRef.value = cal.staticScaleCertRef
         _staticScaleExpiryDate.value = cal.staticScaleExpiryDate
-        
+        _staticScaleManufacturer.value = cal.staticScaleManufacturer
+        _staticScaleModel.value = cal.staticScaleModel
+        _staticScaleSerial.value = cal.staticScaleSerial
+        _staticScaleResolution.value = cal.staticScaleResolution
+        _staticScaleCalDate.value = cal.staticScaleCalDate
+        _staticScaleCalStatus.value = cal.staticScaleCalStatus
+        _staticScaleSuitability.value = cal.staticScaleSuitability.ifBlank { "SUITABLE" }
+        _staticScaleRefMassCheckResult.value = cal.staticScaleRefMassCheckResult
+        _staticScaleLimitationFlags.value = cal.staticScaleLimitationFlags
+
         // Test Weight
         _engineerTestWeightId.value = cal.engineerTestWeightId
-        
+
         // Results As Found
+        _requiredPassesCount.value = if (cal.requiredPassesCount >= 10) cal.requiredPassesCount else 30
         _nominalQuantityAsFound.value = cal.nominalQuantityAsFound
         _dynamicPassesAsFound.value = parsePasses(cal.dynamicPassesAsFound)
         _staticScaleWeightAsFound.value = cal.staticScaleWeightAsFound
         _checkweigherWeightAsFound.value = cal.checkweigherWeightAsFound
         _offCentreLoadingTestResultAsFound.value = cal.offCentreLoadingTestResultAsFound
         _repeatabilityTestResultAsFound.value = cal.repeatabilityTestResultAsFound
-        
+
         _adjustmentsNotes.value = cal.adjustmentsNotes
-        
+
         // Results As Left
         _nominalQuantityAsLeft.value = cal.nominalQuantityAsLeft
         _dynamicPassesAsLeft.value = parsePasses(cal.dynamicPassesAsLeft)
@@ -205,6 +223,33 @@ class CalibrationCheckweigherViewModel(
         _checkweigherWeightAsLeft.value = cal.checkweigherWeightAsLeft
         _offCentreLoadingTestResultAsLeft.value = cal.offCentreLoadingTestResultAsLeft
         _repeatabilityTestResultAsLeft.value = cal.repeatabilityTestResultAsLeft
+
+        // Tolerances & Assessment
+        _toleranceSource.value = cal.toleranceSource.ifBlank { "SNB_GUIDANCE" }
+        _manufacturerTne.value = cal.manufacturerTne
+        _customerTne.value = cal.customerTne
+        _engineerSetPointAssessmentNotes.value = cal.engineerSetPointAssessmentNotes
+        _engineerSetPointAssessmentResolved.value = cal.engineerSetPointAssessmentResolved
+
+        // Reject Verification
+        _generalRejectTestResult.value = cal.generalRejectTestResult.ifBlank { "PASS" }
+        _generalRejectNotes.value = cal.generalRejectNotes
+        _t0TestRefWeight.value = cal.t0TestRefWeight
+        _t0TestExpected.value = cal.t0TestExpected
+        _t0TestActual.value = cal.t0TestActual
+        _t0TestResult.value = cal.t0TestResult
+        _t1TestRefWeight.value = cal.t1TestRefWeight
+        _t1TestExpected.value = cal.t1TestExpected
+        _t1TestActual.value = cal.t1TestActual
+        _t1TestResult.value = cal.t1TestResult
+        _t2TestRefWeight.value = cal.t2TestRefWeight
+        _t2TestExpected.value = cal.t2TestExpected
+        _t2TestActual.value = cal.t2TestActual
+        _t2TestResult.value = cal.t2TestResult
+        _overweightTestRefWeight.value = cal.overweightTestRefWeight
+        _overweightTestExpected.value = cal.overweightTestExpected
+        _overweightTestActual.value = cal.overweightTestActual
+        _overweightTestResult.value = cal.overweightTestResult
     }
 
     private fun saveNewCalibration() {
@@ -322,31 +367,90 @@ class CalibrationCheckweigherViewModel(
         cal.grossWeight = _grossWeight.value
         cal.tareWeight = _tareWeight.value
         cal.productLibraryReference = _productLibraryReference.value
-        
+
+        cal.calibrationType = _calibrationType.value
         cal.staticScaleMakeModel = _staticScaleMakeModel.value
         cal.staticScaleCertRef = _staticScaleCertRef.value
         cal.staticScaleExpiryDate = _staticScaleExpiryDate.value
-        
+        cal.staticScaleManufacturer = _staticScaleManufacturer.value
+        cal.staticScaleModel = _staticScaleModel.value
+        cal.staticScaleSerial = _staticScaleSerial.value
+        cal.staticScaleResolution = _staticScaleResolution.value
+        cal.staticScaleCalDate = _staticScaleCalDate.value
+        cal.staticScaleCalStatus = _staticScaleCalStatus.value
+        cal.staticScaleSuitability = _staticScaleSuitability.value
+        cal.staticScaleRefMassCheckResult = _staticScaleRefMassCheckResult.value
+        cal.staticScaleLimitationFlags = _staticScaleLimitationFlags.value
+
         cal.engineerTestWeightId = _engineerTestWeightId.value
-        
+        cal.beltSpeed = _beltSpeed.value
+        cal.tareConfiguration = _tareConfiguration.value
+        cal.operatingConditionsNotes = _operatingConditionsNotes.value
+
+        cal.requiredPassesCount = _requiredPassesCount.value
         cal.nominalQuantityAsFound = _nominalQuantityAsFound.value
         cal.dynamicPassesAsFound = _dynamicPassesAsFound.value.joinToString(",")
         cal.staticScaleWeightAsFound = _staticScaleWeightAsFound.value
         cal.checkweigherWeightAsFound = _checkweigherWeightAsFound.value
+        val resFound = evaluatedCalculationResultAsFound.value
+        cal.dynamicMeanAsFound = resFound?.mean?.toString() ?: ""
+        cal.dynamicMeanErrorAsFound = resFound?.meanDynamicError?.toString() ?: ""
+        cal.dynamicSampleStdDevAsFound = resFound?.sampleStdDev?.toString() ?: ""
+        cal.dynamicSixSigmaAsFound = resFound?.sixSigmaZoi?.toString() ?: ""
         cal.offCentreLoadingTestResultAsFound = _offCentreLoadingTestResultAsFound.value
         cal.repeatabilityTestResultAsFound = _repeatabilityTestResultAsFound.value
-        
+
         cal.adjustmentsNotes = _adjustmentsNotes.value
-        
+
         cal.nominalQuantityAsLeft = _nominalQuantityAsLeft.value
         cal.dynamicPassesAsLeft = _dynamicPassesAsLeft.value.joinToString(",")
         cal.staticScaleWeightAsLeft = _staticScaleWeightAsLeft.value
         cal.checkweigherWeightAsLeft = _checkweigherWeightAsLeft.value
+        val resLeft = evaluatedCalculationResultAsLeft.value
+        cal.dynamicMeanAsLeft = resLeft?.mean?.toString() ?: ""
+        cal.dynamicMeanErrorAsLeft = resLeft?.meanDynamicError?.toString() ?: ""
+        cal.dynamicSampleStdDevAsLeft = resLeft?.sampleStdDev?.toString() ?: ""
+        cal.dynamicSixSigmaAsLeft = resLeft?.sixSigmaZoi?.toString() ?: ""
         cal.offCentreLoadingTestResultAsLeft = _offCentreLoadingTestResultAsLeft.value
         cal.repeatabilityTestResultAsLeft = _repeatabilityTestResultAsLeft.value
+
+        cal.toleranceSource = _toleranceSource.value
+        cal.manufacturerTne = _manufacturerTne.value
+        cal.customerTne = _customerTne.value
+        cal.calculatedTne = resFound?.tne?.toString() ?: ""
+        cal.benchmark20PercentTne = resFound?.benchmark20PercentTne?.toString() ?: ""
+        cal.benchmark25PercentTne = resFound?.benchmark25PercentTne?.toString() ?: ""
+        cal.overallResultStatus = resFound?.overallStatus?.name ?: "PASS"
+        cal.exceedsZoiThreshold = resFound?.exceeds25PercentTneLimit ?: false
+        cal.additionalSetPointAllowance = resFound?.additionalSetPointAllowance?.toString() ?: ""
+        cal.engineerSetPointAssessmentNotes = _engineerSetPointAssessmentNotes.value
+        cal.engineerSetPointAssessmentResolved = _engineerSetPointAssessmentResolved.value
+
+        cal.generalRejectTestResult = _generalRejectTestResult.value
+        cal.generalRejectNotes = _generalRejectNotes.value
+        cal.t0TestRefWeight = _t0TestRefWeight.value
+        cal.t0TestExpected = _t0TestExpected.value
+        cal.t0TestActual = _t0TestActual.value
+        cal.t0TestResult = _t0TestResult.value
+        cal.t1TestRefWeight = _t1TestRefWeight.value
+        cal.t1TestExpected = _t1TestExpected.value
+        cal.t1TestActual = _t1TestActual.value
+        cal.t1TestResult = _t1TestResult.value
+        cal.t2TestRefWeight = _t2TestRefWeight.value
+        cal.t2TestExpected = _t2TestExpected.value
+        cal.t2TestActual = _t2TestActual.value
+        cal.t2TestResult = _t2TestResult.value
+        cal.overweightTestRefWeight = _overweightTestRefWeight.value
+        cal.overweightTestExpected = _overweightTestExpected.value
+        cal.overweightTestActual = _overweightTestActual.value
+        cal.overweightTestResult = _overweightTestResult.value
     }
 
     // region STATE VARIABLES
+
+    private val _calibrationType = mutableStateOf("ROUTINE")
+    val calibrationType: State<String> = _calibrationType
+    fun setCalibrationType(v: String) { _calibrationType.value = v }
 
     private val _newLocation = mutableStateOf("")
     val newLocation: State<String> = _newLocation
@@ -647,22 +751,129 @@ class CalibrationCheckweigherViewModel(
     val staticScaleExpiryDate: State<String> = _staticScaleExpiryDate
     fun setStaticScaleExpiryDate(v: String) { _staticScaleExpiryDate.value = v }
 
+    private val _staticScaleManufacturer = mutableStateOf("")
+    val staticScaleManufacturer: State<String> = _staticScaleManufacturer
+    fun setStaticScaleManufacturer(v: String) { _staticScaleManufacturer.value = v }
+
+    private val _staticScaleModel = mutableStateOf("")
+    val staticScaleModel: State<String> = _staticScaleModel
+    fun setStaticScaleModel(v: String) { _staticScaleModel.value = v }
+
+    private val _staticScaleSerial = mutableStateOf("")
+    val staticScaleSerial: State<String> = _staticScaleSerial
+    fun setStaticScaleSerial(v: String) { _staticScaleSerial.value = v }
+
+    private val _staticScaleResolution = mutableStateOf("")
+    val staticScaleResolution: State<String> = _staticScaleResolution
+    fun setStaticScaleResolution(v: String) {
+        _staticScaleResolution.value = com.snb.inspect.core.InputTransforms.decimal(v)
+    }
+
+    private val _staticScaleCalDate = mutableStateOf("")
+    val staticScaleCalDate: State<String> = _staticScaleCalDate
+    fun setStaticScaleCalDate(v: String) {
+        _staticScaleCalDate.value = v
+        reassessStaticScaleStatus(v)
+    }
+
+    private val _staticScaleCalStatus = mutableStateOf("MISSING / UNKNOWN")
+    val staticScaleCalStatus: State<String> = _staticScaleCalStatus
+    fun setStaticScaleCalStatus(v: String) { _staticScaleCalStatus.value = v }
+
+    private fun reassessStaticScaleStatus(dateStr: String) {
+        val (status, isValid) = evaluateCalibrationDateStatus(dateStr)
+        _staticScaleCalStatus.value = status
+        if (!isValid) {
+            if (_staticScaleSuitability.value == "SUITABLE") {
+                _staticScaleSuitability.value = "LIMITATIONS"
+            }
+            if (_staticScaleLimitationFlags.value.isBlank()) {
+                _staticScaleLimitationFlags.value = "Static scale calibration date is expired, missing, or invalid."
+            }
+        }
+    }
+
+    fun evaluateCalibrationDateStatus(dateStr: String): Pair<String, Boolean> {
+        if (dateStr.isBlank()) return Pair("MISSING / UNKNOWN", false)
+        val formats = listOf(
+            java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"),
+            java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"),
+            java.time.format.DateTimeFormatter.ofPattern("dd/MM/yy"),
+            java.time.format.DateTimeFormatter.ofPattern("yyyy/MM/dd")
+        )
+        var date: java.time.LocalDate? = null
+        for (fmt in formats) {
+            try {
+                date = java.time.LocalDate.parse(dateStr.trim(), fmt)
+                if (date != null) break
+            } catch (_: Exception) {}
+        }
+        if (date == null) return Pair("INVALID DATE FORMAT", false)
+        val today = java.time.LocalDate.now()
+        return if (date.isBefore(today)) {
+            Pair("EXPIRED / INVALID", false)
+        } else {
+            Pair("VALID", true)
+        }
+    }
+
+    private val _staticScaleSuitability = mutableStateOf("SUITABLE")
+    val staticScaleSuitability: State<String> = _staticScaleSuitability
+    fun setStaticScaleSuitability(v: String) { _staticScaleSuitability.value = v }
+
+    private val _staticScaleRefMassCheckResult = mutableStateOf("")
+    val staticScaleRefMassCheckResult: State<String> = _staticScaleRefMassCheckResult
+    fun setStaticScaleRefMassCheckResult(v: String) { _staticScaleRefMassCheckResult.value = v }
+
+    private val _staticScaleLimitationFlags = mutableStateOf("")
+    val staticScaleLimitationFlags: State<String> = _staticScaleLimitationFlags
+    fun setStaticScaleLimitationFlags(v: String) { _staticScaleLimitationFlags.value = v }
+
+    // Operating Conditions
+    private val _beltSpeed = mutableStateOf("")
+    val beltSpeed: State<String> = _beltSpeed
+    fun setBeltSpeed(v: String) { _beltSpeed.value = v }
+
+    private val _tareConfiguration = mutableStateOf("")
+    val tareConfiguration: State<String> = _tareConfiguration
+    fun setTareConfiguration(v: String) { _tareConfiguration.value = v }
+
+    private val _operatingConditionsNotes = mutableStateOf("")
+    val operatingConditionsNotes: State<String> = _operatingConditionsNotes
+    fun setOperatingConditionsNotes(v: String) { _operatingConditionsNotes.value = v }
+
     // Engineer Test Weight
     private val _engineerTestWeightId = mutableStateOf<Int?>(null)
     val engineerTestWeightId: State<Int?> = _engineerTestWeightId
     fun setEngineerTestWeightId(v: Int?) { _engineerTestWeightId.value = v }
 
     // Results As Found
+    private val _requiredPassesCount = mutableStateOf(30)
+    val requiredPassesCount: State<Int> = _requiredPassesCount
+    fun setRequiredPassesCount(v: String) {
+        val parsed = v.toIntOrNull()
+        if (parsed != null) {
+            _requiredPassesCount.value = parsed.coerceAtLeast(10)
+        } else if (v.isBlank()) {
+            _requiredPassesCount.value = 10
+        }
+    }
+    fun setRequiredPassesCountInt(v: Int) {
+        _requiredPassesCount.value = v.coerceAtLeast(10)
+    }
+
     private val _nominalQuantityAsFound = mutableStateOf("")
     val nominalQuantityAsFound: State<String> = _nominalQuantityAsFound
     fun setNominalQuantityAsFound(v: String) { _nominalQuantityAsFound.value = v }
 
-    private val _dynamicPassesAsFound = mutableStateOf<List<String>>(List(10) { "" })
+    private val _dynamicPassesAsFound = mutableStateOf<List<String>>(List(30) { "" })
     val dynamicPassesAsFound: State<List<String>> = _dynamicPassesAsFound
     fun setDynamicPassAsFound(index: Int, v: String) {
-        val newList = _dynamicPassesAsFound.value.toMutableList()
-        newList[index] = v
-        _dynamicPassesAsFound.value = newList
+        if (index in 0 until 30) {
+            val newList = _dynamicPassesAsFound.value.toMutableList()
+            newList[index] = v
+            _dynamicPassesAsFound.value = newList
+        }
     }
 
     private val _staticScaleWeightAsFound = mutableStateOf("")
@@ -693,12 +904,14 @@ class CalibrationCheckweigherViewModel(
     val nominalQuantityAsLeft: State<String> = _nominalQuantityAsLeft
     fun setNominalQuantityAsLeft(v: String) { _nominalQuantityAsLeft.value = v }
 
-    private val _dynamicPassesAsLeft = mutableStateOf<List<String>>(List(10) { "" })
+    private val _dynamicPassesAsLeft = mutableStateOf<List<String>>(List(30) { "" })
     val dynamicPassesAsLeft: State<List<String>> = _dynamicPassesAsLeft
     fun setDynamicPassAsLeft(index: Int, v: String) {
-        val newList = _dynamicPassesAsLeft.value.toMutableList()
-        newList[index] = v
-        _dynamicPassesAsLeft.value = newList
+        if (index in 0 until 30) {
+            val newList = _dynamicPassesAsLeft.value.toMutableList()
+            newList[index] = v
+            _dynamicPassesAsLeft.value = newList
+        }
     }
 
     private val _staticScaleWeightAsLeft = mutableStateOf("")
@@ -717,6 +930,100 @@ class CalibrationCheckweigherViewModel(
     val repeatabilityTestResultAsLeft: State<String> = _repeatabilityTestResultAsLeft
     fun setRepeatabilityTestResultAsLeft(v: String) { _repeatabilityTestResultAsLeft.value = v }
 
+    // Tolerances State
+    private val _toleranceSource = mutableStateOf("SNB_GUIDANCE")
+    val toleranceSource: State<String> = _toleranceSource
+    fun setToleranceSource(v: String) { _toleranceSource.value = v }
+
+    private val _manufacturerTne = mutableStateOf("")
+    val manufacturerTne: State<String> = _manufacturerTne
+    fun setManufacturerTne(v: String) { _manufacturerTne.value = v }
+
+    private val _customerTne = mutableStateOf("")
+    val customerTne: State<String> = _customerTne
+    fun setCustomerTne(v: String) { _customerTne.value = v }
+
+    private val _engineerSetPointAssessmentNotes = mutableStateOf("")
+    val engineerSetPointAssessmentNotes: State<String> = _engineerSetPointAssessmentNotes
+    fun setEngineerSetPointAssessmentNotes(v: String) { _engineerSetPointAssessmentNotes.value = v }
+
+    private val _engineerSetPointAssessmentResolved = mutableStateOf(false)
+    val engineerSetPointAssessmentResolved: State<Boolean> = _engineerSetPointAssessmentResolved
+    fun setEngineerSetPointAssessmentResolved(v: Boolean) { _engineerSetPointAssessmentResolved.value = v }
+
+    // Reject Verification State
+    private val _generalRejectTestResult = mutableStateOf("PASS")
+    val generalRejectTestResult: State<String> = _generalRejectTestResult
+    fun setGeneralRejectTestResult(v: String) { _generalRejectTestResult.value = v }
+
+    private val _generalRejectNotes = mutableStateOf("")
+    val generalRejectNotes: State<String> = _generalRejectNotes
+    fun setGeneralRejectNotes(v: String) { _generalRejectNotes.value = v }
+
+    private val _t0TestRefWeight = mutableStateOf("")
+    val t0TestRefWeight: State<String> = _t0TestRefWeight
+    fun setT0TestRefWeight(v: String) { _t0TestRefWeight.value = v }
+
+    private val _t0TestExpected = mutableStateOf("")
+    val t0TestExpected: State<String> = _t0TestExpected
+    fun setT0TestExpected(v: String) { _t0TestExpected.value = v }
+
+    private val _t0TestActual = mutableStateOf("")
+    val t0TestActual: State<String> = _t0TestActual
+    fun setT0TestActual(v: String) { _t0TestActual.value = v }
+
+    private val _t0TestResult = mutableStateOf("")
+    val t0TestResult: State<String> = _t0TestResult
+    fun setT0TestResult(v: String) { _t0TestResult.value = v }
+
+    private val _t1TestRefWeight = mutableStateOf("")
+    val t1TestRefWeight: State<String> = _t1TestRefWeight
+    fun setT1TestRefWeight(v: String) { _t1TestRefWeight.value = v }
+
+    private val _t1TestExpected = mutableStateOf("")
+    val t1TestExpected: State<String> = _t1TestExpected
+    fun setT1TestExpected(v: String) { _t1TestExpected.value = v }
+
+    private val _t1TestActual = mutableStateOf("")
+    val t1TestActual: State<String> = _t1TestActual
+    fun setT1TestActual(v: String) { _t1TestActual.value = v }
+
+    private val _t1TestResult = mutableStateOf("")
+    val t1TestResult: State<String> = _t1TestResult
+    fun setT1TestResult(v: String) { _t1TestResult.value = v }
+
+    private val _t2TestRefWeight = mutableStateOf("")
+    val t2TestRefWeight: State<String> = _t2TestRefWeight
+    fun setT2TestRefWeight(v: String) { _t2TestRefWeight.value = v }
+
+    private val _t2TestExpected = mutableStateOf("")
+    val t2TestExpected: State<String> = _t2TestExpected
+    fun setT2TestExpected(v: String) { _t2TestExpected.value = v }
+
+    private val _t2TestActual = mutableStateOf("")
+    val t2TestActual: State<String> = _t2TestActual
+    fun setT2TestActual(v: String) { _t2TestActual.value = v }
+
+    private val _t2TestResult = mutableStateOf("")
+    val t2TestResult: State<String> = _t2TestResult
+    fun setT2TestResult(v: String) { _t2TestResult.value = v }
+
+    private val _overweightTestRefWeight = mutableStateOf("")
+    val overweightTestRefWeight: State<String> = _overweightTestRefWeight
+    fun setOverweightTestRefWeight(v: String) { _overweightTestRefWeight.value = v }
+
+    private val _overweightTestExpected = mutableStateOf("")
+    val overweightTestExpected: State<String> = _overweightTestExpected
+    fun setOverweightTestExpected(v: String) { _overweightTestExpected.value = v }
+
+    private val _overweightTestActual = mutableStateOf("")
+    val overweightTestActual: State<String> = _overweightTestActual
+    fun setOverweightTestActual(v: String) { _overweightTestActual.value = v }
+
+    private val _overweightTestResult = mutableStateOf("")
+    val overweightTestResult: State<String> = _overweightTestResult
+    fun setOverweightTestResult(v: String) { _overweightTestResult.value = v }
+
     // Calculation Results
     val dynamicAccuracyResultAsFound = androidx.compose.runtime.snapshotFlow {
         val tNomVal = _nominalQuantityAsFound.value.toDoubleOrNull() ?: return@snapshotFlow null
@@ -728,6 +1035,31 @@ class CalibrationCheckweigherViewModel(
         )
     }
 
+    val evaluatedCalculationResultAsFound = androidx.compose.runtime.snapshotFlow {
+        val tNomVal = _nominalQuantityAsFound.value.toDoubleOrNull() ?: return@snapshotFlow null
+        val staticRef = _staticScaleWeightAsFound.value.toDoubleOrNull() ?: tNomVal
+        val passes = _dynamicPassesAsFound.value.mapNotNull { it.toDoubleOrNull() }
+        val effectiveTne = when (_toleranceSource.value) {
+            "MANUFACTURER" -> _manufacturerTne.value.toDoubleOrNull()
+            "CUSTOMER" -> _customerTne.value.toDoubleOrNull()
+            else -> null
+        }
+        val genRejectPass = _generalRejectTestResult.value != "FAIL"
+        val tolSrc = when (_toleranceSource.value) {
+            "MANUFACTURER" -> com.snb.inspect.util.ToleranceSource.MANUFACTURER
+            "CUSTOMER" -> com.snb.inspect.util.ToleranceSource.CUSTOMER
+            else -> com.snb.inspect.util.ToleranceSource.SNB_GUIDANCE
+        }
+        com.snb.inspect.util.CheckweigherCalculator.evaluate(
+            nominalWeight = tNomVal,
+            referenceWeight = staticRef,
+            passes = passes,
+            effectiveTne = effectiveTne,
+            toleranceSource = tolSrc,
+            generalRejectPassed = genRejectPass
+        )
+    }.stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, null)
+
     val dynamicAccuracyResultAsLeft = androidx.compose.runtime.snapshotFlow {
         val tNomVal = _nominalQuantityAsLeft.value.toDoubleOrNull() ?: return@snapshotFlow null
         CheckweigherAccuracyCalculator.calculate(
@@ -737,6 +1069,31 @@ class CalibrationCheckweigherViewModel(
             _checkweigherWeightAsLeft.value.toDoubleOrNull()
         )
     }
+
+    val evaluatedCalculationResultAsLeft = androidx.compose.runtime.snapshotFlow {
+        val tNomVal = _nominalQuantityAsLeft.value.toDoubleOrNull() ?: return@snapshotFlow null
+        val staticRef = _staticScaleWeightAsLeft.value.toDoubleOrNull() ?: tNomVal
+        val passes = _dynamicPassesAsLeft.value.mapNotNull { it.toDoubleOrNull() }
+        val effectiveTne = when (_toleranceSource.value) {
+            "MANUFACTURER" -> _manufacturerTne.value.toDoubleOrNull()
+            "CUSTOMER" -> _customerTne.value.toDoubleOrNull()
+            else -> null
+        }
+        val genRejectPass = _generalRejectTestResult.value != "FAIL"
+        val tolSrc = when (_toleranceSource.value) {
+            "MANUFACTURER" -> com.snb.inspect.util.ToleranceSource.MANUFACTURER
+            "CUSTOMER" -> com.snb.inspect.util.ToleranceSource.CUSTOMER
+            else -> com.snb.inspect.util.ToleranceSource.SNB_GUIDANCE
+        }
+        com.snb.inspect.util.CheckweigherCalculator.evaluate(
+            nominalWeight = tNomVal,
+            referenceWeight = staticRef,
+            passes = passes,
+            effectiveTne = effectiveTne,
+            toleranceSource = tolSrc,
+            generalRejectPassed = genRejectPass
+        )
+    }.stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, null)
 
     // endregion
 
@@ -768,17 +1125,24 @@ class CalibrationCheckweigherViewModel(
         validMap["CwScaleDetails"] = _loadcellType.value.isNotBlank() && _scaleInterval.value.isNotBlank() && _maxCapacity.value.isNotBlank()
         validMap["CwSystemDetails"] = _beltWidth.value.isNotBlank() && _weighConveyorLength.value.isNotBlank()
         validMap["CwSystemChecklist"] = _beltCondition.value != ConditionState.UNSPECIFIED && _safetyCircuitCondition.value != ConditionState.UNSPECIFIED
-        
+
         validMap["CwInfeedSensor"] = validateFailsafe(_infeedSensorFitted.value, _infeedSensorTestMethod.value, _infeedSensorTestResult.value, _infeedSensorLatched.value, _infeedSensorCR.value)
         validMap["CwRejectConfirmSensor"] = validateFailsafe(_rejectConfirmSensorFitted.value, _rejectConfirmSensorTestMethod.value, _rejectConfirmSensorTestResult.value, _rejectConfirmSensorLatched.value, _rejectConfirmSensorCR.value)
         validMap["CwBinFullSensor"] = validateFailsafe(_binFullSensorFitted.value, _binFullSensorTestMethod.value, _binFullSensorTestResult.value, _binFullSensorLatched.value, _binFullSensorCR.value)
         validMap["CwAirPressureSensor"] = validateFailsafe(_airPressureSensorFitted.value, _airPressureSensorTestMethod.value, _airPressureSensorTestResult.value, _airPressureSensorLatched.value, _airPressureSensorCR.value)
         validMap["CwBinDoorMonitor"] = validateBinDoor()
-        
+
         validMap["CwTestProductDetails"] = _productDescription.value.isNotBlank() && _productLength.value.isNotBlank()
-        validMap["CwStaticScaleReference"] = _staticScaleMakeModel.value.isNotBlank()
+        val isStaticRefValid = (_staticScaleMakeModel.value.isNotBlank() || _staticScaleManufacturer.value.isNotBlank()) &&
+                _staticScaleResolution.value.toDoubleOrNull() != null &&
+                _staticScaleCalDate.value.isNotBlank()
+        validMap["CwStaticScaleReference"] = isStaticRefValid
         validMap["CwEngineerTestWeight"] = _engineerTestWeightId.value != null
-        
+        validMap["CwDynamicTestAsFound"] = _nominalQuantityAsFound.value.isNotBlank() &&
+                _dynamicPassesAsFound.value.take(_requiredPassesCount.value).count { it.isNotBlank() } >= _requiredPassesCount.value
+        validMap["CwTolerancesAndAssessment"] = _engineerSetPointAssessmentResolved.value || evaluatedCalculationResultAsFound.value?.overallStatus != com.snb.inspect.util.CheckweigherStatus.FURTHER_ASSESSMENT_REQUIRED
+        validMap["CwRejectVerification"] = _generalRejectTestResult.value.isNotBlank()
+
         _screenValidities.value = validMap
     }
 
@@ -826,7 +1190,9 @@ class CalibrationCheckweigherViewModel(
             "CwTestProductDetails" -> "Product Details"
             "CwStaticScaleReference" -> "Static Scale Ref"
             "CwEngineerTestWeight" -> "Test Weight"
-            "CwDynamicTestAsFound" -> "Dynamic Test (Found)"
+            "CwDynamicTestAsFound" -> "Dynamic Test (30 Passes)"
+            "CwTolerancesAndAssessment" -> "Tolerances & Assessment"
+            "CwRejectVerification" -> "Reject Verification"
             "CwStaticTestAsFound" -> "Static Test (Found)"
             "CwAdjustmentsMade" -> "Adjustments"
             "CwDynamicTestAsLeft" -> "Dynamic Test (Left)"
@@ -876,9 +1242,9 @@ class CalibrationCheckweigherViewModel(
     }
 
     private fun parsePasses(passesString: String): List<String> {
-        if (passesString.isBlank()) return List(10) { "" }
+        if (passesString.isBlank()) return List(30) { "" }
         val list = passesString.split(",").map { it.trim() }
-        return List(10) { i -> list.getOrNull(i) ?: "" }
+        return List(30) { i -> list.getOrNull(i) ?: "" }
     }
 
     fun wipeAllData() {
@@ -955,7 +1321,7 @@ class CalibrationCheckweigherViewModel(
         setEngineerTestWeightId(null)
 
         setNominalQuantityAsFound("")
-        for (i in 0 until 10) setDynamicPassAsFound(i, "")
+        for (i in 0 until 30) setDynamicPassAsFound(i, "")
         setStaticScaleWeightAsFound("")
         setCheckweigherWeightAsFound("")
         setOffCentreLoadingTestResultAsFound("")
@@ -963,7 +1329,7 @@ class CalibrationCheckweigherViewModel(
         setAdjustmentsNotes("")
 
         setNominalQuantityAsLeft("")
-        for (i in 0 until 10) setDynamicPassAsLeft(i, "")
+        for (i in 0 until 30) setDynamicPassAsLeft(i, "")
         setStaticScaleWeightAsLeft("")
         setCheckweigherWeightAsLeft("")
         setOffCentreLoadingTestResultAsLeft("")

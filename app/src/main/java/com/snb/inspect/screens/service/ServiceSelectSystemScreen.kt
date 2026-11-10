@@ -202,33 +202,33 @@ fun ServiceSelectSystemScreen(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
-            ComingSoonRow("Checkweighers")
-
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-
-//            Text(
-//                text = "Checkweighers",
-//                style = MaterialTheme.typography.titleMedium,
-//                modifier = Modifier.padding(bottom = 8.dp)
-//            )
+//            ComingSoonRow("Checkweighers")
 //
-//            LazyRow(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(bottom = 16.dp)
-//            ) {
-//                items(
-//                    items = filteredCwSystems,
-//                    key = { it.id }
-//                ) { cwSystem ->
-//                    CheckweigherCard(
-//                        cwSystem = cwSystem,
-//                        onClick = {
-//                            navController.navigate("CheckweigherSystemScreen/${cwSystem.id}")
-//                        }
-//                    )
-//                }
-//            }
+//            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+
+            Text(
+                text = "Checkweighers",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            ) {
+                items(
+                    items = filteredCwSystems,
+                    key = { it.id }
+                ) { cwSystem ->
+                    CheckweigherCard(
+                        cwSystem = cwSystem,
+                        onClick = {
+                            navController.navigate("CheckweigherSystemScreen/${cwSystem.id}")
+                        }
+                    )
+                }
+            }
 
             ComingSoonRow("X-Ray Systems")
 
