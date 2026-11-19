@@ -80,7 +80,11 @@ class CheckweigherSystemsRepository(private val apiService: ApiService, private 
                             calibrationInterval = apiSys.calibrationInterval,
                             systemTypeId = apiSys.systemTypeId,
                             isSynced = true,
-                            lastLocation = apiSys.lastLocation
+                            lastLocation = apiSys.lastLocation,
+                            maxCapacity = apiSys.maxCapacity.takeIf { !it.isNullOrBlank() } ?: localMatch?.maxCapacity ?: "",
+                            minCapacity = apiSys.minCapacity.takeIf { !it.isNullOrBlank() } ?: localMatch?.minCapacity ?: "",
+                            displayResolution = apiSys.displayResolution.takeIf { !it.isNullOrBlank() } ?: localMatch?.displayResolution ?: "",
+                            accuracyClass = apiSys.accuracyClass.takeIf { !it.isNullOrBlank() } ?: localMatch?.accuracyClass ?: ""
                         )
                         dao.insertSystem(entity)
                     }
@@ -100,7 +104,11 @@ class CheckweigherSystemsRepository(private val apiService: ApiService, private 
         lastLocation: String,
         systemTypeId: Int,
         modelId: Int,
-        calibrationInterval: Int
+        calibrationInterval: Int,
+        maxCapacity: String = "",
+        minCapacity: String = "",
+        displayResolution: String = "",
+        accuracyClass: String = ""
     ) {
         val today = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))
         val tempId = Random.nextInt(20000000, 30000000)
@@ -116,7 +124,11 @@ class CheckweigherSystemsRepository(private val apiService: ApiService, private 
             cloudId = 0,
             tempId = tempId,
             isSynced = false,
-            lastLocation = lastLocation
+            lastLocation = lastLocation,
+            maxCapacity = maxCapacity,
+            minCapacity = minCapacity,
+            displayResolution = displayResolution,
+            accuracyClass = accuracyClass
         )
         db.cwSystemsDAO().insertSystem(newSystem)
     }
@@ -127,7 +139,11 @@ class CheckweigherSystemsRepository(private val apiService: ApiService, private 
         systemTypeId: Int,
         modelId: Int?,
         calibrationInterval: Int,
-        lastLocation: String
+        lastLocation: String,
+        maxCapacity: String = "",
+        minCapacity: String = "",
+        displayResolution: String = "",
+        accuracyClass: String = ""
     ): Int? {
         val today = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
 
@@ -139,13 +155,24 @@ class CheckweigherSystemsRepository(private val apiService: ApiService, private 
             addedDate = today,
             calibrationInterval = calibrationInterval,
             lastCalibration = "",
-            lastLocation = lastLocation
+            lastLocation = lastLocation,
+            maxCapacity = maxCapacity,
+            minCapacity = minCapacity,
+            displayResolution = displayResolution,
+            accuracyClass = accuracyClass
         )
 
         try {
             val response = apiService.postCwSystem(systemCloud)
             if (response.isSuccessful) {
-                return response.body()?.id
+                val newId = response.body()?.id
+                if (newId != null && newId != 0) {
+                    val localMatch = db.cwSystemsDAO().getSystemBySerialNumber(serialNumber)
+                    if (localMatch != null) {
+                        db.cwSystemsDAO().updateCloudId(localMatch.id ?: 0, newId)
+                    }
+                }
+                return newId
             }
         } catch (e: Exception) {
             InAppLogger.e("CW Cloud Post Error: ${e.message}")
@@ -175,7 +202,11 @@ class CheckweigherSystemsRepository(private val apiService: ApiService, private 
                 addedDate = system.addedDate,
                 calibrationInterval = system.calibrationInterval,
                 systemTypeId = system.systemTypeId,
-                lastLocation = system.lastLocation
+                lastLocation = system.lastLocation,
+                maxCapacity = system.maxCapacity,
+                minCapacity = system.minCapacity,
+                displayResolution = system.displayResolution,
+                accuracyClass = system.accuracyClass
             )
 
             try {
@@ -228,7 +259,11 @@ class CheckweigherSystemsRepository(private val apiService: ApiService, private 
                         addedDate = sys.addedDate,
                         calibrationInterval = sys.calibrationInterval,
                         lastCalibration = sys.lastCalibration,
-                        lastLocation = sys.lastLocation
+                        lastLocation = sys.lastLocation,
+                        maxCapacity = sys.maxCapacity,
+                        minCapacity = sys.minCapacity,
+                        displayResolution = sys.displayResolution,
+                        accuracyClass = sys.accuracyClass
                     )
 
                     val postResp = apiService.postCwSystem(systemCloud)
@@ -261,7 +296,11 @@ class CheckweigherSystemsRepository(private val apiService: ApiService, private 
                         addedDate = sys.addedDate,
                         calibrationInterval = sys.calibrationInterval,
                         lastCalibration = sys.lastCalibration,
-                        lastLocation = sys.lastLocation
+                        lastLocation = sys.lastLocation,
+                        maxCapacity = sys.maxCapacity,
+                        minCapacity = sys.minCapacity,
+                        displayResolution = sys.displayResolution,
+                        accuracyClass = sys.accuracyClass
                     )
                     val resp = apiService.updateCwSystem(cloudId, systemCloud)
                     if (resp.isSuccessful) {

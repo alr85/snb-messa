@@ -32,11 +32,14 @@ class CheckweigherCalibrationLocal(
     var loadcellType: String = ""
     var scaleInterval: String = ""
     var maxCapacity: String = ""
+    var minCapacity: String = ""
+    var accuracyClass: String = ""
 
     //--------------------------------------------------------------------------------System Details
     var beltWidth: String = ""
     var weighConveyorLength: String = ""
     var rejectType: String = ""
+    var rejectTypeOther: String = ""
     var printerDataCapture: String = ""
     var rejectMode: String = ""
 
@@ -109,6 +112,21 @@ class CheckweigherCalibrationLocal(
     var binDoorCR: String = ""
     var binDoorEngineerNotes: String = ""
 
+    //-----------------------------------------------------------------------------------Indicators
+    var indicator1colour: String = ""
+    var indicator1label: String = ""
+    var indicator2colour: String = ""
+    var indicator2label: String = ""
+    var indicator3colour: String = ""
+    var indicator3label: String = ""
+    var indicator4colour: String = ""
+    var indicator4label: String = ""
+    var indicator5colour: String = ""
+    var indicator5label: String = ""
+    var indicator6colour: String = ""
+    var indicator6label: String = ""
+    var indicatorsEngineerNotes: String = ""
+
     //-------------------------------------------------------------------------Test Product Details
     var productDescription: String = ""
     var productLength: String = ""
@@ -129,8 +147,11 @@ class CheckweigherCalibrationLocal(
     var staticScaleModel: String = ""
     var staticScaleSerial: String = ""
     var staticScaleResolution: String = ""
+    var staticScaleMaxCapacity: String = ""
+    var staticScaleMinCapacity: String = ""
     var staticScaleCalDate: String = ""
     var staticScaleCalStatus: String = ""
+    var staticScaleFunctionalCheck: String = "SATISFACTORY"
     var staticScaleSuitability: String = "SUITABLE" // SUITABLE, UNSUITABLE, LIMITATIONS
     var staticScaleRefMassCheckResult: String = ""
     var staticScaleLimitationFlags: String = ""

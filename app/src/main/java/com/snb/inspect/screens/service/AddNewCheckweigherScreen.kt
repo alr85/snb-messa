@@ -21,6 +21,7 @@ import com.snb.inspect.FetchResult
 import com.snb.inspect.dataClasses.CheckweigherWithFullDetails
 import com.snb.inspect.dataClasses.CwModelsLocal
 import com.snb.inspect.dataClasses.SystemTypeLocal
+import com.snb.inspect.formModules.LabeledDropdownWithHelp
 import com.snb.inspect.formModules.LabeledObjectDropdownWithHelp
 import com.snb.inspect.formModules.LabeledReadOnlyField
 import com.snb.inspect.formModules.LabeledTextFieldWithHelp
@@ -48,6 +49,10 @@ fun AddNewCheckweigherScreen(
 
     var serialNumber by remember { mutableStateOf("") }
     var lastLocation by remember { mutableStateOf("") }
+    var maxCapacity by remember { mutableStateOf("") }
+    var minCapacity by remember { mutableStateOf("") }
+    var displayResolution by remember { mutableStateOf("") }
+    var accuracyClass by remember { mutableStateOf("") }
 
     var cwModels by remember { mutableStateOf<List<CwModelsLocal>>(emptyList()) }
     var selectedCwModel by remember { mutableStateOf<CwModelsLocal?>(null) }
@@ -59,7 +64,6 @@ fun AddNewCheckweigherScreen(
     val scrollState = rememberScrollState()
 
     LaunchedEffect(Unit) {
-        // If models are empty, try to fetch them once
         if (cwSystemsRepository.getAllModels().isEmpty()) {
             cwSystemsRepository.fetchAndStoreCwModels()
         }
@@ -126,6 +130,47 @@ fun AddNewCheckweigherScreen(
             autoCorrect = false
         )
 
+        LabeledTextFieldWithHelp(
+            label = "Maximum Capacity (g)",
+            value = maxCapacity,
+            onValueChange = { maxCapacity = it },
+            helpText = "Enter the checkweigher (not load cell) maximum capacity.",
+            keyboardType = KeyboardType.Decimal,
+            isNAToggleEnabled = false,
+            autoCorrect = false
+        )
+
+        LabeledTextFieldWithHelp(
+            label = "Minimum Capacity (g)",
+            value = minCapacity,
+            onValueChange = { minCapacity = it },
+            helpText = "Enter the checkweigher (not load cell) minimum capacity.",
+            keyboardType = KeyboardType.Decimal,
+            isNAToggleEnabled = false,
+            autoCorrect = false
+        )
+
+        LabeledTextFieldWithHelp(
+            label = "Display Resolution / e (g)",
+            value = displayResolution,
+            onValueChange = { displayResolution = it },
+            helpText = "Enter the display resolution or scale verification interval (e.g. 1 or 0.1).",
+            keyboardType = KeyboardType.Decimal,
+            isNAToggleEnabled = false,
+            autoCorrect = false
+        )
+
+        val accuracyClassOptions = remember {
+            listOf("XI(1)", "XII(2)", "XIII(0.5)", "XIII(1)", "Y(a)", "Y(b)", "Other", "Unknown")
+        }
+        LabeledDropdownWithHelp(
+            label = "Accuracy Class",
+            options = accuracyClassOptions,
+            selectedOption = accuracyClass,
+            onSelectionChange = { accuracyClass = it },
+            helpText = "Select or specify the machine accuracy class."
+        )
+
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(
@@ -145,6 +190,10 @@ fun AddNewCheckweigherScreen(
                             systemTypeId = cwSystemType?.id ?: 0,
                             modelId = selectedCwModel!!.meaId,
                             lastLocation = lastLocation,
+                            maxCapacity = maxCapacity,
+                            minCapacity = minCapacity,
+                            displayResolution = displayResolution,
+                            accuracyClass = accuracyClass,
                             cwSystemsRepository = cwSystemsRepository,
                             snackbarHostState = snackbarHostState,
                             navController = navController,
@@ -221,7 +270,6 @@ fun AddNewCheckweigherScreen(
             confirmButton = {
                 TextButton(onClick = {
                     fuzzyMatchSystem = null
-                    // User says no, it's a new machine - continue submission bypassing check
                     coroutineScope.launch(Dispatchers.IO) {
                         try {
                             isProcessing = true
@@ -235,6 +283,10 @@ fun AddNewCheckweigherScreen(
                                 } ?: 0,
                                 modelId = selectedCwModel!!.meaId,
                                 lastLocation = lastLocation,
+                                maxCapacity = maxCapacity,
+                                minCapacity = minCapacity,
+                                displayResolution = displayResolution,
+                                accuracyClass = accuracyClass,
                                 cwSystemsRepository = cwSystemsRepository,
                                 snackbarHostState = snackbarHostState,
                                 navController = navController
@@ -263,6 +315,10 @@ suspend fun submitNewCwSystem(
     systemTypeId: Int,
     modelId: Int,
     lastLocation: String,
+    maxCapacity: String = "",
+    minCapacity: String = "",
+    displayResolution: String = "",
+    accuracyClass: String = "",
     cwSystemsRepository: CheckweigherSystemsRepository,
     snackbarHostState: SnackbarHostState,
     navController: NavHostController,
@@ -295,8 +351,6 @@ suspend fun submitNewCwSystem(
             withContext(Dispatchers.Main) {
                 snackbarHostState.showSnackbar("⚠️ Serial check error: ${status.message}")
             }
-            // Proceed anyway if check fails? MD screen usually lets them proceed or shows error.
-            // For now, let's proceed to allow adding if API is just down but system is unique.
         }
         SerialCheckResult.NotFound, SerialCheckResult.NotFoundLocalOffline -> {
             // OK to proceed
@@ -310,6 +364,10 @@ suspend fun submitNewCwSystem(
         systemTypeId,
         modelId,
         lastLocation,
+        maxCapacity,
+        minCapacity,
+        displayResolution,
+        accuracyClass,
         cwSystemsRepository,
         snackbarHostState,
         navController
@@ -323,6 +381,10 @@ suspend fun forceSubmitNewCwSystem(
     systemTypeId: Int,
     modelId: Int,
     lastLocation: String,
+    maxCapacity: String = "",
+    minCapacity: String = "",
+    displayResolution: String = "",
+    accuracyClass: String = "",
     cwSystemsRepository: CheckweigherSystemsRepository,
     snackbarHostState: SnackbarHostState,
     navController: NavHostController
@@ -335,6 +397,10 @@ suspend fun forceSubmitNewCwSystem(
             systemTypeId = systemTypeId,
             modelId = modelId,
             lastLocation = lastLocation,
+            maxCapacity = maxCapacity,
+            minCapacity = minCapacity,
+            displayResolution = displayResolution,
+            accuracyClass = accuracyClass,
             snackbar = snackbarHostState,
             navController = navController
         )
@@ -349,6 +415,10 @@ suspend fun forceSubmitNewCwSystem(
         systemTypeId = systemTypeId,
         modelId = modelId,
         lastLocation = lastLocation,
+        maxCapacity = maxCapacity,
+        minCapacity = minCapacity,
+        displayResolution = displayResolution,
+        accuracyClass = accuracyClass,
         snackbar = snackbarHostState,
         navController = navController
     )
@@ -361,17 +431,39 @@ suspend fun createCwInCloud(
     systemTypeId: Int,
     modelId: Int,
     lastLocation: String,
+    maxCapacity: String = "",
+    minCapacity: String = "",
+    displayResolution: String = "",
+    accuracyClass: String = "",
     snackbar: SnackbarHostState,
     navController: NavHostController
 ): Boolean = withContext(Dispatchers.IO) {
     try {
+        // Staging locally in Room DB first so details are always persisted
+        repo.addCheckweigherToLocalDb(
+            customerId = customerId,
+            serialNumber = serialNumber,
+            lastLocation = lastLocation,
+            systemTypeId = systemTypeId,
+            modelId = modelId,
+            calibrationInterval = 0,
+            maxCapacity = maxCapacity,
+            minCapacity = minCapacity,
+            displayResolution = displayResolution,
+            accuracyClass = accuracyClass
+        )
+
         val newCloudId = repo.addCheckweigherToCloud(
             customerId = customerId,
             serialNumber = serialNumber,
             systemTypeId = systemTypeId,
             modelId = modelId,
             calibrationInterval = 0,
-            lastLocation = lastLocation
+            lastLocation = lastLocation,
+            maxCapacity = maxCapacity,
+            minCapacity = minCapacity,
+            displayResolution = displayResolution,
+            accuracyClass = accuracyClass
         )
         if (newCloudId != null && newCloudId != 0) {
             repo.fetchAndStoreCwSystems()
@@ -381,7 +473,11 @@ suspend fun createCwInCloud(
             }
             return@withContext true
         } else {
-            return@withContext false
+            withContext(Dispatchers.Main) {
+                snackbar.showSnackbar("✅ Checkweigher added locally")
+                navController.popBackStack()
+            }
+            return@withContext true
         }
     } catch (e: Exception) {
         InAppLogger.e("Cloud create CW failed: ${e.message}")
@@ -396,6 +492,10 @@ suspend fun createCwInLocal(
     systemTypeId: Int,
     modelId: Int,
     lastLocation: String,
+    maxCapacity: String = "",
+    minCapacity: String = "",
+    displayResolution: String = "",
+    accuracyClass: String = "",
     snackbar: SnackbarHostState,
     navController: NavHostController
 ) = withContext(Dispatchers.IO) {
@@ -406,7 +506,11 @@ suspend fun createCwInLocal(
             lastLocation = lastLocation,
             systemTypeId = systemTypeId,
             modelId = modelId,
-            calibrationInterval = 0
+            calibrationInterval = 0,
+            maxCapacity = maxCapacity,
+            minCapacity = minCapacity,
+            displayResolution = displayResolution,
+            accuracyClass = accuracyClass
         )
         withContext(Dispatchers.Main) {
             snackbar.showSnackbar("✅ Checkweigher added locally (offline)")

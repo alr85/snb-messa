@@ -9,7 +9,6 @@ import androidx.lifecycle.viewModelScope
 import com.snb.inspect.ApiService
 import com.snb.inspect.FetchResult
 import com.snb.inspect.daos.CheckweigherCalibrationDAO
-import com.snb.inspect.daos.CustomerDAO
 import com.snb.inspect.daos.MdModelsDAO
 import com.snb.inspect.daos.MeasuringEquipmentDAO
 import com.snb.inspect.daos.MetalDetectorSystemsDAO
@@ -85,7 +84,7 @@ class CalibrationCheckweigherViewModel(
     }
 
     private fun loadCalibration(cal: CheckweigherCalibrationLocal) {
-        _newLocation.value = cal.newLocation
+        _newLocation.value = cal.newLocation.ifBlank { system.lastLocation }
         _canPerformCalibration.value = cal.canPerformCalibration.toBoolean()
         _reasonForNotCalibrating.value = cal.reasonForNotCalibrating.split(", ").filter { it.isNotBlank() }
 
@@ -105,13 +104,16 @@ class CalibrationCheckweigherViewModel(
 
         // Scale Details
         _loadcellType.value = cal.loadcellType
-        _scaleInterval.value = cal.scaleInterval
-        _maxCapacity.value = cal.maxCapacity
+        _scaleInterval.value = cal.scaleInterval.ifBlank { system.displayResolution }
+        _maxCapacity.value = cal.maxCapacity.ifBlank { system.maxCapacity }
+        _minCapacity.value = cal.minCapacity.ifBlank { system.minCapacity }
+        _accuracyClass.value = cal.accuracyClass.ifBlank { system.accuracyClass }
 
         // System Details
         _beltWidth.value = cal.beltWidth
         _weighConveyorLength.value = cal.weighConveyorLength
         _rejectType.value = cal.rejectType
+        _rejectTypeOther.value = cal.rejectTypeOther
         _printerDataCapture.value = cal.printerDataCapture
         _rejectMode.value = cal.rejectMode
         _beltSpeed.value = cal.beltSpeed
@@ -139,6 +141,7 @@ class CalibrationCheckweigherViewModel(
         _infeedSensorFitted.value = cal.infeedSensorFitted.toYesNoState()
         _infeedSensorDetail.value = cal.infeedSensorDetail
         _infeedSensorTestMethod.value = cal.infeedSensorTestMethod
+        _infeedSensorTestMethodOther.value = cal.infeedSensorTestMethodOther
         _infeedSensorTestResult.value = cal.infeedSensorTestResult.split(",").filter { it.isNotBlank() }
         _infeedSensorLatched.value = cal.infeedSensorLatched.toYesNoState()
         _infeedSensorCR.value = cal.infeedSensorCR.toYesNoState()
@@ -147,6 +150,7 @@ class CalibrationCheckweigherViewModel(
         _rejectConfirmSensorFitted.value = cal.rejectConfirmSensorFitted.toYesNoState()
         _rejectConfirmSensorDetail.value = cal.rejectConfirmSensorDetail
         _rejectConfirmSensorTestMethod.value = cal.rejectConfirmSensorTestMethod
+        _rejectConfirmSensorTestMethodOther.value = cal.rejectConfirmSensorTestMethodOther
         _rejectConfirmSensorTestResult.value = cal.rejectConfirmSensorTestResult.split(",").filter { it.isNotBlank() }
         _rejectConfirmSensorLatched.value = cal.rejectConfirmSensorLatched.toYesNoState()
         _rejectConfirmSensorCR.value = cal.rejectConfirmSensorCR.toYesNoState()
@@ -155,6 +159,7 @@ class CalibrationCheckweigherViewModel(
         _binFullSensorFitted.value = cal.binFullSensorFitted.toYesNoState()
         _binFullSensorDetail.value = cal.binFullSensorDetail
         _binFullSensorTestMethod.value = cal.binFullSensorTestMethod
+        _binFullSensorTestMethodOther.value = cal.binFullSensorTestMethodOther
         _binFullSensorTestResult.value = cal.binFullSensorTestResult.split(",").filter { it.isNotBlank() }
         _binFullSensorLatched.value = cal.binFullSensorLatched.toYesNoState()
         _binFullSensorCR.value = cal.binFullSensorCR.toYesNoState()
@@ -163,6 +168,7 @@ class CalibrationCheckweigherViewModel(
         _airPressureSensorFitted.value = cal.airPressureSensorFitted.toYesNoState()
         _airPressureSensorDetail.value = cal.airPressureSensorDetail
         _airPressureSensorTestMethod.value = cal.airPressureSensorTestMethod
+        _airPressureSensorTestMethodOther.value = cal.airPressureSensorTestMethodOther
         _airPressureSensorTestResult.value = cal.airPressureSensorTestResult.split(",").filter { it.isNotBlank() }
         _airPressureSensorLatched.value = cal.airPressureSensorLatched.toYesNoState()
         _airPressureSensorCR.value = cal.airPressureSensorCR.toYesNoState()
@@ -178,6 +184,21 @@ class CalibrationCheckweigherViewModel(
         _binDoorLatched.value = cal.binDoorLatched.toYesNoState()
         _binDoorCR.value = cal.binDoorCR.toYesNoState()
         _binDoorEngineerNotes.value = cal.binDoorEngineerNotes
+
+        // Indicators
+        _indicator1colour.value = cal.indicator1colour
+        _indicator1label.value = cal.indicator1label
+        _indicator2colour.value = cal.indicator2colour
+        _indicator2label.value = cal.indicator2label
+        _indicator3colour.value = cal.indicator3colour
+        _indicator3label.value = cal.indicator3label
+        _indicator4colour.value = cal.indicator4colour
+        _indicator4label.value = cal.indicator4label
+        _indicator5colour.value = cal.indicator5colour
+        _indicator5label.value = cal.indicator5label
+        _indicator6colour.value = cal.indicator6colour
+        _indicator6label.value = cal.indicator6label
+        _indicatorsEngineerNotes.value = cal.indicatorsEngineerNotes
 
         // Product Details
         _productDescription.value = cal.productDescription
@@ -196,8 +217,11 @@ class CalibrationCheckweigherViewModel(
         _staticScaleModel.value = cal.staticScaleModel
         _staticScaleSerial.value = cal.staticScaleSerial
         _staticScaleResolution.value = cal.staticScaleResolution
+        _staticScaleMaxCapacity.value = cal.staticScaleMaxCapacity
+        _staticScaleMinCapacity.value = cal.staticScaleMinCapacity
         _staticScaleCalDate.value = cal.staticScaleCalDate
         _staticScaleCalStatus.value = cal.staticScaleCalStatus
+        _staticScaleFunctionalCheck.value = cal.staticScaleFunctionalCheck.ifBlank { "SATISFACTORY" }
         _staticScaleSuitability.value = cal.staticScaleSuitability.ifBlank { "SUITABLE" }
         _staticScaleRefMassCheckResult.value = cal.staticScaleRefMassCheckResult
         _staticScaleLimitationFlags.value = cal.staticScaleLimitationFlags
@@ -264,10 +288,16 @@ class CalibrationCheckweigherViewModel(
             customerId = system.customerId
             startDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
             lastLocation = system.lastLocation
+            newLocation = system.lastLocation
+            maxCapacity = system.maxCapacity
+            minCapacity = system.minCapacity
+            scaleInterval = system.displayResolution
+            accuracyClass = system.accuracyClass
         }
         viewModelScope.launch {
             calibrationRepository.insertNewCalibration(context, newCal)
         }
+        loadCalibration(newCal)
     }
 
     override fun persistCurrentScreen(route: String) {
@@ -294,10 +324,13 @@ class CalibrationCheckweigherViewModel(
         cal.loadcellType = _loadcellType.value
         cal.scaleInterval = _scaleInterval.value
         cal.maxCapacity = _maxCapacity.value
+        cal.minCapacity = _minCapacity.value
+        cal.accuracyClass = _accuracyClass.value
         
         cal.beltWidth = _beltWidth.value
         cal.weighConveyorLength = _weighConveyorLength.value
         cal.rejectType = _rejectType.value
+        cal.rejectTypeOther = _rejectTypeOther.value
         cal.printerDataCapture = _printerDataCapture.value
         cal.rejectMode = _rejectMode.value
         
@@ -320,6 +353,7 @@ class CalibrationCheckweigherViewModel(
         cal.infeedSensorFitted = _infeedSensorFitted.value.toSafeString()
         cal.infeedSensorDetail = _infeedSensorDetail.value
         cal.infeedSensorTestMethod = _infeedSensorTestMethod.value
+        cal.infeedSensorTestMethodOther = _infeedSensorTestMethodOther.value
         cal.infeedSensorTestResult = _infeedSensorTestResult.value.joinToString(",")
         cal.infeedSensorLatched = _infeedSensorLatched.value.toSafeString()
         cal.infeedSensorCR = _infeedSensorCR.value.toSafeString()
@@ -328,6 +362,7 @@ class CalibrationCheckweigherViewModel(
         cal.rejectConfirmSensorFitted = _rejectConfirmSensorFitted.value.toSafeString()
         cal.rejectConfirmSensorDetail = _rejectConfirmSensorDetail.value
         cal.rejectConfirmSensorTestMethod = _rejectConfirmSensorTestMethod.value
+        cal.rejectConfirmSensorTestMethodOther = _rejectConfirmSensorTestMethodOther.value
         cal.rejectConfirmSensorTestResult = _rejectConfirmSensorTestResult.value.joinToString(",")
         cal.rejectConfirmSensorLatched = _rejectConfirmSensorLatched.value.toSafeString()
         cal.rejectConfirmSensorCR = _rejectConfirmSensorCR.value.toSafeString()
@@ -336,6 +371,7 @@ class CalibrationCheckweigherViewModel(
         cal.binFullSensorFitted = _binFullSensorFitted.value.toSafeString()
         cal.binFullSensorDetail = _binFullSensorDetail.value
         cal.binFullSensorTestMethod = _binFullSensorTestMethod.value
+        cal.binFullSensorTestMethodOther = _binFullSensorTestMethodOther.value
         cal.binFullSensorTestResult = _binFullSensorTestResult.value.joinToString(",")
         cal.binFullSensorLatched = _binFullSensorLatched.value.toSafeString()
         cal.binFullSensorCR = _binFullSensorCR.value.toSafeString()
@@ -344,6 +380,7 @@ class CalibrationCheckweigherViewModel(
         cal.airPressureSensorFitted = _airPressureSensorFitted.value.toSafeString()
         cal.airPressureSensorDetail = _airPressureSensorDetail.value
         cal.airPressureSensorTestMethod = _airPressureSensorTestMethod.value
+        cal.airPressureSensorTestMethodOther = _airPressureSensorTestMethodOther.value
         cal.airPressureSensorTestResult = _airPressureSensorTestResult.value.joinToString(",")
         cal.airPressureSensorLatched = _airPressureSensorLatched.value.toSafeString()
         cal.airPressureSensorCR = _airPressureSensorCR.value.toSafeString()
@@ -359,6 +396,20 @@ class CalibrationCheckweigherViewModel(
         cal.binDoorLatched = _binDoorLatched.value.toSafeString()
         cal.binDoorCR = _binDoorCR.value.toSafeString()
         cal.binDoorEngineerNotes = _binDoorEngineerNotes.value
+
+        cal.indicator1colour = _indicator1colour.value
+        cal.indicator1label = _indicator1label.value
+        cal.indicator2colour = _indicator2colour.value
+        cal.indicator2label = _indicator2label.value
+        cal.indicator3colour = _indicator3colour.value
+        cal.indicator3label = _indicator3label.value
+        cal.indicator4colour = _indicator4colour.value
+        cal.indicator4label = _indicator4label.value
+        cal.indicator5colour = _indicator5colour.value
+        cal.indicator5label = _indicator5label.value
+        cal.indicator6colour = _indicator6colour.value
+        cal.indicator6label = _indicator6label.value
+        cal.indicatorsEngineerNotes = _indicatorsEngineerNotes.value
         
         cal.productDescription = _productDescription.value
         cal.productLength = _productLength.value
@@ -376,8 +427,11 @@ class CalibrationCheckweigherViewModel(
         cal.staticScaleModel = _staticScaleModel.value
         cal.staticScaleSerial = _staticScaleSerial.value
         cal.staticScaleResolution = _staticScaleResolution.value
+        cal.staticScaleMaxCapacity = _staticScaleMaxCapacity.value
+        cal.staticScaleMinCapacity = _staticScaleMinCapacity.value
         cal.staticScaleCalDate = _staticScaleCalDate.value
         cal.staticScaleCalStatus = _staticScaleCalStatus.value
+        cal.staticScaleFunctionalCheck = _staticScaleFunctionalCheck.value
         cal.staticScaleSuitability = _staticScaleSuitability.value
         cal.staticScaleRefMassCheckResult = _staticScaleRefMassCheckResult.value
         cal.staticScaleLimitationFlags = _staticScaleLimitationFlags.value
@@ -477,6 +531,14 @@ class CalibrationCheckweigherViewModel(
     val maxCapacity: State<String> = _maxCapacity
     fun setMaxCapacity(v: String) { _maxCapacity.value = v }
 
+    private val _minCapacity = mutableStateOf("")
+    val minCapacity: State<String> = _minCapacity
+    fun setMinCapacity(v: String) { _minCapacity.value = v }
+
+    private val _accuracyClass = mutableStateOf("")
+    val accuracyClass: State<String> = _accuracyClass
+    fun setAccuracyClass(v: String) { _accuracyClass.value = v }
+
     // System Details
     private val _beltWidth = mutableStateOf("")
     val beltWidth: State<String> = _beltWidth
@@ -489,6 +551,10 @@ class CalibrationCheckweigherViewModel(
     private val _rejectType = mutableStateOf("")
     val rejectType: State<String> = _rejectType
     fun setRejectType(v: String) { _rejectType.value = v }
+
+    private val _rejectTypeOther = mutableStateOf("")
+    val rejectTypeOther: State<String> = _rejectTypeOther
+    fun setRejectTypeOther(v: String) { _rejectTypeOther.value = v }
 
     private val _printerDataCapture = mutableStateOf("")
     val printerDataCapture: State<String> = _printerDataCapture
@@ -565,6 +631,10 @@ class CalibrationCheckweigherViewModel(
     val infeedSensorTestMethod: State<String> = _infeedSensorTestMethod
     fun setInfeedSensorTestMethod(v: String) { _infeedSensorTestMethod.value = v }
 
+    private val _infeedSensorTestMethodOther = mutableStateOf("")
+    val infeedSensorTestMethodOther: State<String> = _infeedSensorTestMethodOther
+    fun setInfeedSensorTestMethodOther(v: String) { _infeedSensorTestMethodOther.value = v }
+
     private val _infeedSensorTestResult = mutableStateOf<List<String>>(emptyList())
     val infeedSensorTestResult: State<List<String>> = _infeedSensorTestResult
     fun setInfeedSensorTestResult(v: List<String>) { _infeedSensorTestResult.value = v }
@@ -593,6 +663,10 @@ class CalibrationCheckweigherViewModel(
     private val _rejectConfirmSensorTestMethod = mutableStateOf("")
     val rejectConfirmSensorTestMethod: State<String> = _rejectConfirmSensorTestMethod
     fun setRejectConfirmSensorTestMethod(v: String) { _rejectConfirmSensorTestMethod.value = v }
+
+    private val _rejectConfirmSensorTestMethodOther = mutableStateOf("")
+    val rejectConfirmSensorTestMethodOther: State<String> = _rejectConfirmSensorTestMethodOther
+    fun setRejectConfirmSensorTestMethodOther(v: String) { _rejectConfirmSensorTestMethodOther.value = v }
 
     private val _rejectConfirmSensorTestResult = mutableStateOf<List<String>>(emptyList())
     val rejectConfirmSensorTestResult: State<List<String>> = _rejectConfirmSensorTestResult
@@ -623,6 +697,10 @@ class CalibrationCheckweigherViewModel(
     val binFullSensorTestMethod: State<String> = _binFullSensorTestMethod
     fun setBinFullSensorTestMethod(v: String) { _binFullSensorTestMethod.value = v }
 
+    private val _binFullSensorTestMethodOther = mutableStateOf("")
+    val binFullSensorTestMethodOther: State<String> = _binFullSensorTestMethodOther
+    fun setBinFullSensorTestMethodOther(v: String) { _binFullSensorTestMethodOther.value = v }
+
     private val _binFullSensorTestResult = mutableStateOf<List<String>>(emptyList())
     val binFullSensorTestResult: State<List<String>> = _binFullSensorTestResult
     fun setBinFullSensorTestResult(v: List<String>) { _binFullSensorTestResult.value = v }
@@ -651,6 +729,10 @@ class CalibrationCheckweigherViewModel(
     private val _airPressureSensorTestMethod = mutableStateOf("")
     val airPressureSensorTestMethod: State<String> = _airPressureSensorTestMethod
     fun setAirPressureSensorTestMethod(v: String) { _airPressureSensorTestMethod.value = v }
+
+    private val _airPressureSensorTestMethodOther = mutableStateOf("")
+    val airPressureSensorTestMethodOther: State<String> = _airPressureSensorTestMethodOther
+    fun setAirPressureSensorTestMethodOther(v: String) { _airPressureSensorTestMethodOther.value = v }
 
     private val _airPressureSensorTestResult = mutableStateOf<List<String>>(emptyList())
     val airPressureSensorTestResult: State<List<String>> = _airPressureSensorTestResult
@@ -708,6 +790,59 @@ class CalibrationCheckweigherViewModel(
     private val _binDoorEngineerNotes = mutableStateOf("")
     val binDoorEngineerNotes: State<String> = _binDoorEngineerNotes
     fun setBinDoorEngineerNotes(v: String) { _binDoorEngineerNotes.value = v }
+
+    // Indicators
+    private val _indicator1colour = mutableStateOf("")
+    val indicator1colour: State<String> = _indicator1colour
+    fun setIndicator1colour(v: String) { _indicator1colour.value = v }
+
+    private val _indicator1label = mutableStateOf("")
+    val indicator1label: State<String> = _indicator1label
+    fun setIndicator1label(v: String) { _indicator1label.value = v }
+
+    private val _indicator2colour = mutableStateOf("")
+    val indicator2colour: State<String> = _indicator2colour
+    fun setIndicator2colour(v: String) { _indicator2colour.value = v }
+
+    private val _indicator2label = mutableStateOf("")
+    val indicator2label: State<String> = _indicator2label
+    fun setIndicator2label(v: String) { _indicator2label.value = v }
+
+    private val _indicator3colour = mutableStateOf("")
+    val indicator3colour: State<String> = _indicator3colour
+    fun setIndicator3colour(v: String) { _indicator3colour.value = v }
+
+    private val _indicator3label = mutableStateOf("")
+    val indicator3label: State<String> = _indicator3label
+    fun setIndicator3label(v: String) { _indicator3label.value = v }
+
+    private val _indicator4colour = mutableStateOf("")
+    val indicator4colour: State<String> = _indicator4colour
+    fun setIndicator4colour(v: String) { _indicator4colour.value = v }
+
+    private val _indicator4label = mutableStateOf("")
+    val indicator4label: State<String> = _indicator4label
+    fun setIndicator4label(v: String) { _indicator4label.value = v }
+
+    private val _indicator5colour = mutableStateOf("")
+    val indicator5colour: State<String> = _indicator5colour
+    fun setIndicator5colour(v: String) { _indicator5colour.value = v }
+
+    private val _indicator5label = mutableStateOf("")
+    val indicator5label: State<String> = _indicator5label
+    fun setIndicator5label(v: String) { _indicator5label.value = v }
+
+    private val _indicator6colour = mutableStateOf("")
+    val indicator6colour: State<String> = _indicator6colour
+    fun setIndicator6colour(v: String) { _indicator6colour.value = v }
+
+    private val _indicator6label = mutableStateOf("")
+    val indicator6label: State<String> = _indicator6label
+    fun setIndicator6label(v: String) { _indicator6label.value = v }
+
+    private val _indicatorsEngineerNotes = mutableStateOf("")
+    val indicatorsEngineerNotes: State<String> = _indicatorsEngineerNotes
+    fun setIndicatorsEngineerNotes(v: String) { _indicatorsEngineerNotes.value = v }
 
     // Product Details
     private val _productDescription = mutableStateOf("")
@@ -769,6 +904,22 @@ class CalibrationCheckweigherViewModel(
         _staticScaleResolution.value = com.snb.inspect.core.InputTransforms.decimal(v)
     }
 
+    private val _staticScaleMaxCapacity = mutableStateOf("")
+    val staticScaleMaxCapacity: State<String> = _staticScaleMaxCapacity
+    fun setStaticScaleMaxCapacity(v: String) {
+        _staticScaleMaxCapacity.value = com.snb.inspect.core.InputTransforms.decimal(v)
+    }
+
+    private val _staticScaleMinCapacity = mutableStateOf("")
+    val staticScaleMinCapacity: State<String> = _staticScaleMinCapacity
+    fun setStaticScaleMinCapacity(v: String) {
+        _staticScaleMinCapacity.value = com.snb.inspect.core.InputTransforms.decimal(v)
+    }
+
+    private val _staticScaleFunctionalCheck = mutableStateOf("SATISFACTORY")
+    val staticScaleFunctionalCheck: State<String> = _staticScaleFunctionalCheck
+    fun setStaticScaleFunctionalCheck(v: String) { _staticScaleFunctionalCheck.value = v }
+
     private val _staticScaleCalDate = mutableStateOf("")
     val staticScaleCalDate: State<String> = _staticScaleCalDate
     fun setStaticScaleCalDate(v: String) {
@@ -815,6 +966,114 @@ class CalibrationCheckweigherViewModel(
         } else {
             Pair("VALID", true)
         }
+    }
+
+    fun calculateWelmecRequiredE(nominalWeightGrams: Double): Double {
+        return when {
+            nominalWeightGrams <= 100.0 -> 0.05
+            nominalWeightGrams <= 200.0 -> 0.1
+            nominalWeightGrams <= 1000.0 -> 0.2
+            nominalWeightGrams <= 2000.0 -> 0.5
+            else -> {
+                val table3Interval = if (nominalWeightGrams <= 15000.0) 5.0 else nominalWeightGrams * 0.0025
+                table3Interval / 10.0
+            }
+        }
+    }
+
+    data class StaticScaleAssessmentResult(
+        val suitability: String,
+        val isWelmecCompliant: Boolean,
+        val requiredE: Double?,
+        val actualE: Double?,
+        val isCapacityValid: Boolean,
+        val summaryMessage: String,
+        val detailedNotes: String
+    )
+
+    fun evaluateStaticScaleAssessment(): StaticScaleAssessmentResult {
+        val serial = _staticScaleSerial.value.trim()
+        val certRef = _staticScaleCertRef.value.trim()
+        val packWeight = _nominalQuantityAsFound.value.toDoubleOrNull()
+            ?: _grossWeight.value.toDoubleOrNull()
+            ?: 0.0
+
+        val actualE = _staticScaleResolution.value.toDoubleOrNull()
+        val maxCap = _staticScaleMaxCapacity.value.toDoubleOrNull()
+        val minCap = _staticScaleMinCapacity.value.toDoubleOrNull()
+        val calStatus = _staticScaleCalStatus.value
+        val functionalOk = _staticScaleFunctionalCheck.value != "UNSATISFACTORY"
+
+        val hasSerial = serial.isNotBlank() && serial != "N/A"
+        val hasCertRef = certRef.isNotBlank()
+        val requiredE = if (packWeight > 0.0) calculateWelmecRequiredE(packWeight) else null
+
+        val isCalValid = hasSerial && (calStatus.contains("VALID", ignoreCase = true) || (!calStatus.contains("EXPIRED") && !calStatus.contains("MISSING")))
+        val meetsEConstraint = actualE != null && actualE > 0.0 && requiredE != null && actualE <= requiredE
+
+        val isCapSpecValid = maxCap != null && maxCap > 0.0 && minCap != null && minCap >= 0.0 && minCap <= maxCap
+        val isWithinRange = maxCap != null && minCap != null && maxCap > 0.0 && packWeight >= minCap && packWeight <= maxCap
+        val isCapacityValid = isCapSpecValid && isWithinRange
+
+        val isWelmecCompliant = isCalValid && hasCertRef && functionalOk && meetsEConstraint && isCapacityValid
+
+        val (suitability, summary, details) = when {
+            !hasSerial -> Triple(
+                "LIMITATIONS",
+                "⚠️ Un-traceable: Scale serial number is missing.",
+                "Serial number is required to establish equipment identity and calibration traceability."
+            )
+            !functionalOk -> Triple(
+                "UNSUITABLE",
+                "❌ Unsuitable: Scale functional check was unsatisfactory.",
+                "Scale failed basic 3-repeatability pack check or zero stability."
+            )
+            !isCalValid -> Triple(
+                "LIMITATIONS",
+                "⚠️ Qualified Assessment: Scale calibration status is $calStatus.",
+                "Scale calibration certificate is expired, invalid, or unverified."
+            )
+            !hasCertRef -> Triple(
+                "LIMITATIONS",
+                "⚠️ Qualified Assessment: Calibration / verification reference number is missing.",
+                "Certificate or verification reference number must be documented for audit evidence."
+            )
+            !isCapSpecValid -> Triple(
+                "LIMITATIONS",
+                "⚠️ Qualified Assessment: Scale Max/Min capacity specification is missing or invalid.",
+                "Min/Max capacity must be positive numbers with Min ≤ Max."
+            )
+            !isWithinRange && packWeight > 0.0 -> Triple(
+                "LIMITATIONS",
+                "⚠️ Qualified Assessment: Pack weight (${packWeight}g) is outside scale capacity range [${minCap}g - ${maxCap}g].",
+                "Pack weight falls outside the reference scale's minimum (${minCap}g) / maximum (${maxCap}g) weighing range."
+            )
+            !meetsEConstraint && actualE != null && requiredE != null -> Triple(
+                "LIMITATIONS",
+                "⚠️ Qualified Routine Check Only: Scale interval (e = ${actualE}g) exceeds WELMEC Annex 5 threshold (e ≤ ${requiredE}g) for ${packWeight}g pack.",
+                "Reference scale verification interval e = ${actualE}g exceeds WELMEC 6.4 Annex 5 requirement (e ≤ ${requiredE}g for nominal pack weight ${packWeight}g). Qualified routine check only; does not meet WELMEC Annex 5 methodology."
+            )
+            isWelmecCompliant -> Triple(
+                "SUITABLE",
+                "✅ Fully Compliant: Meets WELMEC 6.4 Annex 5 & OIML R 51-1 reference scale requirements.",
+                "Serial $serial is verified. Scale has valid calibration (Cert: $certRef), passes functional check, and verification interval e = ${actualE}g satisfies e ≤ ${requiredE}g threshold for ${packWeight}g pack weight."
+            )
+            else -> Triple(
+                "LIMITATIONS",
+                "⚠️ Qualified Assessment: Reference scale parameters under assessment.",
+                "Check serial number, calibration date, verification interval e, and Min/Max capacity."
+            )
+        }
+
+        return StaticScaleAssessmentResult(
+            suitability = suitability,
+            isWelmecCompliant = isWelmecCompliant,
+            requiredE = requiredE,
+            actualE = actualE,
+            isCapacityValid = isCapacityValid,
+            summaryMessage = summary,
+            detailedNotes = details
+        )
     }
 
     private val _staticScaleSuitability = mutableStateOf("SUITABLE")
@@ -1122,7 +1381,7 @@ class CalibrationCheckweigherViewModel(
     private fun revalidateAllScreens() {
         val validMap = mutableMapOf<String, Boolean>()
         validMap["CheckweigherCalibrationStart"] = _canPerformCalibration.value || _reasonForNotCalibrating.value.isNotEmpty()
-        validMap["CwScaleDetails"] = _loadcellType.value.isNotBlank() && _scaleInterval.value.isNotBlank() && _maxCapacity.value.isNotBlank()
+        validMap["CwScaleDetails"] = _scaleInterval.value.isNotBlank() && _maxCapacity.value.isNotBlank()
         validMap["CwSystemDetails"] = _beltWidth.value.isNotBlank() && _weighConveyorLength.value.isNotBlank()
         validMap["CwSystemChecklist"] = _beltCondition.value != ConditionState.UNSPECIFIED && _safetyCircuitCondition.value != ConditionState.UNSPECIFIED
 
@@ -1131,6 +1390,12 @@ class CalibrationCheckweigherViewModel(
         validMap["CwBinFullSensor"] = validateFailsafe(_binFullSensorFitted.value, _binFullSensorTestMethod.value, _binFullSensorTestResult.value, _binFullSensorLatched.value, _binFullSensorCR.value)
         validMap["CwAirPressureSensor"] = validateFailsafe(_airPressureSensorFitted.value, _airPressureSensorTestMethod.value, _airPressureSensorTestResult.value, _airPressureSensorLatched.value, _airPressureSensorCR.value)
         validMap["CwBinDoorMonitor"] = validateBinDoor()
+        validMap["CwIndicators"] = _indicator1colour.value.isNotBlank() && _indicator1label.value.isNotBlank() &&
+                _indicator2colour.value.isNotBlank() && _indicator2label.value.isNotBlank() &&
+                _indicator3colour.value.isNotBlank() && _indicator3label.value.isNotBlank() &&
+                _indicator4colour.value.isNotBlank() && _indicator4label.value.isNotBlank() &&
+                _indicator5colour.value.isNotBlank() && _indicator5label.value.isNotBlank() &&
+                _indicator6colour.value.isNotBlank() && _indicator6label.value.isNotBlank()
 
         validMap["CwTestProductDetails"] = _productDescription.value.isNotBlank() && _productLength.value.isNotBlank()
         val isStaticRefValid = (_staticScaleMakeModel.value.isNotBlank() || _staticScaleManufacturer.value.isNotBlank()) &&
@@ -1187,6 +1452,7 @@ class CalibrationCheckweigherViewModel(
             "CwBinFullSensor" -> "Bin Full Sensor"
             "CwAirPressureSensor" -> "Air Pressure Sensor"
             "CwBinDoorMonitor" -> "Bin Door Monitor"
+            "CwIndicators" -> "Indicators"
             "CwTestProductDetails" -> "Product Details"
             "CwStaticScaleReference" -> "Static Scale Ref"
             "CwEngineerTestWeight" -> "Test Weight"
@@ -1306,6 +1572,20 @@ class CalibrationCheckweigherViewModel(
         setBinDoorLatched(YesNoState.NA)
         setBinDoorCR(YesNoState.NA)
         setBinDoorEngineerNotes("")
+
+        setIndicator1colour("")
+        setIndicator1label("")
+        setIndicator2colour("")
+        setIndicator2label("")
+        setIndicator3colour("")
+        setIndicator3label("")
+        setIndicator4colour("")
+        setIndicator4label("")
+        setIndicator5colour("")
+        setIndicator5label("")
+        setIndicator6colour("")
+        setIndicator6label("")
+        setIndicatorsEngineerNotes("")
 
         setProductDescription("")
         setProductLength("")

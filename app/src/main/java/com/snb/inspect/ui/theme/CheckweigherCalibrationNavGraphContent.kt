@@ -110,6 +110,12 @@ fun CheckweigherCalibrationNavGraphContent(
             }
         }
 
+        composable("CwIndicators") {
+            onScreenChanged {
+                CalCwIndicators(viewModel)
+            }
+        }
+
         composable("CwRejectVerification") {
             onScreenChanged {
                 CalCwRejectVerification(viewModel)

@@ -68,7 +68,7 @@ import com.snb.inspect.dataClasses.UserManualLocal
         CwSystemNoteLocal::class
 
     ],
-    version = 79,
+    version = 82,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

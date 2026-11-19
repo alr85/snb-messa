@@ -16,7 +16,11 @@ data class CwSystem(
     @SerializedName("addedDate", alternate = ["AddedDate"]) val addedDate: String,
     @SerializedName("calibrationInterval", alternate = ["CalibrationInterval"]) val calibrationInterval: Int,
     @SerializedName("systemTypeId", alternate = ["SystemTypeId"]) val systemTypeId: Int,
-    @SerializedName("lastLocation", alternate = ["LastLocation"]) val lastLocation: String
+    @SerializedName("lastLocation", alternate = ["LastLocation"]) val lastLocation: String,
+    @SerializedName("maxCapacity", alternate = ["MaxCapacity"]) val maxCapacity: String? = "",
+    @SerializedName("minCapacity", alternate = ["MinCapacity"]) val minCapacity: String? = "",
+    @SerializedName("displayResolution", alternate = ["DisplayResolution"]) val displayResolution: String? = "",
+    @SerializedName("accuracyClass", alternate = ["AccuracyClass"]) val accuracyClass: String? = ""
 )
 
 data class CwSystemCloud(
@@ -27,7 +31,11 @@ data class CwSystemCloud(
     @SerializedName("addedDate", alternate = ["AddedDate"]) val addedDate: String,
     @SerializedName("calibrationInterval", alternate = ["CalibrationInterval"]) val calibrationInterval: Int,
     @SerializedName("systemTypeId", alternate = ["SystemTypeId"]) val systemTypeId: Int,
-    @SerializedName("lastLocation", alternate = ["LastLocation"]) val lastLocation: String
+    @SerializedName("lastLocation", alternate = ["LastLocation"]) val lastLocation: String,
+    @SerializedName("maxCapacity", alternate = ["MaxCapacity"]) val maxCapacity: String = "",
+    @SerializedName("minCapacity", alternate = ["MinCapacity"]) val minCapacity: String = "",
+    @SerializedName("displayResolution", alternate = ["DisplayResolution"]) val displayResolution: String = "",
+    @SerializedName("accuracyClass", alternate = ["AccuracyClass"]) val accuracyClass: String = ""
 )
 
 @Entity(
@@ -46,7 +54,11 @@ data class CwSystemLocal(
     val calibrationInterval: Int,
     val systemTypeId: Int,
     var isSynced: Boolean,
-    var lastLocation: String = ""
+    var lastLocation: String = "",
+    var maxCapacity: String = "",
+    var minCapacity: String = "",
+    var displayResolution: String = "",
+    var accuracyClass: String = ""
 )
 
 @Parcelize
@@ -65,5 +77,9 @@ data class CheckweigherWithFullDetails(
     val tempId: Int,
     val isSynced: Boolean,
     val customerName: String,
-    val lastLocation: String
+    val lastLocation: String,
+    val maxCapacity: String = "",
+    val minCapacity: String = "",
+    val displayResolution: String = "",
+    val accuracyClass: String = ""
 ): Parcelable

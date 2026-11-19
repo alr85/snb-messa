@@ -21,7 +21,8 @@ import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 fun CalCwSystemDetails(viewModel: CalibrationCheckweigherViewModel) {
     val isNextStepEnabled = viewModel.beltWidth.value.isNotBlank() &&
                            viewModel.weighConveyorLength.value.isNotBlank() &&
-                           viewModel.rejectType.value.isNotBlank()
+                           viewModel.rejectType.value.isNotBlank() &&
+                           (viewModel.rejectType.value != "Other" || viewModel.rejectTypeOther.value.isNotBlank())
 
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
@@ -53,15 +54,42 @@ fun CalCwSystemDetails(viewModel: CalibrationCheckweigherViewModel) {
                 )
                 FormSpacer()
 
-                val rejectTypes = remember { listOf("Pusher", "Air Blast", "Diverter Arm", "Drop Flap", "Retracting Belt", "Carriage Tilt", "Other") }
+                val rejectTypes = remember {
+                    listOf(
+                        "Alarm Belt Stop",
+                        "Air Blast",
+                        "Air Kicker",
+                        "Air Divert Arm",
+                        "Air Divert Flap",
+                        "Electric Divert Arm",
+                        "Retract Band",
+                        "Reverse Belt",
+                        "Lift or Drop Table",
+                        "Alarm only",
+                        "Double Bag",
+                        "Overhead Sweep Arm",
+                        "Other"
+                    ).sorted()
+                }
+
                 LabeledDropdownWithHelp(
-                    label = "Reject Type",
+                    label = "Reject System",
                     options = rejectTypes,
                     selectedOption = viewModel.rejectType.value,
                     onSelectionChange = viewModel::setRejectType,
-                    helpText = "Select the rejection mechanism."
+                    helpText = "Select one option from the dropdown."
                 )
                 FormSpacer()
+
+                if (viewModel.rejectType.value == "Other") {
+                    LabeledTextFieldWithHelp(
+                        label = "Other Reject Device",
+                        value = viewModel.rejectTypeOther.value,
+                        onValueChange = viewModel::setRejectTypeOther,
+                        helpText = "Enter the custom reject device name"
+                    )
+                    FormSpacer()
+                }
 
                 val captureOptions = remember { listOf("Printer", "USB", "Network", "N/A") }
                 LabeledDropdownWithHelp(

@@ -267,6 +267,10 @@ fun CheckweigherSystemScreen(
                     DetailItem("Customer", cwSystem?.customerName ?: "?")
                     DetailItem("Model", cwSystem?.modelDescription ?: "?")
                     DetailItem("Location", cwSystem?.lastLocation ?: "?")
+                    DetailItem("Maximum Capacity", cwSystem?.maxCapacity?.takeIf { it.isNotBlank() } ?: "—")
+                    DetailItem("Minimum Capacity", cwSystem?.minCapacity?.takeIf { it.isNotBlank() } ?: "—")
+                    DetailItem("Display Resolution (e)", cwSystem?.displayResolution?.takeIf { it.isNotBlank() } ?: "—")
+                    DetailItem("Accuracy Class", cwSystem?.accuracyClass?.takeIf { it.isNotBlank() } ?: "—")
                     DetailItem("Last Calibrated", formattedLastCalibrationDate)
                 }
             }

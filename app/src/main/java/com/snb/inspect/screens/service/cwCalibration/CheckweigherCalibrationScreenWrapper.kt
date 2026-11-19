@@ -56,6 +56,7 @@ fun CheckweigherCalibrationScreenWrapper(
                 "CwScaleDetails",
                 "CwSystemDetails",
                 "CwSystemChecklist",
+                "CwIndicators",
                 "CwTestProductDetails",
                 "CwStaticScaleReference",
                 "CwTolerancesAndAssessment",
