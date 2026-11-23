@@ -14,6 +14,9 @@ interface MeasuringEquipmentDAO {
     @Query("SELECT * FROM measuring_equipment WHERE deviceTypeID = :typeId AND isActive = 1 ORDER BY manufacturer ASC, model ASC")
     fun getEquipmentByType(typeId: Int): Flow<List<MeasuringEquipmentLocal>>
 
+    @Query("SELECT * FROM measuring_equipment WHERE id = :id LIMIT 1")
+    suspend fun getEquipmentById(id: Int): MeasuringEquipmentLocal?
+
     @Upsert
     suspend fun upsertEquipment(items: List<MeasuringEquipmentLocal>)
 

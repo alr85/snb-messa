@@ -25,7 +25,8 @@ data class ApiMeasuringEquipment(
     @SerializedName("updatedAt", alternate = ["UpdatedAt"]) val UpdatedAt: String?,
     @SerializedName("employeeID", alternate = ["EmployeeID", "employeeId", "EmployeeId"]) val EmployeeID: Int?,
     @SerializedName("createdBy", alternate = ["CreatedBy"]) val CreatedBy: Int?,
-    @SerializedName("externallyCalibrated", alternate = ["ExternallyCalibrated"]) val ExternallyCalibrated: Boolean
+    @SerializedName("externallyCalibrated", alternate = ["ExternallyCalibrated"]) val ExternallyCalibrated: Boolean,
+    @SerializedName("weight", alternate = ["Weight"]) val Weight: Int? = null
 )
 
 // The Room Database model
@@ -51,7 +52,8 @@ data class MeasuringEquipmentLocal(
     val updatedAt: String?,
     val employeeID: Int?,
     val createdBy: Int?,
-    val externallyCalibrated: Boolean
+    val externallyCalibrated: Boolean,
+    val weight: Int? = null
 )
 
 // Mapper to convert API (PascalCase from SQL) to Local (camelCase for Kotlin)
@@ -75,5 +77,6 @@ fun ApiMeasuringEquipment.toLocal() = MeasuringEquipmentLocal(
     updatedAt = UpdatedAt,
     employeeID = EmployeeID,
     createdBy = CreatedBy,
-    externallyCalibrated = ExternallyCalibrated
+    externallyCalibrated = ExternallyCalibrated,
+    weight = Weight
 )

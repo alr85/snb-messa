@@ -45,7 +45,8 @@ fun CalCwEngineerTestWeight(viewModel: CalibrationCheckweigherViewModel) {
                         val isMine = userFusionId != null && item.employeeID == userFusionId
                         val prefix = if (isMine) "⭐ " else ""
                         val suffix = if (isMine) " (Assigned to me)" else ""
-                        "$prefix${item.manufacturer} ${item.model} (${item.serialNumber})$suffix"
+                        val weightStr = if (item.weight != null) " - ${item.weight}g" else ""
+                        "$prefix${item.manufacturer} ${item.model} (${item.serialNumber})$weightStr$suffix"
                     },
                     helpText = "Select the test weight used for calibration."
                 )

@@ -31,7 +31,8 @@ fun CalMetalDetectorConveyorEquipmentUsed(
         val isMine = userFusionId != null && item.employeeID == userFusionId
         val prefix = if (isMine) "⭐ " else ""
         val suffix = if (isMine) " (Assigned to me)" else ""
-        return "$prefix${item.manufacturer} ${item.model} (${item.serialNumber})$suffix"
+        val weightStr = if (item.weight != null) " - ${item.weight}g" else ""
+        return "$prefix${item.manufacturer} ${item.model} (${item.serialNumber})$weightStr$suffix"
     }
 
     // Convert objects to display strings for dropdowns

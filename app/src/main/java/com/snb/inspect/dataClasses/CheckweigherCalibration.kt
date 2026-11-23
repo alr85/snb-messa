@@ -178,6 +178,9 @@ class CheckweigherCalibrationLocal(
     var additionalProductionWeightsJson: String = ""
 
     //------------------------------------------------------------------------Static Test 'As Found'
+    var staticTestCountAsFound: Int = 1
+    var staticTestSetsJsonAsFound: String = ""
+
     var offCentreTestWeightAsFound: String = ""
     var offCentreCentreAsFound: String = ""
     var offCentreCorner1AsFound: String = ""
