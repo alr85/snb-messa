@@ -64,10 +64,14 @@ data class RepeatabilityTestResult(
     val reading1: Double,
     val reading2: Double,
     val reading3: Double,
+    val zero1: Double? = null,
+    val zero2: Double? = null,
+    val zero3: Double? = null,
     val mean: Double,
     val minReading: Double,
     val maxReading: Double,
     val range: Double,
+    val maxZeroReturn: Double? = null,
     val isPass: Boolean
 )
 
@@ -82,7 +86,10 @@ data class StaticTestSet(
     val corner4: String = "",
     val repeatabilityReading1: String = "",
     val repeatabilityReading2: String = "",
-    val repeatabilityReading3: String = ""
+    val repeatabilityReading3: String = "",
+    val repeatabilityZero1: String = "",
+    val repeatabilityZero2: String = "",
+    val repeatabilityZero3: String = ""
 )
 
 data class EvaluatedStaticTestSet(
@@ -268,6 +275,9 @@ object CheckweigherCalculator {
         r1Str: String,
         r2Str: String,
         r3Str: String,
+        z1Str: String = "",
+        z2Str: String = "",
+        z3Str: String = "",
         scaleIntervalStr: String = ""
     ): RepeatabilityTestResult? {
         val r1 = r1Str.toDoubleOrNull() ?: return null
@@ -275,24 +285,40 @@ object CheckweigherCalculator {
         val r3 = r3Str.toDoubleOrNull() ?: return null
         val testWeight = testWeightStr.toDoubleOrNull()
 
+        val z1 = z1Str.toDoubleOrNull()
+        val z2 = z2Str.toDoubleOrNull()
+        val z3 = z3Str.toDoubleOrNull()
+
         val mean = roundTo((r1 + r2 + r3) / 3.0, 3)
         val minVal = minOf(r1, r2, r3)
         val maxVal = maxOf(r1, r2, r3)
         val range = roundTo(maxVal - minVal, 3)
 
+        val zeroes = listOfNotNull(z1, z2, z3)
+        val maxZeroReturn = if (zeroes.isNotEmpty()) {
+            roundTo(zeroes.maxOf { abs(it) }, 3)
+        } else null
+
         val interval = scaleIntervalStr.toDoubleOrNull() ?: 0.1
         val allowedLimit = if (interval > 0.0) interval else 1.0
-        val isPass = range <= allowedLimit
+
+        val isLoadPass = range <= allowedLimit
+        val isZeroPass = maxZeroReturn == null || maxZeroReturn <= allowedLimit
+        val isPass = isLoadPass && isZeroPass
 
         return RepeatabilityTestResult(
             testWeight = testWeight,
             reading1 = r1,
             reading2 = r2,
             reading3 = r3,
+            zero1 = z1,
+            zero2 = z2,
+            zero3 = z3,
             mean = mean,
             minReading = minVal,
             maxReading = maxVal,
             range = range,
+            maxZeroReturn = maxZeroReturn,
             isPass = isPass
         )
     }

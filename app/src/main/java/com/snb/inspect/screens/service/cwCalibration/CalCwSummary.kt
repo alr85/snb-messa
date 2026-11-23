@@ -97,7 +97,7 @@ fun CalCwSummary(
                                 val weightStr = set.testWeight.ifBlank { "N/A" }
 
                                 Surface(
-                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                    color = Color(0xFFF5F5F5),
                                     shape = MaterialTheme.shapes.small,
                                     modifier = Modifier.fillMaxWidth()
                                 ) {

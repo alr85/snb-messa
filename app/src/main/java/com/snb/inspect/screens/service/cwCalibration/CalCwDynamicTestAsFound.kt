@@ -209,13 +209,13 @@ fun CalCwDynamicTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
 
                         if (viewModel.isStaticRefGrossWeight.value && calcResult != null && calcResult!!.tareOffsetApplied > 0.0) {
                             Surface(
-                                color = MaterialTheme.colorScheme.primaryContainer,
+                                color = Color(0xFFF5F5F5),
                                 shape = MaterialTheme.shapes.small,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Text(
                                     text = "ℹ️ Effective Net Reference Weight: ${"%.2f".format(calcResult!!.effectiveReferenceWeight)}g (${"%.2f".format(calcResult!!.referenceWeight)}g Gross - ${"%.2f".format(calcResult!!.tareOffsetApplied)}g Tare Offset)",
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                     style = MaterialTheme.typography.bodySmall,
                                     modifier = Modifier.padding(8.dp),
                                     fontWeight = FontWeight.Bold
@@ -338,7 +338,7 @@ private fun CalculatedStatisticsSummaryCard(res: CheckweigherCalculationResult) 
 
 @Composable
 private fun ValueBox(title: String, value: String, modifier: Modifier = Modifier) {
-    Surface(tonalElevation = 2.dp, shape = MaterialTheme.shapes.medium, modifier = modifier) {
+    Surface(color = Color(0xFFF5F5F5), shape = MaterialTheme.shapes.medium, modifier = modifier) {
         Column(modifier = Modifier.padding(8.dp)) {
             Text(title, style = MaterialTheme.typography.labelSmall)
             Text(value, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)

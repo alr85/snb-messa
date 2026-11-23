@@ -41,8 +41,11 @@ fun CalCwStaticTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
         s.corner3.isNotBlank() &&
         s.corner4.isNotBlank() &&
         s.repeatabilityReading1.isNotBlank() &&
+        s.repeatabilityZero1.isNotBlank() &&
         s.repeatabilityReading2.isNotBlank() &&
-        s.repeatabilityReading3.isNotBlank()
+        s.repeatabilityZero2.isNotBlank() &&
+        s.repeatabilityReading3.isNotBlank() &&
+        s.repeatabilityZero3.isNotBlank()
     }
 
     LaunchedEffect(isNextStepEnabled) {
@@ -76,7 +79,7 @@ fun CalCwStaticTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
                         }
 
                         Text(
-                            "Select how many static weighing tests to perform (1 to 5 tests with increasing weights):",
+                            "Select how many static weighing tests to perform:",
                             style = MaterialTheme.typography.bodyMedium
                         )
 
@@ -87,7 +90,7 @@ fun CalCwStaticTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
                                     onClick = { viewModel.setStaticTestCountAsFound(c) },
                                     shape = SegmentedButtonDefaults.itemShape(index = c - 1, count = 5)
                                 ) {
-                                    Text("$c Test${if (c > 1) "s" else ""}")
+                                    Text("$c")
                                 }
                             }
                         }
@@ -140,12 +143,12 @@ private fun StaticTestSetCard(
 
                 if (set.testWeight.isNotBlank()) {
                     Surface(
-                        color = MaterialTheme.colorScheme.primaryContainer,
+                        color = Color(0xFFF5F5F5),
                         shape = MaterialTheme.shapes.small
                     ) {
                         Text(
                             text = "${set.testWeight}g",
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             fontWeight = FontWeight.Bold,
                             style = MaterialTheme.typography.labelMedium
@@ -168,21 +171,21 @@ private fun StaticTestSetCard(
                 helpText = "Select allocated test weight from measuring equipment table."
             )
 
-            OutlinedTextField(
-                value = set.testWeight,
-                onValueChange = { viewModel.setStaticTestWeight(testIndex, it) },
-                label = { Text("Test Weight Value (g)") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
+//            OutlinedTextField(
+//                value = set.testWeight,
+//                onValueChange = { viewModel.setStaticTestWeight(testIndex, it) },
+//                label = { Text("Test Weight Value (g)") },
+//                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+//                singleLine = true,
+//                modifier = Modifier.fillMaxWidth()
+//            )
 
             HorizontalDivider()
 
             // 1. Off Centre Loading Test
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    "Off Centre Loading Test (4 Corners vs Centre)",
+                    "Off Centre Loading Test",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.weight(1f)
@@ -192,22 +195,21 @@ private fun StaticTestSetCard(
 
             Surface(
                 shape = MaterialTheme.shapes.medium,
-                tonalElevation = 1.dp,
+                color = Color(0xFFF5F5F5),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        "Top / Infeed End",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
-
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(
+                    modifier = Modifier.padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         OutlinedTextField(
                             value = set.corner1,
                             onValueChange = { viewModel.setStaticTestCorner1(testIndex, it) },
-                            label = { Text("Corner 1 (FL)") },
+                            label = { Text("Back Left (g)") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             singleLine = true,
                             modifier = Modifier.weight(1f)
@@ -215,29 +217,35 @@ private fun StaticTestSetCard(
                         OutlinedTextField(
                             value = set.corner2,
                             onValueChange = { viewModel.setStaticTestCorner2(testIndex, it) },
-                            label = { Text("Corner 2 (FR)") },
+                            label = { Text("Back Right (g)") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             singleLine = true,
                             modifier = Modifier.weight(1f)
                         )
                     }
 
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
                         OutlinedTextField(
                             value = set.centre,
                             onValueChange = { viewModel.setStaticTestCentre(testIndex, it) },
-                            label = { Text("Centre Reading (g)") },
+                            label = { Text("Centre (g)") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(0.8f)
                         )
                     }
 
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         OutlinedTextField(
                             value = set.corner3,
                             onValueChange = { viewModel.setStaticTestCorner3(testIndex, it) },
-                            label = { Text("Corner 3 (BL)") },
+                            label = { Text("Front Left (g)") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             singleLine = true,
                             modifier = Modifier.weight(1f)
@@ -245,19 +253,12 @@ private fun StaticTestSetCard(
                         OutlinedTextField(
                             value = set.corner4,
                             onValueChange = { viewModel.setStaticTestCorner4(testIndex, it) },
-                            label = { Text("Corner 4 (BR)") },
+                            label = { Text("Front Right (g)") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             singleLine = true,
                             modifier = Modifier.weight(1f)
                         )
                     }
-
-                    Text(
-                        "Bottom / Outfeed End",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
                 }
             }
 
@@ -278,31 +279,63 @@ private fun StaticTestSetCard(
                 Icon(Icons.Default.Repeat, contentDescription = null)
             }
 
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
-                    value = set.repeatabilityReading1,
-                    onValueChange = { viewModel.setStaticTestRepeatability1(testIndex, it) },
-                    label = { Text("Reading 1 (g)") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    singleLine = true,
-                    modifier = Modifier.weight(1f)
-                )
-                OutlinedTextField(
-                    value = set.repeatabilityReading2,
-                    onValueChange = { viewModel.setStaticTestRepeatability2(testIndex, it) },
-                    label = { Text("Reading 2 (g)") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    singleLine = true,
-                    modifier = Modifier.weight(1f)
-                )
-                OutlinedTextField(
-                    value = set.repeatabilityReading3,
-                    onValueChange = { viewModel.setStaticTestRepeatability3(testIndex, it) },
-                    label = { Text("Reading 3 (g)") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    singleLine = true,
-                    modifier = Modifier.weight(1f)
-                )
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = set.repeatabilityReading1,
+                        onValueChange = { viewModel.setStaticTestRepeatability1(testIndex, it) },
+                        label = { Text("Run 1 Loaded (g)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        singleLine = true,
+                        modifier = Modifier.weight(1f)
+                    )
+                    OutlinedTextField(
+                        value = set.repeatabilityZero1,
+                        onValueChange = { viewModel.setStaticTestRepeatabilityZero1(testIndex, it) },
+                        label = { Text("Run 1 Removed (g)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        singleLine = true,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = set.repeatabilityReading2,
+                        onValueChange = { viewModel.setStaticTestRepeatability2(testIndex, it) },
+                        label = { Text("Run 2 Loaded (g)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        singleLine = true,
+                        modifier = Modifier.weight(1f)
+                    )
+                    OutlinedTextField(
+                        value = set.repeatabilityZero2,
+                        onValueChange = { viewModel.setStaticTestRepeatabilityZero2(testIndex, it) },
+                        label = { Text("Run 2 Removed (g)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        singleLine = true,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = set.repeatabilityReading3,
+                        onValueChange = { viewModel.setStaticTestRepeatability3(testIndex, it) },
+                        label = { Text("Run 3 Loaded (g)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        singleLine = true,
+                        modifier = Modifier.weight(1f)
+                    )
+                    OutlinedTextField(
+                        value = set.repeatabilityZero3,
+                        onValueChange = { viewModel.setStaticTestRepeatabilityZero3(testIndex, it) },
+                        label = { Text("Run 3 Removed (g)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        singleLine = true,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
 
             if (evalSet?.repeatabilityResult != null) {
@@ -311,6 +344,8 @@ private fun StaticTestSetCard(
         }
     }
 }
+
+
 
 private fun formatEquipmentLabel(item: MeasuringEquipmentLocal, userFusionId: Int?): String {
     val isMine = userFusionId != null && item.employeeID == userFusionId
@@ -323,7 +358,7 @@ private fun formatEquipmentLabel(item: MeasuringEquipmentLocal, userFusionId: In
 @Composable
 private fun OffCentreSummaryCard(res: OffCentreTestResult) {
     Surface(
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        color = Color(0xFFF5F5F5),
         shape = MaterialTheme.shapes.medium,
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -373,7 +408,7 @@ private fun OffCentreSummaryCard(res: OffCentreTestResult) {
 @Composable
 private fun RepeatabilitySummaryCard(res: RepeatabilityTestResult) {
     Surface(
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        color = Color(0xFFF5F5F5),
         shape = MaterialTheme.shapes.medium,
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -404,13 +439,19 @@ private fun RepeatabilitySummaryCard(res: RepeatabilityTestResult) {
                 ValueBox(title = "Range (Max - Min)", value = "%.2fg".format(res.range), modifier = Modifier.weight(1f))
                 ValueBox(title = "Min / Max", value = "%.2f / %.2f".format(res.minReading, res.maxReading), modifier = Modifier.weight(1f))
             }
+
+            if (res.maxZeroReturn != null) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ValueBox(title = "Max Zero Return", value = "%.2fg".format(res.maxZeroReturn), modifier = Modifier.weight(1f))
+                }
+            }
         }
     }
 }
 
 @Composable
 private fun DevBadge(label: String, dev: Double, modifier: Modifier = Modifier) {
-    Surface(tonalElevation = 1.dp, shape = MaterialTheme.shapes.extraSmall, modifier = modifier) {
+    Surface(color = Color(0xFFEEEEEE), shape = MaterialTheme.shapes.extraSmall, modifier = modifier) {
         Column(modifier = Modifier.padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(label, style = MaterialTheme.typography.labelSmall)
             Text("Δ ${"%.2f".format(dev)}", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
@@ -420,7 +461,7 @@ private fun DevBadge(label: String, dev: Double, modifier: Modifier = Modifier) 
 
 @Composable
 private fun ValueBox(title: String, value: String, modifier: Modifier = Modifier) {
-    Surface(tonalElevation = 2.dp, shape = MaterialTheme.shapes.medium, modifier = modifier) {
+    Surface(color = Color(0xFFF5F5F5), shape = MaterialTheme.shapes.medium, modifier = modifier) {
         Column(modifier = Modifier.padding(8.dp)) {
             Text(title, style = MaterialTheme.typography.labelSmall)
             Text(value, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)

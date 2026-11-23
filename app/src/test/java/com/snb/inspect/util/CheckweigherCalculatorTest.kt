@@ -129,12 +129,16 @@ class CheckweigherCalculatorTest {
             r1Str = "200.0",
             r2Str = "200.05",
             r3Str = "199.98",
+            z1Str = "0.0",
+            z2Str = "0.01",
+            z3Str = "-0.01",
             scaleIntervalStr = "0.1"
         )
 
         assertNotNull(res)
         assertEquals(200.01, res!!.mean, 0.01)
         assertEquals(0.07, res.range, 0.01)
+        assertEquals(0.01, res.maxZeroReturn!!, 0.01)
         assertTrue(res.isPass)
     }
 }

@@ -180,7 +180,7 @@ fun CalCwTolerancesAndAssessment(viewModel: CalibrationCheckweigherViewModel) {
 
 @Composable
 private fun DisplayPill(title: String, value: String, modifier: Modifier = Modifier) {
-    Surface(tonalElevation = 2.dp, shape = MaterialTheme.shapes.medium, modifier = modifier) {
+    Surface(color = Color(0xFFF5F5F5), shape = MaterialTheme.shapes.medium, modifier = modifier) {
         Column(modifier = Modifier.padding(8.dp)) {
             Text(title, style = MaterialTheme.typography.labelSmall)
             Text(value, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)

@@ -1291,11 +1291,20 @@ class CalibrationCheckweigherViewModel(
     fun setStaticTestRepeatability1(index: Int, v: String) {
         updateStaticTestSet(index) { it.copy(repeatabilityReading1 = com.snb.inspect.core.InputTransforms.decimal(v)) }
     }
+    fun setStaticTestRepeatabilityZero1(index: Int, v: String) {
+        updateStaticTestSet(index) { it.copy(repeatabilityZero1 = com.snb.inspect.core.InputTransforms.decimal(v)) }
+    }
     fun setStaticTestRepeatability2(index: Int, v: String) {
         updateStaticTestSet(index) { it.copy(repeatabilityReading2 = com.snb.inspect.core.InputTransforms.decimal(v)) }
     }
+    fun setStaticTestRepeatabilityZero2(index: Int, v: String) {
+        updateStaticTestSet(index) { it.copy(repeatabilityZero2 = com.snb.inspect.core.InputTransforms.decimal(v)) }
+    }
     fun setStaticTestRepeatability3(index: Int, v: String) {
         updateStaticTestSet(index) { it.copy(repeatabilityReading3 = com.snb.inspect.core.InputTransforms.decimal(v)) }
+    }
+    fun setStaticTestRepeatabilityZero3(index: Int, v: String) {
+        updateStaticTestSet(index) { it.copy(repeatabilityZero3 = com.snb.inspect.core.InputTransforms.decimal(v)) }
     }
 
     private val _offCentreLoadingTestResultAsFound = mutableStateOf("")
@@ -1325,6 +1334,9 @@ class CalibrationCheckweigherViewModel(
                 r1Str = s.repeatabilityReading1,
                 r2Str = s.repeatabilityReading2,
                 r3Str = s.repeatabilityReading3,
+                z1Str = s.repeatabilityZero1,
+                z2Str = s.repeatabilityZero2,
+                z3Str = s.repeatabilityZero3,
                 scaleIntervalStr = interval
             )
             com.snb.inspect.util.EvaluatedStaticTestSet(
@@ -1623,8 +1635,11 @@ class CalibrationCheckweigherViewModel(
             s.corner3.isNotBlank() &&
             s.corner4.isNotBlank() &&
             s.repeatabilityReading1.isNotBlank() &&
+            s.repeatabilityZero1.isNotBlank() &&
             s.repeatabilityReading2.isNotBlank() &&
-            s.repeatabilityReading3.isNotBlank()
+            s.repeatabilityZero2.isNotBlank() &&
+            s.repeatabilityReading3.isNotBlank() &&
+            s.repeatabilityZero3.isNotBlank()
         }
         validMap["CwStaticTestAsFound"] = isStaticTestValid
 
