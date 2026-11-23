@@ -5,6 +5,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.snb.inspect.calibrationViewModels.CalibrationMetalDetectorConveyorViewModel
+import com.snb.inspect.dataClasses.MeasuringEquipmentLocal
 import com.snb.inspect.formModules.CalibrationHeader
 import com.snb.inspect.formModules.LabeledDropdownWithHelp
 import com.snb.inspect.ui.theme.FormSpacer
@@ -14,6 +15,8 @@ import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 fun CalMetalDetectorConveyorEquipmentUsed(
     viewModel: CalibrationMetalDetectorConveyorViewModel
 ) {
+    val userFusionId by viewModel.userFusionId.collectAsState()
+
     // Collecting flows/states for the 3 pieces of equipment
     val selectedOscilloscopeId by viewModel.equipmentOscilloscopeId
     val selectedMultimeterId by viewModel.equipmentMultimeterId
@@ -24,15 +27,22 @@ fun CalMetalDetectorConveyorEquipmentUsed(
     val multimeterList by viewModel.multimeters.collectAsState(initial = emptyList())
     val tachometerList by viewModel.tachometers.collectAsState(initial = emptyList())
 
+    fun formatLabel(item: MeasuringEquipmentLocal): String {
+        val isMine = userFusionId != null && item.employeeID == userFusionId
+        val prefix = if (isMine) "⭐ " else ""
+        val suffix = if (isMine) " (Assigned to me)" else ""
+        return "$prefix${item.manufacturer} ${item.model} (${item.serialNumber})$suffix"
+    }
+
     // Convert objects to display strings for dropdowns
-    val oscilloscopeOptions = oscilloscopeList.map { "${it.manufacturer} ${it.model} (${it.serialNumber})" }
-    val multimeterOptions = multimeterList.map { "${it.manufacturer} ${it.model} (${it.serialNumber})" }
-    val tachometerOptions = tachometerList.map { "${it.manufacturer} ${it.model} (${it.serialNumber})" }
+    val oscilloscopeOptions = oscilloscopeList.map { formatLabel(it) }
+    val multimeterOptions = multimeterList.map { formatLabel(it) }
+    val tachometerOptions = tachometerList.map { formatLabel(it) }
 
     // Find current display strings based on saved IDs
-    val selectedOscilloscopeStr = oscilloscopeList.find { it.id == selectedOscilloscopeId }?.let { "${it.manufacturer} ${it.model} (${it.serialNumber})" } ?: ""
-    val selectedMultimeterStr = multimeterList.find { it.id == selectedMultimeterId }?.let { "${it.manufacturer} ${it.model} (${it.serialNumber})" } ?: ""
-    val selectedTachometerStr = tachometerList.find { it.id == selectedTachometerId }?.let { "${it.manufacturer} ${it.model} (${it.serialNumber})" } ?: ""
+    val selectedOscilloscopeStr = oscilloscopeList.find { it.id == selectedOscilloscopeId }?.let { formatLabel(it) } ?: ""
+    val selectedMultimeterStr = multimeterList.find { it.id == selectedMultimeterId }?.let { formatLabel(it) } ?: ""
+    val selectedTachometerStr = tachometerList.find { it.id == selectedTachometerId }?.let { formatLabel(it) } ?: ""
 
     // Screen is always "ready" as fields are optional/have N/A toggles
     LaunchedEffect(Unit) {
@@ -57,7 +67,7 @@ fun CalMetalDetectorConveyorEquipmentUsed(
                     options = oscilloscopeOptions,
                     selectedOption = selectedOscilloscopeStr,
                     onSelectionChange = { selection ->
-                        val id = oscilloscopeList.find { "${it.manufacturer} ${it.model} (${it.serialNumber})" == selection }?.id
+                        val id = oscilloscopeList.find { formatLabel(it) == selection }?.id
                         viewModel.setEquipmentOscilloscopeId(id)
                     },
                     helpText = "Select the oscilloscope used during calibration.",
@@ -76,7 +86,7 @@ fun CalMetalDetectorConveyorEquipmentUsed(
                     options = multimeterOptions,
                     selectedOption = selectedMultimeterStr,
                     onSelectionChange = { selection ->
-                        val id = multimeterList.find { "${it.manufacturer} ${it.model} (${it.serialNumber})" == selection }?.id
+                        val id = multimeterList.find { formatLabel(it) == selection }?.id
                         viewModel.setEquipmentMultimeterId(id)
                     },
                     helpText = "Select the multimeter used during calibration.",
@@ -95,7 +105,7 @@ fun CalMetalDetectorConveyorEquipmentUsed(
                     options = tachometerOptions,
                     selectedOption = selectedTachometerStr,
                     onSelectionChange = { selection ->
-                        val id = tachometerList.find { "${it.manufacturer} ${it.model} (${it.serialNumber})" == selection }?.id
+                        val id = tachometerList.find { formatLabel(it) == selection }?.id
                         viewModel.setEquipmentTachometerId(id)
                     },
                     helpText = "Select the tachometer used during calibration.",

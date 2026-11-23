@@ -124,6 +124,12 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
         else FetchResult.Failure("Uploaded $uploaded. Failed: ${failed.joinToString()}")
     }
 
+    private fun normalizeSensitivityForCsv(input: Any?): String {
+        if (input == null) return ""
+        val textWithoutSpaces = input.toString().replace("\\s+".toRegex(), "")
+        return normalizeForCsv(textWithoutSpaces)
+    }
+
     private fun normalizeForCsv(input: Any?): String {
         if (input == null) return ""
         var text = input.toString()
@@ -184,22 +190,22 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.detectionSettingAsFound7,
                 row.detectionSettingAsFound8,
                 row.detectionSettingAsFoundEngineerNotes,
-                row.sensitivityRequirementFerrous,
-                row.sensitivityRequirementNonFerrous,
-                row.sensitivityRequirementStainless,
+                normalizeSensitivityForCsv(row.sensitivityRequirementFerrous),
+                normalizeSensitivityForCsv(row.sensitivityRequirementNonFerrous),
+                normalizeSensitivityForCsv(row.sensitivityRequirementStainless),
                 row.sensitivityRequirementEngineerNotes,
                 row.sensitivityAccessRestriction,
-                row.sensitivityAsFoundFerrous,
+                normalizeSensitivityForCsv(row.sensitivityAsFoundFerrous),
                 row.sampleCertificateNumberAsFoundFerrous,
                 "${ row.detectRejectAsFoundFerrousLeading } (${row.peakSignalAsFoundFerrousLeading})".trim(),
                 "${ row.detectRejectAsFoundFerrousMiddle } (${row.peakSignalAsFoundFerrousMiddle})".trim(),
                 "${ row.detectRejectAsFoundFerrousTrailing } (${row.peakSignalAsFoundFerrousTrailing})".trim(),
-                row.sensitivityAsFoundNonFerrous,
+                normalizeSensitivityForCsv(row.sensitivityAsFoundNonFerrous),
                 row.sampleCertificateNumberAsFoundNonFerrous,
                 "${row.detectRejectAsFoundNonFerrousLeading} (${row.peakSignalAsFoundNonFerrousLeading})".trim(),
                 "${row.detectRejectAsFoundNonFerrousMiddle} (${row.peakSignalAsFoundNonFerrousMiddle})".trim(),
                 "${row.detectRejectAsFoundNonFerrousTrailing} (${row.peakSignalAsFoundNonFerrousTrailing})".trim(),
-                row.sensitivityAsFoundStainless,
+                normalizeSensitivityForCsv(row.sensitivityAsFoundStainless),
                 row.sampleCertificateNumberAsFoundStainless,
                 "${row.detectRejectAsFoundStainlessLeading} (${row.peakSignalAsFoundStainlessLeading})".trim(),
                 "${row.detectRejectAsFoundStainlessMiddle} (${row.peakSignalAsFoundStainlessMiddle})".trim(),
@@ -208,19 +214,19 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.ferrousAsFoundEngineerNotes,
                 row.nonFerrousAsFoundEngineerNotes,
                 row.stainlessAsFoundEngineerNotes,
-                row.sensitivityAsLeftFerrous,
+                normalizeSensitivityForCsv(row.sensitivityAsLeftFerrous),
                 row.sampleCertificateNumberFerrous,
                 "${row.detectRejectFerrousLeading} (${row.detectRejectFerrousLeadingPeakSignal})".trim(),
                 "${row.detectRejectFerrousMiddle} (${row.detectRejectFerrousMiddlePeakSignal})".trim(),
                 "${row.detectRejectFerrousTrailing} (${row.detectRejectFerrousTrailingPeakSignal})".trim(),
                 row.ferrousTestEngineerNotes,
-                row.sensitivityAsLeftNonFerrous,
+                normalizeSensitivityForCsv(row.sensitivityAsLeftNonFerrous),
                 row.sampleCertificateNumberNonFerrous,
                 "${row.detectRejectNonFerrousLeading} (${row.detectRejectNonFerrousLeadingPeakSignal})".trim(),
                 "${row.detectRejectNonFerrousMiddle} (${row.detectRejectNonFerrousMiddlePeakSignal})".trim(),
                 "${row.detectRejectNonFerrousTrailing} (${row.detectRejectNonFerrousTrailingPeakSignal})".trim(),
                 row.nonFerrousTestEngineerNotes,
-                row.sensitivityAsLeftStainless,
+                normalizeSensitivityForCsv(row.sensitivityAsLeftStainless),
                 row.sampleCertificateNumberStainless,
                 "${row.detectRejectStainlessLeading} (${row.detectRejectStainlessLeadingPeakSignal})".trim(),
                 "${row.detectRejectStainlessMiddle} (${row.detectRejectStainlessMiddlePeakSignal})".trim(),
@@ -333,10 +339,10 @@ class MetalDetectorConveyorCalibrationRepository(private val calibrationDao: Met
                 row.binDoorEngineerNotes,
                 row.operatorName,
                 row.operatorTestWitnessed,
-                row.operatorTestResultFerrous,
-                row.operatorTestResultNonFerrous,
-                row.operatorTestResultStainless,
-                row.operatorTestResultLargeMetal,
+                normalizeSensitivityForCsv(row.operatorTestResultFerrous),
+                normalizeSensitivityForCsv(row.operatorTestResultNonFerrous),
+                normalizeSensitivityForCsv(row.operatorTestResultStainless),
+                normalizeSensitivityForCsv(row.operatorTestResultLargeMetal),
                 row.operatorTestResultCertNumberFerrous,
                 row.operatorTestResultCertNumberNonFerrous,
                 row.operatorTestResultCertNumberStainless,

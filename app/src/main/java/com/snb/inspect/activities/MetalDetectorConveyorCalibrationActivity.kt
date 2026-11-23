@@ -33,6 +33,7 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
     private val systemTypeDAO by lazy { db.systemTypeDAO() }
     private val customerDAO by lazy { db.customerDao() }
     private val measuringEquipmentDAO by lazy { db.measuringEquipmentDAO() }
+    private val userDao by lazy { db.userDao() }
 
     // API / repos
     private val apiService: ApiService by lazy { RetrofitClient.instance }
@@ -93,6 +94,7 @@ class MetalDetectorConveyorCalibrationActivity : ComponentActivity() {
             customersDao = customerDAO,
             measuringEquipmentRepository = measuringEquipmentRepository,
             measuringEquipmentDAO = measuringEquipmentDAO,
+            userDao = userDao,
             apiService = apiService,
             calibrationId = calibrationId,
             system = system,

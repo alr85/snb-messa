@@ -230,6 +230,7 @@ class CheckweigherCalibrationRepository(private val calibrationDao: Checkweigher
                 cal.engineerTestWeightId,
                 cal.beltSpeed,
                 cal.tareConfiguration,
+                cal.isStaticRefGrossWeight,
                 cal.operatingConditionsNotes,
                 cal.requiredPassesCount,
                 cal.nominalQuantityAsFound,

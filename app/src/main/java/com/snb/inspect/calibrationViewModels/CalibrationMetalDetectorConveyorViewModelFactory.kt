@@ -9,6 +9,7 @@ import com.snb.inspect.daos.MeasuringEquipmentDAO
 import com.snb.inspect.daos.MetalDetectorConveyorCalibrationDAO
 import com.snb.inspect.daos.MetalDetectorSystemsDAO
 import com.snb.inspect.daos.SystemTypeDAO
+import com.snb.inspect.daos.UserDao
 import com.snb.inspect.dataClasses.MetalDetectorWithFullDetails
 import com.snb.inspect.repositories.MeasuringEquipmentRepository
 import com.snb.inspect.repositories.MetalDetectorConveyorCalibrationRepository
@@ -27,6 +28,7 @@ class CalibrationMetalDetectorConveyorViewModelFactory(
     private val customersDao: CustomerDAO,
     private val measuringEquipmentRepository: MeasuringEquipmentRepository,
     private val measuringEquipmentDAO: MeasuringEquipmentDAO,
+    private val userDao: UserDao,
     private val apiService: ApiService,
     private val calibrationId: String,
     private val system: MetalDetectorWithFullDetails,
@@ -57,6 +59,7 @@ class CalibrationMetalDetectorConveyorViewModelFactory(
                 repository = repository,
                 measuringEquipmentRepository = measuringEquipmentRepository,
                 measuringEquipmentDAO = measuringEquipmentDAO,
+                userDao = userDao,
                 calibrationId = calibrationId,
                 system = system,
                 detectionSetting1label = detectionSetting1label,

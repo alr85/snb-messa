@@ -62,10 +62,13 @@ import com.snb.inspect.daos.MeasuringEquipmentDAO
 import com.snb.inspect.daos.MetalDetectorConveyorCalibrationDAO
 import com.snb.inspect.daos.MetalDetectorSystemsDAO
 import com.snb.inspect.daos.SystemTypeDAO
+import com.snb.inspect.daos.UserDao
+import com.snb.inspect.dataClasses.MeasuringEquipmentLocal
 import com.snb.inspect.dataClasses.MetalDetectorWithFullDetails
 import com.snb.inspect.dataClasses.RetailerSensitivity
 import com.snb.inspect.formModules.ConditionState
 import com.snb.inspect.formModules.YesNoState
+import com.snb.inspect.PreferencesHelper
 import com.snb.inspect.repositories.MeasuringEquipmentRepository
 import com.snb.inspect.repositories.MetalDetectorConveyorCalibrationRepository
 import com.snb.inspect.repositories.MetalDetectorSystemsRepository
@@ -73,6 +76,8 @@ import com.snb.inspect.repositories.RetailerSensitivitiesRepository
 import com.snb.inspect.util.InAppLogger
 import com.snb.inspect.util.toConditionState
 import com.snb.inspect.util.toYesNoState
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -94,6 +99,7 @@ class CalibrationMetalDetectorConveyorViewModel(
     private val repository: MetalDetectorSystemsRepository,
     private val measuringEquipmentRepository: MeasuringEquipmentRepository,
     private val measuringEquipmentDAO: MeasuringEquipmentDAO,
+    private val userDao: UserDao,
     calibrationId: String, detectionSetting1label: String,
     detectionSetting2label: String,
     detectionSetting3label: String,
@@ -112,9 +118,22 @@ class CalibrationMetalDetectorConveyorViewModel(
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private val _userFusionId = MutableStateFlow<Int?>(null)
+    val userFusionId: StateFlow<Int?> = _userFusionId
+
     private var refreshJob: kotlinx.coroutines.Job? = null
 
     init {
+        viewModelScope.launch {
+            val (username, _, _) = PreferencesHelper.getCredentials(context)
+            val user = userDao.getUserByMeaId(engineerId) ?: username?.let { userDao.getUserByUsername(it) }
+            val resolvedFusionId = user?.fusionId ?: engineerId
+            _userFusionId.value = resolvedFusionId
+            val logMsg = "CalMdViewModel: resolved user fusionId=$resolvedFusionId (user.fusionId=${user?.fusionId}, engineerId=$engineerId, username=$username)"
+            android.util.Log.d("CalMdViewModel", logMsg)
+            InAppLogger.d(logMsg)
+        }
+
         viewModelScope.launch {
             _isLoading.value = true
             InAppLogger.d("MD Calibration started. Checking for existing calibration...")
@@ -2179,7 +2198,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
 
     fun setSensitivityRequirementFerrous(newValue: String) {
-        _sensitivityRequirementFerrous.value = newValue
+        _sensitivityRequirementFerrous.value = newValue.replace(" ", "")
         autoUpdateFerrousPvResult()
     }
 
@@ -2188,7 +2207,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
 
     fun setSensitivityRequirementNonFerrous(newValue: String) {
-        _sensitivityRequirementNonFerrous.value = newValue
+        _sensitivityRequirementNonFerrous.value = newValue.replace(" ", "")
         autoUpdateNonFerrousPvResult()
     }
 
@@ -2197,7 +2216,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
 
     fun setSensitivityRequirementStainless(newValue: String) {
-        _sensitivityRequirementStainless.value = newValue
+        _sensitivityRequirementStainless.value = newValue.replace(" ", "")
         autoUpdateStainlessPvResult()
     }
 
@@ -2273,7 +2292,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
 
     fun setSensitivityAsFoundFerrous(value: String) {
-        _sensitivityAsFoundFerrous.value = value}
+        _sensitivityAsFoundFerrous.value = value.replace(" ", "")}
 
 
     // Sample Certificate Number
@@ -2347,7 +2366,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
 
     fun setSensitivityAsFoundNonFerrous(value: String) {
-        _sensitivityAsFoundNonFerrous.value = value}
+        _sensitivityAsFoundNonFerrous.value = value.replace(" ", "")}
 
 
     // Sample Certificate Number
@@ -2421,7 +2440,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
 
     fun setSensitivityAsFoundStainless(value: String) {
-        _sensitivityAsFoundStainless.value = value}
+        _sensitivityAsFoundStainless.value = value.replace(" ", "")}
 
 
     // Sample Certificate Number
@@ -2496,7 +2515,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
 
     fun setSensitivityAsLeftFerrous(value: String) {
-        _sensitivityAsLeftFerrous.value = value
+        _sensitivityAsLeftFerrous.value = value.replace(" ", "")
         autoUpdateFerrousPvResult()
     }
 
@@ -2587,7 +2606,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
 
     fun setSensitivityAsLeftNonFerrous(newSensitivityAsLeftNonFerrous: String) {
-        _sensitivityAsLeftNonFerrous.value = newSensitivityAsLeftNonFerrous
+        _sensitivityAsLeftNonFerrous.value = newSensitivityAsLeftNonFerrous.replace(" ", "")
         autoUpdateNonFerrousPvResult()
     }
 
@@ -2686,7 +2705,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
 
     fun setSensitivityAsLeftStainless(newSensitivityAsLeftStainless: String) {
-        _sensitivityAsLeftStainless.value = newSensitivityAsLeftStainless
+        _sensitivityAsLeftStainless.value = newSensitivityAsLeftStainless.replace(" ", "")
         autoUpdateStainlessPvResult()
     }
 
@@ -3926,7 +3945,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
 
     fun setOperatorTestResultFerrous(newValue: String) {
-        _operatorTestResultFerrous.value = newValue
+        _operatorTestResultFerrous.value = newValue.replace(" ", "")
     }
 
     private val _operatorTestResultNonFerrous = mutableStateOf("")
@@ -3934,7 +3953,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
 
     fun setOperatorTestResultNonFerrous(newValue: String) {
-        _operatorTestResultNonFerrous.value = newValue
+        _operatorTestResultNonFerrous.value = newValue.replace(" ", "")
     }
 
     private val _operatorTestResultStainless = mutableStateOf("")
@@ -3942,7 +3961,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
 
     fun setOperatorTestResultStainless(newValue: String) {
-        _operatorTestResultStainless.value = newValue
+        _operatorTestResultStainless.value = newValue.replace(" ", "")
     }
 
     private val _operatorTestResultLargeMetal = mutableStateOf("")
@@ -3950,7 +3969,7 @@ class CalibrationMetalDetectorConveyorViewModel(
 
 
     fun setOperatorTestResultLargeMetal(newValue: String) {
-        _operatorTestResultLargeMetal.value = newValue
+        _operatorTestResultLargeMetal.value = newValue.replace(" ", "")
     }
 
     private val _operatorTestResultCertNumberFerrous = mutableStateOf("")
@@ -4129,9 +4148,41 @@ class CalibrationMetalDetectorConveyorViewModel(
     val equipmentTachometerId: State<Int?> = _equipmentTachometerId
 
     // These provide the data for the dropdowns
-    val oscilloscopes = measuringEquipmentDAO.getEquipmentByType(1)
-    val multimeters = measuringEquipmentDAO.getEquipmentByType(2)
-    val tachometers = measuringEquipmentDAO.getEquipmentByType(3)
+    val oscilloscopes: Flow<List<MeasuringEquipmentLocal>> = combine(
+        measuringEquipmentDAO.getEquipmentByType(1),
+        _userFusionId
+    ) { list, fusionId ->
+        if (fusionId == null) list
+        else list.sortedWith(
+            compareByDescending<MeasuringEquipmentLocal> { it.employeeID == fusionId }
+                .thenBy { it.manufacturer }
+                .thenBy { it.model }
+        )
+    }
+
+    val multimeters: Flow<List<MeasuringEquipmentLocal>> = combine(
+        measuringEquipmentDAO.getEquipmentByType(2),
+        _userFusionId
+    ) { list, fusionId ->
+        if (fusionId == null) list
+        else list.sortedWith(
+            compareByDescending<MeasuringEquipmentLocal> { it.employeeID == fusionId }
+                .thenBy { it.manufacturer }
+                .thenBy { it.model }
+        )
+    }
+
+    val tachometers: Flow<List<MeasuringEquipmentLocal>> = combine(
+        measuringEquipmentDAO.getEquipmentByType(3),
+        _userFusionId
+    ) { list, fusionId ->
+        if (fusionId == null) list
+        else list.sortedWith(
+            compareByDescending<MeasuringEquipmentLocal> { it.employeeID == fusionId }
+                .thenBy { it.manufacturer }
+                .thenBy { it.model }
+        )
+    }
 
     fun setEquipmentOscilloscopeId(id: Int?) { _equipmentOscilloscopeId.value = id }
     fun setEquipmentMultimeterId(id: Int?) { _equipmentMultimeterId.value = id }

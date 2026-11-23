@@ -2,30 +2,30 @@ package com.snb.inspect.dataClasses
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-
+import com.google.gson.annotations.SerializedName
 
 // The API response model matching your SQL Server design
 data class ApiMeasuringEquipment(
-    val Id: Int,
-    val DeviceTypeID: Int,
-    val Manufacturer: String,
-    val Model: String,
-    val SerialNumber: String,
-    val CalibrationID: Int?,
-    val LastCalibrationDate: String?,
-    val CalibrationDueDate: String?,
-    val CertificateNumber: String?,
-    val AssetTag: String?,
-    val Description: String?,
-    val Location: String?,
-    val ServiceStatus: String?,
-    val Notes: String?,
-    val IsActive: Boolean,
-    val CreatedAt: String,
-    val UpdatedAt: String?,
-    val EmployeeID: Int?,
-    val CreatedBy: Int?,
-    val ExternallyCalibrated: Boolean
+    @SerializedName("id", alternate = ["Id", "ID"]) val Id: Int,
+    @SerializedName("deviceTypeID", alternate = ["DeviceTypeID", "deviceTypeId", "DeviceTypeId"]) val DeviceTypeID: Int,
+    @SerializedName("manufacturer", alternate = ["Manufacturer"]) val Manufacturer: String,
+    @SerializedName("model", alternate = ["Model"]) val Model: String,
+    @SerializedName("serialNumber", alternate = ["SerialNumber"]) val SerialNumber: String,
+    @SerializedName("calibrationID", alternate = ["CalibrationID", "calibrationId", "CalibrationId"]) val CalibrationID: Int?,
+    @SerializedName("lastCalibrationDate", alternate = ["LastCalibrationDate"]) val LastCalibrationDate: String?,
+    @SerializedName("calibrationDueDate", alternate = ["CalibrationDueDate"]) val CalibrationDueDate: String?,
+    @SerializedName("certificateNumber", alternate = ["CertificateNumber"]) val CertificateNumber: String?,
+    @SerializedName("assetTag", alternate = ["AssetTag"]) val AssetTag: String?,
+    @SerializedName("description", alternate = ["Description"]) val Description: String?,
+    @SerializedName("location", alternate = ["Location"]) val Location: String?,
+    @SerializedName("serviceStatus", alternate = ["ServiceStatus"]) val ServiceStatus: String?,
+    @SerializedName("notes", alternate = ["Notes"]) val Notes: String?,
+    @SerializedName("isActive", alternate = ["IsActive", "Isactive"]) val IsActive: Boolean,
+    @SerializedName("createdAt", alternate = ["CreatedAt"]) val CreatedAt: String,
+    @SerializedName("updatedAt", alternate = ["UpdatedAt"]) val UpdatedAt: String?,
+    @SerializedName("employeeID", alternate = ["EmployeeID", "employeeId", "EmployeeId"]) val EmployeeID: Int?,
+    @SerializedName("createdBy", alternate = ["CreatedBy"]) val CreatedBy: Int?,
+    @SerializedName("externallyCalibrated", alternate = ["ExternallyCalibrated"]) val ExternallyCalibrated: Boolean
 )
 
 // The Room Database model

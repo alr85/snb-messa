@@ -6,18 +6,6 @@ import kotlin.math.sqrt
 
 enum class PassFail { Pass, Fail }
 
-enum class ToleranceSource {
-    MANUFACTURER,
-    CUSTOMER,
-    SNB_GUIDANCE
-}
-
-enum class CheckweigherStatus {
-    PASS,
-    FAIL,
-    FURTHER_ASSESSMENT_REQUIRED
-}
-
 data class CheckweigherAccuracyResult(
     val tNom: Double,
     val tne: Double,
@@ -30,80 +18,6 @@ data class CheckweigherAccuracyResult(
 
     val knownMassPassFail: PassFail?
 )
-
-data class CheckweigherCalculationResult(
-    val nominalWeight: Double,
-    val referenceWeight: Double,
-    val mean: Double?,
-    val meanDynamicError: Double?,
-    val sampleStdDev: Double?,
-    val sixSigmaZoi: Double?,
-    val tne: Double,
-    val benchmark20PercentTne: Double,
-    val benchmark25PercentTne: Double,
-    val overallStatus: CheckweigherStatus,
-    val exceeds25PercentTneLimit: Boolean,
-    val additionalSetPointAllowance: Double?
-)
-
-object CheckweigherCalculator {
-    private fun roundTo(x: Double, dp: Int): Double {
-        val m = Math.pow(10.0, dp.toDouble())
-        return round(x * m) / m
-    }
-
-    fun evaluate(
-        nominalWeight: Double,
-        referenceWeight: Double,
-        passes: List<Double>,
-        effectiveTne: Double?,
-        toleranceSource: ToleranceSource,
-        generalRejectPassed: Boolean
-    ): CheckweigherCalculationResult {
-        val tne = effectiveTne ?: CheckweigherAccuracyCalculator.tneFromGovTable(nominalWeight)
-        val benchmark20PercentTne = roundTo(tne * 0.20, 3)
-        val benchmark25PercentTne = roundTo(tne * 0.25, 3)
-
-        val cleanPasses = passes.filterNotNull()
-        val mean = if (cleanPasses.isNotEmpty()) cleanPasses.sum() / cleanPasses.size else null
-        val meanDynamicError = mean?.let { roundTo(it - nominalWeight, 3) }
-
-        val sdRaw = if (cleanPasses.size >= 2) {
-            val m = mean ?: 0.0
-            val variance = cleanPasses.sumOf { (it - m) * (it - m) } / (cleanPasses.size - 1)
-            sqrt(variance)
-        } else null
-        val sampleStdDev = sdRaw?.let { roundTo(it, 3) }
-        val sixSigmaZoi = sampleStdDev?.let { roundTo(it * 6.0, 3) }
-
-        val exceeds25PercentTneLimit = sixSigmaZoi != null && sixSigmaZoi > benchmark25PercentTne
-        val additionalSetPointAllowance = if (exceeds25PercentTneLimit && sixSigmaZoi != null) {
-            roundTo(sixSigmaZoi - benchmark25PercentTne, 3)
-        } else null
-
-        val overallStatus = when {
-            !generalRejectPassed -> CheckweigherStatus.FAIL
-            exceeds25PercentTneLimit -> CheckweigherStatus.FURTHER_ASSESSMENT_REQUIRED
-            sixSigmaZoi != null && sixSigmaZoi <= benchmark20PercentTne -> CheckweigherStatus.PASS
-            else -> CheckweigherStatus.PASS
-        }
-
-        return CheckweigherCalculationResult(
-            nominalWeight = nominalWeight,
-            referenceWeight = referenceWeight,
-            mean = mean,
-            meanDynamicError = meanDynamicError,
-            sampleStdDev = sampleStdDev,
-            sixSigmaZoi = sixSigmaZoi,
-            tne = tne,
-            benchmark20PercentTne = benchmark20PercentTne,
-            benchmark25PercentTne = benchmark25PercentTne,
-            overallStatus = overallStatus,
-            exceeds25PercentTneLimit = exceeds25PercentTneLimit,
-            additionalSetPointAllowance = additionalSetPointAllowance
-        )
-    }
-}
 
 object CheckweigherAccuracyCalculator {
 

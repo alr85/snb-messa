@@ -98,6 +98,12 @@ class SensitivityOptimisationValidationRepository(
         else FetchResult.Failure("Uploaded $uploaded. Failed: ${failed.joinToString()}")
     }
 
+    private fun normalizeSensitivity(input: Any?): String {
+        if (input == null) return ""
+        val textWithoutSpaces = input.toString().replace("\\s+".toRegex(), "")
+        return normalize(textWithoutSpaces)
+    }
+
     private fun normalize(input: Any?): String {
         if (input == null) return ""
         var text = input.toString().replace(";", ",").replace("\n", " ").replace("\r", "")
@@ -136,7 +142,7 @@ class SensitivityOptimisationValidationRepository(
                 sov.productWeight,
                 sov.productComments,
 
-                sov.sensitivityAsLeftFerrous,
+                normalizeSensitivity(sov.sensitivityAsLeftFerrous),
                 sov.sampleCertAsLeftFerrous,
                 sov.val1LeadingSuccesses,
                 sov.val1MiddleSuccesses,
@@ -145,7 +151,7 @@ class SensitivityOptimisationValidationRepository(
                 sov.minSignalAsLeftFerrousMiddle,
                 sov.minSignalAsLeftFerrousTrailing,
 
-                sov.sensitivityAsLeftNonFerrous,
+                normalizeSensitivity(sov.sensitivityAsLeftNonFerrous),
                 sov.sampleCertAsLeftNonFerrous,
                 sov.val2LeadingSuccesses,
                 sov.val2MiddleSuccesses,
@@ -154,7 +160,7 @@ class SensitivityOptimisationValidationRepository(
                 sov.minSignalAsLeftNonFerrousMiddle,
                 sov.minSignalAsLeftNonFerrousTrailing,
 
-                sov.sensitivityAsLeftStainless,
+                normalizeSensitivity(sov.sensitivityAsLeftStainless),
                 sov.sampleCertAsLeftStainless,
                 sov.val3LeadingSuccesses,
                 sov.val3MiddleSuccesses,

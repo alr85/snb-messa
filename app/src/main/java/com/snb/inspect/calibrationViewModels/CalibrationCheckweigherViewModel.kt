@@ -1,9 +1,11 @@
 package com.snb.inspect.calibrationViewModels
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.snb.inspect.ApiService
@@ -21,6 +23,8 @@ import com.snb.inspect.util.toSafeString
 import com.snb.inspect.repositories.CheckweigherCalibrationRepository
 import com.snb.inspect.repositories.MetalDetectorSystemsRepository
 import com.snb.inspect.util.InAppLogger
+import com.snb.inspect.util.OffCentreTestResult
+import com.snb.inspect.util.RepeatabilityTestResult
 import com.snb.inspect.util.toConditionState
 import com.snb.inspect.util.toYesNoState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,10 +37,15 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 import com.snb.inspect.daos.CwSystemsDAO
+import com.snb.inspect.daos.UserDao
 import com.snb.inspect.dataClasses.CheckweigherWithFullDetails
+import com.snb.inspect.dataClasses.MeasuringEquipmentLocal
+import com.snb.inspect.PreferencesHelper
 import com.snb.inspect.util.CheckweigherAccuracyCalculator
 import com.snb.inspect.util.CheckweigherAccuracyResult
 import com.snb.inspect.repositories.CheckweigherSystemsRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 
 class CalibrationCheckweigherViewModel(
     private val context: android.content.Context,
@@ -46,6 +55,7 @@ class CalibrationCheckweigherViewModel(
     private val measuringEquipmentDAO: MeasuringEquipmentDAO,
     private val systemsRepository: CheckweigherSystemsRepository,
     private val cwSystemsDAO: CwSystemsDAO,
+    private val userDao: UserDao,
     val calibrationIdString: String,
     val system: CheckweigherWithFullDetails
 ) : ViewModel(), ICalibrationViewModel {
@@ -69,7 +79,20 @@ class CalibrationCheckweigherViewModel(
     private val _screenValidities = MutableStateFlow<Map<String, Boolean>>(emptyMap())
     override val screenValidities: StateFlow<Map<String, Boolean>> = _screenValidities
 
+    private val _userFusionId = MutableStateFlow<Int?>(null)
+    val userFusionId: StateFlow<Int?> = _userFusionId
+
     init {
+        viewModelScope.launch {
+            val (username, _, _) = PreferencesHelper.getCredentials(context)
+            val user = userDao.getUserByMeaId(engineerId) ?: username?.let { userDao.getUserByUsername(it) }
+            val resolvedFusionId = user?.fusionId ?: engineerId
+            _userFusionId.value = resolvedFusionId
+            val logMsg = "CalCwViewModel: resolved user fusionId=$resolvedFusionId (user.fusionId=${user?.fusionId}, engineerId=$engineerId, username=$username)"
+            Log.d("CalCwViewModel", logMsg)
+            InAppLogger.d(logMsg)
+        }
+
         viewModelScope.launch {
             _isLoading.value = true
             val existing = calibrationDao.getCalibrationById(calibrationId.value)
@@ -118,6 +141,7 @@ class CalibrationCheckweigherViewModel(
         _rejectMode.value = cal.rejectMode
         _beltSpeed.value = cal.beltSpeed
         _tareConfiguration.value = cal.tareConfiguration
+        _isStaticRefGrossWeight.value = cal.isStaticRefGrossWeight
         _operatingConditionsNotes.value = cal.operatingConditionsNotes
 
         // Checklist
@@ -235,7 +259,19 @@ class CalibrationCheckweigherViewModel(
         _dynamicPassesAsFound.value = parsePasses(cal.dynamicPassesAsFound)
         _staticScaleWeightAsFound.value = cal.staticScaleWeightAsFound
         _checkweigherWeightAsFound.value = cal.checkweigherWeightAsFound
+
+        _offCentreTestWeightAsFound.value = cal.offCentreTestWeightAsFound
+        _offCentreCentreAsFound.value = cal.offCentreCentreAsFound
+        _offCentreCorner1AsFound.value = cal.offCentreCorner1AsFound
+        _offCentreCorner2AsFound.value = cal.offCentreCorner2AsFound
+        _offCentreCorner3AsFound.value = cal.offCentreCorner3AsFound
+        _offCentreCorner4AsFound.value = cal.offCentreCorner4AsFound
         _offCentreLoadingTestResultAsFound.value = cal.offCentreLoadingTestResultAsFound
+
+        _repeatabilityTestWeightAsFound.value = cal.repeatabilityTestWeightAsFound
+        _repeatabilityReading1AsFound.value = cal.repeatabilityReading1AsFound
+        _repeatabilityReading2AsFound.value = cal.repeatabilityReading2AsFound
+        _repeatabilityReading3AsFound.value = cal.repeatabilityReading3AsFound
         _repeatabilityTestResultAsFound.value = cal.repeatabilityTestResultAsFound
 
         _adjustmentsNotes.value = cal.adjustmentsNotes
@@ -439,6 +475,7 @@ class CalibrationCheckweigherViewModel(
         cal.engineerTestWeightId = _engineerTestWeightId.value
         cal.beltSpeed = _beltSpeed.value
         cal.tareConfiguration = _tareConfiguration.value
+        cal.isStaticRefGrossWeight = _isStaticRefGrossWeight.value
         cal.operatingConditionsNotes = _operatingConditionsNotes.value
 
         cal.requiredPassesCount = _requiredPassesCount.value
@@ -451,8 +488,32 @@ class CalibrationCheckweigherViewModel(
         cal.dynamicMeanErrorAsFound = resFound?.meanDynamicError?.toString() ?: ""
         cal.dynamicSampleStdDevAsFound = resFound?.sampleStdDev?.toString() ?: ""
         cal.dynamicSixSigmaAsFound = resFound?.sixSigmaZoi?.toString() ?: ""
-        cal.offCentreLoadingTestResultAsFound = _offCentreLoadingTestResultAsFound.value
-        cal.repeatabilityTestResultAsFound = _repeatabilityTestResultAsFound.value
+
+        cal.offCentreTestWeightAsFound = _offCentreTestWeightAsFound.value
+        cal.offCentreCentreAsFound = _offCentreCentreAsFound.value
+        cal.offCentreCorner1AsFound = _offCentreCorner1AsFound.value
+        cal.offCentreCorner2AsFound = _offCentreCorner2AsFound.value
+        cal.offCentreCorner3AsFound = _offCentreCorner3AsFound.value
+        cal.offCentreCorner4AsFound = _offCentreCorner4AsFound.value
+        val offCentreRes = evaluatedOffCentreResultAsFound.value
+        cal.offCentreLoadingTestResultAsFound = if (offCentreRes != null) {
+            val statusStr = if (offCentreRes.isPass) "PASS" else "FAIL"
+            "Centre: ${offCentreRes.centre}g, C1: ${offCentreRes.corner1}g, C2: ${offCentreRes.corner2}g, C3: ${offCentreRes.corner3}g, C4: ${offCentreRes.corner4}g (Max Dev: ${offCentreRes.maxDeviation}g - $statusStr)"
+        } else {
+            _offCentreLoadingTestResultAsFound.value
+        }
+
+        cal.repeatabilityTestWeightAsFound = _repeatabilityTestWeightAsFound.value
+        cal.repeatabilityReading1AsFound = _repeatabilityReading1AsFound.value
+        cal.repeatabilityReading2AsFound = _repeatabilityReading2AsFound.value
+        cal.repeatabilityReading3AsFound = _repeatabilityReading3AsFound.value
+        val repRes = evaluatedRepeatabilityResultAsFound.value
+        cal.repeatabilityTestResultAsFound = if (repRes != null) {
+            val statusStr = if (repRes.isPass) "PASS" else "FAIL"
+            "R1: ${repRes.reading1}g, R2: ${repRes.reading2}g, R3: ${repRes.reading3}g (Range: ${repRes.range}g - $statusStr)"
+        } else {
+            _repeatabilityTestResultAsFound.value
+        }
 
         cal.adjustmentsNotes = _adjustmentsNotes.value
 
@@ -1097,6 +1158,10 @@ class CalibrationCheckweigherViewModel(
     val tareConfiguration: State<String> = _tareConfiguration
     fun setTareConfiguration(v: String) { _tareConfiguration.value = v }
 
+    private val _isStaticRefGrossWeight = mutableStateOf(false)
+    val isStaticRefGrossWeight: State<Boolean> = _isStaticRefGrossWeight
+    fun setIsStaticRefGrossWeight(v: Boolean) { _isStaticRefGrossWeight.value = v }
+
     private val _operatingConditionsNotes = mutableStateOf("")
     val operatingConditionsNotes: State<String> = _operatingConditionsNotes
     fun setOperatingConditionsNotes(v: String) { _operatingConditionsNotes.value = v }
@@ -1143,20 +1208,103 @@ class CalibrationCheckweigherViewModel(
     val checkweigherWeightAsFound: State<String> = _checkweigherWeightAsFound
     fun setCheckweigherWeightAsFound(v: String) { _checkweigherWeightAsFound.value = v }
 
+    private val _offCentreTestWeightAsFound = mutableStateOf("")
+    val offCentreTestWeightAsFound: State<String> = _offCentreTestWeightAsFound
+    fun setOffCentreTestWeightAsFound(v: String) { _offCentreTestWeightAsFound.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _offCentreCentreAsFound = mutableStateOf("")
+    val offCentreCentreAsFound: State<String> = _offCentreCentreAsFound
+    fun setOffCentreCentreAsFound(v: String) { _offCentreCentreAsFound.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _offCentreCorner1AsFound = mutableStateOf("")
+    val offCentreCorner1AsFound: State<String> = _offCentreCorner1AsFound
+    fun setOffCentreCorner1AsFound(v: String) { _offCentreCorner1AsFound.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _offCentreCorner2AsFound = mutableStateOf("")
+    val offCentreCorner2AsFound: State<String> = _offCentreCorner2AsFound
+    fun setOffCentreCorner2AsFound(v: String) { _offCentreCorner2AsFound.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _offCentreCorner3AsFound = mutableStateOf("")
+    val offCentreCorner3AsFound: State<String> = _offCentreCorner3AsFound
+    fun setOffCentreCorner3AsFound(v: String) { _offCentreCorner3AsFound.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _offCentreCorner4AsFound = mutableStateOf("")
+    val offCentreCorner4AsFound: State<String> = _offCentreCorner4AsFound
+    fun setOffCentreCorner4AsFound(v: String) { _offCentreCorner4AsFound.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
     private val _offCentreLoadingTestResultAsFound = mutableStateOf("")
     val offCentreLoadingTestResultAsFound: State<String> = _offCentreLoadingTestResultAsFound
     fun setOffCentreLoadingTestResultAsFound(v: String) { _offCentreLoadingTestResultAsFound.value = v }
 
+    private val _repeatabilityTestWeightAsFound = mutableStateOf("")
+    val repeatabilityTestWeightAsFound: State<String> = _repeatabilityTestWeightAsFound
+    fun setRepeatabilityTestWeightAsFound(v: String) { _repeatabilityTestWeightAsFound.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _repeatabilityReading1AsFound = mutableStateOf("")
+    val repeatabilityReading1AsFound: State<String> = _repeatabilityReading1AsFound
+    fun setRepeatabilityReading1AsFound(v: String) { _repeatabilityReading1AsFound.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _repeatabilityReading2AsFound = mutableStateOf("")
+    val repeatabilityReading2AsFound: State<String> = _repeatabilityReading2AsFound
+    fun setRepeatabilityReading2AsFound(v: String) { _repeatabilityReading2AsFound.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _repeatabilityReading3AsFound = mutableStateOf("")
+    val repeatabilityReading3AsFound: State<String> = _repeatabilityReading3AsFound
+    fun setRepeatabilityReading3AsFound(v: String) { _repeatabilityReading3AsFound.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
     private val _repeatabilityTestResultAsFound = mutableStateOf("")
     val repeatabilityTestResultAsFound: State<String> = _repeatabilityTestResultAsFound
     fun setRepeatabilityTestResultAsFound(v: String) { _repeatabilityTestResultAsFound.value = v }
+
+    val evaluatedOffCentreResultAsFound: StateFlow<OffCentreTestResult?> = snapshotFlow {
+        com.snb.inspect.util.CheckweigherCalculator.evaluateOffCentreTest(
+            testWeightStr = _offCentreTestWeightAsFound.value,
+            centreStr = _offCentreCentreAsFound.value,
+            c1Str = _offCentreCorner1AsFound.value,
+            c2Str = _offCentreCorner2AsFound.value,
+            c3Str = _offCentreCorner3AsFound.value,
+            c4Str = _offCentreCorner4AsFound.value,
+            scaleIntervalStr = _scaleInterval.value
+        )
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    val evaluatedRepeatabilityResultAsFound: StateFlow<RepeatabilityTestResult?> = snapshotFlow {
+        com.snb.inspect.util.CheckweigherCalculator.evaluateRepeatabilityTest(
+            testWeightStr = _repeatabilityTestWeightAsFound.value,
+            r1Str = _repeatabilityReading1AsFound.value,
+            r2Str = _repeatabilityReading2AsFound.value,
+            r3Str = _repeatabilityReading3AsFound.value,
+            scaleIntervalStr = _scaleInterval.value
+        )
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     private val _adjustmentsNotes = mutableStateOf("")
     val adjustmentsNotes: State<String> = _adjustmentsNotes
     fun setAdjustmentsNotes(v: String) { _adjustmentsNotes.value = v }
 
     // Equipment
-    val equipmentList = measuringEquipmentDAO.getAllEquipment()
+    val equipmentList: Flow<List<MeasuringEquipmentLocal>> = combine(
+        measuringEquipmentDAO.getEquipmentByType(9),
+        _userFusionId
+    ) { list, fusionId ->
+        val headerMsg = "CalCwViewModel: equipment list count=${list.size}, current user fusionId=$fusionId"
+        Log.d("CalCwViewModel", headerMsg)
+        InAppLogger.d(headerMsg)
+        list.forEach { eq ->
+            val itemMsg = "CalCwViewModel: weight id=${eq.id}, mfr=${eq.manufacturer}, model=${eq.model}, serial=${eq.serialNumber}, empId=${eq.employeeID}, matches=${eq.employeeID == fusionId}"
+            Log.d("CalCwViewModel", itemMsg)
+            InAppLogger.d(itemMsg)
+        }
+        if (fusionId == null) {
+            list
+        } else {
+            list.sortedWith(
+                compareByDescending<MeasuringEquipmentLocal> { it.employeeID == fusionId }
+                    .thenBy { it.manufacturer }
+                    .thenBy { it.model }
+            )
+        }
+    }
 
     // Results As Left
     private val _nominalQuantityAsLeft = mutableStateOf("")
@@ -1315,7 +1463,9 @@ class CalibrationCheckweigherViewModel(
             passes = passes,
             effectiveTne = effectiveTne,
             toleranceSource = tolSrc,
-            generalRejectPassed = genRejectPass
+            generalRejectPassed = genRejectPass,
+            tareConfigString = _tareConfiguration.value,
+            applyTareOffset = _isStaticRefGrossWeight.value
         )
     }.stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, null)
 
@@ -1350,7 +1500,9 @@ class CalibrationCheckweigherViewModel(
             passes = passes,
             effectiveTne = effectiveTne,
             toleranceSource = tolSrc,
-            generalRejectPassed = genRejectPass
+            generalRejectPassed = genRejectPass,
+            tareConfigString = _tareConfiguration.value,
+            applyTareOffset = _isStaticRefGrossWeight.value
         )
     }.stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, null)
 
@@ -1397,7 +1549,6 @@ class CalibrationCheckweigherViewModel(
                 _indicator5colour.value.isNotBlank() && _indicator5label.value.isNotBlank() &&
                 _indicator6colour.value.isNotBlank() && _indicator6label.value.isNotBlank()
 
-        validMap["CwTestProductDetails"] = _productDescription.value.isNotBlank() && _productLength.value.isNotBlank()
         val isStaticRefValid = (_staticScaleMakeModel.value.isNotBlank() || _staticScaleManufacturer.value.isNotBlank()) &&
                 _staticScaleResolution.value.toDoubleOrNull() != null &&
                 _staticScaleCalDate.value.isNotBlank()
@@ -1405,6 +1556,17 @@ class CalibrationCheckweigherViewModel(
         validMap["CwEngineerTestWeight"] = _engineerTestWeightId.value != null
         validMap["CwDynamicTestAsFound"] = _nominalQuantityAsFound.value.isNotBlank() &&
                 _dynamicPassesAsFound.value.take(_requiredPassesCount.value).count { it.isNotBlank() } >= _requiredPassesCount.value
+
+        val isStaticTestValid = _offCentreCentreAsFound.value.isNotBlank() &&
+                _offCentreCorner1AsFound.value.isNotBlank() &&
+                _offCentreCorner2AsFound.value.isNotBlank() &&
+                _offCentreCorner3AsFound.value.isNotBlank() &&
+                _offCentreCorner4AsFound.value.isNotBlank() &&
+                _repeatabilityReading1AsFound.value.isNotBlank() &&
+                _repeatabilityReading2AsFound.value.isNotBlank() &&
+                _repeatabilityReading3AsFound.value.isNotBlank()
+        validMap["CwStaticTestAsFound"] = isStaticTestValid
+
         validMap["CwTolerancesAndAssessment"] = _engineerSetPointAssessmentResolved.value || evaluatedCalculationResultAsFound.value?.overallStatus != com.snb.inspect.util.CheckweigherStatus.FURTHER_ASSESSMENT_REQUIRED
         validMap["CwRejectVerification"] = _generalRejectTestResult.value.isNotBlank()
 
@@ -1457,9 +1619,9 @@ class CalibrationCheckweigherViewModel(
             "CwStaticScaleReference" -> "Static Scale Ref"
             "CwEngineerTestWeight" -> "Test Weight"
             "CwDynamicTestAsFound" -> "Dynamic Test (30 Passes)"
+            "CwStaticTestAsFound" -> "Static Weighing Tests (As Found)"
             "CwTolerancesAndAssessment" -> "Tolerances & Assessment"
             "CwRejectVerification" -> "Reject Verification"
-            "CwStaticTestAsFound" -> "Static Test (Found)"
             "CwAdjustmentsMade" -> "Adjustments"
             "CwDynamicTestAsLeft" -> "Dynamic Test (Left)"
             "CwStaticTestAsLeft" -> "Static Test (Left)"
@@ -1604,8 +1766,21 @@ class CalibrationCheckweigherViewModel(
         for (i in 0 until 30) setDynamicPassAsFound(i, "")
         setStaticScaleWeightAsFound("")
         setCheckweigherWeightAsFound("")
+
+        setOffCentreTestWeightAsFound("")
+        setOffCentreCentreAsFound("")
+        setOffCentreCorner1AsFound("")
+        setOffCentreCorner2AsFound("")
+        setOffCentreCorner3AsFound("")
+        setOffCentreCorner4AsFound("")
         setOffCentreLoadingTestResultAsFound("")
+
+        setRepeatabilityTestWeightAsFound("")
+        setRepeatabilityReading1AsFound("")
+        setRepeatabilityReading2AsFound("")
+        setRepeatabilityReading3AsFound("")
         setRepeatabilityTestResultAsFound("")
+
         setAdjustmentsNotes("")
 
         setNominalQuantityAsLeft("")

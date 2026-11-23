@@ -16,6 +16,7 @@ import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 @Composable
 fun CalCwEngineerTestWeight(viewModel: CalibrationCheckweigherViewModel) {
     val equipment by viewModel.equipmentList.collectAsState(initial = emptyList())
+    val userFusionId by viewModel.userFusionId.collectAsState()
     val selectedId = viewModel.engineerTestWeightId.value
     val selectedItem = equipment.find { it.id == selectedId }
 
@@ -40,7 +41,12 @@ fun CalCwEngineerTestWeight(viewModel: CalibrationCheckweigherViewModel) {
                     options = equipment,
                     selectedOption = selectedItem,
                     onSelectionChange = { viewModel.setEngineerTestWeightId(it?.id) },
-                    optionLabel = { "${it.manufacturer} ${it.model} (${it.serialNumber})" },
+                    optionLabel = { item ->
+                        val isMine = userFusionId != null && item.employeeID == userFusionId
+                        val prefix = if (isMine) "⭐ " else ""
+                        val suffix = if (isMine) " (Assigned to me)" else ""
+                        "$prefix${item.manufacturer} ${item.model} (${item.serialNumber})$suffix"
+                    },
                     helpText = "Select the test weight used for calibration."
                 )
 

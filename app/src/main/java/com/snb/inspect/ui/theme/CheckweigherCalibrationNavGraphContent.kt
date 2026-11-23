@@ -50,9 +50,9 @@ fun CheckweigherCalibrationNavGraphContent(
             }
         }
 
-        composable("CwTestProductDetails") {
+        composable("CwIndicators") {
             onScreenChanged {
-                CalCwTestProductDetails(viewModel)
+                CalCwIndicators(viewModel)
             }
         }
 
@@ -77,6 +77,12 @@ fun CheckweigherCalibrationNavGraphContent(
         composable("CwDynamicTestAsFound") {
             onScreenChanged {
                 CalCwDynamicTestAsFound(viewModel)
+            }
+        }
+
+        composable("CwStaticTestAsFound") {
+            onScreenChanged {
+                CalCwStaticTestAsFound(viewModel)
             }
         }
 
@@ -107,12 +113,6 @@ fun CheckweigherCalibrationNavGraphContent(
         composable("CwBinDoorMonitor") {
             onScreenChanged {
                 CalCwBinDoorMonitor(viewModel)
-            }
-        }
-
-        composable("CwIndicators") {
-            onScreenChanged {
-                CalCwIndicators(viewModel)
             }
         }
 

@@ -26,6 +26,7 @@ class CheckweigherCalibrationActivity : ComponentActivity() {
     private val calibrationDao by lazy { db.checkweigherCalibrationDAO() }
     private val measuringEquipmentDAO by lazy { db.measuringEquipmentDAO() }
     private val cwSystemsDAO by lazy { db.cwSystemsDAO() }
+    private val userDao by lazy { db.userDao() }
     private val apiService: ApiService by lazy { RetrofitClient.instance }
 
     private val calibrationRepository by lazy {
@@ -58,6 +59,7 @@ class CheckweigherCalibrationActivity : ComponentActivity() {
             measuringEquipmentDAO = measuringEquipmentDAO,
             systemsRepository = systemsRepository,
             cwSystemsDAO = cwSystemsDAO,
+            userDao = userDao,
             calibrationId = calibrationId,
             system = system
         )

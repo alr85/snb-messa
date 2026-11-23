@@ -24,6 +24,9 @@ interface UserDao {
     @Query("SELECT username FROM users WHERE meaId = :meaId LIMIT 1")
     suspend fun getUsernameByMeaId(meaId: Int): String?
 
+    @Query("SELECT * FROM users WHERE meaId = :meaId LIMIT 1")
+    suspend fun getUserByMeaId(meaId: Int): UserEntity?
+
     @Query("SELECT COUNT(*) FROM users")
     suspend fun getUserCount(): Int
 }

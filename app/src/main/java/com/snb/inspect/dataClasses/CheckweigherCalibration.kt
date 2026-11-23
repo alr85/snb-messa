@@ -162,6 +162,7 @@ class CheckweigherCalibrationLocal(
     //-------------------------------------------------------------------------Operating Conditions
     var beltSpeed: String = ""
     var tareConfiguration: String = ""
+    var isStaticRefGrossWeight: Boolean = false
     var operatingConditionsNotes: String = ""
 
     //-----------------------------------------------------------------------Dynamic Test 'As Found'
@@ -177,7 +178,18 @@ class CheckweigherCalibrationLocal(
     var additionalProductionWeightsJson: String = ""
 
     //------------------------------------------------------------------------Static Test 'As Found'
+    var offCentreTestWeightAsFound: String = ""
+    var offCentreCentreAsFound: String = ""
+    var offCentreCorner1AsFound: String = ""
+    var offCentreCorner2AsFound: String = ""
+    var offCentreCorner3AsFound: String = ""
+    var offCentreCorner4AsFound: String = ""
     var offCentreLoadingTestResultAsFound: String = ""
+
+    var repeatabilityTestWeightAsFound: String = ""
+    var repeatabilityReading1AsFound: String = ""
+    var repeatabilityReading2AsFound: String = ""
+    var repeatabilityReading3AsFound: String = ""
     var repeatabilityTestResultAsFound: String = ""
 
     //------------------------------------------------------------------------------Adjustments Made

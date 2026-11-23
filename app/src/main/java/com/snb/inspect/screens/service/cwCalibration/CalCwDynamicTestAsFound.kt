@@ -82,10 +82,54 @@ fun CalCwDynamicTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
                 ElevatedCard(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(
-                            "Test Pack Parameters",
+                            "Test Pack & Product Parameters",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
+
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedTextField(
+                                value = viewModel.productDescription.value,
+                                onValueChange = viewModel::setProductDescription,
+                                label = { Text("Product Description") },
+                                singleLine = true,
+                                modifier = Modifier.weight(1f)
+                            )
+                            OutlinedTextField(
+                                value = viewModel.productLibraryReference.value,
+                                onValueChange = viewModel::setProductLibraryReference,
+                                label = { Text("Library Ref") },
+                                singleLine = true,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedTextField(
+                                value = viewModel.productLength.value,
+                                onValueChange = viewModel::setProductLength,
+                                label = { Text("Length (mm)") },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                singleLine = true,
+                                modifier = Modifier.weight(1f)
+                            )
+                            OutlinedTextField(
+                                value = viewModel.productWidth.value,
+                                onValueChange = viewModel::setProductWidth,
+                                label = { Text("Width (mm)") },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                singleLine = true,
+                                modifier = Modifier.weight(1f)
+                            )
+                            OutlinedTextField(
+                                value = viewModel.productHeight.value,
+                                onValueChange = viewModel::setProductHeight,
+                                label = { Text("Height (mm)") },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                singleLine = true,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
 
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedTextField(
@@ -97,9 +141,17 @@ fun CalCwDynamicTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
                                 modifier = Modifier.weight(1f)
                             )
                             OutlinedTextField(
-                                value = viewModel.staticScaleWeightAsFound.value,
-                                onValueChange = viewModel::setStaticScaleWeightAsFound,
-                                label = { Text("Static Ref Pack (g)") },
+                                value = viewModel.grossWeight.value,
+                                onValueChange = viewModel::setGrossWeight,
+                                label = { Text("Gross Weight (g)") },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                singleLine = true,
+                                modifier = Modifier.weight(1f)
+                            )
+                            OutlinedTextField(
+                                value = viewModel.tareWeight.value,
+                                onValueChange = viewModel::setTareWeight,
+                                label = { Text("Tare Weight (g)") },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                 singleLine = true,
                                 modifier = Modifier.weight(1f)
@@ -107,6 +159,14 @@ fun CalCwDynamicTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
                         }
 
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedTextField(
+                                value = viewModel.staticScaleWeightAsFound.value,
+                                onValueChange = viewModel::setStaticScaleWeightAsFound,
+                                label = { Text("Static Ref Pack (g)") },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                singleLine = true,
+                                modifier = Modifier.weight(1f)
+                            )
                             OutlinedTextField(
                                 value = viewModel.beltSpeed.value,
                                 onValueChange = viewModel::setBeltSpeed,
@@ -123,6 +183,44 @@ fun CalCwDynamicTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
                                 singleLine = true,
                                 modifier = Modifier.weight(1f)
                             )
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    "Static Ref Pack is Gross Weight",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    "Apply Tare Offset from Tare Config to Net Error calculation",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Switch(
+                                checked = viewModel.isStaticRefGrossWeight.value,
+                                onCheckedChange = viewModel::setIsStaticRefGrossWeight
+                            )
+                        }
+
+                        if (viewModel.isStaticRefGrossWeight.value && calcResult != null && calcResult!!.tareOffsetApplied > 0.0) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                shape = MaterialTheme.shapes.small,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "ℹ️ Effective Net Reference Weight: ${"%.2f".format(calcResult!!.effectiveReferenceWeight)}g (${"%.2f".format(calcResult!!.referenceWeight)}g Gross - ${"%.2f".format(calcResult!!.tareOffsetApplied)}g Tare Offset)",
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.padding(8.dp),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     }
                 }
@@ -195,7 +293,11 @@ private fun CalculatedStatisticsSummaryCard(res: CheckweigherCalculationResult) 
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ValueBox(title = "Mean (x̄)", value = res.mean?.let { "%.2fg".format(it) } ?: "—", modifier = Modifier.weight(1f))
-                ValueBox(title = "Mean Error", value = res.meanDynamicError?.let { "%.2fg".format(it) } ?: "—", modifier = Modifier.weight(1f))
+                ValueBox(
+                    title = if (res.tareOffsetApplied > 0.0) "Mean Net Error" else "Mean Error",
+                    value = res.meanDynamicError?.let { "%.2fg".format(it) } ?: "—",
+                    modifier = Modifier.weight(1f)
+                )
             }
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.snb.inspect.daos.CheckweigherCalibrationDAO
 import com.snb.inspect.daos.CwSystemsDAO
 import com.snb.inspect.daos.MeasuringEquipmentDAO
+import com.snb.inspect.daos.UserDao
 import com.snb.inspect.dataClasses.CheckweigherWithFullDetails
 import com.snb.inspect.repositories.CheckweigherCalibrationRepository
 import com.snb.inspect.repositories.CheckweigherSystemsRepository
@@ -17,6 +18,7 @@ class CalibrationCheckweigherViewModelFactory(
     private val measuringEquipmentDAO: MeasuringEquipmentDAO,
     private val systemsRepository: CheckweigherSystemsRepository,
     private val cwSystemsDAO: CwSystemsDAO,
+    private val userDao: UserDao,
     private val calibrationId: String,
     private val system: CheckweigherWithFullDetails
 ) : ViewModelProvider.Factory {
@@ -32,6 +34,7 @@ class CalibrationCheckweigherViewModelFactory(
                 measuringEquipmentDAO = measuringEquipmentDAO,
                 systemsRepository = systemsRepository,
                 cwSystemsDAO = cwSystemsDAO,
+                userDao = userDao,
                 calibrationIdString = calibrationId,
                 system = system
             ) as T
