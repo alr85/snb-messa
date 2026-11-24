@@ -328,7 +328,7 @@ fun CalCwStaticScaleReference(viewModel: CalibrationCheckweigherViewModel) {
                 FormSpacer()
 
                 // WELMEC 6.4 / OIML R 51-1 Auto-Assessment Card
-                ElevatedCard(
+                AppCard(
                     colors = CardDefaults.elevatedCardColors(
                         containerColor = when (assessment.suitability) {
                             "SUITABLE" -> Color(0xFFE8F5E9)

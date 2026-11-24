@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.snb.inspect.AppChromeViewModel
 import com.snb.inspect.TopBarState
+import com.snb.inspect.ui.theme.AppCard
 import com.snb.inspect.calibrationViewModels.UserManualsViewModel
 import com.snb.inspect.dataClasses.UserManualLocal
 import com.snb.inspect.ui.theme.SnbRed
@@ -130,7 +131,7 @@ fun UserManualsListScreen(
 
 @Composable
 fun ManualItemCard(manual: UserManualLocal, onClick: () -> Unit) {
-    Card(
+    AppCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },

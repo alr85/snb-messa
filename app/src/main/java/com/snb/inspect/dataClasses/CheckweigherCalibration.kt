@@ -177,6 +177,19 @@ class CheckweigherCalibrationLocal(
     var dynamicSixSigmaAsFound: String = ""
     var additionalProductionWeightsJson: String = ""
 
+    //-----------------------------------------------Dynamic Eccentricity (Off-Centre Weighing)
+    var dynamicEccentricityTestWeightAsFound: String = ""
+    var dynamicEccentricityFrontReadingAsFound: String = ""
+    var dynamicEccentricityBackReadingAsFound: String = ""
+    var dynamicEccentricityCentreReadingAsFound: String = ""
+    var dynamicEccentricityResultAsFound: String = ""
+    var dynamicEccentricityToleranceSource: String = "OIML_R51"
+    var dynamicEccentricityManualType: String = "GRAMS"
+    var dynamicEccentricityManualValue: String = ""
+    var dynamicEccentricityDivisionMultiplier: String = "1"
+    var dynamicEccentricityTnePackWeight: String = ""
+    var dynamicEccentricityOimlClass: String = "XIII(1)"
+
     //------------------------------------------------------------------------Static Test 'As Found'
     var staticTestCountAsFound: Int = 1
     var staticTestSetsJsonAsFound: String = ""

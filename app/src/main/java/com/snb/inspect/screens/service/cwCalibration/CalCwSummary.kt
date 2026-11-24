@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import com.snb.inspect.ApiService
 import com.snb.inspect.calibrationViewModels.CalibrationCheckweigherViewModel
 import com.snb.inspect.formModules.CalibrationHeader
+import com.snb.inspect.ui.theme.AppCard
 import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 import kotlinx.coroutines.launch
 
@@ -47,7 +48,7 @@ fun CalCwSummary(
             Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Spacer(Modifier.height(4.dp))
 
-                ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                AppCard(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("System Details", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                         Text("Serial Number: ${viewModel.serialNumber.value}")
@@ -57,7 +58,7 @@ fun CalCwSummary(
                     }
                 }
 
-                ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                AppCard(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("Static Scale Reference", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                         Text("Manufacturer: ${viewModel.staticScaleManufacturer.value.ifBlank { viewModel.staticScaleMakeModel.value }}")
@@ -69,7 +70,7 @@ fun CalCwSummary(
 
                 if (calcResult != null) {
                     val r = calcResult!!
-                    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                    AppCard(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text("Dynamic Test Results (30 Passes)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                             Text("Nominal Weight: ${r.nominalWeight}g")
@@ -84,10 +85,26 @@ fun CalCwSummary(
                     }
                 }
 
+                val eccResult by viewModel.evaluatedDynamicEccentricityResultAsFound.collectAsState()
+                if (eccResult != null) {
+                    val e = eccResult!!
+                    AppCard(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("Dynamic Eccentricity (Off-Centre Weighing)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text("Test Load: ${"%.2f".format(e.referenceWeight)}g")
+                            Text("Front Edge Pass: ${"%.2f".format(e.frontReading)}g (Error: ${"%+.2f".format(e.frontError)}g)")
+                            Text("Back Edge Pass: ${"%.2f".format(e.backReading)}g (Error: ${"%+.2f".format(e.backError)}g)")
+                            Text("Max Error: ${"%.2f".format(e.maxError)}g (Allowed Limit: ±${"%.2f".format(e.mpe)}g)")
+                            Text("Tolerance Rule: ${e.toleranceDescription.ifBlank { "OIML R 51" }}")
+                            Text("Assessment Result: ${if (e.isPass) "PASS" else "FAIL"}", fontWeight = FontWeight.Bold, color = if (e.isPass) Color(0xFF2E7D32) else Color(0xFFC62828))
+                        }
+                    }
+                }
+
                 val evaluatedStaticSets by viewModel.evaluatedStaticTestSetsAsFound.collectAsState()
 
                 if (evaluatedStaticSets.isNotEmpty()) {
-                    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                    AppCard(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             Text("Static Weighing Test Results (${evaluatedStaticSets.size} Test${if (evaluatedStaticSets.size > 1) "s" else ""})", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                             evaluatedStaticSets.forEach { item ->
@@ -96,8 +113,7 @@ fun CalCwSummary(
                                 val rep = item.repeatabilityResult
                                 val weightStr = set.testWeight.ifBlank { "N/A" }
 
-                                Surface(
-                                    color = Color(0xFFF5F5F5),
+                                AppCard(
                                     shape = MaterialTheme.shapes.small,
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
@@ -116,7 +132,7 @@ fun CalCwSummary(
                     }
                 }
 
-                ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                AppCard(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("Reject Verification", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                         Text("General Reject Test: ${viewModel.generalRejectTestResult.value}")

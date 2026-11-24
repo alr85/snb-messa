@@ -10,6 +10,7 @@ import com.snb.inspect.calibrationViewModels.CalibrationCheckweigherViewModel
 import com.snb.inspect.formModules.CalibrationHeader
 import com.snb.inspect.formModules.LabeledDropdownWithHelp
 import com.snb.inspect.formModules.LabeledTextFieldWithHelp
+import com.snb.inspect.ui.theme.AppCard
 import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 
 @Composable
@@ -31,7 +32,7 @@ fun CalCwRejectVerification(viewModel: CalibrationCheckweigherViewModel) {
             Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Spacer(Modifier.height(4.dp))
 
-                ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                AppCard(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(
                             "Mandatory General Reject Test",
@@ -56,7 +57,7 @@ fun CalCwRejectVerification(viewModel: CalibrationCheckweigherViewModel) {
                     }
                 }
 
-                ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                AppCard(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(
                             "Optional Threshold & Set-Point Rejection Tests",
@@ -136,7 +137,7 @@ private fun RejectTestRow(
     result: String,
     onResultChange: (String) -> Unit
 ) {
-    Surface(tonalElevation = 1.dp, shape = MaterialTheme.shapes.medium) {
+    AppCard(shape = MaterialTheme.shapes.medium) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(testName, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
 

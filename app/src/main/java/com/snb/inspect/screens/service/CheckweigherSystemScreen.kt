@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import com.snb.inspect.ui.theme.AppCard
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -485,7 +486,7 @@ fun CheckweigherSystemScreen(
 
 @Composable
 fun CwNoteItem(note: CwSystemNoteLocal, authorName: String) {
-    Card(
+    AppCard(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = if (note.isImportant) Color(0xFFFFF4F4) else Color(0xFFF8F9FA)

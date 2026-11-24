@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.snb.inspect.FetchResult
 import com.snb.inspect.repositories.*
 import com.snb.inspect.util.SyncPreferences
+import com.snb.inspect.ui.theme.AppCard
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -167,7 +168,7 @@ fun DatabaseSyncScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Card(elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
+        AppCard(elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
             Column(Modifier.padding(16.dp)) {
                 Text("Database Sync", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(4.dp))
@@ -257,7 +258,7 @@ fun DatabaseSyncScreen(
             items(tasks, key = { it.name }) { task ->
                 val state = taskStates[task.name]!!
                 val anyRunning = isSyncingAll || taskStates.values.any { it.status == SyncStatus.Running }
-                Card(elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)) {
+                AppCard(elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)) {
                     Column(Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             val icon = when (state.status) {

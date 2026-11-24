@@ -2,15 +2,15 @@ package com.snb.inspect.ui.theme
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
+/**
+ * Provides clean vertical spacing between elevated form card modules without divider lines.
+ */
 @Composable
-fun FormSpacer(){
-    Spacer(modifier = Modifier.height(6.dp))
-    HorizontalDivider(thickness = 1.dp)
-    Spacer(modifier = Modifier.height(2.dp))
-
+fun FormSpacer(height: Dp = 16.dp) {
+    Spacer(modifier = Modifier.height(height))
 }

@@ -14,6 +14,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.snb.inspect.calibrationViewModels.CalibrationCheckweigherViewModel
 import com.snb.inspect.formModules.CalibrationHeader
+import com.snb.inspect.ui.theme.AppCard
 import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 import com.snb.inspect.util.CheckweigherCalculationResult
 
@@ -42,7 +43,7 @@ fun CalCwDynamicTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
             Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Spacer(Modifier.height(4.dp))
 
-                ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                AppCard(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
@@ -79,7 +80,7 @@ fun CalCwDynamicTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
                     }
                 }
 
-                ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                AppCard(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(
                             "Test Pack & Product Parameters",
@@ -225,7 +226,7 @@ fun CalCwDynamicTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
                     }
                 }
 
-                ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                AppCard(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
@@ -283,7 +284,7 @@ fun CalCwDynamicTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
 
 @Composable
 private fun CalculatedStatisticsSummaryCard(res: CheckweigherCalculationResult) {
-    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+    AppCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(
                 "Dynamic Accuracy Statistics",
@@ -338,7 +339,7 @@ private fun CalculatedStatisticsSummaryCard(res: CheckweigherCalculationResult) 
 
 @Composable
 private fun ValueBox(title: String, value: String, modifier: Modifier = Modifier) {
-    Surface(color = Color(0xFFF5F5F5), shape = MaterialTheme.shapes.medium, modifier = modifier) {
+    AppCard(shape = MaterialTheme.shapes.medium, modifier = modifier) {
         Column(modifier = Modifier.padding(8.dp)) {
             Text(title, style = MaterialTheme.typography.labelSmall)
             Text(value, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)

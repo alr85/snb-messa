@@ -19,8 +19,8 @@ import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.RemoveCircle
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import com.snb.inspect.ui.theme.AppCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -57,7 +57,7 @@ fun PvSectionSummaryCard(
 
     Spacer(Modifier.height(12.dp))
 
-    Card(
+    AppCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFFBFBFB)),

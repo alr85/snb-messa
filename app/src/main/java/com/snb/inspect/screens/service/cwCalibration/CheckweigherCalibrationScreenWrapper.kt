@@ -61,6 +61,7 @@ fun CheckweigherCalibrationScreenWrapper(
                 "CwTolerancesAndAssessment",
                 "CwEngineerTestWeight",
                 "CwDynamicTestAsFound",
+                "CwDynamicEccentricityTest",
                 "CwStaticTestAsFound",
                 "CwInfeedSensor",
                 "CwRejectConfirmSensor",

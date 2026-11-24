@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import com.snb.inspect.ui.theme.AppCard
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -201,7 +202,7 @@ fun ModernSovItem(
         else -> Color.Gray
     }
 
-    Card(
+    AppCard(
         modifier = Modifier.fillMaxWidth().clickable(enabled = !isUploading) { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),

@@ -23,6 +23,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.snb.inspect.ui.theme.AppCard
 import com.snb.inspect.ui.theme.SnbDarkGrey
 import com.snb.inspect.ui.theme.SnbRed
 import java.util.Locale
@@ -98,7 +99,7 @@ fun CheckweigherSpeedCalculatorScreen() {
             color = Color.Gray
         )
 
-        ElevatedCard(
+        AppCard(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.elevatedCardColors(containerColor = Color(0xFFFBFBFB))
         ) {
@@ -110,7 +111,7 @@ fun CheckweigherSpeedCalculatorScreen() {
         }
 
         if (calculatedBeltSpeed != null) {
-            ElevatedCard(
+            AppCard(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.elevatedCardColors(containerColor = Color(0xFFF0F4F8))
             ) {

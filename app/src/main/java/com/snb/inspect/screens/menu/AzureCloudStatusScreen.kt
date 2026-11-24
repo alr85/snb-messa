@@ -24,8 +24,8 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import com.snb.inspect.ui.theme.AppCard
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -113,7 +113,7 @@ fun AzureCloudStatusScreen(
                 CloudHealthState.OFFLINE -> Triple("Cloud Unreachable", Color(0xFFB71C1C), Icons.Default.Error)
             }
 
-            Card(
+            AppCard(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -208,7 +208,7 @@ fun AzureCloudStatusScreen(
 
 @Composable
 fun EndpointCard(endpoint: EndpointStatus) {
-    Card(
+    AppCard(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),

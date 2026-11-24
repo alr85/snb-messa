@@ -80,6 +80,12 @@ fun CheckweigherCalibrationNavGraphContent(
             }
         }
 
+        composable("CwDynamicEccentricityTest") {
+            onScreenChanged {
+                CalCwDynamicEccentricityTest(viewModel)
+            }
+        }
+
         composable("CwStaticTestAsFound") {
             onScreenChanged {
                 CalCwStaticTestAsFound(viewModel)

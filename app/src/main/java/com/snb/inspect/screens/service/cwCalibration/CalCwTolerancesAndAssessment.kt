@@ -13,6 +13,7 @@ import com.snb.inspect.calibrationViewModels.CalibrationCheckweigherViewModel
 import com.snb.inspect.formModules.CalibrationHeader
 import com.snb.inspect.formModules.LabeledDropdownWithHelp
 import com.snb.inspect.formModules.LabeledTextFieldWithHelp
+import com.snb.inspect.ui.theme.AppCard
 import com.snb.inspect.ui.theme.FormSpacer
 import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 import com.snb.inspect.util.CheckweigherStatus
@@ -82,7 +83,7 @@ fun CalCwTolerancesAndAssessment(viewModel: CalibrationCheckweigherViewModel) {
 
                 if (calcResult != null) {
                     val r = calcResult!!
-                    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                    AppCard(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Text(
                                 "Tolerance & Benchmark Evaluation",
@@ -104,7 +105,7 @@ fun CalCwTolerancesAndAssessment(viewModel: CalibrationCheckweigherViewModel) {
                     }
 
                     if (isAssessmentRequired) {
-                        ElevatedCard(
+                        AppCard(
                             colors = CardDefaults.elevatedCardColors(
                                 containerColor = Color(0xFFFFF3E0)
                             ),
@@ -180,7 +181,7 @@ fun CalCwTolerancesAndAssessment(viewModel: CalibrationCheckweigherViewModel) {
 
 @Composable
 private fun DisplayPill(title: String, value: String, modifier: Modifier = Modifier) {
-    Surface(color = Color(0xFFF5F5F5), shape = MaterialTheme.shapes.medium, modifier = modifier) {
+    AppCard(shape = MaterialTheme.shapes.medium, modifier = modifier) {
         Column(modifier = Modifier.padding(8.dp)) {
             Text(title, style = MaterialTheme.typography.labelSmall)
             Text(value, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)

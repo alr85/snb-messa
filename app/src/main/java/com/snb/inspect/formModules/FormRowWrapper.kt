@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -36,7 +37,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -67,6 +67,7 @@ import com.snb.inspect.ui.theme.FormInputFocusedTextColor
 import com.snb.inspect.ui.theme.FormInputUnfocusedBorderColor
 import com.snb.inspect.ui.theme.FormInputUnfocusedLabelColor
 import com.snb.inspect.ui.theme.FormInputUnfocusedTextColor
+import com.snb.inspect.ui.theme.AppCard
 import com.snb.inspect.ui.theme.FormWrapperContent
 import com.snb.inspect.ui.theme.FormWrapperSurface
 import com.snb.inspect.ui.theme.SnbDarkGrey
@@ -85,13 +86,14 @@ fun FormRowWrapper(
     onHelpClick: (() -> Unit)? = null,
     content: @Composable RowScope.(Boolean) -> Unit
 ) {
-    Surface(
-        color = FormWrapperSurface,
-        contentColor = FormWrapperContent,
-        modifier = modifier
-            .fillMaxWidth(),
+    AppCard(
+        modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
-        tonalElevation = 1.dp
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = Color.White,
+            contentColor = FormWrapperContent
+        ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 6.dp)
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
@@ -104,7 +106,7 @@ fun FormRowWrapper(
             ) {
                 Text(
                     text = label,
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(1f),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -331,13 +333,14 @@ fun FormRowWrapperEditableLabel(
     var isEditingLabel by remember { mutableStateOf(false) }
     val fieldShape = RoundedCornerShape(14.dp)
 
-    Surface(
-        color = FormWrapperSurface,
-        contentColor = FormWrapperContent,
-        modifier = modifier
-            .fillMaxWidth(),
+    AppCard(
+        modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
-        tonalElevation = 1.dp
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = Color.White,
+            contentColor = FormWrapperContent
+        ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 6.dp)
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp),

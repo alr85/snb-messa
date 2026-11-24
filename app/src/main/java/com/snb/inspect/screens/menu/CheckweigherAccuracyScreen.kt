@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.snb.inspect.calibrationViewModels.CheckweigherAccuracyViewModel
+import com.snb.inspect.ui.theme.AppCard
 import com.snb.inspect.ui.theme.SnbDarkGrey
 import com.snb.inspect.ui.theme.SnbRed
 import com.snb.inspect.util.CheckweigherAccuracyResult
@@ -104,7 +105,7 @@ private fun NominalInputCard(
     val tNomVal = tNomText.toDoubleOrNull() ?: 0.0
     val isTooLow = tNomText.isNotBlank() && tNomVal < 5.0
 
-    ElevatedCard {
+    AppCard {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -176,8 +177,7 @@ private fun ResultGrid(
 
 @Composable
 private fun ValuePill(title: String, value: String, modifier: Modifier = Modifier) {
-    Surface(
-        tonalElevation = 2.dp,
+    AppCard(
         shape = MaterialTheme.shapes.large,
         modifier = modifier
     ) {
@@ -205,7 +205,7 @@ private fun ZoiSection(
     onPassChange: (Int, String) -> Unit,
     result: CheckweigherAccuracyResult?
 ) {
-    ElevatedCard {
+    AppCard {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -315,8 +315,7 @@ private fun ZoiSummary(r: CheckweigherAccuracyResult) {
 
 @Composable
 private fun ValueMini(title: String, value: String, modifier: Modifier = Modifier) {
-    Surface(
-        tonalElevation = 1.dp,
+    AppCard(
         shape = MaterialTheme.shapes.large,
         modifier = modifier
     ) {
@@ -335,7 +334,7 @@ private fun KnownMassSection(
     onCheckweigherChange: (String) -> Unit,
     result: CheckweigherAccuracyResult?
 ) {
-    ElevatedCard {
+    AppCard {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)

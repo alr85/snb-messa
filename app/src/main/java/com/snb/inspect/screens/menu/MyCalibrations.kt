@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import com.snb.inspect.ui.theme.AppCard
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.History
@@ -380,7 +381,7 @@ fun ModernCalibrationItem(
         else -> Color.Gray
     }
 
-    Card(
+    AppCard(
         modifier = Modifier.fillMaxWidth().clickable(enabled = !isUploading) { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),

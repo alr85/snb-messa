@@ -262,6 +262,17 @@ class CalibrationCheckweigherViewModel(
 
         _staticTestCountAsFound.intValue = if (cal.staticTestCountAsFound in 1..5) cal.staticTestCountAsFound else 1
 
+        _dynamicEccentricityTestWeightAsFound.value = cal.dynamicEccentricityTestWeightAsFound
+        _dynamicEccentricityFrontReadingAsFound.value = cal.dynamicEccentricityFrontReadingAsFound
+        _dynamicEccentricityBackReadingAsFound.value = cal.dynamicEccentricityBackReadingAsFound
+        _dynamicEccentricityCentreReadingAsFound.value = cal.dynamicEccentricityCentreReadingAsFound
+        _dynamicEccentricityToleranceSource.value = cal.dynamicEccentricityToleranceSource.ifBlank { "OIML_R51" }
+        _dynamicEccentricityManualType.value = cal.dynamicEccentricityManualType.ifBlank { "GRAMS" }
+        _dynamicEccentricityManualValue.value = cal.dynamicEccentricityManualValue
+        _dynamicEccentricityDivisionMultiplier.value = cal.dynamicEccentricityDivisionMultiplier.ifBlank { "1" }
+        _dynamicEccentricityTnePackWeight.value = cal.dynamicEccentricityTnePackWeight
+        _dynamicEccentricityOimlClass.value = cal.dynamicEccentricityOimlClass.ifBlank { "XIII(1)" }
+
         if (cal.staticTestSetsJsonAsFound.isNotBlank()) {
             try {
                 val type = object : com.google.gson.reflect.TypeToken<List<com.snb.inspect.util.StaticTestSet>>() {}.type
@@ -495,6 +506,18 @@ class CalibrationCheckweigherViewModel(
         cal.staticTestCountAsFound = _staticTestCountAsFound.intValue
         val gson = com.google.gson.Gson()
         cal.staticTestSetsJsonAsFound = gson.toJson(_staticTestSetsAsFound.value)
+
+        cal.dynamicEccentricityTestWeightAsFound = _dynamicEccentricityTestWeightAsFound.value
+        cal.dynamicEccentricityFrontReadingAsFound = _dynamicEccentricityFrontReadingAsFound.value
+        cal.dynamicEccentricityBackReadingAsFound = _dynamicEccentricityBackReadingAsFound.value
+        cal.dynamicEccentricityCentreReadingAsFound = _dynamicEccentricityCentreReadingAsFound.value
+        cal.dynamicEccentricityResultAsFound = evaluatedDynamicEccentricityResultAsFound.value?.let { if (it.isPass) "PASS" else "FAIL" } ?: ""
+        cal.dynamicEccentricityToleranceSource = _dynamicEccentricityToleranceSource.value
+        cal.dynamicEccentricityManualType = _dynamicEccentricityManualType.value
+        cal.dynamicEccentricityManualValue = _dynamicEccentricityManualValue.value
+        cal.dynamicEccentricityDivisionMultiplier = _dynamicEccentricityDivisionMultiplier.value
+        cal.dynamicEccentricityTnePackWeight = _dynamicEccentricityTnePackWeight.value
+        cal.dynamicEccentricityOimlClass = _dynamicEccentricityOimlClass.value
 
         val firstSet = _staticTestSetsAsFound.value.firstOrNull() ?: com.snb.inspect.util.StaticTestSet()
         cal.offCentreTestWeightAsFound = firstSet.testWeight
@@ -1311,6 +1334,64 @@ class CalibrationCheckweigherViewModel(
     val offCentreLoadingTestResultAsFound: State<String> = _offCentreLoadingTestResultAsFound
     fun setOffCentreLoadingTestResultAsFound(v: String) { _offCentreLoadingTestResultAsFound.value = v }
 
+    private val _dynamicEccentricityTestWeightAsFound = mutableStateOf("")
+    val dynamicEccentricityTestWeightAsFound: State<String> = _dynamicEccentricityTestWeightAsFound
+    fun setDynamicEccentricityTestWeightAsFound(v: String) { _dynamicEccentricityTestWeightAsFound.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _dynamicEccentricityFrontReadingAsFound = mutableStateOf("")
+    val dynamicEccentricityFrontReadingAsFound: State<String> = _dynamicEccentricityFrontReadingAsFound
+    fun setDynamicEccentricityFrontReadingAsFound(v: String) { _dynamicEccentricityFrontReadingAsFound.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _dynamicEccentricityBackReadingAsFound = mutableStateOf("")
+    val dynamicEccentricityBackReadingAsFound: State<String> = _dynamicEccentricityBackReadingAsFound
+    fun setDynamicEccentricityBackReadingAsFound(v: String) { _dynamicEccentricityBackReadingAsFound.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _dynamicEccentricityCentreReadingAsFound = mutableStateOf("")
+    val dynamicEccentricityCentreReadingAsFound: State<String> = _dynamicEccentricityCentreReadingAsFound
+    fun setDynamicEccentricityCentreReadingAsFound(v: String) { _dynamicEccentricityCentreReadingAsFound.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _dynamicEccentricityToleranceSource = mutableStateOf("OIML_R51")
+    val dynamicEccentricityToleranceSource: State<String> = _dynamicEccentricityToleranceSource
+    fun setDynamicEccentricityToleranceSource(v: String) { _dynamicEccentricityToleranceSource.value = v }
+
+    private val _dynamicEccentricityManualType = mutableStateOf("GRAMS")
+    val dynamicEccentricityManualType: State<String> = _dynamicEccentricityManualType
+    fun setDynamicEccentricityManualType(v: String) { _dynamicEccentricityManualType.value = v }
+
+    private val _dynamicEccentricityManualValue = mutableStateOf("")
+    val dynamicEccentricityManualValue: State<String> = _dynamicEccentricityManualValue
+    fun setDynamicEccentricityManualValue(v: String) { _dynamicEccentricityManualValue.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _dynamicEccentricityDivisionMultiplier = mutableStateOf("1")
+    val dynamicEccentricityDivisionMultiplier: State<String> = _dynamicEccentricityDivisionMultiplier
+    fun setDynamicEccentricityDivisionMultiplier(v: String) { _dynamicEccentricityDivisionMultiplier.value = v }
+
+    private val _dynamicEccentricityTnePackWeight = mutableStateOf("")
+    val dynamicEccentricityTnePackWeight: State<String> = _dynamicEccentricityTnePackWeight
+    fun setDynamicEccentricityTnePackWeight(v: String) { _dynamicEccentricityTnePackWeight.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _dynamicEccentricityOimlClass = mutableStateOf("XIII(1)")
+    val dynamicEccentricityOimlClass: State<String> = _dynamicEccentricityOimlClass
+    fun setDynamicEccentricityOimlClass(v: String) { _dynamicEccentricityOimlClass.value = v }
+
+    val evaluatedDynamicEccentricityResultAsFound: StateFlow<com.snb.inspect.util.DynamicEccentricityTestResult?> = snapshotFlow {
+        val testLoad = _dynamicEccentricityTestWeightAsFound.value.ifBlank { _staticScaleWeightAsFound.value.ifBlank { _grossWeight.value } }
+        com.snb.inspect.util.CheckweigherCalculator.evaluateDynamicEccentricityTest(
+            testLoadStr = testLoad,
+            frontReadingStr = _dynamicEccentricityFrontReadingAsFound.value,
+            backReadingStr = _dynamicEccentricityBackReadingAsFound.value,
+            centreReadingStr = _dynamicEccentricityCentreReadingAsFound.value,
+            scaleIntervalStr = _scaleInterval.value,
+            accuracyClass = _accuracyClass.value,
+            toleranceSource = _dynamicEccentricityToleranceSource.value,
+            manualType = _dynamicEccentricityManualType.value,
+            manualValueStr = _dynamicEccentricityManualValue.value,
+            divisionMultiplierStr = _dynamicEccentricityDivisionMultiplier.value,
+            tnePackWeightStr = _dynamicEccentricityTnePackWeight.value,
+            oimlClassStr = _dynamicEccentricityOimlClass.value
+        )
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
     private val _repeatabilityTestResultAsFound = mutableStateOf("")
     val repeatabilityTestResultAsFound: State<String> = _repeatabilityTestResultAsFound
     fun setRepeatabilityTestResultAsFound(v: String) { _repeatabilityTestResultAsFound.value = v }
@@ -1626,6 +1707,9 @@ class CalibrationCheckweigherViewModel(
         validMap["CwDynamicTestAsFound"] = _nominalQuantityAsFound.value.isNotBlank() &&
                 _dynamicPassesAsFound.value.take(_requiredPassesCount.value).count { it.isNotBlank() } >= _requiredPassesCount.value
 
+        validMap["CwDynamicEccentricityTest"] = _dynamicEccentricityFrontReadingAsFound.value.isNotBlank() &&
+                _dynamicEccentricityBackReadingAsFound.value.isNotBlank()
+
         val activeCount = _staticTestCountAsFound.intValue
         val activeSets = _staticTestSetsAsFound.value.take(activeCount)
         val isStaticTestValid = activeSets.isNotEmpty() && activeSets.all { s ->
@@ -1695,6 +1779,7 @@ class CalibrationCheckweigherViewModel(
             "CwStaticScaleReference" -> "Static Scale Ref"
             "CwEngineerTestWeight" -> "Test Weight"
             "CwDynamicTestAsFound" -> "Dynamic Test (30 Passes)"
+            "CwDynamicEccentricityTest" -> "Dynamic Eccentricity (Off-Centre Weighing)"
             "CwStaticTestAsFound" -> "Static Weighing Tests (As Found)"
             "CwTolerancesAndAssessment" -> "Tolerances & Assessment"
             "CwRejectVerification" -> "Reject Verification"
@@ -1865,6 +1950,17 @@ class CalibrationCheckweigherViewModel(
         _staticTestSetsAsFound.value = List(5) { i -> com.snb.inspect.util.StaticTestSet(id = i + 1) }
         setOffCentreLoadingTestResultAsFound("")
         setRepeatabilityTestResultAsFound("")
+
+        setDynamicEccentricityTestWeightAsFound("")
+        setDynamicEccentricityFrontReadingAsFound("")
+        setDynamicEccentricityBackReadingAsFound("")
+        setDynamicEccentricityCentreReadingAsFound("")
+        setDynamicEccentricityToleranceSource("OIML_R51")
+        setDynamicEccentricityManualType("GRAMS")
+        setDynamicEccentricityManualValue("")
+        setDynamicEccentricityDivisionMultiplier("1")
+        setDynamicEccentricityTnePackWeight("")
+        setDynamicEccentricityOimlClass("XIII(1)")
 
         setAdjustmentsNotes("")
 

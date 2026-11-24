@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.snb.inspect.AppChromeViewModel
 import com.snb.inspect.TopBarState
 import com.snb.inspect.calibrationViewModels.CodesOfPracticeViewModel
+import com.snb.inspect.ui.theme.AppCard
 import com.snb.inspect.dataClasses.CodeOfPracticeLocal
 import com.snb.inspect.ui.theme.SnbRed
 import java.net.URLEncoder
@@ -128,7 +129,7 @@ fun CodesOfPracticeListScreen(
 
 @Composable
 fun CodeOfPracticeItemCard(code: CodeOfPracticeLocal, onClick: () -> Unit) {
-    Card(
+    AppCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },

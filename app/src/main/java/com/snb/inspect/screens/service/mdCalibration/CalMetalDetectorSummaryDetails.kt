@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import com.snb.inspect.ui.theme.AppCard
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -108,7 +108,7 @@ fun CalMetalDetectorConveyorSummaryDetails(
                 )
 
                 // Section content
-                Card(
+                AppCard(
                     modifier = Modifier.fillMaxWidth(),
                     elevation = CardDefaults.elevatedCardElevation(4.dp),
                     colors = CardDefaults.cardColors(

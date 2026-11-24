@@ -22,7 +22,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedCard
+import com.snb.inspect.ui.theme.AppCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
@@ -186,7 +186,7 @@ private fun NoticeCard(
     val elevation =
         if (isPinned) 6.dp else 2.dp
 
-    ElevatedCard(
+    AppCard(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
         colors = CardDefaults.elevatedCardColors(

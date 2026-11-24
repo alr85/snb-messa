@@ -13,8 +13,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import com.snb.inspect.ui.theme.AppCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -442,7 +442,7 @@ fun DetailSection(title: String, content: @Composable () -> Unit) {
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 4.dp)
         )
-        Card(
+        AppCard(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)

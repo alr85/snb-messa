@@ -23,9 +23,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import com.snb.inspect.ui.theme.AppCard
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -233,11 +233,10 @@ fun CalibrationSummaryDialog(
                 .heightIn(max = 900.dp)
         }
 
-        Surface(
+        AppCard(
             modifier = surfaceModifier,
             shape = if (isCompact) MaterialTheme.shapes.small else MaterialTheme.shapes.extraLarge,
-            tonalElevation = 6.dp,
-            color = Color.White
+            elevation = androidx.compose.material3.CardDefaults.elevatedCardElevation(defaultElevation = 6.dp)
         ) {
             Column(
                 modifier = Modifier

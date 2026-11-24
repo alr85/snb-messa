@@ -141,4 +141,127 @@ class CheckweigherCalculatorTest {
         assertEquals(0.01, res.maxZeroReturn!!, 0.01)
         assertTrue(res.isPass)
     }
+
+    @Test
+    fun testCalculateOimlR51Mpe() {
+        // Load 300g, e = 1g -> n = 300 <= 500 -> baseMpe = 0.5g
+        // Class XIII(1) -> multiplier x = 1.0 -> MPE = 0.5g
+        val mpe1 = CheckweigherCalculator.calculateOimlR51Mpe(300.0, 1.0, "XIII(1)")
+        assertEquals(0.5, mpe1, 0.001)
+
+        // Class XIII(0.5) -> multiplier x = 0.5 -> MPE = 0.25g
+        val mpe2 = CheckweigherCalculator.calculateOimlR51Mpe(300.0, 1.0, "XIII(0.5)")
+        assertEquals(0.25, mpe2, 0.001)
+
+        // Load 800g, e = 1g -> 500 < n <= 2000 -> baseMpe = 1.0g
+        // Class XII(2) -> multiplier x = 2.0 -> MPE = 2.0g
+        val mpe3 = CheckweigherCalculator.calculateOimlR51Mpe(800.0, 1.0, "XII(2)")
+        assertEquals(2.0, mpe3, 0.001)
+    }
+
+    @Test
+    fun testEvaluateDynamicEccentricityTestPassAndFail() {
+        // Test load 500g (1/3 Max + Tare representative pack), e = 1g, MPE = 0.5g
+        // Front pass = 500.2g (error +0.2g), Back pass = 499.7g (error -0.3g) -> max error 0.3g <= 0.5g -> PASS
+        val passRes = CheckweigherCalculator.evaluateDynamicEccentricityTest(
+            testLoadStr = "500.0",
+            frontReadingStr = "500.2",
+            backReadingStr = "499.7",
+            scaleIntervalStr = "1.0",
+            accuracyClass = "XIII(1)"
+        )
+
+        assertNotNull(passRes)
+        assertEquals(500.0, passRes!!.referenceWeight, 0.01)
+        assertEquals(0.2, passRes.frontError, 0.01)
+        assertEquals(-0.3, passRes.backError, 0.01)
+        assertEquals(0.3, passRes.maxError, 0.01)
+        assertEquals(0.5, passRes.mpe, 0.01)
+        assertTrue(passRes.isPass)
+
+        // Failing case: Back pass = 501.2g (error +1.2g > 0.5g MPE) -> FAIL
+        val failRes = CheckweigherCalculator.evaluateDynamicEccentricityTest(
+            testLoadStr = "500.0",
+            frontReadingStr = "500.1",
+            backReadingStr = "501.2",
+            scaleIntervalStr = "1.0",
+            accuracyClass = "XIII(1)"
+        )
+
+        assertNotNull(failRes)
+        assertEquals(1.2, failRes!!.maxError, 0.01)
+        assertFalse(failRes.isPass)
+    }
+
+    @Test
+    fun testDynamicEccentricityToleranceSources() {
+        // 1. Manual / Customer Spec (±Grams: ±1.5g)
+        val manualGramsRes = CheckweigherCalculator.evaluateDynamicEccentricityTest(
+            testLoadStr = "500.0",
+            frontReadingStr = "501.2",
+            backReadingStr = "498.8",
+            toleranceSource = "MANUAL_SPEC",
+            manualType = "GRAMS",
+            manualValueStr = "1.5"
+        )
+        assertNotNull(manualGramsRes)
+        assertEquals(1.5, manualGramsRes!!.mpe, 0.01)
+        assertEquals(1.2, manualGramsRes.maxError, 0.01)
+        assertTrue(manualGramsRes.isPass)
+
+        // 2. Manual / Customer Spec (±Percent: ±1% of 500g = ±5.0g)
+        val manualPercentRes = CheckweigherCalculator.evaluateDynamicEccentricityTest(
+            testLoadStr = "500.0",
+            frontReadingStr = "503.0",
+            backReadingStr = "498.0",
+            toleranceSource = "MANUAL_SPEC",
+            manualType = "PERCENT",
+            manualValueStr = "1.0"
+        )
+        assertNotNull(manualPercentRes)
+        assertEquals(5.0, manualPercentRes!!.mpe, 0.01)
+        assertEquals(3.0, manualPercentRes.maxError, 0.01)
+        assertTrue(manualPercentRes.isPass)
+
+        // 3. Division-Based (±2d where d = 0.5g -> limit = 1.0g)
+        val divRes = CheckweigherCalculator.evaluateDynamicEccentricityTest(
+            testLoadStr = "500.0",
+            frontReadingStr = "500.8",
+            backReadingStr = "499.3",
+            scaleIntervalStr = "0.5",
+            toleranceSource = "DIVISION_BASED",
+            divisionMultiplierStr = "2"
+        )
+        assertNotNull(divRes)
+        assertEquals(1.0, divRes!!.mpe, 0.01)
+        assertEquals(0.8, divRes.maxError, 0.01)
+        assertTrue(divRes.isPass)
+
+        // 4. Packaged Goods TNE Rule (10% of TNE for 500g = 10% of 15g = 1.5g)
+        val tneRes = CheckweigherCalculator.evaluateDynamicEccentricityTest(
+            testLoadStr = "500.0",
+            frontReadingStr = "501.2",
+            backReadingStr = "498.9",
+            toleranceSource = "PACKAGED_GOODS",
+            tnePackWeightStr = "500.0"
+        )
+        assertNotNull(tneRes)
+        assertEquals(1.5, tneRes!!.mpe, 0.01)
+        assertEquals(1.2, tneRes.maxError, 0.01)
+        assertTrue(tneRes.isPass)
+
+        // 5. OIML R 51 Benchmark Class XIII(2) In-Service
+        val oimlInServiceRes = CheckweigherCalculator.evaluateDynamicEccentricityTest(
+            testLoadStr = "300.0",
+            frontReadingStr = "300.8",
+            backReadingStr = "299.4",
+            scaleIntervalStr = "1.0",
+            toleranceSource = "OIML_R51",
+            oimlClassStr = "XIII(2)"
+        )
+        assertNotNull(oimlInServiceRes)
+        assertEquals(1.0, oimlInServiceRes!!.mpe, 0.01)
+        assertEquals(0.8, oimlInServiceRes.maxError, 0.01)
+        assertTrue(oimlInServiceRes.isPass)
+    }
 }

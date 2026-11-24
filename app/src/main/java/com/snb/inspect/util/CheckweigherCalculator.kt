@@ -98,6 +98,23 @@ data class EvaluatedStaticTestSet(
     val repeatabilityResult: RepeatabilityTestResult?
 )
 
+data class DynamicEccentricityTestResult(
+    val testLoad: Double,
+    val referenceWeight: Double,
+    val frontReading: Double,
+    val backReading: Double,
+    val centreReading: Double?,
+    val frontError: Double,
+    val backError: Double,
+    val maxError: Double,
+    val mpe: Double,
+    val scaleInterval: Double,
+    val accuracyClass: String,
+    val toleranceSource: String = "OIML_R51",
+    val toleranceDescription: String = "",
+    val isPass: Boolean
+)
+
 object CheckweigherCalculator {
 
     private fun roundTo(x: Double, dp: Int): Double {
@@ -319,6 +336,151 @@ object CheckweigherCalculator {
             maxReading = maxVal,
             range = range,
             maxZeroReturn = maxZeroReturn,
+            isPass = isPass
+        )
+    }
+
+    /**
+     * Calculates Maximum Permissible Error (MPE) according to OIML R 51-1.
+     * Scale verification interval 'e' and accuracy class designation multiplier 'x' are applied.
+     */
+    fun calculateOimlR51Mpe(
+        load: Double,
+        scaleInterval: Double,
+        accuracyClass: String = ""
+    ): Double {
+        val e = if (scaleInterval > 0.0) scaleInterval else 1.0
+        val n = abs(load) / e
+
+        val baseMpe = when {
+            n <= 500.0 -> 0.5 * e
+            n <= 2000.0 -> 1.0 * e
+            n <= 10000.0 -> 1.5 * e
+            else -> 2.5 * e
+        }
+
+        val x = when {
+            accuracyClass.contains("(0.5)", ignoreCase = true) -> 0.5
+            accuracyClass.contains("(2)", ignoreCase = true) -> 2.0
+            accuracyClass.contains("(1)", ignoreCase = true) -> 1.0
+            accuracyClass.contains("Y(b)", ignoreCase = true) -> 1.5
+            accuracyClass.contains("Y(a)", ignoreCase = true) -> 1.0
+            else -> 1.0
+        }
+
+        return roundTo(baseMpe * x, 3)
+    }
+
+    /**
+     * Calculates the dynamic eccentricity permissible error limit (MPE/Threshold) and description based on selected tolerance source.
+     * Sources:
+     * - MANUAL_SPEC: Custom ±g or ±% specification.
+     * - DIVISION_BASED: Multiplier X * scaleInterval (±Xd).
+     * - PACKAGED_GOODS: 10% of TNE based on target pack weight.
+     * - OIML_R51: OIML R 51 MPE benchmark.
+     */
+    fun calculateDynamicEccentricityLimit(
+        toleranceSource: String,
+        testLoad: Double,
+        scaleInterval: Double,
+        accuracyClass: String,
+        manualType: String,
+        manualValueStr: String,
+        divisionMultiplierStr: String,
+        tnePackWeightStr: String,
+        oimlClassStr: String
+    ): Pair<Double, String> {
+        val e = if (scaleInterval > 0.0) scaleInterval else 1.0
+        return when (toleranceSource) {
+            "MANUAL_SPEC" -> {
+                val valNum = manualValueStr.toDoubleOrNull() ?: 1.0
+                if (manualType.equals("PERCENT", ignoreCase = true)) {
+                    val limit = roundTo((valNum / 100.0) * testLoad, 3)
+                    Pair(limit, "Manual Spec (±${valNum}% = ±${"%.2f".format(limit)}g)")
+                } else {
+                    val limit = roundTo(valNum, 3)
+                    Pair(limit, "Manual Spec (±${"%.2f".format(limit)}g)")
+                }
+            }
+            "DIVISION_BASED" -> {
+                val mult = divisionMultiplierStr.toDoubleOrNull() ?: 1.0
+                val limit = roundTo(mult * e, 3)
+                val multStr = if (mult % 1.0 == 0.0) "${mult.toInt()}" else "$mult"
+                Pair(limit, "Division-Based (±${multStr}d = ±${"%.2f".format(limit)}g)")
+            }
+            "PACKAGED_GOODS" -> {
+                val packWeight = tnePackWeightStr.toDoubleOrNull() ?: testLoad
+                val tne = calculateTne(packWeight)
+                val limit = roundTo(0.10 * tne, 3)
+                Pair(limit, "Packaged Goods (10% TNE = ±${"%.2f".format(limit)}g)")
+            }
+            else -> { // "OIML_R51"
+                val effectiveClass = oimlClassStr.ifBlank { accuracyClass }
+                val limit = calculateOimlR51Mpe(testLoad, e, effectiveClass)
+                val classLabel = if (effectiveClass.contains("XIII(2)", ignoreCase = true)) "XIII(2) In-Service" else "XIII(1)"
+                Pair(limit, "OIML R 51 ($classLabel MPE = ±${"%.2f".format(limit)}g)")
+            }
+        }
+    }
+
+    /**
+     * Evaluates Dynamic Eccentricity (Off-Centre Weighing) test passes (Front and Back edge passes).
+     * Compares maximum deviation against permissible error limit according to selected tolerance source.
+     */
+    fun evaluateDynamicEccentricityTest(
+        testLoadStr: String,
+        frontReadingStr: String,
+        backReadingStr: String,
+        centreReadingStr: String = "",
+        scaleIntervalStr: String = "",
+        accuracyClass: String = "",
+        toleranceSource: String = "OIML_R51",
+        manualType: String = "GRAMS",
+        manualValueStr: String = "",
+        divisionMultiplierStr: String = "1",
+        tnePackWeightStr: String = "",
+        oimlClassStr: String = "XIII(1)"
+    ): DynamicEccentricityTestResult? {
+        val testLoad = testLoadStr.toDoubleOrNull() ?: return null
+        val frontReading = frontReadingStr.toDoubleOrNull() ?: return null
+        val backReading = backReadingStr.toDoubleOrNull() ?: return null
+        val centreReading = centreReadingStr.toDoubleOrNull()
+        val scaleInterval = scaleIntervalStr.toDoubleOrNull() ?: 1.0
+
+        val baseline = centreReading ?: testLoad
+
+        val frontError = roundTo(frontReading - baseline, 3)
+        val backError = roundTo(backReading - baseline, 3)
+        val maxError = roundTo(maxOf(abs(frontError), abs(backError)), 3)
+
+        val (mpe, toleranceDescription) = calculateDynamicEccentricityLimit(
+            toleranceSource = toleranceSource,
+            testLoad = testLoad,
+            scaleInterval = scaleInterval,
+            accuracyClass = accuracyClass,
+            manualType = manualType,
+            manualValueStr = manualValueStr,
+            divisionMultiplierStr = divisionMultiplierStr,
+            tnePackWeightStr = tnePackWeightStr,
+            oimlClassStr = oimlClassStr
+        )
+
+        val isPass = maxError <= mpe
+
+        return DynamicEccentricityTestResult(
+            testLoad = testLoad,
+            referenceWeight = baseline,
+            frontReading = frontReading,
+            backReading = backReading,
+            centreReading = centreReading,
+            frontError = frontError,
+            backError = backError,
+            maxError = maxError,
+            mpe = mpe,
+            scaleInterval = scaleInterval,
+            accuracyClass = accuracyClass,
+            toleranceSource = toleranceSource,
+            toleranceDescription = toleranceDescription,
             isPass = isPass
         )
     }

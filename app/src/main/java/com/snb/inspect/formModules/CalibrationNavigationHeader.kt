@@ -1,11 +1,14 @@
 package com.snb.inspect.formModules
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -27,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -50,63 +54,85 @@ fun CalibrationNavigationHeader(
         viewModel.setScreenValidity(route, isValid)
     }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        contentAlignment = Alignment.Center
+            .background(Color.White)
     ) {
-        Row(
+        Box(
             modifier = Modifier
-                .clickable { expanded = true }
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                textAlign = TextAlign.Center,
-                fontStyle = FontStyle.Italic
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Icon(
-                imageVector = Icons.Default.UnfoldMore,
-                contentDescription = "Navigate",
-                modifier = Modifier.size(20.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-        }
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            routeOrder.forEach { r ->
-                val baseRoute = r.split("/").first()
-                val isScreenValid = screenValidities[baseRoute] == true
-                val displayName = viewModel.getDisplayNameForRoute(r)
-
-                DropdownMenuItem(
-                    text = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = if (isScreenValid) Icons.Default.CheckCircle else Icons.Default.Error,
-                                contentDescription = if (isScreenValid) "Valid" else "Incomplete",
-                                tint = if (isScreenValid) Color(0xFF4CAF50) else Color(0xFFF44336),
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = displayName)
-                        }
-                    },
-                    onClick = {
-                        expanded = false
-                        viewModel.persistCurrentScreen(route)
-                        navController.navigate(r)
-                    }
+            Row(
+                modifier = Modifier
+                    .clickable { expanded = true }
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center,
+                    fontStyle = FontStyle.Italic
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    imageVector = Icons.Default.UnfoldMore,
+                    contentDescription = "Navigate",
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                routeOrder.forEach { r ->
+                    val baseRoute = r.split("/").first()
+                    val isScreenValid = screenValidities[baseRoute] == true
+                    val displayName = viewModel.getDisplayNameForRoute(r)
+
+                    DropdownMenuItem(
+                        text = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = if (isScreenValid) Icons.Default.CheckCircle else Icons.Default.Error,
+                                    contentDescription = if (isScreenValid) "Valid" else "Incomplete",
+                                    tint = if (isScreenValid) Color(0xFF4CAF50) else Color(0xFFF44336),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(text = displayName)
+                            }
+                        },
+                        onClick = {
+                            expanded = false
+                            viewModel.persistCurrentScreen(route)
+                            navController.navigate(r)
+                        }
+                    )
+                }
+            }
         }
+
+        // Soft gradient shadow overlay beneath header
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(8.dp)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Black.copy(alpha = 0.08f),
+                            Color.Black.copy(alpha = 0.02f),
+                            Color.Transparent
+                        )
+                    )
+                )
+        )
     }
 }

@@ -17,6 +17,7 @@ import com.snb.inspect.calibrationViewModels.CalibrationCheckweigherViewModel
 import com.snb.inspect.formModules.CalibrationHeader
 import com.snb.inspect.formModules.ConditionState
 import com.snb.inspect.formModules.inputs.SimpleTextInput
+import com.snb.inspect.ui.theme.AppCard
 import com.snb.inspect.ui.theme.FormSpacer
 import com.snb.inspect.ui.theme.FormWrapperSurface
 import com.snb.inspect.ui.theme.LazyColumnWithScrollbar
@@ -149,7 +150,7 @@ private fun ModernChecklistCard(model: ChecklistCardModel) {
     val commentsRequired = model.condition == ConditionState.POOR
     val showComments = commentsRequired || commentsExpanded || model.comments.isNotBlank()
 
-    Card(
+    AppCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = FormWrapperSurface)
