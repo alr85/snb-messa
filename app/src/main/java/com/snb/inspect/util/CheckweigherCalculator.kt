@@ -5,6 +5,8 @@ import kotlin.math.pow
 import kotlin.math.round
 import kotlin.math.sqrt
 
+// --- Legacy Enums & Data Classes for Compatibility ---
+
 enum class CheckweigherStatus {
     PASS,
     FAIL,
@@ -30,8 +32,8 @@ data class CheckweigherCalculationResult(
     val tne: Double,
     val t1: Double,
     val t2: Double,
-    val benchmark20PercentTne: Double, // 20% TNE Equipment suitability threshold
-    val benchmark25PercentTne: Double, // 25% TNE Zone of Indecision threshold
+    val benchmark20PercentTne: Double,
+    val benchmark25PercentTne: Double,
     val passCount: Int,
     val mean: Double?,
     val meanDynamicError: Double?,
@@ -115,20 +117,143 @@ data class DynamicEccentricityTestResult(
     val isPass: Boolean
 )
 
+// --- New Structured Tolerance Modes & Workflows ---
+
+enum class ToleranceMode(val label: String, val description: String) {
+    MANUAL_SPEC(
+        label = "Manual Specification",
+        description = "User enters custom Max Mean Error (g or %) and Max Std Dev (g or %)"
+    ),
+    DIVISION_BASED(
+        label = "Division-Based (UKWF Baseline)",
+        description = "Based on scale interval (d) with static and dynamic multipliers"
+    ),
+    PACKAGED_GOODS_TNE(
+        label = "Packaged Goods TNE (UK Avg Weight / e-mark)",
+        description = "Calculates TNE using UK Packaged Goods Regulations 2006 for nominal weight Qn"
+    ),
+    OIML_R51_BENCHMARK(
+        label = "OIML R 51 Benchmark",
+        description = "Enforces OIML R 51 Class MPE and Maximum Permissible Standard Deviation limits"
+    )
+}
+
+enum class OimlInspectionType(val label: String) {
+    INITIAL_VERIFICATION("Initial Verification"),
+    IN_SERVICE("In-Service Inspection")
+}
+
+data class ToleranceConfig(
+    val mode: ToleranceMode = ToleranceMode.PACKAGED_GOODS_TNE,
+    val manualMeanErrorValue: Double = 1.0,
+    val manualMeanErrorUnit: String = "GRAMS",
+    val manualStdDevValue: Double = 0.5,
+    val manualStdDevUnit: String = "GRAMS",
+    val staticDivisionMultiplier: Double = 1.0,
+    val dynamicDivisionMultiplier: Double = 2.0,
+    val nominalPackageWeightQn: Double = 0.0,
+    val stdDevPercentageOfTne: Double = 10.0,
+    val accuracyClass: String = "XIII",
+    val designationFactorX: Double = 1.0,
+    val verificationScaleIntervalE: Double = 1.0,
+    val inspectionType: OimlInspectionType = OimlInspectionType.INITIAL_VERIFICATION,
+    val oimlComplianceModeEnabled: Boolean = false
+)
+
+data class EvaluatedToleranceLimits(
+    val mode: ToleranceMode,
+    val allowedStaticMpe: Double,
+    val allowedMaxMeanError: Double,
+    val allowedMaxStdDev: Double,
+    val tne: Double? = null,
+    val description: String = ""
+)
+
+data class StaticLinearityPointResult(
+    val pointIndex: Int,
+    val percentCapacity: Int,
+    val targetRefWeight: Double,
+    val appliedRefWeight: Double,
+    val displayedReading: Double,
+    val error: Double,
+    val allowedMpe: Double,
+    val isPass: Boolean
+)
+
+data class StaticLinearityTestResult(
+    val points: List<StaticLinearityPointResult>,
+    val isOverallPass: Boolean
+)
+
+data class EvaluatedOffCentreTestResult(
+    val testWeight: Double,
+    val centre: Double,
+    val frontLeft: Double,
+    val frontRight: Double,
+    val rearLeft: Double,
+    val rearRight: Double,
+    val devFrontLeft: Double,
+    val devFrontRight: Double,
+    val devRearLeft: Double,
+    val devRearRight: Double,
+    val maxCornerDeviation: Double,
+    val maxCornerName: String,
+    val allowedLimit: Double,
+    val isPass: Boolean
+)
+
+data class DynamicRepeatabilityResult(
+    val referenceWeight: Double,
+    val beltSpeed: Double,
+    val beltSpeedUnit: String,
+    val runCount: Int,
+    val minRequiredRuns: Int,
+    val readings: List<Double>,
+    val dynamicMean: Double,
+    val dynamicMeanError: Double,
+    val sampleStdDev: Double,
+    val threeSigma: Double,
+    val dynamicAccuracyBand: Double,
+    val allowedMaxMeanError: Double,
+    val allowedMaxStdDev: Double,
+    val isMeanErrorPass: Boolean,
+    val isStdDevPass: Boolean,
+    val isSampleCountSufficient: Boolean,
+    val isOverallPass: Boolean
+)
+
+data class RejectMechanismResult(
+    val underweightRejectResult: String,
+    val overweightRejectResult: String,
+    val timingVerificationResult: String,
+    val isOverallPass: Boolean
+)
+
+data class CompleteCheckweigherEvaluation(
+    val toleranceLimits: EvaluatedToleranceLimits,
+    val staticLinearityResult: StaticLinearityTestResult?,
+    val staticEccentricityResult: EvaluatedOffCentreTestResult?,
+    val dynamicRepeatabilityResult: DynamicRepeatabilityResult?,
+    val rejectMechanismResult: RejectMechanismResult?,
+    val overallStatus: CheckweigherStatus
+)
+
 object CheckweigherCalculator {
 
-    private fun roundTo(x: Double, dp: Int): Double {
+    fun roundTo(x: Double, dp: Int): Double {
         val m = 10.0.pow(dp.toDouble())
         return round(x * m) / m
     }
 
     /**
      * TNE calculation derived from UK Weights and Measures (Packaged Goods) Regulations 2006.
-     * Quantity is in grams or millilitres.
+     * Quantity Qn is in grams or millilitres.
      */
     fun calculateTne(quantity: Double): Double {
+        if (quantity <= 0.0) return 0.0
         val tne = when {
-            quantity < 50.0 -> quantity * 0.09
+            quantity < 5.0 -> 5.0 * 0.09
+            quantity <= 50.0 -> quantity * 0.09
             quantity <= 100.0 -> 4.5
             quantity <= 200.0 -> quantity * 0.045
             quantity <= 300.0 -> 9.0
@@ -155,18 +280,203 @@ object CheckweigherCalculator {
     }
 
     /**
-     * Calculates sample standard deviation using N-1 formula.
+     * OIML R 51 Class XIII(1) Maximum Permissible Standard Deviation lookup table.
+     * Based on net load m in grams, multiplied by designation factor x and accuracy class factor.
      */
-    fun calculateSampleStdDev(readings: List<Double>): Double? {
-        if (readings.size < 2) return null
+    fun calculateOimlR51MaxStdDev(
+        m: Double,
+        accuracyClass: String = "XIII",
+        designationFactorX: Double = 1.0
+    ): Double {
+        if (m <= 0.0) return 0.0
+        val baseStdDev = when {
+            m <= 50.0 -> (0.48 / 100.0) * m
+            m <= 100.0 -> 0.24
+            m <= 200.0 -> (0.24 / 100.0) * m
+            m <= 300.0 -> 0.48
+            m <= 500.0 -> (0.16 / 100.0) * m
+            m <= 1000.0 -> 0.8
+            m <= 10_000.0 -> (0.08 / 100.0) * m
+            m <= 15_000.0 -> 8.0
+            else -> (0.053 / 100.0) * m
+        }
+
+        val classFactor = when {
+            accuracyClass.equals("XI", ignoreCase = true) || accuracyClass.contains("(0.1)", ignoreCase = true) -> 0.1
+            accuracyClass.equals("XII", ignoreCase = true) || accuracyClass.contains("(0.25)", ignoreCase = true) -> 0.25
+            accuracyClass.equals("XIIII", ignoreCase = true) || accuracyClass.contains("(2)", ignoreCase = true) -> 2.0
+            else -> 1.0
+        }
+
+        val effectiveFactor = if (designationFactorX > 0.0) designationFactorX else 1.0
+        return roundTo(baseStdDev * effectiveFactor * classFactor, 3)
+    }
+
+    /**
+     * OIML R 51 Class XIII Mean Error Maximum Permissible Error (MPE) based on m / e.
+     */
+    fun calculateOimlR51Mpe(
+        m: Double,
+        scaleIntervalE: Double,
+        inspectionType: OimlInspectionType = OimlInspectionType.INITIAL_VERIFICATION,
+        accuracyClass: String = "XIII",
+        designationFactorX: Double = 1.0
+    ): Double {
+        val e = if (scaleIntervalE > 0.0) scaleIntervalE else 1.0
+        val ratio = abs(m) / e
+
+        val baseMpe = when {
+            ratio <= 500.0 -> 0.5 * e
+            ratio <= 2000.0 -> 1.0 * e
+            else -> 1.5 * e
+        }
+
+        val inspectionMultiplier = if (inspectionType == OimlInspectionType.IN_SERVICE) 2.0 else 1.0
+
+        val classFactor = when {
+            accuracyClass.equals("XI", ignoreCase = true) || accuracyClass.contains("(0.1)", ignoreCase = true) -> 0.1
+            accuracyClass.equals("XII", ignoreCase = true) || accuracyClass.contains("(0.25)", ignoreCase = true) -> 0.25
+            accuracyClass.equals("XIIII", ignoreCase = true) || accuracyClass.contains("(2)", ignoreCase = true) -> 2.0
+            else -> 1.0
+        }
+
+        val effectiveFactor = if (designationFactorX > 0.0) designationFactorX else 1.0
+        return roundTo(baseMpe * inspectionMultiplier * effectiveFactor * classFactor, 3)
+    }
+
+    fun calculateOimlR51Mpe(
+        load: Double,
+        scaleInterval: Double,
+        accuracyClass: String = ""
+    ): Double {
+        return calculateOimlR51Mpe(
+            m = load,
+            scaleIntervalE = scaleInterval,
+            inspectionType = OimlInspectionType.INITIAL_VERIFICATION,
+            accuracyClass = accuracyClass,
+            designationFactorX = 1.0
+        )
+    }
+
+    fun getOimlMinSampleCount(loadGram: Double): Int {
+        return when {
+            loadGram <= 1000.0 -> 60
+            loadGram <= 10_000.0 -> 30
+            loadGram <= 20_000.0 -> 20
+            else -> 10
+        }
+    }
+
+    fun evaluateToleranceLimits(
+        config: ToleranceConfig,
+        scaleIntervalE: Double,
+        referenceWeight: Double
+    ): EvaluatedToleranceLimits {
+        val e = if (scaleIntervalE > 0.0) scaleIntervalE else 1.0
+        val ref = if (referenceWeight > 0.0) referenceWeight else 100.0
+
+        val effectiveMode = if (config.oimlComplianceModeEnabled) ToleranceMode.OIML_R51_BENCHMARK else config.mode
+
+        return when (effectiveMode) {
+            ToleranceMode.MANUAL_SPEC -> {
+                val meanErrGrams = if (config.manualMeanErrorUnit == "PERCENT") {
+                    roundTo((config.manualMeanErrorValue / 100.0) * ref, 3)
+                } else {
+                    roundTo(config.manualMeanErrorValue, 3)
+                }
+
+                val stdDevGrams = if (config.manualStdDevUnit == "PERCENT") {
+                    roundTo((config.manualStdDevValue / 100.0) * ref, 3)
+                } else {
+                    roundTo(config.manualStdDevValue, 3)
+                }
+
+                val staticMpe = meanErrGrams
+
+                EvaluatedToleranceLimits(
+                    mode = ToleranceMode.MANUAL_SPEC,
+                    allowedStaticMpe = staticMpe,
+                    allowedMaxMeanError = meanErrGrams,
+                    allowedMaxStdDev = stdDevGrams,
+                    description = "Manual Spec: Max Mean Error ±${"%.2f".format(meanErrGrams)}g, Max Std Dev ${"%.2f".format(stdDevGrams)}g"
+                )
+            }
+
+            ToleranceMode.DIVISION_BASED -> {
+                val staticMult = if (config.staticDivisionMultiplier > 0.0) config.staticDivisionMultiplier else 1.0
+                val dynamicMult = if (config.dynamicDivisionMultiplier > 0.0) config.dynamicDivisionMultiplier else 2.0
+
+                val staticMpe = roundTo(staticMult * e, 3)
+                val maxMeanErr = roundTo(dynamicMult * e, 3)
+                val maxStdDev = roundTo(dynamicMult * e, 3)
+
+                EvaluatedToleranceLimits(
+                    mode = ToleranceMode.DIVISION_BASED,
+                    allowedStaticMpe = staticMpe,
+                    allowedMaxMeanError = maxMeanErr,
+                    allowedMaxStdDev = maxStdDev,
+                    description = "Division-Based (d=${"%.2f".format(e)}g): Static ±${"%.2f".format(staticMpe)}g (${staticMult}d), Dyn Mean Error ±${"%.2f".format(maxMeanErr)}g (${dynamicMult}d), Max Std Dev ${"%.2f".format(maxStdDev)}g"
+                )
+            }
+
+            ToleranceMode.PACKAGED_GOODS_TNE -> {
+                val qn = if (config.nominalPackageWeightQn > 0.0) config.nominalPackageWeightQn else ref
+                val tne = calculateTne(qn)
+
+                val pct = config.stdDevPercentageOfTne.coerceIn(5.0, 20.0)
+                val maxStdDev = roundTo((pct / 100.0) * tne, 3)
+                val maxMeanErr = roundTo(0.20 * tne, 3)
+                val staticMpe = roundTo(0.10 * tne, 3)
+
+                EvaluatedToleranceLimits(
+                    mode = ToleranceMode.PACKAGED_GOODS_TNE,
+                    allowedStaticMpe = staticMpe,
+                    allowedMaxMeanError = maxMeanErr,
+                    allowedMaxStdDev = maxStdDev,
+                    tne = tne,
+                    description = "UK Packaged Goods (Qn=${"%.1f".format(qn)}g, TNE=${"%.2f".format(tne)}g): Static MPE ±${"%.2f".format(staticMpe)}g, Max Mean Error ±${"%.2f".format(maxMeanErr)}g (20% TNE), Max Std Dev ${"%.2f".format(maxStdDev)}g (${"%.0f".format(pct)}% TNE)"
+                )
+            }
+
+            ToleranceMode.OIML_R51_BENCHMARK -> {
+                val staticMpe = calculateOimlR51Mpe(
+                    m = ref,
+                    scaleIntervalE = e,
+                    inspectionType = config.inspectionType,
+                    accuracyClass = config.accuracyClass,
+                    designationFactorX = config.designationFactorX
+                )
+
+                val maxMeanErr = staticMpe
+
+                val maxStdDev = calculateOimlR51MaxStdDev(
+                    m = ref,
+                    accuracyClass = config.accuracyClass,
+                    designationFactorX = config.designationFactorX
+                )
+
+                val inspLabel = if (config.inspectionType == OimlInspectionType.IN_SERVICE) "In-Service" else "Initial Verification"
+
+                EvaluatedToleranceLimits(
+                    mode = ToleranceMode.OIML_R51_BENCHMARK,
+                    allowedStaticMpe = staticMpe,
+                    allowedMaxMeanError = maxMeanErr,
+                    allowedMaxStdDev = maxStdDev,
+                    description = "OIML R 51 Class ${config.accuracyClass} (${config.designationFactorX}x, $inspLabel): MPE ±${"%.2f".format(staticMpe)}g, Max Std Dev ${"%.2f".format(maxStdDev)}g"
+                )
+            }
+        }
+    }
+
+    fun calculateSampleStdDev(readings: List<Double>): Double {
+        if (readings.size < 2) return 0.0
         val mean = readings.sum() / readings.size
         val sumSquaredDiffs = readings.sumOf { (it - mean) * (it - mean) }
         return sqrt(sumSquaredDiffs / (readings.size - 1))
     }
 
-    /**
-     * Evaluates dynamic weighing readings against reference weight and tolerance specifications.
-     */
+    // --- Legacy Evaluation Methods for Backwards Compatibility ---
+
     fun evaluate(
         nominalWeight: Double,
         referenceWeight: Double,
@@ -191,21 +501,19 @@ object CheckweigherCalculator {
         val mean = if (passCount > 0) roundTo(passes.sum() / passCount, 3) else null
         val meanDynamicError = mean?.let { roundTo(it - effectiveRefWeight, 3) }
 
-        val sRaw = if (passCount >= 2) calculateSampleStdDev(passes) else null
-        val sampleStdDev = sRaw?.let { roundTo(it, 4) }
+        val sRaw = if (passCount >= 2) calculateSampleStdDev(passes) else 0.0
+        val sampleStdDev = if (passCount >= 2) roundTo(sRaw, 4) else null
         val sixSigmaZoi = sampleStdDev?.let { roundTo(it * 6.0, 3) }
 
         val exceeds25 = sixSigmaZoi?.let { it > b25 } ?: false
         val setPointAllowance = if (exceeds25 && sixSigmaZoi != null) roundTo(sixSigmaZoi - b25, 3) else null
 
-        // Equipment suitability check: Mean dynamic error should not exceed 20% TNE benchmark
         val equipmentSuitabilityPass = meanDynamicError?.let { abs(it) <= b20 } ?: true
 
         val overallStatus = when {
             !generalRejectPassed -> CheckweigherStatus.FAIL
             !equipmentSuitabilityPass -> CheckweigherStatus.FAIL
             exceeds25 -> CheckweigherStatus.FURTHER_ASSESSMENT_REQUIRED
-            passCount >= 30 -> CheckweigherStatus.PASS
             else -> CheckweigherStatus.PASS
         }
 
@@ -231,9 +539,6 @@ object CheckweigherCalculator {
         )
     }
 
-    /**
-     * Evaluates static off-centre loading test (4 corners vs centre).
-     */
     fun evaluateOffCentreTest(
         testWeightStr: String,
         centreStr: String,
@@ -284,9 +589,6 @@ object CheckweigherCalculator {
         )
     }
 
-    /**
-     * Evaluates static 3-time repeatability test.
-     */
     fun evaluateRepeatabilityTest(
         testWeightStr: String,
         r1Str: String,
@@ -340,45 +642,6 @@ object CheckweigherCalculator {
         )
     }
 
-    /**
-     * Calculates Maximum Permissible Error (MPE) according to OIML R 51-1.
-     * Scale verification interval 'e' and accuracy class designation multiplier 'x' are applied.
-     */
-    fun calculateOimlR51Mpe(
-        load: Double,
-        scaleInterval: Double,
-        accuracyClass: String = ""
-    ): Double {
-        val e = if (scaleInterval > 0.0) scaleInterval else 1.0
-        val n = abs(load) / e
-
-        val baseMpe = when {
-            n <= 500.0 -> 0.5 * e
-            n <= 2000.0 -> 1.0 * e
-            n <= 10000.0 -> 1.5 * e
-            else -> 2.5 * e
-        }
-
-        val x = when {
-            accuracyClass.contains("(0.5)", ignoreCase = true) -> 0.5
-            accuracyClass.contains("(2)", ignoreCase = true) -> 2.0
-            accuracyClass.contains("(1)", ignoreCase = true) -> 1.0
-            accuracyClass.contains("Y(b)", ignoreCase = true) -> 1.5
-            accuracyClass.contains("Y(a)", ignoreCase = true) -> 1.0
-            else -> 1.0
-        }
-
-        return roundTo(baseMpe * x, 3)
-    }
-
-    /**
-     * Calculates the dynamic eccentricity permissible error limit (MPE/Threshold) and description based on selected tolerance source.
-     * Sources:
-     * - MANUAL_SPEC: Custom ±g or ±% specification.
-     * - DIVISION_BASED: Multiplier X * scaleInterval (±Xd).
-     * - PACKAGED_GOODS: 10% of TNE based on target pack weight.
-     * - OIML_R51: OIML R 51 MPE benchmark.
-     */
     fun calculateDynamicEccentricityLimit(
         toleranceSource: String,
         testLoad: Double,
@@ -414,7 +677,7 @@ object CheckweigherCalculator {
                 val limit = roundTo(0.10 * tne, 3)
                 Pair(limit, "Packaged Goods (10% TNE = ±${"%.2f".format(limit)}g)")
             }
-            else -> { // "OIML_R51"
+            else -> {
                 val effectiveClass = oimlClassStr.ifBlank { accuracyClass }
                 val limit = calculateOimlR51Mpe(testLoad, e, effectiveClass)
                 val classLabel = if (effectiveClass.contains("XIII(2)", ignoreCase = true)) "XIII(2) In-Service" else "XIII(1)"
@@ -423,10 +686,6 @@ object CheckweigherCalculator {
         }
     }
 
-    /**
-     * Evaluates Dynamic Eccentricity (Off-Centre Weighing) test passes (Front and Back edge passes).
-     * Compares maximum deviation against permissible error limit according to selected tolerance source.
-     */
     fun evaluateDynamicEccentricityTest(
         testLoadStr: String,
         frontReadingStr: String,
@@ -482,6 +741,152 @@ object CheckweigherCalculator {
             toleranceSource = toleranceSource,
             toleranceDescription = toleranceDescription,
             isPass = isPass
+        )
+    }
+
+    fun evaluateStaticLinearityTest(
+        maxCapacity: Double,
+        appliedRefWeights: List<Double>,
+        displayedReadings: List<Double>,
+        allowedStaticMpe: Double
+    ): StaticLinearityTestResult {
+        val percentages = listOf(0, 25, 50, 75, 100)
+        val points = mutableListOf<StaticLinearityPointResult>()
+        var overallPass = true
+
+        for (i in 0..4) {
+            val targetRef = roundTo((percentages[i] / 100.0) * maxCapacity, 3)
+            val appliedRef = appliedRefWeights.getOrNull(i) ?: targetRef
+            val disp = displayedReadings.getOrNull(i) ?: 0.0
+
+            val err = roundTo(disp - appliedRef, 3)
+            val pass = abs(err) <= allowedStaticMpe
+
+            if (!pass) overallPass = false
+
+            points.add(
+                StaticLinearityPointResult(
+                    pointIndex = i + 1,
+                    percentCapacity = percentages[i],
+                    targetRefWeight = targetRef,
+                    appliedRefWeight = appliedRef,
+                    displayedReading = disp,
+                    error = err,
+                    allowedMpe = allowedStaticMpe,
+                    isPass = pass
+                )
+            )
+        }
+
+        return StaticLinearityTestResult(
+            points = points,
+            isOverallPass = overallPass
+        )
+    }
+
+    fun evaluateStaticEccentricityTest(
+        testWeight: Double,
+        centre: Double,
+        frontLeft: Double,
+        frontRight: Double,
+        rearLeft: Double,
+        rearRight: Double,
+        allowedStaticMpe: Double
+    ): EvaluatedOffCentreTestResult {
+        val dFL = roundTo(abs(frontLeft - centre), 3)
+        val dFR = roundTo(abs(frontRight - centre), 3)
+        val dRL = roundTo(abs(rearLeft - centre), 3)
+        val dRR = roundTo(abs(rearRight - centre), 3)
+
+        val maxDev = maxOf(dFL, dFR, dRL, dRR)
+        val maxCornerName = when (maxDev) {
+            dFL -> "Front Left"
+            dFR -> "Front Right"
+            dRL -> "Rear Left"
+            else -> "Rear Right"
+        }
+
+        val isPass = maxDev <= allowedStaticMpe
+
+        return EvaluatedOffCentreTestResult(
+            testWeight = testWeight,
+            centre = centre,
+            frontLeft = frontLeft,
+            frontRight = frontRight,
+            rearLeft = rearLeft,
+            rearRight = rearRight,
+            devFrontLeft = dFL,
+            devFrontRight = dFR,
+            devRearLeft = dRL,
+            devRearRight = dRR,
+            maxCornerDeviation = maxDev,
+            maxCornerName = maxCornerName,
+            allowedLimit = allowedStaticMpe,
+            isPass = isPass
+        )
+    }
+
+    fun evaluateDynamicRepeatability(
+        referenceWeight: Double,
+        beltSpeed: Double,
+        beltSpeedUnit: String = "m/min",
+        readings: List<Double>,
+        allowedMaxMeanError: Double,
+        allowedMaxStdDev: Double,
+        isOimlComplianceMode: Boolean = false
+    ): DynamicRepeatabilityResult {
+        val count = readings.size
+        val minRequired = if (isOimlComplianceMode) getOimlMinSampleCount(referenceWeight) else 10
+
+        val mean = if (count > 0) roundTo(readings.sum() / count, 3) else 0.0
+        val meanError = roundTo(mean - referenceWeight, 3)
+        val s = if (count >= 2) roundTo(calculateSampleStdDev(readings), 4) else 0.0
+        val threeSigma = roundTo(3.0 * s, 3)
+        val accuracyBand = roundTo(abs(meanError) + threeSigma, 3)
+
+        val isMeanErrorPass = abs(meanError) <= allowedMaxMeanError
+        val isStdDevPass = s <= allowedMaxStdDev
+        val isSampleSufficient = count >= minRequired
+
+        val overallPass = isMeanErrorPass && isStdDevPass && isSampleSufficient
+
+        return DynamicRepeatabilityResult(
+            referenceWeight = referenceWeight,
+            beltSpeed = beltSpeed,
+            beltSpeedUnit = beltSpeedUnit,
+            runCount = count,
+            minRequiredRuns = minRequired,
+            readings = readings,
+            dynamicMean = mean,
+            dynamicMeanError = meanError,
+            sampleStdDev = s,
+            threeSigma = threeSigma,
+            dynamicAccuracyBand = accuracyBand,
+            allowedMaxMeanError = allowedMaxMeanError,
+            allowedMaxStdDev = allowedMaxStdDev,
+            isMeanErrorPass = isMeanErrorPass,
+            isStdDevPass = isStdDevPass,
+            isSampleCountSufficient = isSampleSufficient,
+            isOverallPass = overallPass
+        )
+    }
+
+    fun evaluateRejectMechanism(
+        underweightResult: String,
+        overweightResult: String,
+        timingResult: String
+    ): RejectMechanismResult {
+        val passUnder = underweightResult.equals("PASS", ignoreCase = true) || underweightResult.equals("N/A", ignoreCase = true)
+        val passOver = overweightResult.equals("PASS", ignoreCase = true) || overweightResult.equals("N/A", ignoreCase = true)
+        val passTiming = timingResult.equals("PASS", ignoreCase = true) || timingResult.equals("N/A", ignoreCase = true)
+
+        val isOverallPass = passUnder && passOver && passTiming
+
+        return RejectMechanismResult(
+            underweightRejectResult = underweightResult,
+            overweightRejectResult = overweightResult,
+            timingVerificationResult = timingResult,
+            isOverallPass = isOverallPass
         )
     }
 }

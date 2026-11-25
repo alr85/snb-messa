@@ -16,7 +16,7 @@ import com.snb.inspect.calibrationViewModels.CalibrationCheckweigherViewModel
 import com.snb.inspect.formModules.CalibrationHeader
 import com.snb.inspect.ui.theme.AppCard
 import com.snb.inspect.ui.theme.ScrollableWithScrollbar
-import com.snb.inspect.util.CheckweigherCalculationResult
+import com.snb.inspect.util.DynamicRepeatabilityResult
 
 @Composable
 fun CalCwDynamicTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
@@ -24,17 +24,23 @@ fun CalCwDynamicTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
     val targetPasses = viewModel.requiredPassesCount.value
     var inputPassesText by remember(targetPasses) { mutableStateOf(targetPasses.toString()) }
 
-    val calcResult by viewModel.evaluatedCalculationResultAsFound.collectAsState()
+    val isOimlCompliance = viewModel.oimlComplianceModeEnabled.value
+    val evalLimits by viewModel.evaluatedToleranceLimits.collectAsState()
+    val dynamicEval by viewModel.evaluatedDynamicRepeatabilityResult.collectAsState()
 
+    val minRequiredRuns = dynamicEval?.minRequiredRuns ?: if (isOimlCompliance) 30 else 10
     val validCount = passes.take(targetPasses).count { it.isNotBlank() }
-    val isNextStepEnabled = viewModel.nominalQuantityAsFound.value.isNotBlank() && validCount >= targetPasses
+
+    val isNextStepEnabled = viewModel.nominalQuantityAsFound.value.isNotBlank() &&
+            validCount >= targetPasses &&
+            (!isOimlCompliance || validCount >= minRequiredRuns)
 
     LaunchedEffect(isNextStepEnabled) {
         viewModel.setCurrentScreenNextEnabled(isNextStepEnabled)
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        CalibrationHeader(label = "Dynamic Weighing Test ($targetPasses Passes)", isValid = isNextStepEnabled)
+        CalibrationHeader(label = "Dynamic Repeatability (In-Motion Test)", isValid = isNextStepEnabled)
 
         ScrollableWithScrollbar(
             modifier = Modifier.fillMaxSize(),
@@ -42,6 +48,29 @@ fun CalCwDynamicTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
         ) {
             Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Spacer(Modifier.height(4.dp))
+
+                // OIML Compliance Banner if active
+                if (isOimlCompliance) {
+                    Surface(
+                        color = Color(0xFFE3F2FD),
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(
+                                "🛡️ OIML R 51 Compliance Mode Active",
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1565C0),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                "Enforced Minimum Runs for current test load: $minRequiredRuns runs",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color(0xFF1565C0)
+                            )
+                        }
+                    }
+                }
 
                 AppCard(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -61,109 +90,31 @@ fun CalCwDynamicTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
                                 inputPassesText = raw.filter { it.isDigit() }
                                 val parsed = inputPassesText.toIntOrNull()
                                 if (parsed != null && parsed >= 10) {
-                                    viewModel.setRequiredPassesCountInt(parsed.coerceAtMost(30))
+                                    viewModel.setRequiredPassesCountInt(parsed.coerceAtMost(60))
                                 }
                             },
-                            label = { Text("Required Test Passes (Min 10, Max 30)") },
+                            label = { Text("Required Test Runs (Min $minRequiredRuns, Max 60)") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             singleLine = true,
-                            isError = (inputPassesText.toIntOrNull() ?: 0) < 10,
+                            isError = (inputPassesText.toIntOrNull() ?: 0) < minRequiredRuns,
                             modifier = Modifier.fillMaxWidth()
                         )
-                        if ((inputPassesText.toIntOrNull() ?: 0) < 10 && inputPassesText.isNotBlank()) {
-                            Text(
-                                "⚠️ Required test passes must be a minimum of 10.",
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
                     }
                 }
 
                 AppCard(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(
-                            "Test Pack & Product Parameters",
+                            "Test Pack & Reference Parameters",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
 
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedTextField(
-                                value = viewModel.productDescription.value,
-                                onValueChange = viewModel::setProductDescription,
-                                label = { Text("Product Description") },
-                                singleLine = true,
-                                modifier = Modifier.weight(1f)
-                            )
-                            OutlinedTextField(
-                                value = viewModel.productLibraryReference.value,
-                                onValueChange = viewModel::setProductLibraryReference,
-                                label = { Text("Library Ref") },
-                                singleLine = true,
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedTextField(
-                                value = viewModel.productLength.value,
-                                onValueChange = viewModel::setProductLength,
-                                label = { Text("Length (mm)") },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                                singleLine = true,
-                                modifier = Modifier.weight(1f)
-                            )
-                            OutlinedTextField(
-                                value = viewModel.productWidth.value,
-                                onValueChange = viewModel::setProductWidth,
-                                label = { Text("Width (mm)") },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                                singleLine = true,
-                                modifier = Modifier.weight(1f)
-                            )
-                            OutlinedTextField(
-                                value = viewModel.productHeight.value,
-                                onValueChange = viewModel::setProductHeight,
-                                label = { Text("Height (mm)") },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                                singleLine = true,
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedTextField(
                                 value = viewModel.nominalQuantityAsFound.value,
                                 onValueChange = viewModel::setNominalQuantityAsFound,
-                                label = { Text("Nominal Qnom (g)") },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                                singleLine = true,
-                                modifier = Modifier.weight(1f)
-                            )
-                            OutlinedTextField(
-                                value = viewModel.grossWeight.value,
-                                onValueChange = viewModel::setGrossWeight,
-                                label = { Text("Gross Weight (g)") },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                                singleLine = true,
-                                modifier = Modifier.weight(1f)
-                            )
-                            OutlinedTextField(
-                                value = viewModel.tareWeight.value,
-                                onValueChange = viewModel::setTareWeight,
-                                label = { Text("Tare Weight (g)") },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                                singleLine = true,
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedTextField(
-                                value = viewModel.staticScaleWeightAsFound.value,
-                                onValueChange = viewModel::setStaticScaleWeightAsFound,
-                                label = { Text("Static Ref Pack (g)") },
+                                label = { Text("Reference Weight W_ref (g)") },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                 singleLine = true,
                                 modifier = Modifier.weight(1f)
@@ -171,77 +122,32 @@ fun CalCwDynamicTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
                             OutlinedTextField(
                                 value = viewModel.beltSpeed.value,
                                 onValueChange = viewModel::setBeltSpeed,
-                                label = { Text("Belt Speed (m/min)") },
+                                label = { Text("Belt Speed (${viewModel.dynamicBeltSpeedUnit.value})") },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                 singleLine = true,
                                 modifier = Modifier.weight(1f)
                             )
-                            OutlinedTextField(
-                                value = viewModel.tareConfiguration.value,
-                                onValueChange = viewModel::setTareConfiguration,
-                                label = { Text("Tare Config (g)") },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                                singleLine = true,
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    "Static Ref Pack is Gross Weight",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                                Text(
-                                    "Apply Tare Offset from Tare Config to Net Error calculation",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            Switch(
-                                checked = viewModel.isStaticRefGrossWeight.value,
-                                onCheckedChange = viewModel::setIsStaticRefGrossWeight
-                            )
-                        }
-
-                        if (viewModel.isStaticRefGrossWeight.value && calcResult != null && calcResult!!.tareOffsetApplied > 0.0) {
-                            Surface(
-                                color = Color(0xFFF5F5F5),
-                                shape = MaterialTheme.shapes.small,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(
-                                    text = "ℹ️ Effective Net Reference Weight: ${"%.2f".format(calcResult!!.effectiveReferenceWeight)}g (${"%.2f".format(calcResult!!.referenceWeight)}g Gross - ${"%.2f".format(calcResult!!.tareOffsetApplied)}g Tare Offset)",
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    modifier = Modifier.padding(8.dp),
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
                         }
                     }
                 }
 
+                // Dynamic Runs Inputs Grid
                 AppCard(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                "Dynamic Passes (g)",
+                                "Dynamic Readings (g)",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
                                 modifier = Modifier.weight(1f)
                             )
                             Surface(
-                                color = if (validCount >= targetPasses) Color(0xFFE8F5E9) else Color(0xFFFFF3E0),
+                                color = if (validCount >= minRequiredRuns) Color(0xFFE8F5E9) else Color(0xFFFFF3E0),
                                 shape = MaterialTheme.shapes.small
                             ) {
                                 Text(
-                                    text = "$validCount / $targetPasses",
-                                    color = if (validCount >= targetPasses) Color(0xFF2E7D32) else Color(0xFFE65100),
+                                    text = "$validCount / $targetPasses (Min $minRequiredRuns)",
+                                    color = if (validCount >= minRequiredRuns) Color(0xFF2E7D32) else Color(0xFFE65100),
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                     fontWeight = FontWeight.Bold,
                                     style = MaterialTheme.typography.labelMedium
@@ -258,7 +164,7 @@ fun CalCwDynamicTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
                                         OutlinedTextField(
                                             value = passes.getOrElse(index) { "" },
                                             onValueChange = { viewModel.setDynamicPassAsFound(index, it) },
-                                            label = { Text("P${index + 1}") },
+                                            label = { Text("Run ${index + 1}") },
                                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                             singleLine = true,
                                             modifier = Modifier.weight(1f)
@@ -272,8 +178,9 @@ fun CalCwDynamicTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
                     }
                 }
 
-                if (calcResult != null) {
-                    CalculatedStatisticsSummaryCard(calcResult!!)
+                // Dynamic Statistics Summary
+                if (dynamicEval != null) {
+                    DynamicStatisticsCard(dynamicEval!!)
                 }
 
                 Spacer(Modifier.height(60.dp))
@@ -283,66 +190,92 @@ fun CalCwDynamicTestAsFound(viewModel: CalibrationCheckweigherViewModel) {
 }
 
 @Composable
-private fun CalculatedStatisticsSummaryCard(res: CheckweigherCalculationResult) {
+private fun DynamicStatisticsCard(res: DynamicRepeatabilityResult) {
     AppCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text(
-                "Dynamic Accuracy Statistics",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Dynamic Accuracy Calculations",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Surface(
+                    color = if (res.isOverallPass) Color(0xFF2E7D32) else Color(0xFFC62828),
+                    shape = MaterialTheme.shapes.extraSmall
+                ) {
+                    Text(
+                        text = if (res.isOverallPass) "PASS" else "FAIL",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            }
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ValueBox(title = "Mean (x̄)", value = res.mean?.let { "%.2fg".format(it) } ?: "—", modifier = Modifier.weight(1f))
+                ValueBox(title = "Mean (W_mean)", value = "%.2fg".format(res.dynamicMean), modifier = Modifier.weight(1f))
                 ValueBox(
-                    title = if (res.tareOffsetApplied > 0.0) "Mean Net Error" else "Mean Error",
-                    value = res.meanDynamicError?.let { "%.2fg".format(it) } ?: "—",
+                    title = "Mean Error (E_mean)",
+                    value = "%.2fg".format(res.dynamicMeanError),
+                    subtitle = "Limit: ±%.2fg".format(res.allowedMaxMeanError),
+                    isPass = res.isMeanErrorPass,
                     modifier = Modifier.weight(1f)
                 )
             }
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ValueBox(title = "Sample SD (s)", value = res.sampleStdDev?.let { "%.3f".format(it) } ?: "—", modifier = Modifier.weight(1f))
-                ValueBox(title = "Six Sigma (6s)", value = res.sixSigmaZoi?.let { "%.2f".format(it) } ?: "—", modifier = Modifier.weight(1f))
+                ValueBox(
+                    title = "Std Dev (1σ)",
+                    value = "%.3fg".format(res.sampleStdDev),
+                    subtitle = "Limit: %.3fg".format(res.allowedMaxStdDev),
+                    isPass = res.isStdDevPass,
+                    modifier = Modifier.weight(1f)
+                )
+                ValueBox(title = "3-Sigma (3σ)", value = "%.3fg".format(res.threeSigma), modifier = Modifier.weight(1f))
             }
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ValueBox(title = "TNE", value = "%.2fg".format(res.tne), modifier = Modifier.weight(1f))
-                ValueBox(title = "20% TNE Limit", value = "%.2fg".format(res.benchmark20PercentTne), modifier = Modifier.weight(1f))
-                ValueBox(title = "25% TNE Threshold", value = "%.2fg".format(res.benchmark25PercentTne), modifier = Modifier.weight(1f))
-            }
-
-            if (res.exceeds25PercentTneLimit) {
-                Surface(
-                    color = Color(0xFFFFF3E0),
-                    shape = MaterialTheme.shapes.medium,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text(
-                            "⚠️ 6σ exceeds 25% of TNE (${"%.2f".format(res.sixSigmaZoi)} > ${"%.2f".format(res.benchmark25PercentTne)})",
-                            color = Color(0xFFE65100),
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Text(
-                            "Further assessment is required on the next step. Additional set-point allowance: ${res.additionalSetPointAllowance?.let { "%.2fg".format(it) } ?: "—"}",
-                            color = Color(0xFFE65100),
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                }
+                ValueBox(
+                    title = "Dynamic Accuracy Band (|E_mean| + 3σ)",
+                    value = "%.2fg".format(res.dynamicAccuracyBand),
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
     }
 }
 
 @Composable
-private fun ValueBox(title: String, value: String, modifier: Modifier = Modifier) {
-    AppCard(shape = MaterialTheme.shapes.medium, modifier = modifier) {
+private fun ValueBox(
+    title: String,
+    value: String,
+    subtitle: String? = null,
+    isPass: Boolean? = null,
+    modifier: Modifier = Modifier
+) {
+    AppCard(
+        shape = MaterialTheme.shapes.medium,
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = when (isPass) {
+                true -> Color(0xFFE8F5E9)
+                false -> Color(0xFFFFEBEE)
+                null -> MaterialTheme.colorScheme.surface
+            }
+        )
+    ) {
         Column(modifier = Modifier.padding(8.dp)) {
             Text(title, style = MaterialTheme.typography.labelSmall)
             Text(value, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            if (subtitle != null) {
+                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+            }
         }
     }
 }

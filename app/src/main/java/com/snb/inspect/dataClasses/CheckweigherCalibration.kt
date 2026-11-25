@@ -227,6 +227,19 @@ class CheckweigherCalibrationLocal(
 
     //--------------------------------------------------------------------Tolerances & Assessment
     var toleranceSource: String = "SNB_GUIDANCE" // MANUFACTURER, CUSTOMER, SNB_GUIDANCE
+    var toleranceMode: String = "PACKAGED_GOODS_TNE" // MANUAL_SPEC, DIVISION_BASED, PACKAGED_GOODS_TNE, OIML_R51_BENCHMARK
+    var manualMeanErrorValue: String = "1.0"
+    var manualMeanErrorUnit: String = "GRAMS"
+    var manualStdDevValue: String = "0.5"
+    var manualStdDevUnit: String = "GRAMS"
+    var staticDivisionMultiplier: String = "1.0"
+    var dynamicDivisionMultiplier: String = "2.0"
+    var nominalPackageWeightQn: String = ""
+    var stdDevPercentageOfTne: String = "10.0"
+    var designationFactorX: String = "1.0"
+    var inspectionType: String = "INITIAL_VERIFICATION"
+    var oimlComplianceModeEnabled: Boolean = false
+
     var manufacturerTne: String = ""
     var customerTne: String = ""
     var calculatedTne: String = ""
@@ -238,9 +251,36 @@ class CheckweigherCalibrationLocal(
     var engineerSetPointAssessmentNotes: String = ""
     var engineerSetPointAssessmentResolved: Boolean = false
 
+    //----------------------------------------------------------------Static Linearity (5 Points)
+    var staticLinRef0: String = ""
+    var staticLinRef25: String = ""
+    var staticLinRef50: String = ""
+    var staticLinRef75: String = ""
+    var staticLinRef100: String = ""
+    var staticLinDisp0: String = ""
+    var staticLinDisp25: String = ""
+    var staticLinDisp50: String = ""
+    var staticLinDisp75: String = ""
+    var staticLinDisp100: String = ""
+
+    //----------------------------------------------------------------Static Eccentricity (5 Pos)
+    var eccentricityTestWeight: String = ""
+    var eccentricityCentreReading: String = ""
+    var eccentricityFrontLeftReading: String = ""
+    var eccentricityFrontRightReading: String = ""
+    var eccentricityRearLeftReading: String = ""
+    var eccentricityRearRightReading: String = ""
+
+    //----------------------------------------------------------------Dynamic Repeatability
+    var dynamicRefWeight: String = ""
+    var dynamicBeltSpeedUnit: String = "m/min"
+
     //------------------------------------------------------------------------Reject Verification
     var generalRejectTestResult: String = "PASS" // PASS, FAIL, NA
     var generalRejectNotes: String = ""
+    var underweightRejectResult: String = "PASS"
+    var overweightRejectResult: String = "PASS"
+    var timingVerificationResult: String = "PASS"
     var t0TestRefWeight: String = ""
     var t0TestExpected: String = ""
     var t0TestActual: String = ""

@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.snb.inspect.dataClasses.CheckweigherCalibrationLocal
 import com.snb.inspect.dataClasses.MetalDetectorConveyorCalibrationLocal
 import com.snb.inspect.formatDate
 import com.snb.inspect.ui.theme.SnbRed
@@ -95,7 +96,9 @@ fun CalibrationDetailDialog(
                             } ?: Text("Error: MD data missing")
                         }
                         SystemCategory.CHECKWEIGHER -> {
-                            Text("Checkweigher details coming soon...")
+                            calibration.rawCW?.let {
+                                CheckweigherCalibrationDetailsView(it, customerName)
+                            } ?: Text("Error: Checkweigher data missing")
                         }
                         else -> {
                             Text("Details for ${calibration.type.label} not implemented.")
@@ -428,6 +431,123 @@ fun MetalDetectorCalibrationDetailsView(
             DetailRow(label = "SME Name", value = cal.smeName)
             DetailRow(label = "Engineer Notes", value = cal.smeEngineerNotes)
             DetailRow(label = "P.V. Result", value = cal.smeTestPvResult)
+        }
+    }
+}
+
+@Composable
+fun CheckweigherCalibrationDetailsView(
+    cal: CheckweigherCalibrationLocal,
+    customerName: String
+) {
+    val canPerform = cal.canPerformCalibration.lowercase().let { it == "true" || it == "yes" }
+
+    DetailSection(title = "Calibration Details") {
+        DetailRow(label = "Calibration ID", value = cal.calibrationId)
+        DetailRow(label = "Engineer ID", value = cal.engineerId.toString())
+        DetailRow(label = "Start Time", value = try { formatDate(cal.startDate) } catch (_: Exception) { cal.startDate })
+        if (cal.endDate.isNotBlank()) {
+            DetailRow(label = "End Time", value = try { formatDate(cal.endDate) } catch (_: Exception) { cal.endDate })
+        }
+    }
+
+    DetailSection(title = "System & Scale Details") {
+        DetailRow(label = "Customer", value = customerName)
+        DetailRow(label = "Serial Number", value = cal.serialNumber)
+        DetailRow(label = "Location", value = cal.lastLocation)
+        DetailRow(label = "New Location", value = cal.newLocation)
+        DetailRow(label = "Able to Calibrate", value = cal.canPerformCalibration)
+        if (!canPerform && cal.reasonForNotCalibrating.isNotBlank()) {
+            DetailRow(label = "Reason", value = cal.reasonForNotCalibrating)
+        }
+        DetailRow(label = "Loadcell Type", value = cal.loadcellType)
+        DetailRow(label = "Scale Interval (e / d)", value = cal.scaleInterval)
+        DetailRow(label = "Max Capacity", value = cal.maxCapacity)
+        DetailRow(label = "Min Capacity", value = cal.minCapacity)
+        DetailRow(label = "Accuracy Class", value = cal.accuracyClass)
+        DetailRow(label = "Belt Width", value = cal.beltWidth)
+        DetailRow(label = "Conveyor Length", value = cal.weighConveyorLength)
+    }
+
+    if (canPerform) {
+        DetailSection(title = "Tolerance Configuration") {
+            DetailRow(label = "Tolerance Mode", value = cal.toleranceMode)
+            DetailRow(label = "OIML Compliance Mode", value = if (cal.oimlComplianceModeEnabled) "Active" else "Disabled")
+            if (cal.toleranceMode == "MANUAL_SPEC") {
+                DetailRow(label = "Max Mean Error", value = "${cal.manualMeanErrorValue} ${cal.manualMeanErrorUnit}")
+                DetailRow(label = "Max Std Dev", value = "${cal.manualStdDevValue} ${cal.manualStdDevUnit}")
+            } else if (cal.toleranceMode == "DIVISION_BASED") {
+                DetailRow(label = "Static Multiplier", value = "${cal.staticDivisionMultiplier}d")
+                DetailRow(label = "Dynamic Multiplier", value = "${cal.dynamicDivisionMultiplier}d")
+            } else if (cal.toleranceMode == "PACKAGED_GOODS_TNE") {
+                DetailRow(label = "Nominal Package Weight Qn", value = "${cal.nominalPackageWeightQn}g")
+                DetailRow(label = "Calculated TNE", value = "${cal.calculatedTne}g")
+                DetailRow(label = "20% TNE Limit", value = "${cal.benchmark20PercentTne}g")
+                DetailRow(label = "25% TNE ZOI Threshold", value = "${cal.benchmark25PercentTne}g")
+            } else if (cal.toleranceMode == "OIML_R51_BENCHMARK") {
+                DetailRow(label = "Accuracy Class", value = cal.accuracyClass)
+                DetailRow(label = "Designation Factor (x)", value = cal.designationFactorX)
+                DetailRow(label = "Inspection Type", value = cal.inspectionType)
+            }
+            if (cal.engineerSetPointAssessmentNotes.isNotBlank()) {
+                DetailRow(label = "Engineer Set-Point Assessment", value = cal.engineerSetPointAssessmentNotes)
+                DetailRow(label = "Assessment Resolved", value = if (cal.engineerSetPointAssessmentResolved) "Yes" else "No")
+            }
+        }
+
+        DetailSection(title = "Static Linearity Test (5 Points)") {
+            DetailRow(label = "Point 1 (0%)", value = "Ref: ${cal.staticLinRef0}g | Disp: ${cal.staticLinDisp0}g")
+            DetailRow(label = "Point 2 (25%)", value = "Ref: ${cal.staticLinRef25}g | Disp: ${cal.staticLinDisp25}g")
+            DetailRow(label = "Point 3 (50%)", value = "Ref: ${cal.staticLinRef50}g | Disp: ${cal.staticLinDisp50}g")
+            DetailRow(label = "Point 4 (75%)", value = "Ref: ${cal.staticLinRef75}g | Disp: ${cal.staticLinDisp75}g")
+            DetailRow(label = "Point 5 (100%)", value = "Ref: ${cal.staticLinRef100}g | Disp: ${cal.staticLinDisp100}g")
+        }
+
+        DetailSection(title = "Static Eccentricity (Off-Centre) Test") {
+            DetailRow(label = "Test Weight", value = "${cal.eccentricityTestWeight}g")
+            DetailRow(label = "Centre Reading", value = "${cal.eccentricityCentreReading}g")
+            DetailRow(label = "Front-Left", value = "${cal.eccentricityFrontLeftReading}g")
+            DetailRow(label = "Front-Right", value = "${cal.eccentricityFrontRightReading}g")
+            DetailRow(label = "Rear-Left", value = "${cal.eccentricityRearLeftReading}g")
+            DetailRow(label = "Rear-Right", value = "${cal.eccentricityRearRightReading}g")
+        }
+
+        DetailSection(title = "Dynamic Repeatability (In-Motion Test)") {
+            DetailRow(label = "Reference Weight (W_ref)", value = "${cal.dynamicRefWeight.ifBlank { cal.nominalQuantityAsFound }}g")
+            DetailRow(label = "Belt Speed", value = "${cal.beltSpeed} ${cal.dynamicBeltSpeedUnit}")
+            DetailRow(label = "Target Runs Count", value = cal.requiredPassesCount.toString())
+            DetailRow(label = "Dynamic Mean (W_mean)", value = "${cal.dynamicMeanAsFound}g")
+            DetailRow(label = "Dynamic Mean Error (E_mean)", value = "${cal.dynamicMeanErrorAsFound}g")
+            DetailRow(label = "Sample Standard Deviation (1σ)", value = "${cal.dynamicSampleStdDevAsFound}g")
+            DetailRow(label = "Six Sigma (6σ)", value = "${cal.dynamicSixSigmaAsFound}g")
+            DetailRow(label = "Overall Dynamic Result Status", value = cal.overallResultStatus)
+        }
+
+        DetailSection(title = "Reject Mechanism Verification") {
+            DetailRow(label = "Underweight Reject Test", value = cal.underweightRejectResult)
+            DetailRow(label = "Overweight Reject Test", value = cal.overweightRejectResult)
+            DetailRow(label = "Timing Verification Test", value = cal.timingVerificationResult)
+            DetailRow(label = "General Reject Test", value = cal.generalRejectTestResult)
+            DetailRow(label = "Engineer Notes", value = cal.generalRejectNotes)
+        }
+
+        DetailSection(title = "Failsafes & Sensors") {
+            DetailRow(label = "Infeed Sensor", value = "${cal.infeedSensorFitted} - Result: ${cal.infeedSensorTestResult}")
+            DetailRow(label = "Reject Confirm Sensor", value = "${cal.rejectConfirmSensorFitted} - Result: ${cal.rejectConfirmSensorTestResult}")
+            DetailRow(label = "Bin Full Sensor", value = "${cal.binFullSensorFitted} - Result: ${cal.binFullSensorTestResult}")
+            DetailRow(label = "Air Pressure Sensor", value = "${cal.airPressureSensorFitted} - Result: ${cal.airPressureSensorTestResult}")
+            DetailRow(label = "Bin Door Monitor", value = "${cal.binDoorMonitorFitted} - Status: ${cal.binDoorStatusAsFound}")
+        }
+
+        DetailSection(title = "System Checklist") {
+            DetailRow(label = "Conveyor Belt", value = "${cal.beltCondition} ${cal.beltConditionComments}")
+            DetailRow(label = "Safety Circuit", value = "${cal.safetyCircuitCondition} ${cal.safetyCircuitConditionComments}")
+            DetailRow(label = "Guarding", value = "${cal.guardCondition} ${cal.guardConditionComments}")
+            DetailRow(label = "Vibration", value = "${cal.vibrationCondition} ${cal.vibrationConditionComments}")
+            DetailRow(label = "Obstruction", value = "${cal.weighTableObstruction} ${cal.weighTableObstructionComments}")
+            DetailRow(label = "Product Transfer", value = "${cal.productTransferCondition} ${cal.productTransferConditionComments}")
+            DetailRow(label = "Machine Stability", value = "${cal.machineStabilityCondition} ${cal.machineStabilityConditionComments}")
+            DetailRow(label = "Checklist Engineer Notes", value = cal.systemChecklistEngineerNotes)
         }
     }
 }

@@ -7,7 +7,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.snb.inspect.calibrationViewModels.CalibrationCheckweigherViewModel
 import com.snb.inspect.formModules.CalibrationHeader
@@ -16,13 +15,16 @@ import com.snb.inspect.formModules.LabeledTextFieldWithHelp
 import com.snb.inspect.ui.theme.AppCard
 import com.snb.inspect.ui.theme.FormSpacer
 import com.snb.inspect.ui.theme.ScrollableWithScrollbar
-import com.snb.inspect.util.CheckweigherStatus
+import com.snb.inspect.util.OimlInspectionType
+import com.snb.inspect.util.ToleranceMode
 
 @Composable
 fun CalCwTolerancesAndAssessment(viewModel: CalibrationCheckweigherViewModel) {
-    val calcResult by viewModel.evaluatedCalculationResultAsFound.collectAsState()
-    val source = viewModel.toleranceSource.value
+    val currentMode = viewModel.toleranceMode.value
+    val isOimlCompliance = viewModel.oimlComplianceModeEnabled.value
+    val limits by viewModel.evaluatedToleranceLimits.collectAsState()
 
+    val calcResult by viewModel.evaluatedCalculationResultAsFound.collectAsState()
     val isAssessmentRequired = calcResult?.exceeds25PercentTneLimit == true
     val isResolved = viewModel.engineerSetPointAssessmentResolved.value
     val notes = viewModel.engineerSetPointAssessmentNotes.value
@@ -43,42 +45,181 @@ fun CalCwTolerancesAndAssessment(viewModel: CalibrationCheckweigherViewModel) {
             Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Spacer(Modifier.height(4.dp))
 
-                LabeledDropdownWithHelp(
-                    label = "Tolerance Source",
-                    options = listOf("SNB Guidance (Packaged Goods Regulations)", "Manufacturer Tolerances", "Customer Tolerances"),
-                    selectedOption = when (source) {
-                        "MANUFACTURER" -> "Manufacturer Tolerances"
-                        "CUSTOMER" -> "Customer Tolerances"
-                        else -> "SNB Guidance (Packaged Goods Regulations)"
-                    },
-                    onSelectionChange = { selected ->
-                        val code = when (selected) {
-                            "Manufacturer Tolerances" -> "MANUFACTURER"
-                            "Customer Tolerances" -> "CUSTOMER"
-                            else -> "SNB_GUIDANCE"
+                // Tier 2: OIML R 51 Compliance Mode Toggle Card
+                AppCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    "OIML R 51 Compliance Mode (Tier 2)",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    "Enforces OIML R 51 sample run counts and locks tolerances to OIML R 51 Benchmark.",
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                            Switch(
+                                checked = isOimlCompliance,
+                                onCheckedChange = { viewModel.setOimlComplianceModeEnabled(it) }
+                            )
                         }
-                        viewModel.setToleranceSource(code)
-                    },
-                    helpText = "Select tolerance source. Manufacturer and Customer tolerances are entered manually."
-                )
-                FormSpacer()
+                    }
+                }
 
-                if (source == "MANUFACTURER") {
-                    LabeledTextFieldWithHelp(
-                        label = "Manufacturer TNE (g)",
-                        value = viewModel.manufacturerTne.value,
-                        onValueChange = viewModel::setManufacturerTne,
-                        helpText = "Enter manufacturer-defined TNE limit."
-                    )
-                    FormSpacer()
-                } else if (source == "CUSTOMER") {
-                    LabeledTextFieldWithHelp(
-                        label = "Customer TNE (g)",
-                        value = viewModel.customerTne.value,
-                        onValueChange = viewModel::setCustomerTne,
-                        helpText = "Enter customer-defined TNE limit."
-                    )
-                    FormSpacer()
+                // Section 1: Selectable Presets (ToleranceMode)
+                AppCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(
+                            "Tolerance Mode Preset",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+
+                        val modeOptions = ToleranceMode.values().map { it.label }
+                        val selectedModeLabel = currentMode.label
+
+                        LabeledDropdownWithHelp(
+                            label = "Select Preset",
+                            options = modeOptions,
+                            selectedOption = selectedModeLabel,
+                            onSelectionChange = { selected ->
+                                val mode = ToleranceMode.values().find { it.label == selected } ?: ToleranceMode.PACKAGED_GOODS_TNE
+                                viewModel.setToleranceMode(mode)
+                            },
+                            helpText = currentMode.description
+                        )
+
+                        // 1. MANUAL_SPEC Inputs
+                        if (currentMode == ToleranceMode.MANUAL_SPEC && !isOimlCompliance) {
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                OutlinedTextField(
+                                    value = viewModel.manualMeanErrorValue.value,
+                                    onValueChange = viewModel::setManualMeanErrorValue,
+                                    label = { Text("Max Mean Error") },
+                                    modifier = Modifier.weight(1f),
+                                    singleLine = true
+                                )
+                                LabeledDropdownWithHelp(
+                                    label = "Unit",
+                                    options = listOf("GRAMS", "PERCENT"),
+                                    selectedOption = viewModel.manualMeanErrorUnit.value,
+                                    onSelectionChange = viewModel::setManualMeanErrorUnit,
+                                    helpText = "Unit for max mean error"
+                                )
+                            }
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                OutlinedTextField(
+                                    value = viewModel.manualStdDevValue.value,
+                                    onValueChange = viewModel::setManualStdDevValue,
+                                    label = { Text("Max Std Dev (1σ)") },
+                                    modifier = Modifier.weight(1f),
+                                    singleLine = true
+                                )
+                                LabeledDropdownWithHelp(
+                                    label = "Unit",
+                                    options = listOf("GRAMS", "PERCENT"),
+                                    selectedOption = viewModel.manualStdDevUnit.value,
+                                    onSelectionChange = viewModel::setManualStdDevUnit,
+                                    helpText = "Unit for max standard deviation"
+                                )
+                            }
+                        }
+
+                        // 2. DIVISION_BASED Inputs
+                        if (currentMode == ToleranceMode.DIVISION_BASED && !isOimlCompliance) {
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                OutlinedTextField(
+                                    value = viewModel.staticDivisionMultiplier.value,
+                                    onValueChange = viewModel::setStaticDivisionMultiplier,
+                                    label = { Text("Static Multiplier (e.g. 1d)") },
+                                    modifier = Modifier.weight(1f),
+                                    singleLine = true
+                                )
+                                OutlinedTextField(
+                                    value = viewModel.dynamicDivisionMultiplier.value,
+                                    onValueChange = viewModel::setDynamicDivisionMultiplier,
+                                    label = { Text("Dynamic Multiplier (e.g. 2d)") },
+                                    modifier = Modifier.weight(1f),
+                                    singleLine = true
+                                )
+                            }
+                        }
+
+                        // 3. PACKAGED_GOODS_TNE Inputs
+                        if (currentMode == ToleranceMode.PACKAGED_GOODS_TNE && !isOimlCompliance) {
+                            LabeledTextFieldWithHelp(
+                                label = "Nominal Package Weight Qn (g)",
+                                value = viewModel.nominalPackageWeightQn.value,
+                                onValueChange = viewModel::setNominalPackageWeightQn,
+                                helpText = "Target package weight used for UK Packaged Goods Regs 2006 TNE calculation."
+                            )
+                            LabeledTextFieldWithHelp(
+                                label = "Max Dynamic Std Dev Limit (% of TNE)",
+                                value = viewModel.stdDevPercentageOfTne.value,
+                                onValueChange = viewModel::setStdDevPercentageOfTne,
+                                helpText = "Default: 10% of TNE (configurable from 5% up to 20% of TNE)."
+                            )
+                        }
+
+                        // 4. OIML_R51_BENCHMARK Inputs
+                        if (currentMode == ToleranceMode.OIML_R51_BENCHMARK || isOimlCompliance) {
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                LabeledDropdownWithHelp(
+                                    label = "Accuracy Class",
+                                    options = listOf("XI", "XII", "XIII", "XIIII"),
+                                    selectedOption = viewModel.accuracyClass.value,
+                                    onSelectionChange = viewModel::setAccuracyClass,
+                                    helpText = "OIML accuracy class"
+                                )
+                                LabeledDropdownWithHelp(
+                                    label = "Designation (x)",
+                                    options = listOf("0.5", "1.0", "2.0"),
+                                    selectedOption = viewModel.designationFactorX.value,
+                                    onSelectionChange = viewModel::setDesignationFactorX,
+                                    helpText = "Factor x multiplier"
+                                )
+                            }
+                            LabeledDropdownWithHelp(
+                                label = "Inspection Type",
+                                options = OimlInspectionType.values().map { it.label },
+                                selectedOption = viewModel.inspectionType.value.label,
+                                onSelectionChange = { selected ->
+                                    val type = OimlInspectionType.values().find { it.label == selected } ?: OimlInspectionType.INITIAL_VERIFICATION
+                                    viewModel.setInspectionType(type)
+                                },
+                                helpText = "Initial verification or In-Service inspection"
+                            )
+                        }
+                    }
+                }
+
+                // Evaluated Limits Summary Card
+                AppCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(
+                            "Evaluated Tolerance Limits",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+
+                        Text(
+                            limits.description,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            DisplayPill(title = "Allowed Static MPE", value = "±%.2fg".format(limits.allowedStaticMpe), modifier = Modifier.weight(1f))
+                            DisplayPill(title = "Allowed Dyn Mean Err", value = "±%.2fg".format(limits.allowedMaxMeanError), modifier = Modifier.weight(1f))
+                            DisplayPill(title = "Allowed Max Std Dev", value = "%.2fg".format(limits.allowedMaxStdDev), modifier = Modifier.weight(1f))
+                        }
+                    }
                 }
 
                 if (calcResult != null) {
@@ -86,7 +227,7 @@ fun CalCwTolerancesAndAssessment(viewModel: CalibrationCheckweigherViewModel) {
                     AppCard(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Text(
-                                "Tolerance & Benchmark Evaluation",
+                                "Equipment Suitability & ZOI Evaluation",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -94,11 +235,11 @@ fun CalCwTolerancesAndAssessment(viewModel: CalibrationCheckweigherViewModel) {
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 DisplayPill(title = "Effective TNE", value = "%.2fg".format(r.tne), modifier = Modifier.weight(1f))
                                 DisplayPill(title = "20% TNE Suitability", value = "%.2fg".format(r.benchmark20PercentTne), modifier = Modifier.weight(1f))
-                                DisplayPill(title = "25% TNE Threshold", value = "%.2fg".format(r.benchmark25PercentTne), modifier = Modifier.weight(1f))
+                                DisplayPill(title = "25% TNE ZOI", value = "%.2fg".format(r.benchmark25PercentTne), modifier = Modifier.weight(1f))
                             }
 
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                DisplayPill(title = "6σ (ZOI)", value = r.sixSigmaZoi?.let { "%.2fg".format(it) } ?: "—", modifier = Modifier.weight(1f))
+                                DisplayPill(title = "6σ (ZOI Band)", value = r.sixSigmaZoi?.let { "%.2fg".format(it) } ?: "—", modifier = Modifier.weight(1f))
                                 DisplayPill(title = "Status", value = r.overallStatus.name, modifier = Modifier.weight(1f))
                             }
                         }
@@ -126,19 +267,8 @@ fun CalCwTolerancesAndAssessment(viewModel: CalibrationCheckweigherViewModel) {
                                     color = Color(0xFFE65100)
                                 )
 
-                                if (r.additionalSetPointAllowance != null) {
-                                    Surface(color = Color(0xFFFFE0B2), shape = MaterialTheme.shapes.small) {
-                                        Text(
-                                            "Calculated Additional Set-Point Allowance: ${"%.2fg".format(r.additionalSetPointAllowance)}",
-                                            modifier = Modifier.padding(8.dp),
-                                            fontWeight = FontWeight.Bold,
-                                            style = MaterialTheme.typography.bodySmall
-                                        )
-                                    }
-                                }
-
                                 LabeledTextFieldWithHelp(
-                                    label = "Engineer Reject Set-Point Assessment",
+                                    label = "Engineer Reject Set-Point Assessment Notes",
                                     value = notes,
                                     onValueChange = viewModel::setEngineerSetPointAssessmentNotes,
                                     helpText = "Document assessment of configured reject thresholds and set-point allowances."
@@ -156,19 +286,6 @@ fun CalCwTolerancesAndAssessment(viewModel: CalibrationCheckweigherViewModel) {
                                     )
                                 }
                             }
-                        }
-                    } else {
-                        Surface(
-                            color = Color(0xFFE8F5E9),
-                            shape = MaterialTheme.shapes.medium,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                "✅ 6σ is within 25% TNE threshold. Assessment criteria met.",
-                                color = Color(0xFF2E7D32),
-                                modifier = Modifier.padding(16.dp),
-                                fontWeight = FontWeight.Bold
-                            )
                         }
                     }
                 }

@@ -46,6 +46,11 @@ import com.snb.inspect.util.CheckweigherAccuracyResult
 import com.snb.inspect.repositories.CheckweigherSystemsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlin.collections.firstOrNull
+import kotlin.collections.getOrNull
+import kotlin.collections.joinToString
+import kotlin.collections.take
+import kotlin.collections.toMutableList
 
 class CalibrationCheckweigherViewModel(
     private val context: android.content.Context,
@@ -300,14 +305,45 @@ class CalibrationCheckweigherViewModel(
 
         // Tolerances & Assessment
         _toleranceSource.value = cal.toleranceSource.ifBlank { "SNB_GUIDANCE" }
+        _toleranceMode.value = try { com.snb.inspect.util.ToleranceMode.valueOf(cal.toleranceMode) } catch (_: Exception) { com.snb.inspect.util.ToleranceMode.PACKAGED_GOODS_TNE }
+        _manualMeanErrorValue.value = cal.manualMeanErrorValue.ifBlank { "1.0" }
+        _manualMeanErrorUnit.value = cal.manualMeanErrorUnit.ifBlank { "GRAMS" }
+        _manualStdDevValue.value = cal.manualStdDevValue.ifBlank { "0.5" }
+        _manualStdDevUnit.value = cal.manualStdDevUnit.ifBlank { "GRAMS" }
+        _staticDivisionMultiplier.value = cal.staticDivisionMultiplier.ifBlank { "1.0" }
+        _dynamicDivisionMultiplier.value = cal.dynamicDivisionMultiplier.ifBlank { "2.0" }
+        _nominalPackageWeightQn.value = cal.nominalPackageWeightQn
+        _stdDevPercentageOfTne.value = cal.stdDevPercentageOfTne.ifBlank { "10.0" }
+        _designationFactorX.value = cal.designationFactorX.ifBlank { "1.0" }
+        _inspectionType.value = try { com.snb.inspect.util.OimlInspectionType.valueOf(cal.inspectionType) } catch (_: Exception) { com.snb.inspect.util.OimlInspectionType.INITIAL_VERIFICATION }
+        _oimlComplianceModeEnabled.value = cal.oimlComplianceModeEnabled
         _manufacturerTne.value = cal.manufacturerTne
         _customerTne.value = cal.customerTne
         _engineerSetPointAssessmentNotes.value = cal.engineerSetPointAssessmentNotes
         _engineerSetPointAssessmentResolved.value = cal.engineerSetPointAssessmentResolved
 
+        // Static Linearity (5 Points)
+        _staticLinAppliedRefWeights.value = listOf(cal.staticLinRef0, cal.staticLinRef25, cal.staticLinRef50, cal.staticLinRef75, cal.staticLinRef100)
+        _staticLinDisplayedReadings.value = listOf(cal.staticLinDisp0, cal.staticLinDisp25, cal.staticLinDisp50, cal.staticLinDisp75, cal.staticLinDisp100)
+
+        // Static Eccentricity (5 Positions)
+        _eccentricityTestWeight.value = cal.eccentricityTestWeight
+        _eccentricityCentreReading.value = cal.eccentricityCentreReading
+        _eccentricityFrontLeftReading.value = cal.eccentricityFrontLeftReading
+        _eccentricityFrontRightReading.value = cal.eccentricityFrontRightReading
+        _eccentricityRearLeftReading.value = cal.eccentricityRearLeftReading
+        _eccentricityRearRightReading.value = cal.eccentricityRearRightReading
+
+        // Dynamic Repeatability
+        _dynamicRefWeight.value = cal.dynamicRefWeight
+        _dynamicBeltSpeedUnit.value = cal.dynamicBeltSpeedUnit.ifBlank { "m/min" }
+
         // Reject Verification
         _generalRejectTestResult.value = cal.generalRejectTestResult.ifBlank { "PASS" }
         _generalRejectNotes.value = cal.generalRejectNotes
+        _underweightRejectResult.value = cal.underweightRejectResult.ifBlank { "PASS" }
+        _overweightRejectResult.value = cal.overweightRejectResult.ifBlank { "PASS" }
+        _timingVerificationResult.value = cal.timingVerificationResult.ifBlank { "PASS" }
         _t0TestRefWeight.value = cal.t0TestRefWeight
         _t0TestExpected.value = cal.t0TestExpected
         _t0TestActual.value = cal.t0TestActual
@@ -568,6 +604,43 @@ class CalibrationCheckweigherViewModel(
         cal.repeatabilityTestResultAsLeft = _repeatabilityTestResultAsLeft.value
 
         cal.toleranceSource = _toleranceSource.value
+        cal.toleranceMode = _toleranceMode.value.name
+        cal.manualMeanErrorValue = _manualMeanErrorValue.value
+        cal.manualMeanErrorUnit = _manualMeanErrorUnit.value
+        cal.manualStdDevValue = _manualStdDevValue.value
+        cal.manualStdDevUnit = _manualStdDevUnit.value
+        cal.staticDivisionMultiplier = _staticDivisionMultiplier.value
+        cal.dynamicDivisionMultiplier = _dynamicDivisionMultiplier.value
+        cal.nominalPackageWeightQn = _nominalPackageWeightQn.value
+        cal.stdDevPercentageOfTne = _stdDevPercentageOfTne.value
+        cal.designationFactorX = _designationFactorX.value
+        cal.inspectionType = _inspectionType.value.name
+        cal.oimlComplianceModeEnabled = _oimlComplianceModeEnabled.value
+
+        val staticLinRef = _staticLinAppliedRefWeights.value
+        cal.staticLinRef0 = staticLinRef.getOrElse(0) { "" }
+        cal.staticLinRef25 = staticLinRef.getOrElse(1) { "" }
+        cal.staticLinRef50 = staticLinRef.getOrElse(2) { "" }
+        cal.staticLinRef75 = staticLinRef.getOrElse(3) { "" }
+        cal.staticLinRef100 = staticLinRef.getOrElse(4) { "" }
+
+        val staticLinDisp = _staticLinDisplayedReadings.value
+        cal.staticLinDisp0 = staticLinDisp.getOrElse(0) { "" }
+        cal.staticLinDisp25 = staticLinDisp.getOrElse(1) { "" }
+        cal.staticLinDisp50 = staticLinDisp.getOrElse(2) { "" }
+        cal.staticLinDisp75 = staticLinDisp.getOrElse(3) { "" }
+        cal.staticLinDisp100 = staticLinDisp.getOrElse(4) { "" }
+
+        cal.eccentricityTestWeight = _eccentricityTestWeight.value
+        cal.eccentricityCentreReading = _eccentricityCentreReading.value
+        cal.eccentricityFrontLeftReading = _eccentricityFrontLeftReading.value
+        cal.eccentricityFrontRightReading = _eccentricityFrontRightReading.value
+        cal.eccentricityRearLeftReading = _eccentricityRearLeftReading.value
+        cal.eccentricityRearRightReading = _eccentricityRearRightReading.value
+
+        cal.dynamicRefWeight = _dynamicRefWeight.value
+        cal.dynamicBeltSpeedUnit = _dynamicBeltSpeedUnit.value
+
         cal.manufacturerTne = _manufacturerTne.value
         cal.customerTne = _customerTne.value
         cal.calculatedTne = resFound?.tne?.toString() ?: ""
@@ -581,6 +654,9 @@ class CalibrationCheckweigherViewModel(
 
         cal.generalRejectTestResult = _generalRejectTestResult.value
         cal.generalRejectNotes = _generalRejectNotes.value
+        cal.underweightRejectResult = _underweightRejectResult.value
+        cal.overweightRejectResult = _overweightRejectResult.value
+        cal.timingVerificationResult = _timingVerificationResult.value
         cal.t0TestRefWeight = _t0TestRefWeight.value
         cal.t0TestExpected = _t0TestExpected.value
         cal.t0TestActual = _t0TestActual.value
@@ -1487,10 +1563,195 @@ class CalibrationCheckweigherViewModel(
     val repeatabilityTestResultAsLeft: State<String> = _repeatabilityTestResultAsLeft
     fun setRepeatabilityTestResultAsLeft(v: String) { _repeatabilityTestResultAsLeft.value = v }
 
-    // Tolerances State
+    // Tolerances & Modes State
     private val _toleranceSource = mutableStateOf("SNB_GUIDANCE")
     val toleranceSource: State<String> = _toleranceSource
     fun setToleranceSource(v: String) { _toleranceSource.value = v }
+
+    private val _toleranceMode = mutableStateOf(com.snb.inspect.util.ToleranceMode.PACKAGED_GOODS_TNE)
+    val toleranceMode: State<com.snb.inspect.util.ToleranceMode> = _toleranceMode
+    fun setToleranceMode(mode: com.snb.inspect.util.ToleranceMode) {
+        _toleranceMode.value = mode
+        if (mode == com.snb.inspect.util.ToleranceMode.OIML_R51_BENCHMARK) {
+            _oimlComplianceModeEnabled.value = true
+        }
+    }
+
+    private val _manualMeanErrorValue = mutableStateOf("1.0")
+    val manualMeanErrorValue: State<String> = _manualMeanErrorValue
+    fun setManualMeanErrorValue(v: String) { _manualMeanErrorValue.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _manualMeanErrorUnit = mutableStateOf("GRAMS")
+    val manualMeanErrorUnit: State<String> = _manualMeanErrorUnit
+    fun setManualMeanErrorUnit(v: String) { _manualMeanErrorUnit.value = v }
+
+    private val _manualStdDevValue = mutableStateOf("0.5")
+    val manualStdDevValue: State<String> = _manualStdDevValue
+    fun setManualStdDevValue(v: String) { _manualStdDevValue.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _manualStdDevUnit = mutableStateOf("GRAMS")
+    val manualStdDevUnit: State<String> = _manualStdDevUnit
+    fun setManualStdDevUnit(v: String) { _manualStdDevUnit.value = v }
+
+    private val _staticDivisionMultiplier = mutableStateOf("1.0")
+    val staticDivisionMultiplier: State<String> = _staticDivisionMultiplier
+    fun setStaticDivisionMultiplier(v: String) { _staticDivisionMultiplier.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _dynamicDivisionMultiplier = mutableStateOf("2.0")
+    val dynamicDivisionMultiplier: State<String> = _dynamicDivisionMultiplier
+    fun setDynamicDivisionMultiplier(v: String) { _dynamicDivisionMultiplier.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _nominalPackageWeightQn = mutableStateOf("")
+    val nominalPackageWeightQn: State<String> = _nominalPackageWeightQn
+    fun setNominalPackageWeightQn(v: String) { _nominalPackageWeightQn.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _stdDevPercentageOfTne = mutableStateOf("10.0")
+    val stdDevPercentageOfTne: State<String> = _stdDevPercentageOfTne
+    fun setStdDevPercentageOfTne(v: String) { _stdDevPercentageOfTne.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _designationFactorX = mutableStateOf("1.0")
+    val designationFactorX: State<String> = _designationFactorX
+    fun setDesignationFactorX(v: String) { _designationFactorX.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _inspectionType = mutableStateOf(com.snb.inspect.util.OimlInspectionType.INITIAL_VERIFICATION)
+    val inspectionType: State<com.snb.inspect.util.OimlInspectionType> = _inspectionType
+    fun setInspectionType(type: com.snb.inspect.util.OimlInspectionType) { _inspectionType.value = type }
+
+    private val _oimlComplianceModeEnabled = mutableStateOf(false)
+    val oimlComplianceModeEnabled: State<Boolean> = _oimlComplianceModeEnabled
+    fun setOimlComplianceModeEnabled(enabled: Boolean) {
+        _oimlComplianceModeEnabled.value = enabled
+        if (enabled) {
+            _toleranceMode.value = com.snb.inspect.util.ToleranceMode.OIML_R51_BENCHMARK
+        }
+    }
+
+    val evaluatedToleranceLimits: StateFlow<com.snb.inspect.util.EvaluatedToleranceLimits> = snapshotFlow {
+        val config = com.snb.inspect.util.ToleranceConfig(
+            mode = _toleranceMode.value,
+            manualMeanErrorValue = _manualMeanErrorValue.value.toDoubleOrNull() ?: 1.0,
+            manualMeanErrorUnit = _manualMeanErrorUnit.value,
+            manualStdDevValue = _manualStdDevValue.value.toDoubleOrNull() ?: 0.5,
+            manualStdDevUnit = _manualStdDevUnit.value,
+            staticDivisionMultiplier = _staticDivisionMultiplier.value.toDoubleOrNull() ?: 1.0,
+            dynamicDivisionMultiplier = _dynamicDivisionMultiplier.value.toDoubleOrNull() ?: 2.0,
+            nominalPackageWeightQn = _nominalPackageWeightQn.value.toDoubleOrNull() ?: _grossWeight.value.toDoubleOrNull() ?: 0.0,
+            stdDevPercentageOfTne = _stdDevPercentageOfTne.value.toDoubleOrNull() ?: 10.0,
+            accuracyClass = _accuracyClass.value,
+            designationFactorX = _designationFactorX.value.toDoubleOrNull() ?: 1.0,
+            verificationScaleIntervalE = _scaleInterval.value.toDoubleOrNull() ?: 1.0,
+            inspectionType = _inspectionType.value,
+            oimlComplianceModeEnabled = _oimlComplianceModeEnabled.value
+        )
+        val e = _scaleInterval.value.toDoubleOrNull() ?: 1.0
+        val ref = _nominalQuantityAsFound.value.toDoubleOrNull() ?: _grossWeight.value.toDoubleOrNull() ?: 100.0
+        com.snb.inspect.util.CheckweigherCalculator.evaluateToleranceLimits(config, e, ref)
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, com.snb.inspect.util.CheckweigherCalculator.evaluateToleranceLimits(com.snb.inspect.util.ToleranceConfig(), 1.0, 100.0))
+
+    // Static Linearity State (5 points)
+    private val _staticLinAppliedRefWeights = mutableStateOf<List<String>>(List(5) { "" })
+    val staticLinAppliedRefWeights: State<List<String>> = _staticLinAppliedRefWeights
+    fun setStaticLinAppliedRefWeight(index: Int, v: String) {
+        if (index in 0..4) {
+            val list = _staticLinAppliedRefWeights.value.toMutableList()
+            list[index] = com.snb.inspect.core.InputTransforms.decimal(v)
+            _staticLinAppliedRefWeights.value = list
+        }
+    }
+
+    private val _staticLinDisplayedReadings = mutableStateOf<List<String>>(List(5) { "" })
+    val staticLinDisplayedReadings: State<List<String>> = _staticLinDisplayedReadings
+    fun setStaticLinDisplayedReading(index: Int, v: String) {
+        if (index in 0..4) {
+            val list = _staticLinDisplayedReadings.value.toMutableList()
+            list[index] = com.snb.inspect.core.InputTransforms.decimal(v)
+            _staticLinDisplayedReadings.value = list
+        }
+    }
+
+    val evaluatedStaticLinearityResult: StateFlow<com.snb.inspect.util.StaticLinearityTestResult?> = snapshotFlow {
+        val cap = _maxCapacity.value.toDoubleOrNull() ?: return@snapshotFlow null
+        val applied = _staticLinAppliedRefWeights.value.mapNotNull { it.toDoubleOrNull() }
+        val displayed = _staticLinDisplayedReadings.value.mapNotNull { it.toDoubleOrNull() }
+        if (displayed.size < 5) return@snapshotFlow null
+        val limits = evaluatedToleranceLimits.value
+        com.snb.inspect.util.CheckweigherCalculator.evaluateStaticLinearityTest(
+            maxCapacity = cap,
+            appliedRefWeights = applied,
+            displayedReadings = displayed,
+            allowedStaticMpe = limits.allowedStaticMpe
+        )
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    // Static Eccentricity State (5 positions)
+    private val _eccentricityTestWeight = mutableStateOf("")
+    val eccentricityTestWeight: State<String> = _eccentricityTestWeight
+    fun setEccentricityTestWeight(v: String) { _eccentricityTestWeight.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _eccentricityCentreReading = mutableStateOf("")
+    val eccentricityCentreReading: State<String> = _eccentricityCentreReading
+    fun setEccentricityCentreReading(v: String) { _eccentricityCentreReading.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _eccentricityFrontLeftReading = mutableStateOf("")
+    val eccentricityFrontLeftReading: State<String> = _eccentricityFrontLeftReading
+    fun setEccentricityFrontLeftReading(v: String) { _eccentricityFrontLeftReading.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _eccentricityFrontRightReading = mutableStateOf("")
+    val eccentricityFrontRightReading: State<String> = _eccentricityFrontRightReading
+    fun setEccentricityFrontRightReading(v: String) { _eccentricityFrontRightReading.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _eccentricityRearLeftReading = mutableStateOf("")
+    val eccentricityRearLeftReading: State<String> = _eccentricityRearLeftReading
+    fun setEccentricityRearLeftReading(v: String) { _eccentricityRearLeftReading.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _eccentricityRearRightReading = mutableStateOf("")
+    val eccentricityRearRightReading: State<String> = _eccentricityRearRightReading
+    fun setEccentricityRearRightReading(v: String) { _eccentricityRearRightReading.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    val evaluatedStaticEccentricityResult: StateFlow<com.snb.inspect.util.EvaluatedOffCentreTestResult?> = snapshotFlow {
+        val testW = _eccentricityTestWeight.value.toDoubleOrNull() ?: return@snapshotFlow null
+        val centre = _eccentricityCentreReading.value.toDoubleOrNull() ?: return@snapshotFlow null
+        val fl = _eccentricityFrontLeftReading.value.toDoubleOrNull() ?: return@snapshotFlow null
+        val fr = _eccentricityFrontRightReading.value.toDoubleOrNull() ?: return@snapshotFlow null
+        val rl = _eccentricityRearLeftReading.value.toDoubleOrNull() ?: return@snapshotFlow null
+        val rr = _eccentricityRearRightReading.value.toDoubleOrNull() ?: return@snapshotFlow null
+        val limits = evaluatedToleranceLimits.value
+        com.snb.inspect.util.CheckweigherCalculator.evaluateStaticEccentricityTest(
+            testWeight = testW,
+            centre = centre,
+            frontLeft = fl,
+            frontRight = fr,
+            rearLeft = rl,
+            rearRight = rr,
+            allowedStaticMpe = limits.allowedStaticMpe
+        )
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    // Dynamic Repeatability State
+    private val _dynamicRefWeight = mutableStateOf("")
+    val dynamicRefWeight: State<String> = _dynamicRefWeight
+    fun setDynamicRefWeight(v: String) { _dynamicRefWeight.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _dynamicBeltSpeedUnit = mutableStateOf("m/min")
+    val dynamicBeltSpeedUnit: State<String> = _dynamicBeltSpeedUnit
+    fun setDynamicBeltSpeedUnit(v: String) { _dynamicBeltSpeedUnit.value = v }
+
+    val evaluatedDynamicRepeatabilityResult: StateFlow<com.snb.inspect.util.DynamicRepeatabilityResult?> = snapshotFlow {
+        val refW = _dynamicRefWeight.value.toDoubleOrNull() ?: _nominalQuantityAsFound.value.toDoubleOrNull() ?: _staticScaleWeightAsFound.value.toDoubleOrNull() ?: return@snapshotFlow null
+        val speed = _beltSpeed.value.toDoubleOrNull() ?: 0.0
+        val passes = _dynamicPassesAsFound.value.mapNotNull { it.toDoubleOrNull() }
+        if (passes.isEmpty()) return@snapshotFlow null
+        val limits = evaluatedToleranceLimits.value
+        com.snb.inspect.util.CheckweigherCalculator.evaluateDynamicRepeatability(
+            referenceWeight = refW,
+            beltSpeed = speed,
+            beltSpeedUnit = _dynamicBeltSpeedUnit.value,
+            readings = passes,
+            allowedMaxMeanError = limits.allowedMaxMeanError,
+            allowedMaxStdDev = limits.allowedMaxStdDev,
+            isOimlComplianceMode = _oimlComplianceModeEnabled.value
+        )
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     private val _manufacturerTne = mutableStateOf("")
     val manufacturerTne: State<String> = _manufacturerTne
@@ -1516,6 +1777,26 @@ class CalibrationCheckweigherViewModel(
     private val _generalRejectNotes = mutableStateOf("")
     val generalRejectNotes: State<String> = _generalRejectNotes
     fun setGeneralRejectNotes(v: String) { _generalRejectNotes.value = v }
+
+    private val _underweightRejectResult = mutableStateOf("PASS")
+    val underweightRejectResult: State<String> = _underweightRejectResult
+    fun setUnderweightRejectResult(v: String) { _underweightRejectResult.value = v }
+
+    private val _overweightRejectResult = mutableStateOf("PASS")
+    val overweightRejectResult: State<String> = _overweightRejectResult
+    fun setOverweightRejectResult(v: String) { _overweightRejectResult.value = v }
+
+    private val _timingVerificationResult = mutableStateOf("PASS")
+    val timingVerificationResult: State<String> = _timingVerificationResult
+    fun setTimingVerificationResult(v: String) { _timingVerificationResult.value = v }
+
+    val evaluatedRejectMechanismResult: StateFlow<com.snb.inspect.util.RejectMechanismResult> = snapshotFlow {
+        com.snb.inspect.util.CheckweigherCalculator.evaluateRejectMechanism(
+            underweightResult = _underweightRejectResult.value,
+            overweightResult = _overweightRejectResult.value,
+            timingResult = _timingVerificationResult.value
+        )
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, com.snb.inspect.util.CheckweigherCalculator.evaluateRejectMechanism("PASS", "PASS", "PASS"))
 
     private val _t0TestRefWeight = mutableStateOf("")
     val t0TestRefWeight: State<String> = _t0TestRefWeight

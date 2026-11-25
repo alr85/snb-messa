@@ -16,6 +16,8 @@ import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 @Composable
 fun CalCwRejectVerification(viewModel: CalibrationCheckweigherViewModel) {
     val genResult = viewModel.generalRejectTestResult.value
+    val evalReject by viewModel.evaluatedRejectMechanismResult.collectAsState()
+
     val isNextStepEnabled = genResult.isNotBlank()
 
     LaunchedEffect(isNextStepEnabled) {
@@ -32,12 +34,37 @@ fun CalCwRejectVerification(viewModel: CalibrationCheckweigherViewModel) {
             Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Spacer(Modifier.height(4.dp))
 
+                // Core Industrial Reject Mechanism Checks Card
                 AppCard(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(
-                            "Mandatory General Reject Test",
+                            "Core Industrial Reject Mechanism Verification",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
+                        )
+
+                        LabeledDropdownWithHelp(
+                            label = "1. Underweight Reject Mechanism Test",
+                            options = listOf("PASS", "FAIL", "N/A"),
+                            selectedOption = viewModel.underweightRejectResult.value,
+                            onSelectionChange = viewModel::setUnderweightRejectResult,
+                            helpText = "Verifies physical rejection when test load is below underweight threshold."
+                        )
+
+                        LabeledDropdownWithHelp(
+                            label = "2. Overweight Reject Mechanism Test",
+                            options = listOf("PASS", "FAIL", "N/A"),
+                            selectedOption = viewModel.overweightRejectResult.value,
+                            onSelectionChange = viewModel::setOverweightRejectResult,
+                            helpText = "Verifies physical rejection when test load is above overweight threshold."
+                        )
+
+                        LabeledDropdownWithHelp(
+                            label = "3. Air-Blast / Pusher Timing Verification",
+                            options = listOf("PASS", "FAIL", "N/A"),
+                            selectedOption = viewModel.timingVerificationResult.value,
+                            onSelectionChange = viewModel::setTimingVerificationResult,
+                            helpText = "Verifies activation timing, air blast duration, or pusher mechanical synchronization."
                         )
 
                         LabeledDropdownWithHelp(
@@ -45,22 +72,23 @@ fun CalCwRejectVerification(viewModel: CalibrationCheckweigherViewModel) {
                             options = listOf("PASS", "FAIL", "N/A"),
                             selectedOption = genResult,
                             onSelectionChange = viewModel::setGeneralRejectTestResult,
-                            helpText = "General reject mechanism functionality check."
+                            helpText = "Overall general reject mechanism functionality check."
                         )
 
                         LabeledTextFieldWithHelp(
-                            label = "General Reject Notes",
+                            label = "Reject Mechanism Engineer Notes",
                             value = viewModel.generalRejectNotes.value,
                             onValueChange = viewModel::setGeneralRejectNotes,
-                            helpText = "Engineer notes on general reject test."
+                            helpText = "Engineer observations or notes regarding reject mechanism."
                         )
                     }
                 }
 
+                // Threshold & Set-Point Rejection Tests
                 AppCard(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(
-                            "Optional Threshold & Set-Point Rejection Tests",
+                            "Threshold & Set-Point Rejection Tests",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
