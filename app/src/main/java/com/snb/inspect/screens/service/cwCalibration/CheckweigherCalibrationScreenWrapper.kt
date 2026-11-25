@@ -59,6 +59,7 @@ fun CheckweigherCalibrationScreenWrapper(
                 "CwIndicators",
                 "CwStaticScaleReference",
                 "CwTolerancesAndAssessment",
+                "CwTestProductDetails",
                 "CwEngineerTestWeight",
                 "CwDynamicTestAsFound",
                 "CwDynamicEccentricityTest",

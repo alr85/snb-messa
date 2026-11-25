@@ -112,15 +112,13 @@ class CalibrationCheckweigherViewModel(
     }
 
     private fun loadCalibration(cal: CheckweigherCalibrationLocal) {
-        _newLocation.value = cal.newLocation.ifBlank { system.lastLocation }
-        _canPerformCalibration.value = cal.canPerformCalibration.toBoolean()
-        _reasonForNotCalibrating.value = cal.reasonForNotCalibrating.split(", ").filter { it.isNotBlank() }
+        _newLocation.value = cal.newLocation.orEmpty().ifBlank { system.lastLocation }
+        _canPerformCalibration.value = cal.canPerformCalibration.orEmpty().lowercase().let { it == "true" || it == "yes" }
+        _reasonForNotCalibrating.value = cal.reasonForNotCalibrating.orEmpty().split(", ").filter { it.isNotBlank() }
 
         _systemId.intValue = cal.systemId
         _tempSystemId.intValue = cal.tempSystemId
 
-        // FIX: Ensure cloudSystemId is pulled from the fresh system object if the 
-        // calibration record is still 0 (e.g. machine synced while this was incomplete)
         val effectiveCloudId = if (cal.cloudSystemId == 0 && system.cloudId != null) {
             system.cloudId
         } else {
@@ -128,164 +126,168 @@ class CalibrationCheckweigherViewModel(
         }
         _cloudSystemId.intValue = effectiveCloudId
         
-        _calibrationType.value = cal.calibrationType.ifBlank { "ROUTINE" }
+        _calibrationType.value = cal.calibrationType.orEmpty().ifBlank { "ROUTINE" }
 
         // Scale Details
-        _loadcellType.value = cal.loadcellType
-        _scaleInterval.value = cal.scaleInterval.ifBlank { system.displayResolution }
-        _maxCapacity.value = cal.maxCapacity.ifBlank { system.maxCapacity }
-        _minCapacity.value = cal.minCapacity.ifBlank { system.minCapacity }
-        _accuracyClass.value = cal.accuracyClass.ifBlank { system.accuracyClass }
+        _loadcellType.value = cal.loadcellType.orEmpty()
+        _scaleInterval.value = cal.scaleInterval.orEmpty().ifBlank { system.displayResolution }
+        _maxCapacity.value = cal.maxCapacity.orEmpty().ifBlank { system.maxCapacity }
+        _minCapacity.value = cal.minCapacity.orEmpty().ifBlank { system.minCapacity }
+        _accuracyClass.value = cal.accuracyClass.orEmpty().ifBlank { system.accuracyClass }
 
         // System Details
-        _beltWidth.value = cal.beltWidth
-        _weighConveyorLength.value = cal.weighConveyorLength
-        _rejectType.value = cal.rejectType
-        _rejectTypeOther.value = cal.rejectTypeOther
-        _printerDataCapture.value = cal.printerDataCapture
-        _rejectMode.value = cal.rejectMode
-        _beltSpeed.value = cal.beltSpeed
-        _tareConfiguration.value = cal.tareConfiguration
+        _beltWidth.value = cal.beltWidth.orEmpty()
+        _weighConveyorLength.value = cal.weighConveyorLength.orEmpty()
+        _rejectType.value = cal.rejectType.orEmpty()
+        _rejectTypeOther.value = cal.rejectTypeOther.orEmpty()
+        _printerDataCapture.value = cal.printerDataCapture.orEmpty()
+        _rejectMode.value = cal.rejectMode.orEmpty()
+        _beltSpeed.value = cal.beltSpeed.orEmpty()
+        _tareConfiguration.value = cal.tareConfiguration.orEmpty()
         _isStaticRefGrossWeight.value = cal.isStaticRefGrossWeight
-        _operatingConditionsNotes.value = cal.operatingConditionsNotes
+        _operatingConditionsNotes.value = cal.operatingConditionsNotes.orEmpty()
 
         // Checklist
         _beltCondition.value = cal.beltCondition.toConditionState()
-        _beltConditionComments.value = cal.beltConditionComments
+        _beltConditionComments.value = cal.beltConditionComments.orEmpty()
         _safetyCircuitCondition.value = cal.safetyCircuitCondition.toConditionState()
-        _safetyCircuitConditionComments.value = cal.safetyCircuitConditionComments
+        _safetyCircuitConditionComments.value = cal.safetyCircuitConditionComments.orEmpty()
         _guardCondition.value = cal.guardCondition.toConditionState()
-        _guardConditionComments.value = cal.guardConditionComments
+        _guardConditionComments.value = cal.guardConditionComments.orEmpty()
         _vibrationCondition.value = cal.vibrationCondition.toConditionState()
-        _vibrationConditionComments.value = cal.vibrationConditionComments
+        _vibrationConditionComments.value = cal.vibrationConditionComments.orEmpty()
         _weighTableObstruction.value = cal.weighTableObstruction.toConditionState()
-        _weighTableObstructionComments.value = cal.weighTableObstructionComments
+        _weighTableObstructionComments.value = cal.weighTableObstructionComments.orEmpty()
         _productTransferCondition.value = cal.productTransferCondition.toConditionState()
-        _productTransferConditionComments.value = cal.productTransferConditionComments
+        _productTransferConditionComments.value = cal.productTransferConditionComments.orEmpty()
         _machineStabilityCondition.value = cal.machineStabilityCondition.toConditionState()
-        _machineStabilityConditionComments.value = cal.machineStabilityConditionComments
-        _systemChecklistEngineerNotes.value = cal.systemChecklistEngineerNotes
+        _machineStabilityConditionComments.value = cal.machineStabilityConditionComments.orEmpty()
+        _systemChecklistEngineerNotes.value = cal.systemChecklistEngineerNotes.orEmpty()
 
         // Failsafes
         _infeedSensorFitted.value = cal.infeedSensorFitted.toYesNoState()
-        _infeedSensorDetail.value = cal.infeedSensorDetail
-        _infeedSensorTestMethod.value = cal.infeedSensorTestMethod
-        _infeedSensorTestMethodOther.value = cal.infeedSensorTestMethodOther
-        _infeedSensorTestResult.value = cal.infeedSensorTestResult.split(",").filter { it.isNotBlank() }
+        _infeedSensorDetail.value = cal.infeedSensorDetail.orEmpty()
+        _infeedSensorTestMethod.value = cal.infeedSensorTestMethod.orEmpty()
+        _infeedSensorTestMethodOther.value = cal.infeedSensorTestMethodOther.orEmpty()
+        _infeedSensorTestResult.value = cal.infeedSensorTestResult.orEmpty().split(",").filter { it.isNotBlank() }
         _infeedSensorLatched.value = cal.infeedSensorLatched.toYesNoState()
         _infeedSensorCR.value = cal.infeedSensorCR.toYesNoState()
-        _infeedSensorEngineerNotes.value = cal.infeedSensorEngineerNotes
+        _infeedSensorEngineerNotes.value = cal.infeedSensorEngineerNotes.orEmpty()
 
         _rejectConfirmSensorFitted.value = cal.rejectConfirmSensorFitted.toYesNoState()
-        _rejectConfirmSensorDetail.value = cal.rejectConfirmSensorDetail
-        _rejectConfirmSensorTestMethod.value = cal.rejectConfirmSensorTestMethod
-        _rejectConfirmSensorTestMethodOther.value = cal.rejectConfirmSensorTestMethodOther
-        _rejectConfirmSensorTestResult.value = cal.rejectConfirmSensorTestResult.split(",").filter { it.isNotBlank() }
+        _rejectConfirmSensorDetail.value = cal.rejectConfirmSensorDetail.orEmpty()
+        _rejectConfirmSensorTestMethod.value = cal.rejectConfirmSensorTestMethod.orEmpty()
+        _rejectConfirmSensorTestMethodOther.value = cal.rejectConfirmSensorTestMethodOther.orEmpty()
+        _rejectConfirmSensorTestResult.value = cal.rejectConfirmSensorTestResult.orEmpty().split(",").filter { it.isNotBlank() }
         _rejectConfirmSensorLatched.value = cal.rejectConfirmSensorLatched.toYesNoState()
         _rejectConfirmSensorCR.value = cal.rejectConfirmSensorCR.toYesNoState()
-        _rejectConfirmSensorEngineerNotes.value = cal.rejectConfirmSensorEngineerNotes
+        _rejectConfirmSensorEngineerNotes.value = cal.rejectConfirmSensorEngineerNotes.orEmpty()
 
         _binFullSensorFitted.value = cal.binFullSensorFitted.toYesNoState()
-        _binFullSensorDetail.value = cal.binFullSensorDetail
-        _binFullSensorTestMethod.value = cal.binFullSensorTestMethod
-        _binFullSensorTestMethodOther.value = cal.binFullSensorTestMethodOther
-        _binFullSensorTestResult.value = cal.binFullSensorTestResult.split(",").filter { it.isNotBlank() }
+        _binFullSensorDetail.value = cal.binFullSensorDetail.orEmpty()
+        _binFullSensorTestMethod.value = cal.binFullSensorTestMethod.orEmpty()
+        _binFullSensorTestMethodOther.value = cal.binFullSensorTestMethodOther.orEmpty()
+        _binFullSensorTestResult.value = cal.binFullSensorTestResult.orEmpty().split(",").filter { it.isNotBlank() }
         _binFullSensorLatched.value = cal.binFullSensorLatched.toYesNoState()
         _binFullSensorCR.value = cal.binFullSensorCR.toYesNoState()
-        _binFullSensorEngineerNotes.value = cal.binFullSensorEngineerNotes
+        _binFullSensorEngineerNotes.value = cal.binFullSensorEngineerNotes.orEmpty()
 
         _airPressureSensorFitted.value = cal.airPressureSensorFitted.toYesNoState()
-        _airPressureSensorDetail.value = cal.airPressureSensorDetail
-        _airPressureSensorTestMethod.value = cal.airPressureSensorTestMethod
-        _airPressureSensorTestMethodOther.value = cal.airPressureSensorTestMethodOther
-        _airPressureSensorTestResult.value = cal.airPressureSensorTestResult.split(",").filter { it.isNotBlank() }
+        _airPressureSensorDetail.value = cal.airPressureSensorDetail.orEmpty()
+        _airPressureSensorTestMethod.value = cal.airPressureSensorTestMethod.orEmpty()
+        _airPressureSensorTestMethodOther.value = cal.airPressureSensorTestMethodOther.orEmpty()
+        _airPressureSensorTestResult.value = cal.airPressureSensorTestResult.orEmpty().split(",").filter { it.isNotBlank() }
         _airPressureSensorLatched.value = cal.airPressureSensorLatched.toYesNoState()
         _airPressureSensorCR.value = cal.airPressureSensorCR.toYesNoState()
-        _airPressureSensorEngineerNotes.value = cal.airPressureSensorEngineerNotes
+        _airPressureSensorEngineerNotes.value = cal.airPressureSensorEngineerNotes.orEmpty()
 
         _binDoorMonitorFitted.value = cal.binDoorMonitorFitted.toYesNoState()
-        _binDoorMonitorDetail.value = cal.binDoorMonitorDetail
-        _binDoorStatusAsFound.value = cal.binDoorStatusAsFound
-        _binDoorUnlockedIndication.value = cal.binDoorUnlockedIndication.split(",").filter { it.isNotBlank() }
-        _binDoorOpenIndication.value = cal.binDoorOpenIndication.split(",").filter { it.isNotBlank() }
-        _binDoorTimeoutTimer.value = cal.binDoorTimeoutTimer
-        _binDoorTimeoutResult.value = cal.binDoorTimeoutResult.split(",").filter { it.isNotBlank() }
+        _binDoorMonitorDetail.value = cal.binDoorMonitorDetail.orEmpty()
+        _binDoorStatusAsFound.value = cal.binDoorStatusAsFound.orEmpty()
+        _binDoorUnlockedIndication.value = cal.binDoorUnlockedIndication.orEmpty().split(",").filter { it.isNotBlank() }
+        _binDoorOpenIndication.value = cal.binDoorOpenIndication.orEmpty().split(",").filter { it.isNotBlank() }
+        _binDoorTimeoutTimer.value = cal.binDoorTimeoutTimer.orEmpty()
+        _binDoorTimeoutResult.value = cal.binDoorTimeoutResult.orEmpty().split(",").filter { it.isNotBlank() }
         _binDoorLatched.value = cal.binDoorLatched.toYesNoState()
         _binDoorCR.value = cal.binDoorCR.toYesNoState()
-        _binDoorEngineerNotes.value = cal.binDoorEngineerNotes
+        _binDoorEngineerNotes.value = cal.binDoorEngineerNotes.orEmpty()
 
         // Indicators
-        _indicator1colour.value = cal.indicator1colour
-        _indicator1label.value = cal.indicator1label
-        _indicator2colour.value = cal.indicator2colour
-        _indicator2label.value = cal.indicator2label
-        _indicator3colour.value = cal.indicator3colour
-        _indicator3label.value = cal.indicator3label
-        _indicator4colour.value = cal.indicator4colour
-        _indicator4label.value = cal.indicator4label
-        _indicator5colour.value = cal.indicator5colour
-        _indicator5label.value = cal.indicator5label
-        _indicator6colour.value = cal.indicator6colour
-        _indicator6label.value = cal.indicator6label
-        _indicatorsEngineerNotes.value = cal.indicatorsEngineerNotes
+        _indicator1colour.value = cal.indicator1colour.orEmpty()
+        _indicator1label.value = cal.indicator1label.orEmpty()
+        _indicator2colour.value = cal.indicator2colour.orEmpty()
+        _indicator2label.value = cal.indicator2label.orEmpty()
+        _indicator3colour.value = cal.indicator3colour.orEmpty()
+        _indicator3label.value = cal.indicator3label.orEmpty()
+        _indicator4colour.value = cal.indicator4colour.orEmpty()
+        _indicator4label.value = cal.indicator4label.orEmpty()
+        _indicator5colour.value = cal.indicator5colour.orEmpty()
+        _indicator5label.value = cal.indicator5label.orEmpty()
+        _indicator6colour.value = cal.indicator6colour.orEmpty()
+        _indicator6label.value = cal.indicator6label.orEmpty()
+        _indicatorsEngineerNotes.value = cal.indicatorsEngineerNotes.orEmpty()
 
         // Product Details
-        _productDescription.value = cal.productDescription
-        _productLength.value = cal.productLength
-        _productWidth.value = cal.productWidth
-        _productHeight.value = cal.productHeight
-        _grossWeight.value = cal.grossWeight
-        _tareWeight.value = cal.tareWeight
-        _productLibraryReference.value = cal.productLibraryReference
+        _productDescription.value = cal.productDescription.orEmpty()
+        _productLength.value = cal.productLength.orEmpty()
+        _productWidth.value = cal.productWidth.orEmpty()
+        _productHeight.value = cal.productHeight.orEmpty()
+        _grossWeight.value = cal.grossWeight.orEmpty()
+        _tareWeight.value = cal.tareWeight.orEmpty()
+        _productLibraryReference.value = cal.productLibraryReference.orEmpty()
 
         // Static Scale Ref
-        _staticScaleMakeModel.value = cal.staticScaleMakeModel
-        _staticScaleCertRef.value = cal.staticScaleCertRef
-        _staticScaleExpiryDate.value = cal.staticScaleExpiryDate
-        _staticScaleManufacturer.value = cal.staticScaleManufacturer
-        _staticScaleModel.value = cal.staticScaleModel
-        _staticScaleSerial.value = cal.staticScaleSerial
-        _staticScaleResolution.value = cal.staticScaleResolution
-        _staticScaleMaxCapacity.value = cal.staticScaleMaxCapacity
-        _staticScaleMinCapacity.value = cal.staticScaleMinCapacity
-        _staticScaleCalDate.value = cal.staticScaleCalDate
-        _staticScaleCalStatus.value = cal.staticScaleCalStatus
-        _staticScaleFunctionalCheck.value = cal.staticScaleFunctionalCheck.ifBlank { "SATISFACTORY" }
-        _staticScaleSuitability.value = cal.staticScaleSuitability.ifBlank { "SUITABLE" }
-        _staticScaleRefMassCheckResult.value = cal.staticScaleRefMassCheckResult
-        _staticScaleLimitationFlags.value = cal.staticScaleLimitationFlags
+        _staticScaleMakeModel.value = cal.staticScaleMakeModel.orEmpty()
+        _staticScaleCertRef.value = cal.staticScaleCertRef.orEmpty()
+        _staticScaleExpiryDate.value = cal.staticScaleExpiryDate.orEmpty()
+        _staticScaleManufacturer.value = cal.staticScaleManufacturer.orEmpty()
+        _staticScaleModel.value = cal.staticScaleModel.orEmpty()
+        _staticScaleSerial.value = cal.staticScaleSerial.orEmpty()
+        _staticScaleResolution.value = cal.staticScaleResolution.orEmpty()
+        _staticScaleMaxCapacity.value = cal.staticScaleMaxCapacity.orEmpty()
+        _staticScaleMinCapacity.value = cal.staticScaleMinCapacity.orEmpty()
+        _staticScaleCalDate.value = cal.staticScaleCalDate.orEmpty()
+        _staticScaleCalStatus.value = cal.staticScaleCalStatus.orEmpty()
+        _staticScaleFunctionalCheck.value = cal.staticScaleFunctionalCheck.orEmpty().ifBlank { "SATISFACTORY" }
+        _staticScaleSuitability.value = cal.staticScaleSuitability.orEmpty().ifBlank { "SUITABLE" }
+        _staticScaleRefMassCheckResult.value = cal.staticScaleRefMassCheckResult.orEmpty()
+        _staticScaleLimitationFlags.value = cal.staticScaleLimitationFlags.orEmpty()
 
         // Test Weight
         _engineerTestWeightId.value = cal.engineerTestWeightId
 
         // Results As Found
         _requiredPassesCount.value = if (cal.requiredPassesCount >= 10) cal.requiredPassesCount else 30
-        _nominalQuantityAsFound.value = cal.nominalQuantityAsFound
+        _nominalQuantityAsFound.value = cal.nominalQuantityAsFound.orEmpty()
         _dynamicPassesAsFound.value = parsePasses(cal.dynamicPassesAsFound)
-        _staticScaleWeightAsFound.value = cal.staticScaleWeightAsFound
-        _checkweigherWeightAsFound.value = cal.checkweigherWeightAsFound
+        _staticScaleWeightAsFound.value = cal.staticScaleWeightAsFound.orEmpty()
+        _checkweigherWeightAsFound.value = cal.checkweigherWeightAsFound.orEmpty()
 
         _staticTestCountAsFound.intValue = if (cal.staticTestCountAsFound in 1..5) cal.staticTestCountAsFound else 1
 
-        _dynamicEccentricityTestWeightAsFound.value = cal.dynamicEccentricityTestWeightAsFound
-        _dynamicEccentricityFrontReadingAsFound.value = cal.dynamicEccentricityFrontReadingAsFound
-        _dynamicEccentricityBackReadingAsFound.value = cal.dynamicEccentricityBackReadingAsFound
-        _dynamicEccentricityCentreReadingAsFound.value = cal.dynamicEccentricityCentreReadingAsFound
-        _dynamicEccentricityToleranceSource.value = cal.dynamicEccentricityToleranceSource.ifBlank { "OIML_R51" }
-        _dynamicEccentricityManualType.value = cal.dynamicEccentricityManualType.ifBlank { "GRAMS" }
-        _dynamicEccentricityManualValue.value = cal.dynamicEccentricityManualValue
-        _dynamicEccentricityDivisionMultiplier.value = cal.dynamicEccentricityDivisionMultiplier.ifBlank { "1" }
-        _dynamicEccentricityTnePackWeight.value = cal.dynamicEccentricityTnePackWeight
-        _dynamicEccentricityOimlClass.value = cal.dynamicEccentricityOimlClass.ifBlank { "XIII(1)" }
+        _dynamicEccentricityTestWeightAsFound.value = cal.dynamicEccentricityTestWeightAsFound.orEmpty()
+        _dynamicEccentricityFrontReadingAsFound.value = cal.dynamicEccentricityFrontReadingAsFound.orEmpty()
+        _dynamicEccentricityBackReadingAsFound.value = cal.dynamicEccentricityBackReadingAsFound.orEmpty()
+        _dynamicEccentricityCentreReadingAsFound.value = cal.dynamicEccentricityCentreReadingAsFound.orEmpty()
+        _dynamicEccentricityToleranceSource.value = cal.dynamicEccentricityToleranceSource.orEmpty().ifBlank { "OIML_R51" }
+        _dynamicEccentricityManualType.value = cal.dynamicEccentricityManualType.orEmpty().ifBlank { "GRAMS" }
+        _dynamicEccentricityManualValue.value = cal.dynamicEccentricityManualValue.orEmpty()
+        _dynamicEccentricityDivisionMultiplier.value = cal.dynamicEccentricityDivisionMultiplier.orEmpty().ifBlank { "1" }
+        _dynamicEccentricityTnePackWeight.value = cal.dynamicEccentricityTnePackWeight.orEmpty()
+        _dynamicEccentricityOimlClass.value = cal.dynamicEccentricityOimlClass.orEmpty().ifBlank { "XIII(1)" }
 
-        if (cal.staticTestSetsJsonAsFound.isNotBlank()) {
+        if (!cal.staticTestSetsJsonAsFound.isNullOrBlank()) {
             try {
                 val type = object : com.google.gson.reflect.TypeToken<List<com.snb.inspect.util.StaticTestSet>>() {}.type
-                val loadedList: List<com.snb.inspect.util.StaticTestSet> = com.google.gson.Gson().fromJson(cal.staticTestSetsJsonAsFound, type)
-                val fullList = List(5) { i ->
-                    loadedList.getOrNull(i)?.copy(id = i + 1) ?: com.snb.inspect.util.StaticTestSet(id = i + 1)
+                val loadedList: List<com.snb.inspect.util.StaticTestSet>? = com.google.gson.Gson().fromJson(cal.staticTestSetsJsonAsFound, type)
+                if (loadedList != null) {
+                    val fullList = List(5) { i ->
+                        loadedList.getOrNull(i)?.copy(id = i + 1) ?: com.snb.inspect.util.StaticTestSet(id = i + 1)
+                    }
+                    _staticTestSetsAsFound.value = fullList
+                } else {
+                    loadLegacyStaticTestSet(cal)
                 }
-                _staticTestSetsAsFound.value = fullList
             } catch (e: Exception) {
                 loadLegacyStaticTestSet(cal)
             }
@@ -293,56 +295,64 @@ class CalibrationCheckweigherViewModel(
             loadLegacyStaticTestSet(cal)
         }
 
-        _adjustmentsNotes.value = cal.adjustmentsNotes
+        _adjustmentsNotes.value = cal.adjustmentsNotes.orEmpty()
 
         // Results As Left
-        _nominalQuantityAsLeft.value = cal.nominalQuantityAsLeft
+        _nominalQuantityAsLeft.value = cal.nominalQuantityAsLeft.orEmpty()
         _dynamicPassesAsLeft.value = parsePasses(cal.dynamicPassesAsLeft)
-        _staticScaleWeightAsLeft.value = cal.staticScaleWeightAsLeft
-        _checkweigherWeightAsLeft.value = cal.checkweigherWeightAsLeft
-        _offCentreLoadingTestResultAsLeft.value = cal.offCentreLoadingTestResultAsLeft
-        _repeatabilityTestResultAsLeft.value = cal.repeatabilityTestResultAsLeft
+        _staticScaleWeightAsLeft.value = cal.staticScaleWeightAsLeft.orEmpty()
+        _checkweigherWeightAsLeft.value = cal.checkweigherWeightAsLeft.orEmpty()
+        _offCentreLoadingTestResultAsLeft.value = cal.offCentreLoadingTestResultAsLeft.orEmpty()
+        _repeatabilityTestResultAsLeft.value = cal.repeatabilityTestResultAsLeft.orEmpty()
 
         // Tolerances & Assessment
-        _toleranceSource.value = cal.toleranceSource.ifBlank { "SNB_GUIDANCE" }
-        _toleranceMode.value = try { com.snb.inspect.util.ToleranceMode.valueOf(cal.toleranceMode) } catch (_: Exception) { com.snb.inspect.util.ToleranceMode.PACKAGED_GOODS_TNE }
-        _manualMeanErrorValue.value = cal.manualMeanErrorValue.ifBlank { "1.0" }
-        _manualMeanErrorUnit.value = cal.manualMeanErrorUnit.ifBlank { "GRAMS" }
-        _manualStdDevValue.value = cal.manualStdDevValue.ifBlank { "0.5" }
-        _manualStdDevUnit.value = cal.manualStdDevUnit.ifBlank { "GRAMS" }
-        _staticDivisionMultiplier.value = cal.staticDivisionMultiplier.ifBlank { "1.0" }
-        _dynamicDivisionMultiplier.value = cal.dynamicDivisionMultiplier.ifBlank { "2.0" }
-        _nominalPackageWeightQn.value = cal.nominalPackageWeightQn
-        _stdDevPercentageOfTne.value = cal.stdDevPercentageOfTne.ifBlank { "10.0" }
-        _designationFactorX.value = cal.designationFactorX.ifBlank { "1.0" }
-        _inspectionType.value = try { com.snb.inspect.util.OimlInspectionType.valueOf(cal.inspectionType) } catch (_: Exception) { com.snb.inspect.util.OimlInspectionType.INITIAL_VERIFICATION }
+        _toleranceSource.value = cal.toleranceSource.orEmpty().ifBlank { "SNB_GUIDANCE" }
+        _toleranceMode.value = com.snb.inspect.util.ToleranceMode.values().find {
+            it.name.equals(cal.toleranceMode, ignoreCase = true) || it.label.equals(cal.toleranceMode, ignoreCase = true)
+        } ?: when (cal.toleranceSource) {
+            "MANUFACTURER", "CUSTOMER" -> com.snb.inspect.util.ToleranceMode.MANUAL_SPEC
+            else -> com.snb.inspect.util.ToleranceMode.PACKAGED_GOODS_TNE
+        }
+        _manualMeanErrorValue.value = cal.manualMeanErrorValue.orEmpty().ifBlank { "1.0" }
+        _manualMeanErrorUnit.value = cal.manualMeanErrorUnit.orEmpty().ifBlank { "GRAMS" }
+        _manualStdDevValue.value = cal.manualStdDevValue.orEmpty().ifBlank { "0.5" }
+        _manualStdDevUnit.value = cal.manualStdDevUnit.orEmpty().ifBlank { "GRAMS" }
+        _staticDivisionMultiplier.value = cal.staticDivisionMultiplier.orEmpty().ifBlank { "1.0" }
+        _dynamicDivisionMultiplier.value = cal.dynamicDivisionMultiplier.orEmpty().ifBlank { "2.0" }
+        _nominalPackageWeightQn.value = cal.nominalPackageWeightQn.orEmpty()
+        _stdDevPercentageOfTne.value = cal.stdDevPercentageOfTne.orEmpty().ifBlank { "10.0" }
+        _designationFactorX.value = cal.designationFactorX.orEmpty().ifBlank { "1.0" }
+        _inspectionType.value = com.snb.inspect.util.OimlInspectionType.values().find {
+            it.name.equals(cal.inspectionType, ignoreCase = true) || it.label.equals(cal.inspectionType, ignoreCase = true)
+        } ?: com.snb.inspect.util.OimlInspectionType.INITIAL_VERIFICATION
         _oimlComplianceModeEnabled.value = cal.oimlComplianceModeEnabled
-        _manufacturerTne.value = cal.manufacturerTne
-        _customerTne.value = cal.customerTne
-        _engineerSetPointAssessmentNotes.value = cal.engineerSetPointAssessmentNotes
+        _manufacturerTne.value = cal.manufacturerTne.orEmpty()
+        _customerTne.value = cal.customerTne.orEmpty()
+        _engineerSetPointAssessmentNotes.value = cal.engineerSetPointAssessmentNotes.orEmpty()
         _engineerSetPointAssessmentResolved.value = cal.engineerSetPointAssessmentResolved
 
         // Static Linearity (5 Points)
-        _staticLinAppliedRefWeights.value = listOf(cal.staticLinRef0, cal.staticLinRef25, cal.staticLinRef50, cal.staticLinRef75, cal.staticLinRef100)
-        _staticLinDisplayedReadings.value = listOf(cal.staticLinDisp0, cal.staticLinDisp25, cal.staticLinDisp50, cal.staticLinDisp75, cal.staticLinDisp100)
+        _staticLinAppliedRefWeights.value = listOf(cal.staticLinRef0.orEmpty(), cal.staticLinRef25.orEmpty(), cal.staticLinRef50.orEmpty(), cal.staticLinRef75.orEmpty(), cal.staticLinRef100.orEmpty())
+        _staticLinDisplayedReadings.value = listOf(cal.staticLinDisp0.orEmpty(), cal.staticLinDisp25.orEmpty(), cal.staticLinDisp50.orEmpty(), cal.staticLinDisp75.orEmpty(), cal.staticLinDisp100.orEmpty())
 
         // Static Eccentricity (5 Positions)
-        _eccentricityTestWeight.value = cal.eccentricityTestWeight
-        _eccentricityCentreReading.value = cal.eccentricityCentreReading
-        _eccentricityFrontLeftReading.value = cal.eccentricityFrontLeftReading
-        _eccentricityFrontRightReading.value = cal.eccentricityFrontRightReading
-        _eccentricityRearLeftReading.value = cal.eccentricityRearLeftReading
-        _eccentricityRearRightReading.value = cal.eccentricityRearRightReading
+        _eccentricityTestWeight.value = cal.eccentricityTestWeight.orEmpty()
+        _eccentricityCentreReading.value = cal.eccentricityCentreReading.orEmpty()
+        _eccentricityFrontLeftReading.value = cal.eccentricityFrontLeftReading.orEmpty()
+        _eccentricityFrontRightReading.value = cal.eccentricityFrontRightReading.orEmpty()
+        _eccentricityRearLeftReading.value = cal.eccentricityRearLeftReading.orEmpty()
+        _eccentricityRearRightReading.value = cal.eccentricityRearRightReading.orEmpty()
 
         // Dynamic Repeatability
-        _dynamicRefWeight.value = cal.dynamicRefWeight
-        _dynamicBeltSpeedUnit.value = cal.dynamicBeltSpeedUnit.ifBlank { "m/min" }
+        _dynamicRefWeight.value = cal.dynamicRefWeight.orEmpty()
+        _dynamicBeltSpeedUnit.value = cal.dynamicBeltSpeedUnit.orEmpty().ifBlank { "m/min" }
 
         // Reject Verification
-        _generalRejectTestResult.value = cal.generalRejectTestResult.ifBlank { "PASS" }
-        _generalRejectNotes.value = cal.generalRejectNotes
-        _underweightRejectResult.value = cal.underweightRejectResult.ifBlank { "PASS" }
-        _overweightRejectResult.value = cal.overweightRejectResult.ifBlank { "PASS" }
+        _generalRejectTestResult.value = cal.generalRejectTestResult.orEmpty().ifBlank { "PASS" }
+        _generalRejectNotes.value = cal.generalRejectNotes.orEmpty()
+        _underweightRejectResult.value = cal.underweightRejectResult.orEmpty().ifBlank { "PASS" }
+        _overweightRejectResult.value = cal.overweightRejectResult.orEmpty().ifBlank { "PASS" }
+        _timingVerificationResult.value = cal.timingVerificationResult.orEmpty().ifBlank { "PASS" }
         _timingVerificationResult.value = cal.timingVerificationResult.ifBlank { "PASS" }
         _t0TestRefWeight.value = cal.t0TestRefWeight
         _t0TestExpected.value = cal.t0TestExpected
@@ -1410,6 +1420,93 @@ class CalibrationCheckweigherViewModel(
     val offCentreLoadingTestResultAsFound: State<String> = _offCentreLoadingTestResultAsFound
     fun setOffCentreLoadingTestResultAsFound(v: String) { _offCentreLoadingTestResultAsFound.value = v }
 
+    // Tolerances & Modes State
+    private val _toleranceSource = mutableStateOf("SNB_GUIDANCE")
+    val toleranceSource: State<String> = _toleranceSource
+    fun setToleranceSource(v: String) { _toleranceSource.value = v }
+
+    private val _toleranceMode = mutableStateOf(com.snb.inspect.util.ToleranceMode.PACKAGED_GOODS_TNE)
+    val toleranceMode: State<com.snb.inspect.util.ToleranceMode> = _toleranceMode
+    fun setToleranceMode(mode: com.snb.inspect.util.ToleranceMode) {
+        _toleranceMode.value = mode
+        _oimlComplianceModeEnabled.value = (mode == com.snb.inspect.util.ToleranceMode.OIML_R51_BENCHMARK)
+    }
+
+    private val _manualMeanErrorValue = mutableStateOf("1.0")
+    val manualMeanErrorValue: State<String> = _manualMeanErrorValue
+    fun setManualMeanErrorValue(v: String) { _manualMeanErrorValue.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _manualMeanErrorUnit = mutableStateOf("GRAMS")
+    val manualMeanErrorUnit: State<String> = _manualMeanErrorUnit
+    fun setManualMeanErrorUnit(v: String) { _manualMeanErrorUnit.value = v }
+
+    private val _manualStdDevValue = mutableStateOf("0.5")
+    val manualStdDevValue: State<String> = _manualStdDevValue
+    fun setManualStdDevValue(v: String) { _manualStdDevValue.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _manualStdDevUnit = mutableStateOf("GRAMS")
+    val manualStdDevUnit: State<String> = _manualStdDevUnit
+    fun setManualStdDevUnit(v: String) { _manualStdDevUnit.value = v }
+
+    private val _staticDivisionMultiplier = mutableStateOf("1.0")
+    val staticDivisionMultiplier: State<String> = _staticDivisionMultiplier
+    fun setStaticDivisionMultiplier(v: String) { _staticDivisionMultiplier.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _dynamicDivisionMultiplier = mutableStateOf("2.0")
+    val dynamicDivisionMultiplier: State<String> = _dynamicDivisionMultiplier
+    fun setDynamicDivisionMultiplier(v: String) { _dynamicDivisionMultiplier.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _nominalPackageWeightQn = mutableStateOf("")
+    val nominalPackageWeightQn: State<String> = _nominalPackageWeightQn
+    fun setNominalPackageWeightQn(v: String) { _nominalPackageWeightQn.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _stdDevPercentageOfTne = mutableStateOf("10.0")
+    val stdDevPercentageOfTne: State<String> = _stdDevPercentageOfTne
+    fun setStdDevPercentageOfTne(v: String) { _stdDevPercentageOfTne.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _designationFactorX = mutableStateOf("1.0")
+    val designationFactorX: State<String> = _designationFactorX
+    fun setDesignationFactorX(v: String) { _designationFactorX.value = com.snb.inspect.core.InputTransforms.decimal(v) }
+
+    private val _inspectionType = mutableStateOf(com.snb.inspect.util.OimlInspectionType.INITIAL_VERIFICATION)
+    val inspectionType: State<com.snb.inspect.util.OimlInspectionType> = _inspectionType
+    fun setInspectionType(type: com.snb.inspect.util.OimlInspectionType) { _inspectionType.value = type }
+
+    private val _oimlComplianceModeEnabled = mutableStateOf(false)
+    val oimlComplianceModeEnabled: State<Boolean> = _oimlComplianceModeEnabled
+    fun setOimlComplianceModeEnabled(enabled: Boolean) {
+        _oimlComplianceModeEnabled.value = enabled
+        if (enabled) {
+            _toleranceMode.value = com.snb.inspect.util.ToleranceMode.OIML_R51_BENCHMARK
+        }
+    }
+
+    val evaluatedToleranceLimits: StateFlow<com.snb.inspect.util.EvaluatedToleranceLimits> = snapshotFlow {
+        val config = com.snb.inspect.util.ToleranceConfig(
+            mode = _toleranceMode.value,
+            manualMeanErrorValue = _manualMeanErrorValue.value.toDoubleOrNull() ?: 1.0,
+            manualMeanErrorUnit = _manualMeanErrorUnit.value,
+            manualStdDevValue = _manualStdDevValue.value.toDoubleOrNull() ?: 0.5,
+            manualStdDevUnit = _manualStdDevUnit.value,
+            staticDivisionMultiplier = _staticDivisionMultiplier.value.toDoubleOrNull() ?: 1.0,
+            dynamicDivisionMultiplier = _dynamicDivisionMultiplier.value.toDoubleOrNull() ?: 2.0,
+            nominalPackageWeightQn = _nominalPackageWeightQn.value.toDoubleOrNull() ?: _grossWeight.value.toDoubleOrNull() ?: 0.0,
+            stdDevPercentageOfTne = _stdDevPercentageOfTne.value.toDoubleOrNull() ?: 10.0,
+            accuracyClass = _accuracyClass.value,
+            designationFactorX = _designationFactorX.value.toDoubleOrNull() ?: 1.0,
+            verificationScaleIntervalE = _scaleInterval.value.toDoubleOrNull() ?: 1.0,
+            inspectionType = _inspectionType.value,
+            oimlComplianceModeEnabled = _oimlComplianceModeEnabled.value
+        )
+        val e = _scaleInterval.value.toDoubleOrNull() ?: 1.0
+        val ref = _nominalPackageWeightQn.value.toDoubleOrNull()
+            ?: _nominalQuantityAsFound.value.toDoubleOrNull()
+            ?: _grossWeight.value.toDoubleOrNull()
+            ?: _maxCapacity.value.toDoubleOrNull()
+            ?: 100.0
+        com.snb.inspect.util.CheckweigherCalculator.evaluateToleranceLimits(config, e, ref)
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, com.snb.inspect.util.CheckweigherCalculator.evaluateToleranceLimits(com.snb.inspect.util.ToleranceConfig(), 1.0, 100.0))
+
     private val _dynamicEccentricityTestWeightAsFound = mutableStateOf("")
     val dynamicEccentricityTestWeightAsFound: State<String> = _dynamicEccentricityTestWeightAsFound
     fun setDynamicEccentricityTestWeightAsFound(v: String) { _dynamicEccentricityTestWeightAsFound.value = com.snb.inspect.core.InputTransforms.decimal(v) }
@@ -1452,6 +1549,7 @@ class CalibrationCheckweigherViewModel(
 
     val evaluatedDynamicEccentricityResultAsFound: StateFlow<com.snb.inspect.util.DynamicEccentricityTestResult?> = snapshotFlow {
         val testLoad = _dynamicEccentricityTestWeightAsFound.value.ifBlank { _staticScaleWeightAsFound.value.ifBlank { _grossWeight.value } }
+        val limits = evaluatedToleranceLimits.value
         com.snb.inspect.util.CheckweigherCalculator.evaluateDynamicEccentricityTest(
             testLoadStr = testLoad,
             frontReadingStr = _dynamicEccentricityFrontReadingAsFound.value,
@@ -1459,12 +1557,14 @@ class CalibrationCheckweigherViewModel(
             centreReadingStr = _dynamicEccentricityCentreReadingAsFound.value,
             scaleIntervalStr = _scaleInterval.value,
             accuracyClass = _accuracyClass.value,
-            toleranceSource = _dynamicEccentricityToleranceSource.value,
+            toleranceSource = _toleranceMode.value.name,
             manualType = _dynamicEccentricityManualType.value,
             manualValueStr = _dynamicEccentricityManualValue.value,
             divisionMultiplierStr = _dynamicEccentricityDivisionMultiplier.value,
             tnePackWeightStr = _dynamicEccentricityTnePackWeight.value,
-            oimlClassStr = _dynamicEccentricityOimlClass.value
+            oimlClassStr = _dynamicEccentricityOimlClass.value,
+            allowedMpeOverride = limits.allowedStaticMpe,
+            toleranceDescriptionOverride = limits.description
         )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
@@ -1563,90 +1663,6 @@ class CalibrationCheckweigherViewModel(
     val repeatabilityTestResultAsLeft: State<String> = _repeatabilityTestResultAsLeft
     fun setRepeatabilityTestResultAsLeft(v: String) { _repeatabilityTestResultAsLeft.value = v }
 
-    // Tolerances & Modes State
-    private val _toleranceSource = mutableStateOf("SNB_GUIDANCE")
-    val toleranceSource: State<String> = _toleranceSource
-    fun setToleranceSource(v: String) { _toleranceSource.value = v }
-
-    private val _toleranceMode = mutableStateOf(com.snb.inspect.util.ToleranceMode.PACKAGED_GOODS_TNE)
-    val toleranceMode: State<com.snb.inspect.util.ToleranceMode> = _toleranceMode
-    fun setToleranceMode(mode: com.snb.inspect.util.ToleranceMode) {
-        _toleranceMode.value = mode
-        if (mode == com.snb.inspect.util.ToleranceMode.OIML_R51_BENCHMARK) {
-            _oimlComplianceModeEnabled.value = true
-        }
-    }
-
-    private val _manualMeanErrorValue = mutableStateOf("1.0")
-    val manualMeanErrorValue: State<String> = _manualMeanErrorValue
-    fun setManualMeanErrorValue(v: String) { _manualMeanErrorValue.value = com.snb.inspect.core.InputTransforms.decimal(v) }
-
-    private val _manualMeanErrorUnit = mutableStateOf("GRAMS")
-    val manualMeanErrorUnit: State<String> = _manualMeanErrorUnit
-    fun setManualMeanErrorUnit(v: String) { _manualMeanErrorUnit.value = v }
-
-    private val _manualStdDevValue = mutableStateOf("0.5")
-    val manualStdDevValue: State<String> = _manualStdDevValue
-    fun setManualStdDevValue(v: String) { _manualStdDevValue.value = com.snb.inspect.core.InputTransforms.decimal(v) }
-
-    private val _manualStdDevUnit = mutableStateOf("GRAMS")
-    val manualStdDevUnit: State<String> = _manualStdDevUnit
-    fun setManualStdDevUnit(v: String) { _manualStdDevUnit.value = v }
-
-    private val _staticDivisionMultiplier = mutableStateOf("1.0")
-    val staticDivisionMultiplier: State<String> = _staticDivisionMultiplier
-    fun setStaticDivisionMultiplier(v: String) { _staticDivisionMultiplier.value = com.snb.inspect.core.InputTransforms.decimal(v) }
-
-    private val _dynamicDivisionMultiplier = mutableStateOf("2.0")
-    val dynamicDivisionMultiplier: State<String> = _dynamicDivisionMultiplier
-    fun setDynamicDivisionMultiplier(v: String) { _dynamicDivisionMultiplier.value = com.snb.inspect.core.InputTransforms.decimal(v) }
-
-    private val _nominalPackageWeightQn = mutableStateOf("")
-    val nominalPackageWeightQn: State<String> = _nominalPackageWeightQn
-    fun setNominalPackageWeightQn(v: String) { _nominalPackageWeightQn.value = com.snb.inspect.core.InputTransforms.decimal(v) }
-
-    private val _stdDevPercentageOfTne = mutableStateOf("10.0")
-    val stdDevPercentageOfTne: State<String> = _stdDevPercentageOfTne
-    fun setStdDevPercentageOfTne(v: String) { _stdDevPercentageOfTne.value = com.snb.inspect.core.InputTransforms.decimal(v) }
-
-    private val _designationFactorX = mutableStateOf("1.0")
-    val designationFactorX: State<String> = _designationFactorX
-    fun setDesignationFactorX(v: String) { _designationFactorX.value = com.snb.inspect.core.InputTransforms.decimal(v) }
-
-    private val _inspectionType = mutableStateOf(com.snb.inspect.util.OimlInspectionType.INITIAL_VERIFICATION)
-    val inspectionType: State<com.snb.inspect.util.OimlInspectionType> = _inspectionType
-    fun setInspectionType(type: com.snb.inspect.util.OimlInspectionType) { _inspectionType.value = type }
-
-    private val _oimlComplianceModeEnabled = mutableStateOf(false)
-    val oimlComplianceModeEnabled: State<Boolean> = _oimlComplianceModeEnabled
-    fun setOimlComplianceModeEnabled(enabled: Boolean) {
-        _oimlComplianceModeEnabled.value = enabled
-        if (enabled) {
-            _toleranceMode.value = com.snb.inspect.util.ToleranceMode.OIML_R51_BENCHMARK
-        }
-    }
-
-    val evaluatedToleranceLimits: StateFlow<com.snb.inspect.util.EvaluatedToleranceLimits> = snapshotFlow {
-        val config = com.snb.inspect.util.ToleranceConfig(
-            mode = _toleranceMode.value,
-            manualMeanErrorValue = _manualMeanErrorValue.value.toDoubleOrNull() ?: 1.0,
-            manualMeanErrorUnit = _manualMeanErrorUnit.value,
-            manualStdDevValue = _manualStdDevValue.value.toDoubleOrNull() ?: 0.5,
-            manualStdDevUnit = _manualStdDevUnit.value,
-            staticDivisionMultiplier = _staticDivisionMultiplier.value.toDoubleOrNull() ?: 1.0,
-            dynamicDivisionMultiplier = _dynamicDivisionMultiplier.value.toDoubleOrNull() ?: 2.0,
-            nominalPackageWeightQn = _nominalPackageWeightQn.value.toDoubleOrNull() ?: _grossWeight.value.toDoubleOrNull() ?: 0.0,
-            stdDevPercentageOfTne = _stdDevPercentageOfTne.value.toDoubleOrNull() ?: 10.0,
-            accuracyClass = _accuracyClass.value,
-            designationFactorX = _designationFactorX.value.toDoubleOrNull() ?: 1.0,
-            verificationScaleIntervalE = _scaleInterval.value.toDoubleOrNull() ?: 1.0,
-            inspectionType = _inspectionType.value,
-            oimlComplianceModeEnabled = _oimlComplianceModeEnabled.value
-        )
-        val e = _scaleInterval.value.toDoubleOrNull() ?: 1.0
-        val ref = _nominalQuantityAsFound.value.toDoubleOrNull() ?: _grossWeight.value.toDoubleOrNull() ?: 100.0
-        com.snb.inspect.util.CheckweigherCalculator.evaluateToleranceLimits(config, e, ref)
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, com.snb.inspect.util.CheckweigherCalculator.evaluateToleranceLimits(com.snb.inspect.util.ToleranceConfig(), 1.0, 100.0))
 
     // Static Linearity State (5 points)
     private val _staticLinAppliedRefWeights = mutableStateOf<List<String>>(List(5) { "" })
@@ -2111,8 +2127,8 @@ class CalibrationCheckweigherViewModel(
         }
     }
 
-    private fun parsePasses(passesString: String): List<String> {
-        if (passesString.isBlank()) return List(30) { "" }
+    private fun parsePasses(passesString: String?): List<String> {
+        if (passesString.isNullOrBlank()) return List(30) { "" }
         val list = passesString.split(",").map { it.trim() }
         return List(30) { i -> list.getOrNull(i) ?: "" }
     }
@@ -2120,11 +2136,11 @@ class CalibrationCheckweigherViewModel(
     private fun loadLegacyStaticTestSet(cal: CheckweigherCalibrationLocal) {
         val legacySet = com.snb.inspect.util.StaticTestSet(
             id = 1,
-            testWeight = cal.offCentreTestWeightAsFound.ifBlank { cal.repeatabilityTestWeightAsFound },
-            centre = cal.offCentreCentreAsFound,
-            corner1 = cal.offCentreCorner1AsFound,
-            corner2 = cal.offCentreCorner2AsFound,
-            corner3 = cal.offCentreCorner3AsFound,
+            testWeight = cal.offCentreTestWeightAsFound.orEmpty().ifBlank { cal.repeatabilityTestWeightAsFound.orEmpty() },
+            centre = cal.offCentreCentreAsFound.orEmpty(),
+            corner1 = cal.offCentreCorner1AsFound.orEmpty(),
+            corner2 = cal.offCentreCorner2AsFound.orEmpty(),
+            corner3 = cal.offCentreCorner3AsFound.orEmpty(),
             corner4 = cal.offCentreCorner4AsFound,
             repeatabilityReading1 = cal.repeatabilityReading1AsFound,
             repeatabilityReading2 = cal.repeatabilityReading2AsFound,

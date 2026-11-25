@@ -120,20 +120,26 @@ data class DynamicEccentricityTestResult(
 // --- New Structured Tolerance Modes & Workflows ---
 
 enum class ToleranceMode(val label: String, val description: String) {
-    MANUAL_SPEC(
-        label = "Manual Specification",
-        description = "User enters custom Max Mean Error (g or %) and Max Std Dev (g or %)"
+    NONE(
+        label = "None (Advisory Only)",
+        description = "No tolerance limits enforced. Reports weighing errors for advisory purposes only without pass/fail evaluation."
     ),
-    DIVISION_BASED(
-        label = "Division-Based (UKWF Baseline)",
-        description = "Based on scale interval (d) with static and dynamic multipliers"
-    ),
+
     PACKAGED_GOODS_TNE(
         label = "Packaged Goods TNE (UK Avg Weight / e-mark)",
         description = "Calculates TNE using UK Packaged Goods Regulations 2006 for nominal weight Qn"
     ),
+    MANUAL_SPEC(
+        label = "Manual/Customer Specification",
+        description = "User enters custom Max Mean Error (g or %) and Max Std Dev (g or %)"
+    ),
+    DIVISION_BASED(
+        label = "Division-Based",
+        description = "Based on scale interval (d) with static and dynamic multipliers"
+    ),
+
     OIML_R51_BENCHMARK(
-        label = "OIML R 51 Benchmark",
+        label = "OIML R 51",
         description = "Enforces OIML R 51 Class MPE and Maximum Permissible Standard Deviation limits"
     )
 }
@@ -166,6 +172,9 @@ data class EvaluatedToleranceLimits(
     val allowedMaxMeanError: Double,
     val allowedMaxStdDev: Double,
     val tne: Double? = null,
+    val staticMpeLabel: String = "",
+    val maxMeanErrorLabel: String = "",
+    val maxStdDevLabel: String = "",
     val description: String = ""
 )
 
@@ -333,15 +342,23 @@ object CheckweigherCalculator {
 
         val inspectionMultiplier = if (inspectionType == OimlInspectionType.IN_SERVICE) 2.0 else 1.0
 
-        val classFactor = when {
-            accuracyClass.equals("XI", ignoreCase = true) || accuracyClass.contains("(0.1)", ignoreCase = true) -> 0.1
-            accuracyClass.equals("XII", ignoreCase = true) || accuracyClass.contains("(0.25)", ignoreCase = true) -> 0.25
-            accuracyClass.equals("XIIII", ignoreCase = true) || accuracyClass.contains("(2)", ignoreCase = true) -> 2.0
+        val factorX = when {
+            accuracyClass.contains("(0.5)", ignoreCase = true) -> 0.5
+            accuracyClass.contains("(0.2)", ignoreCase = true) -> 0.2
+            accuracyClass.contains("(0.1)", ignoreCase = true) -> 0.1
+            accuracyClass.contains("(2)", ignoreCase = true) -> 2.0
+            designationFactorX > 0.0 -> designationFactorX
             else -> 1.0
         }
 
-        val effectiveFactor = if (designationFactorX > 0.0) designationFactorX else 1.0
-        return roundTo(baseMpe * inspectionMultiplier * effectiveFactor * classFactor, 3)
+        val classFactor = when {
+            accuracyClass.startsWith("XI", ignoreCase = true) && !accuracyClass.startsWith("XII", ignoreCase = true) -> 0.1
+            accuracyClass.startsWith("XIIII", ignoreCase = true) -> 2.0
+            accuracyClass.startsWith("XII", ignoreCase = true) -> 0.25
+            else -> 1.0
+        }
+        val totalFactor = if (accuracyClass.contains("(")) factorX else (factorX * classFactor)
+        return roundTo(baseMpe * inspectionMultiplier * totalFactor, 3)
     }
 
     fun calculateOimlR51Mpe(
@@ -373,32 +390,67 @@ object CheckweigherCalculator {
         referenceWeight: Double
     ): EvaluatedToleranceLimits {
         val e = if (scaleIntervalE > 0.0) scaleIntervalE else 1.0
-        val ref = if (referenceWeight > 0.0) referenceWeight else 100.0
+        val hasRef = referenceWeight > 0.0
+        val ref = if (hasRef) referenceWeight else 0.0
 
         val effectiveMode = if (config.oimlComplianceModeEnabled) ToleranceMode.OIML_R51_BENCHMARK else config.mode
 
         return when (effectiveMode) {
+            ToleranceMode.NONE -> {
+                EvaluatedToleranceLimits(
+                    mode = ToleranceMode.NONE,
+                    allowedStaticMpe = Double.MAX_VALUE,
+                    allowedMaxMeanError = Double.MAX_VALUE,
+                    allowedMaxStdDev = Double.MAX_VALUE,
+                    staticMpeLabel = "Advisory",
+                    maxMeanErrorLabel = "Advisory",
+                    maxStdDevLabel = "Advisory",
+                    description = "None (Advisory Only): No tolerance limits enforced; all weighing errors will be recorded for advisory purposes."
+                )
+            }
+
             ToleranceMode.MANUAL_SPEC -> {
                 val meanErrGrams = if (config.manualMeanErrorUnit == "PERCENT") {
-                    roundTo((config.manualMeanErrorValue / 100.0) * ref, 3)
+                    if (hasRef) roundTo((config.manualMeanErrorValue / 100.0) * ref, 3) else 0.0
                 } else {
                     roundTo(config.manualMeanErrorValue, 3)
                 }
 
                 val stdDevGrams = if (config.manualStdDevUnit == "PERCENT") {
-                    roundTo((config.manualStdDevValue / 100.0) * ref, 3)
+                    if (hasRef) roundTo((config.manualStdDevValue / 100.0) * ref, 3) else 0.0
                 } else {
                     roundTo(config.manualStdDevValue, 3)
                 }
 
-                val staticMpe = meanErrGrams
+                val staticMpeLabel = if (config.manualMeanErrorUnit == "PERCENT") {
+                    if (hasRef) "±${"%.2f".format(config.manualMeanErrorValue)}% (±${"%.2f".format(meanErrGrams)}g)" else "±${"%.2f".format(config.manualMeanErrorValue)}% of Ref Wt"
+                } else {
+                    "±${"%.2f".format(meanErrGrams)}g"
+                }
+
+                val maxMeanErrorLabel = staticMpeLabel
+
+                val maxStdDevLabel = if (config.manualStdDevUnit == "PERCENT") {
+                    if (hasRef) "${"%.2f".format(config.manualStdDevValue)}% (${"%.2f".format(stdDevGrams)}g)" else "${"%.2f".format(config.manualStdDevValue)}% of Ref Wt"
+                } else {
+                    "${"%.2f".format(stdDevGrams)}g"
+                }
+
+                val desc = if (hasRef) {
+                    "Manual Spec (@ ${"%.1f".format(ref)}g ref): Max Mean Error $staticMpeLabel, Max Std Dev $maxStdDevLabel"
+                } else {
+                    "Manual Spec: Max Mean Error $staticMpeLabel, Max Std Dev $maxStdDevLabel"
+                }
 
                 EvaluatedToleranceLimits(
                     mode = ToleranceMode.MANUAL_SPEC,
-                    allowedStaticMpe = staticMpe,
-                    allowedMaxMeanError = meanErrGrams,
-                    allowedMaxStdDev = stdDevGrams,
-                    description = "Manual Spec: Max Mean Error ±${"%.2f".format(meanErrGrams)}g, Max Std Dev ${"%.2f".format(stdDevGrams)}g"
+                    allowedStaticMpe = if (config.manualMeanErrorUnit == "PERCENT" && !hasRef) Double.MAX_VALUE else meanErrGrams,
+                    allowedMaxMeanError = if (config.manualMeanErrorUnit == "PERCENT" && !hasRef) Double.MAX_VALUE else meanErrGrams,
+                    allowedMaxStdDev = if (config.manualStdDevUnit == "PERCENT" && !hasRef) Double.MAX_VALUE else stdDevGrams,
+                    staticMpeLabel = staticMpeLabel,
+                    maxMeanErrorLabel = maxMeanErrorLabel,
+                    maxStdDevLabel = maxStdDevLabel,
+                    description = desc
                 )
             }
 
@@ -410,37 +462,61 @@ object CheckweigherCalculator {
                 val maxMeanErr = roundTo(dynamicMult * e, 3)
                 val maxStdDev = roundTo(dynamicMult * e, 3)
 
+                val staticMpeLabel = "±${"%.2f".format(staticMpe)}g (${staticMult}d)"
+                val maxMeanErrorLabel = "±${"%.2f".format(maxMeanErr)}g (${dynamicMult}d)"
+                val maxStdDevLabel = "${"%.2f".format(maxStdDev)}g (${dynamicMult}d)"
+
                 EvaluatedToleranceLimits(
                     mode = ToleranceMode.DIVISION_BASED,
                     allowedStaticMpe = staticMpe,
                     allowedMaxMeanError = maxMeanErr,
                     allowedMaxStdDev = maxStdDev,
-                    description = "Division-Based (d=${"%.2f".format(e)}g): Static ±${"%.2f".format(staticMpe)}g (${staticMult}d), Dyn Mean Error ±${"%.2f".format(maxMeanErr)}g (${dynamicMult}d), Max Std Dev ${"%.2f".format(maxStdDev)}g"
+                    staticMpeLabel = staticMpeLabel,
+                    maxMeanErrorLabel = maxMeanErrorLabel,
+                    maxStdDevLabel = maxStdDevLabel,
+                    description = "Division-Based (Scale Interval d=${"%.2f".format(e)}g): Static MPE $staticMpeLabel, Dyn Mean Error $maxMeanErrorLabel, Max Std Dev $maxStdDevLabel"
                 )
             }
 
             ToleranceMode.PACKAGED_GOODS_TNE -> {
                 val qn = if (config.nominalPackageWeightQn > 0.0) config.nominalPackageWeightQn else ref
-                val tne = calculateTne(qn)
-
                 val pct = config.stdDevPercentageOfTne.coerceIn(5.0, 20.0)
-                val maxStdDev = roundTo((pct / 100.0) * tne, 3)
-                val maxMeanErr = roundTo(0.20 * tne, 3)
-                val staticMpe = roundTo(0.10 * tne, 3)
 
-                EvaluatedToleranceLimits(
-                    mode = ToleranceMode.PACKAGED_GOODS_TNE,
-                    allowedStaticMpe = staticMpe,
-                    allowedMaxMeanError = maxMeanErr,
-                    allowedMaxStdDev = maxStdDev,
-                    tne = tne,
-                    description = "UK Packaged Goods (Qn=${"%.1f".format(qn)}g, TNE=${"%.2f".format(tne)}g): Static MPE ±${"%.2f".format(staticMpe)}g, Max Mean Error ±${"%.2f".format(maxMeanErr)}g (20% TNE), Max Std Dev ${"%.2f".format(maxStdDev)}g (${"%.0f".format(pct)}% TNE)"
-                )
+                if (qn > 0.0) {
+                    val tne = calculateTne(qn)
+                    val maxStdDev = roundTo((pct / 100.0) * tne, 3)
+                    val maxMeanErr = roundTo(0.20 * tne, 3)
+                    val staticMpe = roundTo(0.10 * tne, 3)
+
+                    EvaluatedToleranceLimits(
+                        mode = ToleranceMode.PACKAGED_GOODS_TNE,
+                        allowedStaticMpe = staticMpe,
+                        allowedMaxMeanError = maxMeanErr,
+                        allowedMaxStdDev = maxStdDev,
+                        tne = tne,
+                        staticMpeLabel = "±${"%.2f".format(staticMpe)}g (10% TNE)",
+                        maxMeanErrorLabel = "±${"%.2f".format(maxMeanErr)}g (20% TNE)",
+                        maxStdDevLabel = "${"%.2f".format(maxStdDev)}g (${"%.0f".format(pct)}% TNE)",
+                        description = "UK Packaged Goods Regs 2006 (Qn=${"%.1f".format(qn)}g, TNE=${"%.2f".format(tne)}g): Static MPE ±${"%.2f".format(staticMpe)}g, Max Mean Error ±${"%.2f".format(maxMeanErr)}g, Max Std Dev ${"%.2f".format(maxStdDev)}g"
+                    )
+                } else {
+                    EvaluatedToleranceLimits(
+                        mode = ToleranceMode.PACKAGED_GOODS_TNE,
+                        allowedStaticMpe = Double.MAX_VALUE,
+                        allowedMaxMeanError = Double.MAX_VALUE,
+                        allowedMaxStdDev = Double.MAX_VALUE,
+                        staticMpeLabel = "10% of TNE",
+                        maxMeanErrorLabel = "20% of TNE",
+                        maxStdDevLabel = "${"%.0f".format(pct)}% of TNE",
+                        description = "UK Packaged Goods Regs 2006: Evaluates TNE based on Target Pack Weight Qn (Static MPE = 10% TNE, Dyn Mean Error = 20% TNE, Max Std Dev = ${"%.0f".format(pct)}% TNE)."
+                    )
+                }
             }
 
             ToleranceMode.OIML_R51_BENCHMARK -> {
+                val evalRef = if (hasRef) ref else 100.0
                 val staticMpe = calculateOimlR51Mpe(
-                    m = ref,
+                    m = evalRef,
                     scaleIntervalE = e,
                     inspectionType = config.inspectionType,
                     accuracyClass = config.accuracyClass,
@@ -450,19 +526,32 @@ object CheckweigherCalculator {
                 val maxMeanErr = staticMpe
 
                 val maxStdDev = calculateOimlR51MaxStdDev(
-                    m = ref,
+                    m = evalRef,
                     accuracyClass = config.accuracyClass,
                     designationFactorX = config.designationFactorX
                 )
 
                 val inspLabel = if (config.inspectionType == OimlInspectionType.IN_SERVICE) "In-Service" else "Initial Verification"
 
+                val staticMpeLabel = if (hasRef) "±${"%.2f".format(staticMpe)}g" else "OIML Class MPE"
+                val maxMeanErrorLabel = staticMpeLabel
+                val maxStdDevLabel = if (hasRef) "${"%.2f".format(maxStdDev)}g" else "OIML Max Std Dev"
+
+                val desc = if (hasRef) {
+                    "OIML R 51 Class ${config.accuracyClass} (${config.designationFactorX}x, $inspLabel @ ${"%.1f".format(evalRef)}g ref): MPE ±${"%.2f".format(staticMpe)}g, Max Std Dev ${"%.2f".format(maxStdDev)}g"
+                } else {
+                    "OIML R 51 Class ${config.accuracyClass} (${config.designationFactorX}x, $inspLabel): Enforces OIML Class MPE and Max Std Dev limits based on load."
+                }
+
                 EvaluatedToleranceLimits(
                     mode = ToleranceMode.OIML_R51_BENCHMARK,
                     allowedStaticMpe = staticMpe,
                     allowedMaxMeanError = maxMeanErr,
                     allowedMaxStdDev = maxStdDev,
-                    description = "OIML R 51 Class ${config.accuracyClass} (${config.designationFactorX}x, $inspLabel): MPE ±${"%.2f".format(staticMpe)}g, Max Std Dev ${"%.2f".format(maxStdDev)}g"
+                    staticMpeLabel = staticMpeLabel,
+                    maxMeanErrorLabel = maxMeanErrorLabel,
+                    maxStdDevLabel = maxStdDevLabel,
+                    description = desc
                 )
             }
         }
@@ -698,7 +787,9 @@ object CheckweigherCalculator {
         manualValueStr: String = "",
         divisionMultiplierStr: String = "1",
         tnePackWeightStr: String = "",
-        oimlClassStr: String = "XIII(1)"
+        oimlClassStr: String = "XIII(1)",
+        allowedMpeOverride: Double? = null,
+        toleranceDescriptionOverride: String? = null
     ): DynamicEccentricityTestResult? {
         val testLoad = testLoadStr.toDoubleOrNull() ?: return null
         val frontReading = frontReadingStr.toDoubleOrNull() ?: return null
@@ -712,17 +803,21 @@ object CheckweigherCalculator {
         val backError = roundTo(backReading - baseline, 3)
         val maxError = roundTo(maxOf(abs(frontError), abs(backError)), 3)
 
-        val (mpe, toleranceDescription) = calculateDynamicEccentricityLimit(
-            toleranceSource = toleranceSource,
-            testLoad = testLoad,
-            scaleInterval = scaleInterval,
-            accuracyClass = accuracyClass,
-            manualType = manualType,
-            manualValueStr = manualValueStr,
-            divisionMultiplierStr = divisionMultiplierStr,
-            tnePackWeightStr = tnePackWeightStr,
-            oimlClassStr = oimlClassStr
-        )
+        val (mpe, toleranceDescription) = if (allowedMpeOverride != null && toleranceDescriptionOverride != null) {
+            Pair(allowedMpeOverride, toleranceDescriptionOverride)
+        } else {
+            calculateDynamicEccentricityLimit(
+                toleranceSource = toleranceSource,
+                testLoad = testLoad,
+                scaleInterval = scaleInterval,
+                accuracyClass = accuracyClass,
+                manualType = manualType,
+                manualValueStr = manualValueStr,
+                divisionMultiplierStr = divisionMultiplierStr,
+                tnePackWeightStr = tnePackWeightStr,
+                oimlClassStr = oimlClassStr
+            )
+        }
 
         val isPass = maxError <= mpe
 

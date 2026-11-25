@@ -68,6 +68,12 @@ fun CheckweigherCalibrationNavGraphContent(
             }
         }
 
+        composable("CwTestProductDetails") {
+            onScreenChanged {
+                CalCwTestProductDetails(viewModel)
+            }
+        }
+
         composable("CwEngineerTestWeight") {
             onScreenChanged {
                 CalCwEngineerTestWeight(viewModel)

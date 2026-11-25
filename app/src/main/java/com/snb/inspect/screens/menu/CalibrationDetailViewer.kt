@@ -440,7 +440,7 @@ fun CheckweigherCalibrationDetailsView(
     cal: CheckweigherCalibrationLocal,
     customerName: String
 ) {
-    val canPerform = cal.canPerformCalibration.lowercase().let { it == "true" || it == "yes" }
+    val canPerform = cal.canPerformCalibration.orEmpty().lowercase().let { it == "true" || it == "yes" }
 
     DetailSection(title = "Calibration Details") {
         DetailRow(label = "Calibration ID", value = cal.calibrationId)

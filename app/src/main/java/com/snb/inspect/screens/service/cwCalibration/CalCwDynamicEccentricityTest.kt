@@ -17,7 +17,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.snb.inspect.calibrationViewModels.CalibrationCheckweigherViewModel
 import com.snb.inspect.formModules.CalibrationHeader
-import com.snb.inspect.formModules.LabeledDropdownWithHelp
 import com.snb.inspect.ui.theme.AppCard
 import com.snb.inspect.ui.theme.ScrollableWithScrollbar
 import com.snb.inspect.util.DynamicEccentricityTestResult
@@ -31,13 +30,7 @@ fun CalCwDynamicEccentricityTest(viewModel: CalibrationCheckweigherViewModel) {
     val staticRefWeight = viewModel.staticScaleWeightAsFound.value
     val grossWeight = viewModel.grossWeight.value
 
-    val toleranceSource = viewModel.dynamicEccentricityToleranceSource.value
-    val manualType = viewModel.dynamicEccentricityManualType.value
-    val manualValue = viewModel.dynamicEccentricityManualValue.value
-    val divisionMult = viewModel.dynamicEccentricityDivisionMultiplier.value
-    val tnePackWeight = viewModel.dynamicEccentricityTnePackWeight.value
-    val oimlClass = viewModel.dynamicEccentricityOimlClass.value
-
+    val limits by viewModel.evaluatedToleranceLimits.collectAsState()
     val calcResult by viewModel.evaluatedDynamicEccentricityResultAsFound.collectAsState()
 
     val isNextStepEnabled = frontReading.isNotBlank() && backReading.isNotBlank()
@@ -83,148 +76,35 @@ fun CalCwDynamicEccentricityTest(viewModel: CalibrationCheckweigherViewModel) {
                             "1. Test load: Representative pack (~1/3 Max capacity + additive tare).\n" +
                             "2. Front position pass: Pass load dynamically towards the front edge of the conveyor (halfway between centre and front edge).\n" +
                             "3. Back position pass: Repeat test towards the back edge (halfway between centre and back edge).\n" +
-                            "4. Assessment: Evaluated against selected tolerance source.",
+                            "4. Assessment: Evaluated against global tolerance class.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
 
-                // Tolerance Assessment Source Card
+                // Global Calibration Tolerance Class Card
                 AppCard(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Tune, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                            Spacer(Modifier.width(8.dp))
                             Text(
-                                "Tolerance Assessment Source",
+                                "Global Calibration Tolerance Class",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
                                 modifier = Modifier.weight(1f)
                             )
-                            Icon(Icons.Default.Tune, contentDescription = null)
                         }
-
-                        val toleranceOptions = listOf(
-                            "OIML R 51 Benchmark",
-                            "Manual / Customer Spec",
-                            "Division-Based (±Xd)",
-                            "Packaged Goods (TNE Rule)"
+                        Text(
+                            limits.description,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
                         )
-
-                        val currentSelectedLabel = when (toleranceSource) {
-                            "MANUAL_SPEC" -> "Manual / Customer Spec"
-                            "DIVISION_BASED" -> "Division-Based (±Xd)"
-                            "PACKAGED_GOODS" -> "Packaged Goods (TNE Rule)"
-                            else -> "OIML R 51 Benchmark"
-                        }
-
-                        LabeledDropdownWithHelp(
-                            label = "Tolerance Rule / Source",
-                            options = toleranceOptions,
-                            selectedOption = currentSelectedLabel,
-                            onSelectionChange = { sel ->
-                                val code = when (sel) {
-                                    "Manual / Customer Spec" -> "MANUAL_SPEC"
-                                    "Division-Based (±Xd)" -> "DIVISION_BASED"
-                                    "Packaged Goods (TNE Rule)" -> "PACKAGED_GOODS"
-                                    else -> "OIML_R51"
-                                }
-                                viewModel.setDynamicEccentricityToleranceSource(code)
-                            },
-                            helpText = "Select rule to evaluate pass/fail limit when machine specs or e values are unknown."
-                        )
-
-                        // Sub-options based on selected tolerance source
-                        when (toleranceSource) {
-                            "MANUAL_SPEC" -> {
-                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Text("Manual Spec Unit:", style = MaterialTheme.typography.labelMedium)
-                                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                                        SegmentedButton(
-                                            selected = manualType == "GRAMS",
-                                            onClick = { viewModel.setDynamicEccentricityManualType("GRAMS") },
-                                            shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
-                                        ) {
-                                            Text("± Grams (±g)")
-                                        }
-                                        SegmentedButton(
-                                            selected = manualType == "PERCENT",
-                                            onClick = { viewModel.setDynamicEccentricityManualType("PERCENT") },
-                                            shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
-                                        ) {
-                                            Text("± Percent (±%)")
-                                        }
-                                    }
-
-                                    OutlinedTextField(
-                                        value = manualValue,
-                                        onValueChange = viewModel::setDynamicEccentricityManualValue,
-                                        label = { Text(if (manualType == "PERCENT") "Allowed Limit (±%)" else "Allowed Limit (±g)") },
-                                        placeholder = { Text(if (manualType == "PERCENT") "e.g. 1.0" else "e.g. 1.5") },
-                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                                        singleLine = true,
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-                                }
-                            }
-
-                            "DIVISION_BASED" -> {
-                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Text("Division Multiplier (Scale Interval d):", style = MaterialTheme.typography.labelMedium)
-                                    val multipliers = listOf("1", "2", "3", "5")
-                                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                                        multipliers.forEachIndexed { index, m ->
-                                            SegmentedButton(
-                                                selected = divisionMult == m,
-                                                onClick = { viewModel.setDynamicEccentricityDivisionMultiplier(m) },
-                                                shape = SegmentedButtonDefaults.itemShape(index = index, count = multipliers.size)
-                                            ) {
-                                                Text("±${m}d")
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            "PACKAGED_GOODS" -> {
-                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    OutlinedTextField(
-                                        value = tnePackWeight,
-                                        onValueChange = viewModel::setDynamicEccentricityTnePackWeight,
-                                        label = { Text("Target Pack Weight (g)") },
-                                        placeholder = { Text(testLoadInput.ifBlank { staticRefWeight.ifBlank { grossWeight.ifBlank { "500" } } }) },
-                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                                        singleLine = true,
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-                                    Text(
-                                        "App automatically calculates 10% of TNE as the permissible error limit.",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-
-                            else -> { // "OIML_R51"
-                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Text("OIML R 51 Class Benchmark:", style = MaterialTheme.typography.labelMedium)
-                                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                                        SegmentedButton(
-                                            selected = oimlClass.contains("XIII(1)"),
-                                            onClick = { viewModel.setDynamicEccentricityOimlClass("XIII(1)") },
-                                            shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
-                                        ) {
-                                            Text("Class XIII(1)")
-                                        }
-                                        SegmentedButton(
-                                            selected = oimlClass.contains("XIII(2)"),
-                                            onClick = { viewModel.setDynamicEccentricityOimlClass("XIII(2)") },
-                                            shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
-                                        ) {
-                                            Text("Class XIII(2) In-Service")
-                                        }
-                                    }
-                                }
-                            }
+                        val eccLimitDisplay = if (limits.allowedStaticMpe >= 1e9) "Advisory (None)" else "±%.2fg".format(limits.allowedStaticMpe)
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            ValueBox(title = "Tolerance Mode", value = limits.mode.label, modifier = Modifier.weight(1f))
+                            ValueBox(title = "Eccentricity Limit", value = eccLimitDisplay, modifier = Modifier.weight(1f))
                         }
                     }
                 }
@@ -355,12 +235,14 @@ private fun EvaluationSummaryCard(res: DynamicEccentricityTestResult) {
                 ValueBox(title = "Back Error", value = "%+.2fg".format(res.backError), modifier = Modifier.weight(1f))
             }
 
+            val isAdvisory = res.mpe >= 1e9
+            val mpeDisplay = if (isAdvisory) "Advisory" else "±%.2fg".format(res.mpe)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ValueBox(title = "Max Deviation", value = "%.2fg".format(res.maxError), modifier = Modifier.weight(1f))
-                ValueBox(title = "Allowed Limit", value = "±%.2fg".format(res.mpe), modifier = Modifier.weight(1f))
+                ValueBox(title = "Allowed Limit", value = mpeDisplay, modifier = Modifier.weight(1f))
                 ValueBox(
                     title = "Tolerance Rule",
-                    value = res.toleranceDescription.ifBlank { "OIML R 51" },
+                    value = res.toleranceDescription.ifBlank { "Global Class" },
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -370,12 +252,13 @@ private fun EvaluationSummaryCard(res: DynamicEccentricityTestResult) {
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                val summaryText = when {
+                    isAdvisory -> "ℹ️ Advisory Mode: Max position error (${"%.2f".format(res.maxError)}g) reported for advisory purposes only (no limits enforced)."
+                    res.isPass -> "✅ Compliant: Max position error (${"%.2f".format(res.maxError)}g) is within allowable limit (±${"%.2f".format(res.mpe)}g) per ${res.toleranceDescription}."
+                    else -> "❌ Exceeds limit: Max position error (${"%.2f".format(res.maxError)}g) exceeds allowable limit (±${"%.2f".format(res.mpe)}g) per ${res.toleranceDescription}."
+                }
                 Text(
-                    text = if (res.isPass) {
-                        "✅ Compliant: Max position error (${"%.2f".format(res.maxError)}g) is within allowable limit (±${"%.2f".format(res.mpe)}g) per ${res.toleranceDescription}."
-                    } else {
-                        "❌ Exceeds limit: Max position error (${"%.2f".format(res.maxError)}g) exceeds allowable limit (±${"%.2f".format(res.mpe)}g) per ${res.toleranceDescription}."
-                    },
+                    text = summaryText,
                     color = if (res.isPass) Color(0xFF2E7D32) else Color(0xFFC62828),
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Bold,

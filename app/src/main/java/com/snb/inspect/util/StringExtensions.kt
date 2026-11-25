@@ -3,7 +3,8 @@ package com.snb.inspect.util
 import com.snb.inspect.formModules.ConditionState
 import com.snb.inspect.formModules.YesNoState
 
-fun String.toYesNoState(): YesNoState {
+fun String?.toYesNoState(): YesNoState {
+    if (this == null) return YesNoState.UNSPECIFIED
     return when (this.uppercase()) {
         "YES" -> YesNoState.YES
         "NO" -> YesNoState.NO
@@ -12,7 +13,8 @@ fun String.toYesNoState(): YesNoState {
     }
 }
 
-fun String.toConditionState(): ConditionState {
+fun String?.toConditionState(): ConditionState {
+    if (this == null) return ConditionState.UNSPECIFIED
     return when (this.uppercase()) {
         "GOOD" -> ConditionState.GOOD
         "OK", "SATISFACTORY" -> ConditionState.OK
